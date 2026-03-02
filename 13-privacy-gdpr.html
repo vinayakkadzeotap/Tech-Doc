@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 13: Privacy & GDPR Compliance — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART VI — GOVERNANCE</div>
+      <a href="12-unity-dashboard.html" class="nav-item">Unity Dashboard</a>
+      <a href="13-privacy-gdpr.html" class="nav-item active">Privacy & GDPR</a>
+      <a href="14-auth-iam.html" class="nav-item">Auth & IAM</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#data-flow" class="nav-item">Consent Data Flow</a>
+      <a href="#gdpr-backend" class="nav-item">GDPR Backend</a>
+      <a href="#consent-api" class="nav-item">Consent API</a>
+      <a href="#erasure" class="nav-item">Right to Erasure</a>
+      <a href="#tcf" class="nav-item">IAB TCF v2.2</a>
+      <a href="#frameworks" class="nav-item">Global Frameworks</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Part VI — Governance</span><span>›</span>
+        <span>Privacy & GDPR Compliance</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Privacy & GDPR Compliance</h1>
+      <p class="page-subtitle">How Zeotap implements privacy-by-design: IAB TCF v2.2 consent management, GDPR right-to-erasure pipelines, consent gating across all data pipelines, and global privacy framework support.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">GDPR</div><div class="stat-label">EU Regulation</div></div>
+      <div class="stat-card"><div class="stat-value">IAB TCF v2.2</div><div class="stat-label">Consent Standard</div></div>
+      <div class="stat-card"><div class="stat-value">CCPA / CPRA</div><div class="stat-label">US Privacy Laws</div></div>
+      <div class="stat-card"><div class="stat-value">72h</div><div class="stat-label">Breach Notification SLA</div></div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Privacy Architecture Overview</h2>
+      <p>Zeotap is built with <strong>privacy-by-design</strong>: consent is captured at every data entry point, propagated through all pipelines, and enforced before any data is used for profiling, audience building, or activation. The privacy system spans four repositories:</p>
+
+      <ul>
+        <li><strong>gdpr-backend</strong> — Core GDPR API: opt-out management, deletion requests, audit logs (Play/Java + PostgreSQL)</li>
+        <li><strong>consent-preference-centre-ui</strong> — Customer-facing consent management UI</li>
+        <li><strong>zeotap-optin</strong> — Consent signal capture SDK (embedded in publisher pages)</li>
+        <li><strong>flask-gdpr</strong> — Lightweight Python GDPR utility service for deletion orchestration</li>
+      </ul>
+
+      <div class="callout callout-warning">
+        <div><strong>Consent Gate</strong> — Every data pipeline (ingestion, identity resolution, audience building, activation) checks the user's consent status before processing. If consent is absent or revoked, the UCID is excluded from all downstream processing.</div>
+      </div>
+    </section>
+
+    <!-- Consent Data Flow -->
+    <section id="data-flow">
+      <h2>Consent Data Flow</h2>
+
+      <div class="mermaid">
+sequenceDiagram
+    participant User as End User
+    participant CMP as CMP / Consent UI<br/>(zeotap-optin)
+    participant SDK as analytics-sdk<br/>(Collect layer)
+    participant GDPR as gdpr-backend
+    participant IDG as Identity Graph<br/>(id-graph-lib-v2-go)
+    participant PS as Profile Store
+
+    User->>CMP: Interact with consent banner
+    CMP->>CMP: Generate TCF v2.2 consent string
+    CMP->>SDK: setConsent({ tcfString, purposes })
+    SDK->>SDK: Attach consent to all events
+    SDK->>GDPR: POST /consent { ucid, tcf_string, purposes }
+    GDPR->>IDG: Update consent on UCID profile
+    IDG->>PS: Write consent to profile Delta table
+
+    Note over IDG,PS: Consent status blocks or allows<br/>all downstream processing
+
+    User->>CMP: Revoke all consent
+    CMP->>GDPR: POST /opt-out { email_sha256 }
+    GDPR->>IDG: Propagate opt-out to UCID
+    GDPR->>PS: Exclude UCID from all pipelines
+      </div>
+    </section>
+
+    <!-- GDPR Backend -->
+    <section id="gdpr-backend">
+      <h2>GDPR Backend</h2>
+      <p>The <code>gdpr-backend</code> is a Play Framework (Java) service that manages all GDPR-related data subject requests. It uses PostgreSQL for state and publishes deletion events to downstream services.</p>
+
+      <h3>Key Utilities</h3>
+      <table>
+        <thead>
+          <tr><th>Class</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>GDPRAuthenticatorUtil</code></td><td>Validates GDPR request tokens and org permissions</td></tr>
+          <tr><td><code>HashUtil</code></td><td>SHA-256 hashing of PII for pseudonymisation</td></tr>
+          <tr><td><code>AESUtil</code></td><td>AES-256 encryption/decryption of stored PII</td></tr>
+          <tr><td><code>RBACUtil</code></td><td>Role-based access control for GDPR admin endpoints</td></tr>
+          <tr><td><code>SlackNotificationUtil</code></td><td>Alerts GDPR team on high-priority deletion requests</td></tr>
+          <tr><td><code>DatabaseRepository</code></td><td>PostgreSQL CRUD for opt-out users and audit log</td></tr>
+          <tr><td><code>OptOutUsers</code></td><td>Model: stores opted-out user records with hashed IDs</td></tr>
+        </tbody>
+      </table>
+
+      <pre><code class="language-java">// OptOutUsers model
+public class OptOutUsers {
+    private String emailSha256;    // hashed identifier (PII-safe)
+    private String phoneSha256;
+    private String ucid;
+    private Integer orgId;
+    private String platformType;   // "web" | "mobile" | "email"
+    private Date optOutDate;
+    private String requestSource;  // "user_request" | "dsar" | "legitimate_interest"
+    private String status;         // "PENDING" | "PROCESSING" | "COMPLETED"
+}</code></pre>
+
+      <h3>PlatformDetails Enum</h3>
+      <pre><code class="language-java">// gdpr-backend/app/enums/PlatFormDetails.java
+public enum PlatFormDetails {
+    ZAT("Zeotap Targeting"),
+    ZAI("Zeotap Insights"),
+    CONNECT("Zeotap Connect"),
+    DESTINATIONS("Zeotap Destinations"),
+    ALL("All Platforms");
+}</code></pre>
+    </section>
+
+    <!-- Consent API -->
+    <section id="consent-api">
+      <h2>Consent Management API</h2>
+
+      <div class="endpoint-block"><span class="method post">POST</span><span class="endpoint-path">/gdpr/v1/consent</span></div>
+      <pre><code class="language-json">// Record user consent
+{
+  "org_id": 4521,
+  "identifiers": {
+    "email_sha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"
+  },
+  "tcf_string": "CPz4ACAPZ4ACAAHABBENAoEgAP_AAAAAAAAAiQAAA...",
+  "purposes": {
+    "store_and_access": true,
+    "personalisation": true,
+    "ad_selection": true,
+    "content_measurement": true,
+    "market_research": false
+  },
+  "consent_timestamp": "2024-11-01T10:00:00Z",
+  "cmp_id": 92,
+  "cmp_version": 2
+}</code></pre>
+
+      <div class="endpoint-block"><span class="method post">POST</span><span class="endpoint-path">/gdpr/v1/opt-out</span></div>
+      <pre><code class="language-json">// User opt-out (right to object)
+{
+  "org_id": 4521,
+  "identifiers": {
+    "email_sha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"
+  },
+  "platform": "ALL",
+  "reason": "marketing",
+  "request_source": "user_request"
+}
+
+// Response
+{
+  "request_id": "gdpr_req_001",
+  "status": "ACCEPTED",
+  "estimated_completion": "2024-11-03T10:00:00Z",
+  "message": "Opt-out request accepted. Processing within 72 hours."
+}</code></pre>
+    </section>
+
+    <!-- Right to Erasure -->
+    <section id="erasure">
+      <h2>Right to Erasure (Right to be Forgotten)</h2>
+      <p>GDPR Article 17 requires that a user's personal data be completely deleted upon request. Zeotap's erasure pipeline spans all data stores:</p>
+
+      <div class="mermaid">
+flowchart TD
+    REQ["Data Subject Erasure Request<br/>(email_sha256 or phone_sha256)"]
+    GDPR2["gdpr-backend<br/>Validate & accept request"]
+    RESOLVE["Resolve to UCID<br/>(id-graph-lib-v2-go)"]
+    QUEUE["Publish to<br/>Pub/Sub erasure-requests topic"]
+
+    PS_DEL["Profile Store<br/>Delta MERGE DELETE by UCID"]
+    IDG_DEL["Identity Graph<br/>Delete all identifier rows"]
+    AUD_DEL["Audiences DB<br/>Remove UCID from all segments"]
+    BQ_DEL["BigQuery<br/>DELETE FROM all event tables"]
+    BT_DEL["BigTable<br/>Delete UCID row"]
+    DEST_SUP["Destinations<br/>Send suppression list to partners"]
+
+    AUDIT["Write to audit_log<br/>(retained 6 years)"]
+    CONFIRM["Confirm to data subject<br/>(email within 30 days)"]
+
+    REQ --> GDPR2
+    GDPR2 --> RESOLVE
+    RESOLVE --> QUEUE
+    QUEUE --> PS_DEL
+    QUEUE --> IDG_DEL
+    QUEUE --> AUD_DEL
+    QUEUE --> BQ_DEL
+    QUEUE --> BT_DEL
+    QUEUE --> DEST_SUP
+    PS_DEL --> AUDIT
+    IDG_DEL --> AUDIT
+    AUD_DEL --> AUDIT
+    BQ_DEL --> AUDIT
+    BT_DEL --> AUDIT
+    DEST_SUP --> AUDIT
+    AUDIT --> CONFIRM
+
+    style QUEUE fill:#fff3e0,stroke:#ef6c00
+    style AUDIT fill:#e8f5e9,stroke:#2e7d32
+      </div>
+
+      <h3>DpmIduJoinProcessor (Profile Store)</h3>
+      <p>The Profile Store's deletion handler (Scala Spark) processes erasure events by joining deletion requests with IDU decisions and removing matching rows from the Delta table:</p>
+
+      <pre><code class="language-scala">// profile-store/profile-merge/deletionHandler/DpmIduJoinProcessor.scala
+class DpmIduJoinProcessor {
+  def process(
+    deletionRequests: Dataset[DeletionRequest],
+    profileData: DataFrame,
+    outputPath: String
+  )(implicit spark: SparkSession): Unit = {
+
+    val ucidsToDelete = deletionRequests
+      .select("ucid")
+      .distinct()
+
+    // DELETE matching rows from Delta table
+    DeltaTable.forPath(outputPath)
+      .delete(col("ucid").isin(ucidsToDelete.collect().map(_.getString(0)): _*))
+
+    // Vacuum to physically remove deleted data files
+    // (after retention period)
+    DeltaTable.forPath(outputPath).vacuum(0)
+  }
+}</code></pre>
+    </section>
+
+    <!-- TCF -->
+    <section id="tcf">
+      <h2>IAB TCF v2.2 Integration</h2>
+      <p>Zeotap is fully compliant with the <strong>IAB Transparency & Consent Framework (TCF) v2.2</strong>. All SDK-collected events carry the user's TCF consent string, and all downstream processing respects the declared purposes and vendor consents.</p>
+
+      <h3>TCF Purpose Mapping</h3>
+      <table>
+        <thead>
+          <tr><th>TCF Purpose</th><th>ID</th><th>Zeotap Processing</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Store and/or access information</td><td>1</td><td>Required for any profiling</td></tr>
+          <tr><td>Select basic ads</td><td>2</td><td>Required for ad targeting</td></tr>
+          <tr><td>Create personalised ads profile</td><td>3</td><td>Required for audience enrichment</td></tr>
+          <tr><td>Select personalised ads</td><td>4</td><td>Required for activation to ad platforms</td></tr>
+          <tr><td>Measure ad performance</td><td>7</td><td>Required for attribution reporting</td></tr>
+          <tr><td>Apply market research</td><td>9</td><td>Optional for ML training</td></tr>
+        </tbody>
+      </table>
+
+      <h3>TCF String in Event Payload</h3>
+      <pre><code class="language-json">// analytics-sdk event with TCF consent
+{
+  "event": "track",
+  "event_name": "Product Viewed",
+  "context": {
+    "consent": {
+      "tcf": {
+        "version": 2,
+        "gdpr_applies": true,
+        "consent_string": "CPz4ACAPZ4ACAAHABBENAoEgAP_AAA...",
+        "purpose_consents": {
+          "1": true, "2": true, "3": true, "4": true,
+          "7": true, "9": false
+        },
+        "vendor_consents": { "755": true }  // Zeotap vendor ID = 755
+      }
+    }
+  }
+}</code></pre>
+    </section>
+
+    <!-- Global Frameworks -->
+    <section id="frameworks">
+      <h2>Global Privacy Framework Support</h2>
+      <table>
+        <thead>
+          <tr><th>Regulation</th><th>Region</th><th>Key Requirements</th><th>Zeotap Implementation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>GDPR</td><td>EU/EEA</td><td>Consent, erasure, data minimisation</td><td>gdpr-backend, consent gating, erasure pipeline</td></tr>
+          <tr><td>CCPA/CPRA</td><td>California, US</td><td>Right to opt-out, data sale disclosure</td><td>Opt-out API, suppression lists</td></tr>
+          <tr><td>LGPD</td><td>Brazil</td><td>Similar to GDPR</td><td>Consent and erasure extended to BR orgs</td></tr>
+          <tr><td>PDPA</td><td>Thailand</td><td>Explicit consent for sensitive data</td><td>Additional consent flag in TCF extension</td></tr>
+          <tr><td>ePrivacy</td><td>EU</td><td>Cookie consent, direct marketing</td><td>IAB TCF v2.2 implementation</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
+      <a href="14-auth-iam.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 14 · Authentication & IAM →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

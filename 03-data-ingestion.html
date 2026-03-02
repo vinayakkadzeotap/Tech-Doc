@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Ingestion Pipelines — Zeotap CDP Docs</title>
+  <link rel="stylesheet" href="assets/style.css?v=4">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#0057FF', primaryTextColor: '#fff', primaryBorderColor: '#003EC8', lineColor: '#6B7280', secondaryColor: '#E8EFFF', tertiaryColor: '#f9fafb' } });</script>
+</head>
+<body>
+<aside class="sidebar">
+  <a href="index.html" class="sidebar-logo"><div class="logo-mark">Z</div><div><div class="logo-text">Zeotap</div><div class="logo-sub">Technical Docs</div></div></a>
+  <div class="sidebar-section"><div class="sidebar-section-title">On This Page</div>
+  <nav class="sidebar-nav sub-nav">
+    <a href="#overview">Overview</a><a href="#daap">DAAP Architecture</a><a href="#batch">Batch Ingestion</a>
+    <a href="#streaming">Stream Processing</a><a href="#schema">Schema Management</a><a href="#quality">Data Quality</a>
+  </nav></div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Core Modules</div>
+  <nav class="sidebar-nav">
+    <a href="02-data-collection.html">Data Collection & SDKs</a>
+    <a href="03-data-ingestion.html" class="active">Data Ingestion Pipelines</a>
+    <a href="04-identity-resolution.html">Identity Resolution</a>
+    <a href="06-audience-management.html">Audience Management</a>
+  </nav></div>
+</aside>
+<div class="main">
+  <header class="topbar">
+    <div class="breadcrumb"><a href="index.html">Docs</a><span class="sep">›</span><a href="#">Data Ingestion</a><span class="sep">›</span><span class="current">Data Ingestion Pipelines</span></div>
+    <div class="topbar-actions"><span class="version-badge">Data Ingestion</span></div>
+  </header>
+  <div class="content">
+    <div class="page-header">
+      <div class="module-tag">Data Ingestion</div>
+      <h1>Data Ingestion Pipelines</h1>
+      <p class="lead">Zeotap's ingestion layer handles data from first-party web/mobile events, CRM uploads, third-party data providers, and streaming sources — processing billions of events daily via Apache Spark, CDAP, and Apache Beam on GCP Dataflow.</p>
+      <div class="meta">
+        <div class="meta-item"><code>daap</code> · Java/Scala · Maven</div>
+        <div class="meta-divider"></div>
+        <div class="meta-item">Spark · CDAP · Beam/Dataflow</div>
+        <div class="meta-divider"></div>
+        <div class="meta-item">GCS · BigQuery · Pub/Sub</div>
+      </div>
+    </div>
+
+    <h2 id="overview">Overview</h2>
+    <p>DAAP (Data as a Platform) is Zeotap's core data platform — a multi-module Java/Scala project that orchestrates all ingestion, processing, and distribution of customer data. It supports two primary modes:</p>
+    <div class="card-grid">
+      <div class="card"><div class="card-icon">🔄</div><div class="card-title">Batch Ingestion</div><p class="card-desc">Scheduled file-based ingestion from SFTP, S3, GCS, CRMs, and third-party data providers. Processed via Spark on Kubernetes.</p></div>
+      <div class="card"><div class="card-icon">🌊</div><div class="card-title">Stream Processing</div><p class="card-desc">Real-time event processing from Kafka and GCP Pub/Sub topics. Sub-second latency for SDK-generated events.</p></div>
+      <div class="card"><div class="card-icon">🔌</div><div class="card-title">3rd-Party Ingestion</div><p class="card-desc">Pre-built connectors for 50+ data providers via <code>daap-3P-ingestion</code>. Schema mapping, deduplication, and consent enforcement.</p></div>
+      <div class="card"><div class="card-icon">✅</div><div class="card-title">Data Quality</div><p class="card-desc">Automated validation via <code>dataquality</code> and <code>data-expectations</code>. Schema drift detection, null rate monitoring, referential integrity.</p></div>
+    </div>
+
+    <h2 id="daap">DAAP Architecture</h2>
+    <p>The <code>daap</code> repository is a Maven multi-module project with three core sub-modules:</p>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Module</th><th>Artifact</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>daap-library</code></td><td>Java library</td><td>Shared utilities, schema definitions, DAO layer, BigQuery/GCS clients</td></tr>
+        <tr><td><code>daap-processing</code></td><td>Spark JAR</td><td>Batch processing jobs — identity stitching, enrichment, segment calculation</td></tr>
+        <tr><td><code>daap-external</code></td><td>REST API</td><td>External-facing API for partner data submission</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🏗️ DAAP Processing Architecture</div>
+      <div class="mermaid">
+graph TB
+    subgraph SOURCES["Data Sources"]
+      SDK["📡 SDK Events\n(Pub/Sub)"]
+      SFTP["📁 SFTP/S3/GCS\n(Batch Files)"]
+      API["🔌 Partner API\n(daap-external)"]
+      CRM["📋 CRM Upload\n(CSV/JSON)"]
+    end
+    subgraph INGEST["Ingestion Layer"]
+      VALIDATE["Schema Validation\n+ Consent Check"]
+      DEDUPE["Deduplication\n(Bloom Filter)"]
+      TRANSFORM["Data Transformation\n(daap-library)"]
+    end
+    subgraph PROCESS["Processing Layer (Spark)"]
+      BATCH["Batch Jobs\n(daap-processing)"]
+      STREAM["Stream Jobs\n(zeocore-idu-microservices)"]
+      ENRICH["Enrichment\n(zeocore-apps-enricher)"]
+    end
+    subgraph STORE["Storage Layer"]
+      BQ["BigQuery\n(Analytics)"]
+      BT["BigTable\n(Profiles)"]
+      GCS["Cloud Storage\n(Raw Archive)"]
+    end
+    SOURCES --> INGEST
+    INGEST --> PROCESS
+    PROCESS --> STORE
+    style SOURCES fill:#FEF3C7,stroke:#F59E0B
+    style INGEST fill:#DBEAFE,stroke:#93C5FD
+    style PROCESS fill:#DCFCE7,stroke:#6EE7B7
+    style STORE fill:#EDE9FE,stroke:#A78BFA
+      </div>
+    </div>
+
+    <h2 id="batch">Batch Ingestion</h2>
+    <p>Batch ingestion runs on a configurable schedule (hourly, daily) using Spark on Kubernetes. Jobs are defined via CDAP pipelines or Oozie workflows.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">xml — daap/pom.xml (parent)</span></div>
+      <pre><code><span class="tok-punctuation">&lt;</span><span class="tok-keyword">groupId</span><span class="tok-punctuation">&gt;</span>com.zeotap<span class="tok-punctuation">&lt;/</span><span class="tok-keyword">groupId</span><span class="tok-punctuation">&gt;</span>
+<span class="tok-punctuation">&lt;</span><span class="tok-keyword">artifactId</span><span class="tok-punctuation">&gt;</span>taube<span class="tok-punctuation">&lt;/</span><span class="tok-keyword">artifactId</span><span class="tok-punctuation">&gt;</span>       <span class="tok-comment">&lt;!-- internal codename --&gt;</span>
+<span class="tok-punctuation">&lt;</span><span class="tok-keyword">version</span><span class="tok-punctuation">&gt;</span>3.0.0-SNAPSHOT<span class="tok-punctuation">&lt;/</span><span class="tok-keyword">version</span><span class="tok-punctuation">&gt;</span>
+<span class="tok-punctuation">&lt;</span><span class="tok-keyword">modules</span><span class="tok-punctuation">&gt;</span>
+  <span class="tok-punctuation">&lt;</span><span class="tok-keyword">module</span><span class="tok-punctuation">&gt;</span>daap-library<span class="tok-punctuation">&lt;/</span><span class="tok-keyword">module</span><span class="tok-punctuation">&gt;</span>
+  <span class="tok-punctuation">&lt;</span><span class="tok-keyword">module</span><span class="tok-punctuation">&gt;</span>daap-processing<span class="tok-punctuation">&lt;/</span><span class="tok-keyword">module</span><span class="tok-punctuation">&gt;</span>
+  <span class="tok-punctuation">&lt;</span><span class="tok-keyword">module</span><span class="tok-punctuation">&gt;</span>daap-external<span class="tok-punctuation">&lt;/</span><span class="tok-keyword">module</span><span class="tok-punctuation">&gt;</span>
+<span class="tok-punctuation">&lt;/</span><span class="tok-keyword">modules</span><span class="tok-punctuation">&gt;</span></code></pre>
+    </div>
+
+    <h3>Batch Job Configuration</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">json — Ingestion Job Config</span></div>
+      <pre><code><span class="tok-punctuation">{</span>
+  <span class="tok-key">"jobName"</span><span class="tok-punctuation">:</span> <span class="tok-string">"crm-batch-ingestion"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">"orgId"</span><span class="tok-punctuation">:</span> <span class="tok-number">1234</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">"source"</span><span class="tok-punctuation">:</span> <span class="tok-punctuation">{</span>
+    <span class="tok-key">"type"</span><span class="tok-punctuation">:</span> <span class="tok-string">"GCS"</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"bucket"</span><span class="tok-punctuation">:</span> <span class="tok-string">"zeotap-ingest-org-1234"</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"prefix"</span><span class="tok-punctuation">:</span> <span class="tok-string">"crm/daily/"</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"format"</span><span class="tok-punctuation">:</span> <span class="tok-string">"CSV"</span>
+  <span class="tok-punctuation">},</span>
+  <span class="tok-key">"schema"</span><span class="tok-punctuation">:</span> <span class="tok-punctuation">{</span>
+    <span class="tok-key">"idField"</span><span class="tok-punctuation">:</span> <span class="tok-string">"email"</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"idType"</span><span class="tok-punctuation">:</span> <span class="tok-string">"email_sha256"</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"hashOnIngestion"</span><span class="tok-punctuation">:</span> <span class="tok-keyword">true</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"attributes"</span><span class="tok-punctuation">:</span> <span class="tok-punctuation">[</span><span class="tok-string">"first_name"</span><span class="tok-punctuation">,</span> <span class="tok-string">"last_name"</span><span class="tok-punctuation">,</span> <span class="tok-string">"plan"</span><span class="tok-punctuation">,</span> <span class="tok-string">"country"</span><span class="tok-punctuation">]</span>
+  <span class="tok-punctuation">},</span>
+  <span class="tok-key">"schedule"</span><span class="tok-punctuation">:</span> <span class="tok-string">"0 2 * * *"</span><span class="tok-punctuation">,</span>    <span class="tok-comment">// daily at 2am UTC</span>
+  <span class="tok-key">"dedupe"</span><span class="tok-punctuation">:</span> <span class="tok-keyword">true</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">"consentRequired"</span><span class="tok-punctuation">:</span> <span class="tok-keyword">true</span>
+<span class="tok-punctuation">}</span></code></pre>
+    </div>
+
+    <h2 id="streaming">Stream Processing</h2>
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🌊 Real-Time Event Stream Pipeline</div>
+      <div class="mermaid">
+sequenceDiagram
+    participant SDK as 📡 SDK Event
+    participant PS as GCP Pub/Sub
+    participant IDU as zeocore-idu-microservices
+    participant IDG as ID Graph
+    participant BT as BigTable
+    participant AUD as Audience Engine
+
+    SDK->>PS: Publish event<br/>{orgId, idType, idValue, props}
+    PS->>IDU: Push message (subscription)
+    IDU->>IDU: Parse + validate schema
+    IDU->>IDG: Resolve UCID
+    IDG-->>IDU: UCID
+    IDU->>BT: Upsert profile attributes
+    IDU->>AUD: Notify segment re-eval
+    AUD-->>IDU: Membership delta
+    IDU->>PS: Publish to downstream<br/>events.processed.{orgId}
+      </div>
+    </div>
+
+    <h2 id="schema">Schema Management</h2>
+    <p>Zeotap enforces strict schema contracts at ingestion. Schemas are registered per-organization and validated against incoming data before processing begins.</p>
+
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Data Type</th><th>Required Fields</th><th>Auto-Hashed PII</th><th>Max Attributes</th></tr></thead>
+      <tbody>
+        <tr><td>CRM Upload</td><td><code>orgId</code>, one ID field</td><td>email, phone, name</td><td>500</td></tr>
+        <tr><td>SDK Event</td><td><code>writeKey</code>, <code>event</code></td><td>email (if present)</td><td>200 per event</td></tr>
+        <tr><td>3rd Party</td><td><code>orgId</code>, <code>partnerId</code>, one ID</td><td>None (pre-hashed)</td><td>1000</td></tr>
+        <tr><td>Streaming</td><td><code>orgId</code>, <code>ucid</code> or ID</td><td>email, phone</td><td>50 per message</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="quality">Data Quality</h2>
+    <div class="callout callout-info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <div class="callout-title">Automated Quality Gates</div>
+        <p class="callout-text">Every batch ingestion job runs through the <code>dataquality</code> module before writing to BigTable/BigQuery. Jobs exceeding configurable error thresholds are quarantined to a dead-letter GCS bucket for manual review.</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">json — Quality Rule Config</span></div>
+      <pre><code><span class="tok-punctuation">{</span>
+  <span class="tok-key">"rules"</span><span class="tok-punctuation">:</span> <span class="tok-punctuation">[</span>
+    <span class="tok-punctuation">{</span> <span class="tok-key">"field"</span><span class="tok-punctuation">:</span> <span class="tok-string">"email_sha256"</span><span class="tok-punctuation">,</span> <span class="tok-key">"check"</span><span class="tok-punctuation">:</span> <span class="tok-string">"not_null"</span><span class="tok-punctuation">,</span> <span class="tok-key">"threshold"</span><span class="tok-punctuation">:</span> <span class="tok-number">0.95</span> <span class="tok-punctuation">},</span>
+    <span class="tok-punctuation">{</span> <span class="tok-key">"field"</span><span class="tok-punctuation">:</span> <span class="tok-string">"email_sha256"</span><span class="tok-punctuation">,</span> <span class="tok-key">"check"</span><span class="tok-punctuation">:</span> <span class="tok-string">"regex"</span><span class="tok-punctuation">,</span> <span class="tok-key">"pattern"</span><span class="tok-punctuation">:</span> <span class="tok-string">"^[a-f0-9]{64}$"</span> <span class="tok-punctuation">},</span>
+    <span class="tok-punctuation">{</span> <span class="tok-key">"field"</span><span class="tok-punctuation">:</span> <span class="tok-string">"country"</span><span class="tok-punctuation">,</span>      <span class="tok-key">"check"</span><span class="tok-punctuation">:</span> <span class="tok-string">"enum"</span><span class="tok-punctuation">,</span>  <span class="tok-key">"values"</span><span class="tok-punctuation">:</span> <span class="tok-string">"ISO_3166_ALPHA2"</span> <span class="tok-punctuation">}</span>
+  <span class="tok-punctuation">],</span>
+  <span class="tok-key">"onFailure"</span><span class="tok-punctuation">:</span> <span class="tok-string">"quarantine"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">"alertChannel"</span><span class="tok-punctuation">:</span> <span class="tok-string">"slack:#data-quality-alerts"</span>
+<span class="tok-punctuation">}</span></code></pre>
+    </div>
+    <hr>
+    <div style="display:flex;justify-content:space-between;margin-top:24px">
+      <a href="02-data-collection.html" style="font-size:14px;font-weight:600">← Data Collection & SDKs</a>
+      <a href="04-identity-resolution.html" style="font-size:14px;font-weight:600;background:var(--brand-primary);color:white;padding:10px 20px;border-radius:8px;text-decoration:none">Chapter 4: Identity Resolution →</a>
+    </div>
+  </div>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

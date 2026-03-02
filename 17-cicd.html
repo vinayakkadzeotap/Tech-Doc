@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 17: CI/CD & Deployment Pipelines — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART VII — INFRASTRUCTURE</div>
+      <a href="16-observability.html" class="nav-item">Observability</a>
+      <a href="17-cicd.html" class="nav-item active">CI/CD</a>
+      <a href="18-testing.html" class="nav-item">Testing & QA</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#circleci" class="nav-item">CircleCI Pipelines</a>
+      <a href="#github-actions" class="nav-item">GitHub Actions</a>
+      <a href="#deployment" class="nav-item">Deployment Strategy</a>
+      <a href="#registry" class="nav-item">Artifact Registry</a>
+      <a href="#release" class="nav-item">Release Process</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Part VII — Infrastructure</span><span>›</span>
+        <span>CI/CD & Deployment Pipelines</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>CI/CD & Deployment Pipelines</h1>
+      <p class="page-subtitle">Zeotap's continuous integration and delivery: CircleCI for service builds, GitHub Actions for security scanning, Harness CD for Kubernetes deployments, and Jfrog Artifactory + Google Artifact Registry for image storage.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">CircleCI</div><div class="stat-label">Build & Test</div></div>
+      <div class="stat-card"><div class="stat-value">60+ Pipelines</div><div class="stat-label">GitHub Actions Workflows</div></div>
+      <div class="stat-card"><div class="stat-value">Harness CD</div><div class="stat-label">K8s Deployment</div></div>
+      <div class="stat-card"><div class="stat-value">JFrog + GAR</div><div class="stat-label">Artifact Registries</div></div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Pipeline Overview</h2>
+      <p>Every Zeotap service follows a <strong>build → test → containerise → push → deploy</strong> pipeline. The CI/CD stack uses CircleCI for primary build workflows and GitHub Actions for supplementary tasks (security scanning, dependency auditing).</p>
+
+      <div class="mermaid">
+graph LR
+    subgraph Dev["Developer"]
+        CODE["git push to<br/>feature branch"]
+    end
+
+    subgraph CI["Continuous Integration (CircleCI)"]
+        CKO["Checkout code"]
+        BUILD["Build<br/>(sbt / mvn / go build / npm)"]
+        TEST["Test<br/>(unit + integration)"]
+        COV["Coverage report<br/>(Codacy)"]
+        DOCKER["docker build"]
+        PUSH["docker push<br/>(JFrog / GAR)"]
+    end
+
+    subgraph GHA["GitHub Actions"]
+        SCAN["Security scan<br/>(delta-scan-action)"]
+        DEPS["Dependency audit"]
+    end
+
+    subgraph CD["Continuous Delivery (Harness)"]
+        QA_DEPLOY["Deploy to QA<br/>(Helm upgrade)"]
+        CANARY["Canary deployment<br/>(10% traffic)"]
+        PROD_DEPLOY["Full production deploy"]
+    end
+
+    CODE --> CKO
+    CKO --> BUILD
+    BUILD --> TEST
+    TEST --> COV
+    TEST --> DOCKER
+    CODE --> SCAN
+    DOCKER --> PUSH
+    PUSH --> QA_DEPLOY
+    QA_DEPLOY -->|manual gate| CANARY
+    CANARY -->|auto-promote if healthy| PROD_DEPLOY
+
+    style CI fill:#f0f4ff,stroke:#4361ee
+    style GHA fill:#e8f5e9,stroke:#2e7d32
+    style CD fill:#fff8e1,stroke:#f9a825
+      </div>
+    </section>
+
+    <!-- CircleCI -->
+    <section id="circleci">
+      <h2>CircleCI Pipelines</h2>
+      <p>Each service repository contains a <code>.circleci/config.yml</code>. Pipelines are triggered on every push to any branch and run on CircleCI cloud executors.</p>
+
+      <h3>JVM Services (Scala / Java — SBT)</h3>
+      <pre><code class="language-yaml"># .circleci/config.yml (Scala SBT service — e.g., audiences)
+jobs:
+  build-push-image:
+    docker:
+      - image: zeotap-docker.jfrog.io/zeotap-maven:sbt
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASSWORD
+    resource_class: large
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - restore_cache:
+          key: source-{{ checksum "build.sbt" }}
+
+      - run:
+          name: Docker Login
+          command: docker login --username $DOCKER_USER --password $DOCKER_PASSWORD zeotap-docker.jfrog.io
+
+      - run:
+          name: Package JAR (test + coverage)
+          command: sbt -Dsbt.log.noformat=true clean test:compile test jacoco dist
+
+      - run:
+          name: Build and Push Docker Image
+          command: |
+            docker build -t audiences .
+            docker tag audiences zeotap-docker.jfrog.io/audiences:$CIRCLE_BRANCH
+            docker tag audiences zeotap-docker.jfrog.io/audiences:$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM
+            docker push zeotap-docker.jfrog.io/audiences:$CIRCLE_BRANCH
+            docker push zeotap-docker.jfrog.io/audiences:$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM
+
+      - store_test_results:
+          path: target/test-reports
+
+      - save_cache:
+          paths: [~/.sbt, ~/.ivy2]
+          key: source-{{ checksum "build.sbt" }}</code></pre>
+
+      <h3>Go Services (e.g., segmentestimator)</h3>
+      <pre><code class="language-yaml"># .circleci/config.yml (Go service)
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.16.0
+    environment:
+      GAR_LOCATION: europe-west1
+      GOOGLE_PROJECT_ID: data-artifacts
+      GAR_REPOSITORY: segmentestimator
+    working_directory: /go/src/github.com/zeotap/segmentestimator
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [v2-pkg-cache]
+      - run:
+          name: Build
+          command: make
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build and Push to Google Artifact Registry
+          command: |
+            docker login -u _json_key_base64 \
+              --password ${GOOGLE_DATA_ARTIFACT_GAR_KEY} \
+              https://${GAR_LOCATION}-docker.pkg.dev
+            docker build -t segmentestimator .
+
+            SHA=$(git rev-parse HEAD)
+            SHORTSHA="${SHA:0:7}"
+            BRANCH=$(echo "$CIRCLE_BRANCH" | sed 's/\//-/g' | tr '[:upper:]' '[:lower:]')
+
+            if [[ $CIRCLE_BRANCH == *"release"* ]]; then
+              TAG="${GAR_LOCATION}-docker.pkg.dev/${GOOGLE_PROJECT_ID}/${GAR_REPOSITORY}/release:${BRANCH}-${SHORTSHA}-${CIRCLE_BUILD_NUM}"
+            else
+              TAG="${GAR_LOCATION}-docker.pkg.dev/${GOOGLE_PROJECT_ID}/${GAR_REPOSITORY}/${BRANCH}:${SHORTSHA}-${CIRCLE_BUILD_NUM}"
+            fi
+            docker tag segmentestimator $TAG
+            docker push $TAG
+
+      - save_cache:
+          key: v2-pkg-cache
+          paths: ["/go/pkg"]
+
+workflows:
+  version: 2
+  build-maybe-publish:
+    jobs:
+      - build:
+          context: Q3-2020</code></pre>
+
+      <h3>Image Tagging Strategy</h3>
+      <table>
+        <thead>
+          <tr><th>Branch Pattern</th><th>Tag Format</th><th>Registry</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>main</code> / <code>master</code></td><td><code>main-&lt;buildNum&gt;</code></td><td>JFrog / GAR</td></tr>
+          <tr><td><code>release/*</code></td><td><code>release:&lt;branch&gt;-&lt;sha7&gt;-&lt;build&gt;</code></td><td>GAR (release repo)</td></tr>
+          <tr><td><code>feature/*</code></td><td><code>&lt;branch-lower&gt;:&lt;sha7&gt;-&lt;build&gt;</code></td><td>GAR (dev repo)</td></tr>
+          <tr><td>Any branch</td><td><code>&lt;branch&gt;</code> + <code>&lt;branch&gt;-&lt;buildNum&gt;</code></td><td>JFrog (floating + pinned)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- GitHub Actions -->
+    <section id="github-actions">
+      <h2>GitHub Actions</h2>
+      <p>With 60+ GitHub Actions workflows across the monorepo, GHA is used for supplementary automation tasks:</p>
+
+      <h3>Delta Security Scan (<code>delta-scan-action</code>)</h3>
+      <pre><code class="language-yaml"># .github/workflows/delta-scan-action.yml
+name: Security Scan
+on:
+  pull_request:
+    branches: [main, master, develop]
+  push:
+    branches: [main, master]
+
+jobs:
+  delta-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0   # full history for diff analysis
+
+      - name: Run Delta Security Scan
+        uses: zeotap/delta-scan-action@v2
+        with:
+          scan_type: "SAST,SCA,SECRETS"
+          severity_threshold: "HIGH"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          slack_webhook: ${{ secrets.SECURITY_SLACK_WEBHOOK }}</code></pre>
+
+      <h3>Other GHA Workflows</h3>
+      <table>
+        <thead>
+          <tr><th>Workflow</th><th>Trigger</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>dependency-audit</td><td>PR, weekly schedule</td><td>NPM/Maven/Go dependency vulnerability scan</td></tr>
+          <tr><td>stale-pr-cleanup</td><td>Daily cron</td><td>Auto-close PRs with no activity in 30 days</td></tr>
+          <tr><td>release-notes</td><td>Tag push (v*.*.*)</td><td>Auto-generate GitHub Release from commits</td></tr>
+          <tr><td>docker-lint</td><td>PR touching Dockerfile</td><td>Hadolint Dockerfile best-practices check</td></tr>
+          <tr><td>terraform-plan</td><td>PR touching .tf files</td><td>Run terraform plan and post diff as PR comment</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Deployment -->
+    <section id="deployment">
+      <h2>Deployment Strategy</h2>
+      <p>Zeotap uses <strong>Harness CD</strong> for orchestrating Kubernetes deployments from the Artifact Registry to GKE clusters. Helm charts define the service configurations per environment.</p>
+
+      <div class="mermaid">
+graph LR
+    IMAGE["New image tag in GAR<br/>(triggered by CircleCI push)"]
+    HARNESS["Harness CD Pipeline"]
+    HELM_QA["helm upgrade<br/>(zeotap-qa/namespace)"]
+    TESTS["Automated integration tests<br/>(journey-regression-suite)"]
+    GATE["Manual approval gate<br/>(tech lead sign-off)"]
+    CANARY_DEPLOY["Canary: 10% prod traffic<br/>(HPA + traffic splitting)"]
+    MONITOR["Observe for 30 min<br/>(Prometheus + Grafana)"]
+    FULL_PROD["Full prod rollout<br/>(100% traffic)"]
+    ROLLBACK["Auto-rollback on<br/>error rate spike"]
+
+    IMAGE --> HARNESS
+    HARNESS --> HELM_QA
+    HELM_QA --> TESTS
+    TESTS -->|pass| GATE
+    GATE --> CANARY_DEPLOY
+    CANARY_DEPLOY --> MONITOR
+    MONITOR -->|healthy| FULL_PROD
+    MONITOR -->|error rate > 1%| ROLLBACK
+
+    style GATE fill:#fff8e1,stroke:#f9a825
+    style ROLLBACK fill:#fce4ec,stroke:#c62828
+      </div>
+
+      <h3>Helm Chart Structure</h3>
+      <pre><code class="language-text">helm/audiences-service/
+├── Chart.yaml
+├── values.yaml              # default values
+├── values-qa.yaml           # QA overrides
+├── values-prod.yaml         # prod overrides
+└── templates/
+    ├── deployment.yaml
+    ├── service.yaml
+    ├── ingress.yaml
+    ├── hpa.yaml             # HorizontalPodAutoscaler
+    ├── configmap.yaml
+    └── secret.yaml</code></pre>
+
+      <pre><code class="language-yaml"># values-prod.yaml
+replicaCount: 3
+image:
+  repository: europe-west1-docker.pkg.dev/zeotap-prod/zeotap/audiences
+  tag: "2.4.1"           # pinned to specific build
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2000m"
+    memory: "4Gi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+
+ingress:
+  enabled: true
+  host: audiences-api.zeotap.net
+  tls: true</code></pre>
+    </section>
+
+    <!-- Registry -->
+    <section id="registry">
+      <h2>Artifact Registry</h2>
+      <p>Zeotap uses two container registries:</p>
+
+      <table>
+        <thead>
+          <tr><th>Registry</th><th>Provider</th><th>Used For</th><th>Region</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>JFrog Artifactory</td><td>Zeotap-hosted JFrog</td><td>Legacy services, SBT/Maven artifacts, JVM Docker images</td><td>Private</td></tr>
+          <tr><td>Google Artifact Registry (GAR)</td><td>GCP (europe-west1)</td><td>New Go, Python, and Node.js service images</td><td>EU (europe-west1)</td></tr>
+        </tbody>
+      </table>
+
+      <p>GAR repositories are organised by service type:</p>
+      <pre><code class="language-text">europe-west1-docker.pkg.dev/
+  data-artifacts/
+    segmentestimator/
+      release:branch-sha-build
+      develop:sha-build
+  zeotap-prod/
+    zeotap/
+      audiences:2.4.1
+      data-destination:3.1.0
+      id-graph-service:1.8.2</code></pre>
+    </section>
+
+    <!-- Release -->
+    <section id="release">
+      <h2>Release Process</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <strong>Feature Complete</strong> — Developer creates PR from <code>feature/xyz</code> → <code>develop</code>. Code review + automated tests must pass.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <strong>Release Branch</strong> — Release manager cuts <code>release/v2.5.0</code> from <code>develop</code>. CircleCI tags the image as <code>release:v2.5.0-sha-build</code>.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <strong>QA Deployment</strong> — Harness auto-deploys release image to QA. Journey regression suite + backend automation tests run automatically.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <strong>Manual Gate</strong> — QA lead approves in Harness after reviewing test results and regression report.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <strong>Production Canary</strong> — Harness deploys to 10% of production pods. Prometheus monitors error rates and latency for 30 minutes.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">6</div>
+          <div class="step-content">
+            <strong>Full Rollout</strong> — If canary is healthy, Harness promotes to 100% of pods. GitHub Release is created automatically by GHA.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
+      <a href="18-testing.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 18 · Testing & QA →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

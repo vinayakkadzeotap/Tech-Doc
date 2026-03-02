@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Appendix A: API Reference — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">APPENDICES</div>
+      <a href="appendix-a-api-reference.html" class="nav-item active">API Reference</a>
+      <a href="appendix-b-data-dictionary.html" class="nav-item">Data Dictionary</a>
+      <a href="appendix-c-glossary.html" class="nav-item">Glossary</a>
+      <div class="nav-section">SERVICES</div>
+      <a href="#collect" class="nav-item">Collect SDK APIs</a>
+      <a href="#identity" class="nav-item">Identity Graph APIs</a>
+      <a href="#profile-api" class="nav-item">Profile API ✦</a>
+      <a href="#audiences" class="nav-item">Audiences APIs</a>
+      <a href="#destinations" class="nav-item">Destinations APIs</a>
+      <a href="#genai" class="nav-item">GenAI / Zoe APIs</a>
+      <a href="#journeys" class="nav-item">Journeys AI APIs</a>
+      <a href="#gdpr" class="nav-item">GDPR APIs</a>
+      <a href="#reporting" class="nav-item">Reporting APIs</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Appendices</span><span>›</span>
+        <span>API Reference</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Full API Reference</h1>
+      <p class="page-subtitle">Comprehensive index of all Zeotap HTTP APIs across every service, with endpoints, request/response schemas, and authentication requirements.</p>
+    </div>
+
+    <div class="callout callout-info">
+      <div><strong>Base URLs</strong> — All production endpoints use HTTPS. Replace <code>{env}</code> with <code>api</code> for production or <code>api-qa</code> for QA.
+      <br/><code>https://api.zeotap.com</code> — Production
+      <br/><code>https://api-qa.zeotap.com</code> — QA / Staging</div>
+    </div>
+
+    <!-- Collect SDK APIs -->
+    <section id="collect">
+      <h2>Data Collection APIs</h2>
+      <p><em>Source: <a href="02-data-collection.html">Chapter 2 — Data Collection</a></em></p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/collect/v1/track</code></td><td>Track user event</td><td>Write Key</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/collect/v1/identify</code></td><td>Identify user with traits</td><td>Write Key</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/collect/v1/page</code></td><td>Record page view</td><td>Write Key</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/collect/v1/consent</code></td><td>Record user consent signal</td><td>Write Key</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/api/v1/events/smartpixel</code></td><td>Server-side pixel event</td><td>API Key</td></tr>
+        </tbody>
+      </table>
+
+      <pre><code class="language-json">// POST /collect/v1/track
+{
+  "writeKey": "zak_live_abc123",
+  "anonymousId": "anon_xyz789",
+  "userId": "user_12345",
+  "event": "Product Added",
+  "properties": {
+    "product_id": "SKU-001",
+    "price": 49.99,
+    "currency": "EUR"
+  },
+  "context": {
+    "consent": { "gdpr_applies": true, "tcf_string": "CPz..." },
+    "library": { "name": "analytics-js", "version": "4.4.5" }
+  },
+  "timestamp": "2024-11-01T10:00:00Z"
+}</code></pre>
+    </section>
+
+    <!-- Identity Graph APIs -->
+    <section id="identity">
+      <h2>Identity Graph APIs</h2>
+      <p><em>Source: <a href="03-identity-resolution.html">Chapter 4 — Identity Resolution</a></em></p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/identity/v2/ucid/{identifier_type}/{value}</code></td><td>Resolve identifier to UCID</td><td>JWT</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/identity/v2/upsert</code></td><td>Add/update identifier</td><td>JWT</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/identity/v2/merge</code></td><td>Merge two UCIDs</td><td>JWT</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/identity/v2/profile/{ucid}</code></td><td>Get full user profile</td><td>JWT</td></tr>
+          <tr><td><span class="method delete" style="font-size:.75rem;padding:.1rem .4rem;background:#dc2626;">DEL</span></td><td><code>/identity/v2/profile/{ucid}</code></td><td>Delete profile (GDPR erasure)</td><td>JWT + GDPR scope</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- PROFILE API (Customer-Facing)              -->
+    <!-- Source: docs.zeotap.com Profile API docs   -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section id="profile-api">
+      <h2>Profile API <span style="font-size:0.7rem;background:#dcfce7;color:#16a34a;padding:.2rem .5rem;border-radius:4px;font-weight:700;vertical-align:middle;margin-left:.5rem;">External</span></h2>
+      <p><em>Source: <a href="05-profile-store.html#profile-api-external">Chapter 5 — Profile Store</a> · Official docs: <a href="https://docs.zeotap.com/articles/#!api-doc-customer/profile-api" target="_blank">docs.zeotap.com</a></em></p>
+      <p>Customer-facing REST API to read, write, and delete Unified Customer Profiles. All endpoints use <strong>API Key authentication</strong> (<code>apikey</code> header). Available over HTTPS (<code>https://api.zeotap.com</code>) and mTLS (<code>https://mtls-api.zeotap.com</code>).</p>
+
+      <!-- Quick endpoint table -->
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Operation</th><th>Auth</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td>
+            <td><code>/cdp/v1/users/_search</code></td>
+            <td>Fetch / Read user profile by identity value</td>
+            <td>API Key</td>
+          </tr>
+          <tr>
+            <td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td>
+            <td><code>/cdp/v1/users</code></td>
+            <td>Create or Update (upsert) user profile</td>
+            <td>API Key</td>
+          </tr>
+          <tr>
+            <td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td>
+            <td><code>/cdp/v1/users/_delete</code></td>
+            <td>Delete user profile(s) — triggers GDPR erasure pipeline</td>
+            <td>API Key</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Read details -->
+      <h3 style="margin-top:1.5rem;">POST /cdp/v1/users/_search — Fetch Profile</h3>
+      <p>Returns profile attributes, IDs, consent, marketing preferences, and AI-computed attributes for a matched user. Supports up to 5 identity values per call.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
+        <div>
+          <p><strong>Request</strong></p>
+          <pre style="font-size:.8rem;"><code class="language-json">{
+  "orgId": 1234,
+  "regions": ["EU"],
+  "fetch": {
+    "ids":             ["AdId"],
+    "profile":         ["age", "user_city"],
+    "consent":         ["gdpr_advertising"],
+    "mkt_preferences": ["telemarketing"],
+    "calc_attributes": ["loyalty_score"]
+  },
+  "search": {
+    "email_sha256_lowercase": [
+      "9dff3928e6f62ef808"
+    ]
+  }
+}</code></pre>
+        </div>
+        <div>
+          <p><strong>Response (200 OK)</strong></p>
+          <pre style="font-size:.8rem;"><code class="language-json">[
+  {
+    "updated_ts": 1635945855983,
+    "created_ts": 1635945855983,
+    "profile": {
+      "age":       {"_ts":"1623176905769","age":"21"},
+      "user_city": {"_ts":"1623176905769",
+                    "user_city":"agra"}
+    },
+    "ids": {
+      "AdId": [{"AdId":"pbmaid2",
+                "_ts":"1623160405332"}],
+      "email": [{"email_sha256_lowercase":
+                 "9dff3928e6f62ef808"}]
+    },
+    "mkt_preferences": {},
+    "consent": {},
+    "region": "EU",
+    "ucid": "dee32bf9-ceeb-4cae-885a-376a5f052cfc"
+  }
+]</code></pre>
+        </div>
+      </div>
+
+      <!-- Write details -->
+      <h3 style="margin-top:1.5rem;">POST /cdp/v1/users — Upsert Profile</h3>
+      <p>Creates or updates a profile. One identity per call. Returns <code>204 No Content</code> on success.</p>
+      <pre><code class="language-json">// Request body
+{
+  "orgId": 1234,
+  "region": "EU",
+  "ucid": "d7a6bc75-2c87-4650-91dc-c212771866c9",
+  "ids": {
+    "email_sha256_lowercase": "0a0601cfc9d014580fcf0b0"
+  },
+  "upsert": {
+    "profile":         { "user_gender": "M", "age": "34" },
+    "mkt_preferences": { "telemarketing": "market", "sms_optin": "yes" },
+    "consent":         { "gdpr_advertising": "yes" }
+  }
+}
+// Response: 204 No Content</code></pre>
+
+      <!-- Delete details -->
+      <h3 style="margin-top:1.5rem;">POST /cdp/v1/users/_delete — Delete Profile</h3>
+      <p>Initiates deletion of one or more profiles. Triggers the full GDPR erasure pipeline (7–10 days for full purge). Max 400 IDs per call.</p>
+      <pre><code class="language-json">// Request body
+{
+  "orgId": 1539,
+  "region": "EU",
+  "ids": {
+    "ucid": ["040ca427-21a2-4b8e-9f32-abc123def456"],
+    "AdId": ["ddd682ec-bbe9-4705-bb02-3b9eacaf93bf"]
+  },
+  "sendEmailNotification": false
+}
+// Response: 200 OK
+{
+  "status": "accepted",
+  "deletionRequestId": "del_8f3c2a1b-4d5e-6f78-9012-abcdef123456",
+  "estimatedCompletionDays": "7-10"
+}</code></pre>
+
+      <!-- Limits summary -->
+      <h3 style="margin-top:1.5rem;">Rate Limits</h3>
+      <table>
+        <thead><tr><th>Metric</th><th>Limit</th></tr></thead>
+        <tbody>
+          <tr><td>Requests per minute</td><td>10,000</td></tr>
+          <tr><td>Concurrency</td><td>200 req/sec</td></tr>
+          <tr><td>Avg response size</td><td>1 KB</td></tr>
+          <tr><td>IDs per Read call</td><td>5</td></tr>
+          <tr><td>IDs per Write call</td><td>1</td></tr>
+          <tr><td>IDs per Delete call</td><td>400</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Audiences APIs -->
+    <section id="audiences">
+      <h2>Audiences APIs</h2>
+      <p><em>Source: <a href="06-audience-management.html">Chapter 6 — Audience Management</a></em></p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/audience/v1/healthCheckup</code></td><td>Health check</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/audience/v1/orgs/{orgId}/audienceSummaries</code></td><td>List all audiences for org</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/audience/v1/orgs/{orgId}/folders/</code></td><td>List folders</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/audience/v1/orgs/{orgId}/folders</code></td><td>Create folder</td></tr>
+          <tr><td><span class="method patch" style="font-size:.75rem;padding:.1rem .4rem;background:#7c3aed;">PATCH</span></td><td><code>/audience/v1/orgs/{orgId}/folders/{folderId}</code></td><td>Update folder</td></tr>
+          <tr><td><span class="method delete" style="font-size:.75rem;padding:.1rem .4rem;background:#dc2626;">DEL</span></td><td><code>/audience/v1/orgs/{orgId}/folders/{folderId}</code></td><td>Delete folder</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/estimate (port 3000)</code></td><td>Real-time segment size estimate</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/overlap</code></td><td>Compute segment overlap</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Destinations APIs -->
+    <section id="destinations">
+      <h2>Destinations APIs</h2>
+      <p><em>Source: <a href="08-data-activation.html">Chapter 8 — Data Activation</a></em></p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/channelSettings/api/v1/healthCheckup</code></td><td>Health check</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/channelSettings/api/v1/destinations</code></td><td>List destinations</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/channelSettings/api/v1/destinations</code></td><td>Create destination</td></tr>
+          <tr><td><span class="method patch" style="font-size:.75rem;padding:.1rem .4rem;background:#7c3aed;">PATCH</span></td><td><code>/channelSettings/api/v1/destinations/{id}</code></td><td>Edit destination</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/channelSettings/api/v1/integrationPartners/details</code></td><td>List integration partners</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/channelSettings/api/v1/oauth/create</code></td><td>Create OAuth token</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/channelSettings/api/v1/oauth/token</code></td><td>Exchange OAuth code</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/channelSettings/api/v1/channelCatalogueMapping/details</code></td><td>Channel catalogue mapping</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/channelSettings/api/internal/v1/identifiers</code></td><td>Internal MID identifiers</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- GenAI APIs -->
+    <section id="genai">
+      <h2>GenAI / Zoe APIs</h2>
+      <p><em>Source: <a href="04-genai-zoe.html">Chapter 9 — GenAI & Zoe</a></em></p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/zoe/message</code></td><td>Natural language → SQL query</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/zoe/sql_to_audience</code></td><td>SQL WHERE clause → Audience JSON</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/zoe/validate_sql</code></td><td>Validate SQL against org schema</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/zoe/org_schema/{org_id}</code></td><td>Get org attribute schema</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/zoe/add_new</code></td><td>Add new schema definition</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/zoe/refresh_data</code></td><td>Refresh schema cache</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/health</code></td><td>Health check</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Journeys AI APIs -->
+    <section id="journeys">
+      <h2>Journeys AI APIs</h2>
+      <p><em>Source: <a href="07-customer-journeys.html">Chapter 7 — Customer Journeys</a></em></p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/create-workflow</code></td><td>NL prompt → Symphony Workflow JSON</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/health</code></td><td>Service health check</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- GDPR APIs -->
+    <section id="gdpr">
+      <h2>GDPR APIs</h2>
+      <p><em>Source: <a href="13-privacy-gdpr.html">Chapter 13 — Privacy & GDPR</a></em></p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/gdpr/v1/consent</code></td><td>Record consent signal</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/gdpr/v1/opt-out</code></td><td>User opt-out request</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/gdpr/v1/erasure</code></td><td>Right to erasure (DSAR)</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/gdpr/v1/status/{request_id}</code></td><td>Check erasure request status</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/gdpr/v1/audit/{ucid}</code></td><td>Audit trail for data subject</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Internal / Reporting APIs -->
+    <section id="reporting">
+      <h2>Reporting & Internal APIs</h2>
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/internal/profilestore/config/{orgId}</code></td><td>Profile Store configuration</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/atlas-ai/lookalike</code></td><td>Create lookalike audience</td></tr>
+          <tr><td><span class="method post" style="font-size:.75rem;padding:.1rem .4rem;">POST</span></td><td><code>/nlp/classify</code></td><td>NLP topic classification</td></tr>
+          <tr><td><span class="method get" style="font-size:.75rem;padding:.1rem .4rem;">GET</span></td><td><code>/metrics (port 9100)</code></td><td>Prometheus node_exporter metrics</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Appendix</div>
+      <a href="appendix-b-data-dictionary.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Data Dictionary →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

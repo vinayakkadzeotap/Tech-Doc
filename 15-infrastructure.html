@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 15: Infrastructure as Code — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART VII — INFRASTRUCTURE</div>
+      <a href="14-auth-iam.html" class="nav-item">Auth & IAM</a>
+      <a href="15-infrastructure.html" class="nav-item active">Infrastructure</a>
+      <a href="16-observability.html" class="nav-item">Observability</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#gcp-terraform" class="nav-item">GCP Terraform Modules</a>
+      <a href="#gke" class="nav-item">GKE Kubernetes</a>
+      <a href="#ansible" class="nav-item">Ansible Configuration</a>
+      <a href="#environments" class="nav-item">Environments</a>
+      <a href="#networking" class="nav-item">Networking</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Part VII — Infrastructure</span><span>›</span>
+        <span>Infrastructure as Code</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Infrastructure as Code</h1>
+      <p class="page-subtitle">Zeotap's cloud-native infrastructure: GCP and AWS managed with Terraform modules, GKE Kubernetes clusters, Ansible configuration management, and Terragrunt for DRY environment promotion.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">Terraform</div><div class="stat-label">IaC Framework</div></div>
+      <div class="stat-card"><div class="stat-value">GKE + AWS EKS</div><div class="stat-label">Kubernetes Clusters</div></div>
+      <div class="stat-card"><div class="stat-value">Ansible</div><div class="stat-label">Config Management</div></div>
+      <div class="stat-card"><div class="stat-value">Terragrunt</div><div class="stat-label">DRY Environments</div></div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Infrastructure Overview</h2>
+      <p>Zeotap's infrastructure is managed entirely as code across two cloud providers — <strong>GCP</strong> (primary) and <strong>AWS</strong> (secondary workloads). All resources are defined in Terraform modules with Terragrunt wrappers for environment promotion (Dev → QA → Production).</p>
+
+      <div class="mermaid">
+graph LR
+    subgraph GCP["Google Cloud Platform (Primary)"]
+        GKE["GKE Clusters<br/>(Kubernetes)"]
+        BQ3["BigQuery<br/>(Data Warehouse)"]
+        GCS3["Cloud Storage<br/>(GCS Buckets)"]
+        PUB["Pub/Sub<br/>(Messaging)"]
+        BT2["BigTable<br/>(Identity Store)"]
+        DF["Dataflow<br/>(Beam Pipelines)"]
+        CS["Cloud SQL<br/>(PostgreSQL)"]
+        SM["Secret Manager"]
+        AR["Artifact Registry"]
+    end
+
+    subgraph AWS["Amazon Web Services (Secondary)"]
+        S3_2["S3 Buckets<br/>(Partner Data)"]
+        RS2["Redshift<br/>(Analytics)"]
+        DRUID["Druid on EC2<br/>(Estimator)"]
+    end
+
+    subgraph IaC["IaC Repositories"]
+        TF_GCP["gcp-terraform-modules"]
+        TF_AWS["terraform_aws_infra"]
+        TF_MOD["terraform_modules_infra"]
+        ANS["Ansible playbooks"]
+    end
+
+    IaC --> GCP
+    IaC --> AWS
+
+    style GCP fill:#e8f4fd,stroke:#1565c0
+    style AWS fill:#fff3e0,stroke:#ef6c00
+    style IaC fill:#f3e5f5,stroke:#7b1fa2
+      </div>
+    </section>
+
+    <!-- GCP Terraform -->
+    <section id="gcp-terraform">
+      <h2>GCP Terraform Modules</h2>
+      <p>The <code>gcp-terraform-modules</code> repository is a library of reusable Terraform modules for all GCP resources. Each module is independently versioned and consumed via Terragrunt.</p>
+
+      <h3>Module Catalogue</h3>
+      <table>
+        <thead>
+          <tr><th>Module</th><th>Resource</th><th>Key Variables</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>gke-cluster</code></td><td>GKE Standard Cluster</td><td>node_count, machine_type, zone, network</td></tr>
+          <tr><td><code>gke-private-cluster-managed</code></td><td>GKE Autopilot / Private</td><td>private_endpoint, master_cidr</td></tr>
+          <tr><td><code>cloud-composer</code></td><td>Airflow (Cloud Composer)</td><td>environment_size, python_version, dags_gcs_prefix</td></tr>
+          <tr><td><code>cloud-data-fusion</code></td><td>ETL pipeline service</td><td>edition, network, private_ip</td></tr>
+          <tr><td><code>cloudsql-pgsql</code></td><td>PostgreSQL (Cloud SQL)</td><td>tier, db_version, ha_type, backup_enabled</td></tr>
+          <tr><td><code>cloudsql-mysql</code></td><td>MySQL (Cloud SQL)</td><td>tier, db_version, authorized_networks</td></tr>
+          <tr><td><code>dataproc</code></td><td>Spark clusters</td><td>master_machine_type, worker_count, image_version</td></tr>
+          <tr><td><code>ephemeral-dataproc</code></td><td>Single-job Spark clusters</td><td>job_class, jar_path, auto_delete_ttl</td></tr>
+          <tr><td><code>firewall</code></td><td>VPC firewall rules</td><td>direction, allow_ranges, target_tags</td></tr>
+          <tr><td><code>vpc-nat-peering</code></td><td>VPC + NAT + VPC Peering</td><td>subnet_cidr, nat_ips, peer_network</td></tr>
+          <tr><td><code>secret-manager</code></td><td>Secret Manager secrets</td><td>secret_id, replication, labels</td></tr>
+          <tr><td><code>service-account</code></td><td>IAM Service Accounts</td><td>account_id, roles[], key_output</td></tr>
+          <tr><td><code>monitoring-alerts</code></td><td>Cloud Monitoring alert policies</td><td>conditions[], notification_channels</td></tr>
+          <tr><td><code>google-artifact-registry-managed</code></td><td>Container registry</td><td>repository_id, format, location</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Terragrunt Configuration (DRY)</h3>
+      <pre><code class="language-hcl"># gcp-terraform-modules/terragrunt.hcl
+# Root terragrunt config — shared across all environments
+
+locals {
+  env    = get_env("ENV", "dev")     # dev | qa | prod
+  region = "europe-west1"
+  project_map = {
+    dev  = "zeotap-dev-123"
+    qa   = "zeotap-qa-456"
+    prod = "zeotap-prod-789"
+  }
+  project_id = local.project_map[local.env]
+}
+
+inputs = {
+  project_id = local.project_id
+  region     = local.region
+  env        = local.env
+  labels = {
+    env     = local.env
+    team    = "platform"
+    managed = "terraform"
+  }
+}</code></pre>
+
+      <h3>GKE Cluster Module Usage</h3>
+      <pre><code class="language-hcl"># environments/prod/gke-cluster/terragrunt.hcl
+terraform {
+  source = "git::https://github.com/zeotap/gcp-terraform-modules.git//gke-cluster?ref=v1.2.0"
+}
+
+include "root" {
+  path = find_in_parent_folders()
+}
+
+inputs = {
+  cluster_name         = "zeotap-prod-cluster"
+  node_count           = 12
+  machine_type         = "n2-standard-8"
+  disk_size_gb         = 100
+  preemptible          = false
+  min_node_count       = 6
+  max_node_count       = 30
+  enable_autoscaling   = true
+  network              = "zeotap-vpc-prod"
+  subnetwork           = "zeotap-subnet-prod"
+  master_ipv4_cidr     = "172.16.0.32/28"
+}</code></pre>
+    </section>
+
+    <!-- GKE -->
+    <section id="gke">
+      <h2>GKE Kubernetes Architecture</h2>
+      <p>All Zeotap microservices run in GKE clusters organised into Kubernetes namespaces by functional domain:</p>
+
+      <div class="mermaid">
+graph TB
+    subgraph GKE_CLUSTER["GKE Cluster (prod)"]
+        subgraph NS_COLLECT["namespace: collect"]
+            SDK_SVC["analytics-sdk-ingest<br/>(3 pods)"]
+            MOBILE_SVC["mobile-sdk-ingest<br/>(2 pods)"]
+        end
+
+        subgraph NS_UNIFY["namespace: unify"]
+            IDG_SVC["id-graph-service<br/>(5 pods)"]
+            PS_SVC["profile-store-api<br/>(3 pods)"]
+            DAAP_SVC["daap-processing<br/>(4 pods)"]
+        end
+
+        subgraph NS_ACTIVATE["namespace: activate"]
+            AUD_SVC["audiences-service<br/>(3 pods)"]
+            DEST_SVC2["data-destination<br/>(4 pods)"]
+            JRN_SVC["journeys-service<br/>(3 pods)"]
+            EST_SVC["segmentestimator<br/>(6 pods, sharded)"]
+        end
+
+        subgraph NS_AI["namespace: ai"]
+            ZOE_SVC["zeotap-genai<br/>(2 pods)"]
+            MCP_SVC["zeotap-mcp<br/>(2 pods)"]
+            JRN_AI_SVC["journeys-ai<br/>(2 pods)"]
+        end
+
+        subgraph NS_INFRA["namespace: infra"]
+            PROM["prometheus<br/>(1 pod, StatefulSet)"]
+            GRAF["grafana<br/>(1 pod)"]
+            AM["alertmanager<br/>(2 pods, HA)"]
+        end
+    end
+
+    style NS_COLLECT fill:#e3f2fd,stroke:#1565c0
+    style NS_UNIFY fill:#f3e5f5,stroke:#7b1fa2
+    style NS_ACTIVATE fill:#e8f5e9,stroke:#2e7d32
+    style NS_AI fill:#fff8e1,stroke:#f9a825
+    style NS_INFRA fill:#fce4ec,stroke:#c62828
+      </div>
+
+      <h3>Service Deployment Manifest Example</h3>
+      <pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiences-service
+  namespace: activate
+  labels:
+    app: audiences-service
+    version: "2.4.1"
+    team: platform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: audiences-service
+  template:
+    spec:
+      containers:
+      - name: audiences-service
+        image: europe-docker.pkg.dev/zeotap-prod/zeotap/audiences:2.4.1
+        ports:
+        - containerPort: 9000
+        env:
+        - name: DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: audiences-db-secret
+              key: url
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+        livenessProbe:
+          httpGet:
+            path: /audience/v1/healthCheckup
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 10</code></pre>
+    </section>
+
+    <!-- Ansible -->
+    <section id="ansible">
+      <h2>Ansible Configuration Management</h2>
+      <p>The <code>Ansible</code>, <code>ansible-scripts</code>, <code>ansible_playbooks</code>, and <code>ansible_roles</code> repositories manage server configuration for non-Kubernetes workloads: Druid cluster, Qubole nodes, jump hosts, and legacy VMs.</p>
+
+      <h3>Playbook Structure</h3>
+      <pre><code class="language-text">ansible_playbooks/
+├── site.yml                    # master playbook
+├── druid/
+│   ├── install-druid.yml       # Druid cluster setup
+│   └── configure-druid.yml     # segment estimator Druid config
+├── monitoring/
+│   ├── prometheus-node.yml     # node_exporter on all hosts
+│   └── alertmanager.yml        # alertmanager HA setup
+├── security/
+│   ├── hardening.yml           # CIS benchmark hardening
+│   └── ssl-certs.yml           # cert renewal
+└── inventories/
+    ├── prod/
+    │   └── hosts.yml
+    └── qa/
+        └── hosts.yml</code></pre>
+
+      <pre><code class="language-yaml"># druid/install-druid.yml
+---
+- hosts: druid_brokers
+  roles:
+    - common
+    - jvm
+    - druid-broker
+  vars:
+    druid_version: "0.23.0"
+    druid_heap_size: "8g"
+    druid_extensions:
+      - druid-kafka-indexing-service
+      - druid-s3-extensions
+      - druid-datasketches</code></pre>
+    </section>
+
+    <!-- Environments -->
+    <section id="environments">
+      <h2>Environment Strategy</h2>
+      <table>
+        <thead>
+          <tr><th>Environment</th><th>GCP Project</th><th>GKE Cluster</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Production</td><td>zeotap-prod-789</td><td>zeotap-prod-cluster (EU + US)</td><td>Live customer traffic</td></tr>
+          <tr><td>QA / Staging</td><td>zeotap-qa-456</td><td>zeotap-qa-cluster</td><td>Integration testing, pre-release</td></tr>
+          <tr><td>Development</td><td>zeotap-dev-123</td><td>zeotap-dev-cluster (shared)</td><td>Development and unit testing</td></tr>
+          <tr><td>Sandbox</td><td>zeotap-sandbox</td><td>–</td><td>PoC and new partner integrations</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Networking -->
+    <section id="networking">
+      <h2>Networking Architecture</h2>
+      <pre><code class="language-hcl"># VPC + NAT + Peering module
+module "vpc_nat_peering" {
+  source  = "gcp-terraform-modules//vpc-nat-peering"
+  version = "v1.0.0"
+
+  vpc_name         = "zeotap-vpc-prod"
+  subnet_cidr      = "10.10.0.0/20"
+  nat_name         = "zeotap-nat-prod"
+  nat_ip_count     = 4              # static egress IPs for partner allowlisting
+  peer_network_ids = []             # Cloud SQL, BigTable private service access
+  enable_private_google_access = true
+}</code></pre>
+
+      <div class="callout callout-info">
+        <div><strong>Private Google Access</strong> — All GKE pods communicate with Google services (BigTable, BigQuery, GCS, Pub/Sub) over private Google access, without public internet traversal. This ensures data never leaves Google's backbone network.</div>
+      </div>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
+      <a href="16-observability.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 16 · Observability & Monitoring →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 11: Reporting & Business Intelligence — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART IV — INTELLIGENCE</div>
+      <a href="10-ml-platform.html" class="nav-item">ML Platform</a>
+      <a href="11-reporting-bi.html" class="nav-item active">Reporting & BI</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#data-stack" class="nav-item">Data Stack</a>
+      <a href="#pipelines" class="nav-item">Reporting Pipelines</a>
+      <a href="#sisense" class="nav-item">Sisense Integration</a>
+      <a href="#revenue" class="nav-item">Revenue Reporting</a>
+      <a href="#metrics" class="nav-item">Key Metrics Reference</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Part IV — Intelligence</span><span>›</span>
+        <span>Reporting & Business Intelligence</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Reporting & Business Intelligence</h1>
+      <p class="page-subtitle">The Zeotap reporting layer: BigQuery data warehouse, Redshift analytical queries, Sisense embedded dashboards, and automated revenue reporting pipelines.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">BigQuery</div><div class="stat-label">Primary Warehouse</div></div>
+      <div class="stat-card"><div class="stat-value">Redshift</div><div class="stat-label">Analytics Store</div></div>
+      <div class="stat-card"><div class="stat-value">Sisense</div><div class="stat-label">Embedded BI</div></div>
+      <div class="stat-card"><div class="stat-value">Daily</div><div class="stat-label">Reporting Cadence</div></div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Overview</h2>
+      <p>Zeotap's reporting infrastructure serves two audiences: <strong>internal teams</strong> (revenue, operations, engineering) and <strong>customers</strong> (audience insights, activation performance). It is built on a layered data architecture with BigQuery as the primary analytical warehouse, Redshift for customer-facing analytics, and Sisense for embedded dashboards in the Unity product.</p>
+    </section>
+
+    <!-- Data Stack -->
+    <section id="data-stack">
+      <h2>Reporting Data Stack</h2>
+
+      <div class="mermaid">
+graph LR
+    subgraph Sources["Raw Data Sources"]
+        PS["Profile Store<br/>(Delta Lake GCS)"]
+        AUD_DB["Audiences DB<br/>(PostgreSQL)"]
+        DEST_DB["Destinations DB<br/>(PostgreSQL)"]
+        EVENTS["Kafka Events"]
+    end
+
+    subgraph Warehouse["Data Warehouse"]
+        BQ["BigQuery<br/>(primary warehouse)"]
+        RS["Amazon Redshift<br/>(customer analytics)"]
+    end
+
+    subgraph BI["BI & Dashboards"]
+        SISENSE["Sisense CDP Analytics<br/>(embedded in Unity UI)"]
+        LOOKER["Looker<br/>(internal BI)"]
+        PARTNER_RPT["Partner Reporting<br/>(white-label dashboards)"]
+    end
+
+    subgraph Pipelines["ETL Pipelines"]
+        CRON["redshift-reporting-cron<br/>(scheduled SQL jobs)"]
+        REV["revenue-reporting-ingestion<br/>(Airflow / Dataflow)"]
+        DAAP_RPT["daap-segment-library-reporting<br/>(Spark jobs)"]
+    end
+
+    Sources --> BQ
+    Sources --> RS
+    BQ --> SISENSE
+    BQ --> LOOKER
+    RS --> PARTNER_RPT
+    CRON --> RS
+    REV --> BQ
+    DAAP_RPT --> RS
+
+    style Warehouse fill:#f0f4ff,stroke:#4361ee
+    style BI fill:#e8f5e9,stroke:#2e7d32
+    style Pipelines fill:#fff8f0,stroke:#f77f00
+      </div>
+
+      <h3>Technology Stack</h3>
+      <table>
+        <thead>
+          <tr><th>Layer</th><th>Technology</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Ingest</td><td>Apache Beam / Dataflow</td><td>Streaming event ingestion to BigQuery</td></tr>
+          <tr><td>Batch ETL</td><td>Spark + CRON</td><td>Nightly reporting table refreshes</td></tr>
+          <tr><td>Warehouse</td><td>BigQuery</td><td>Internal analytics, ML training sets</td></tr>
+          <tr><td>Analytics DB</td><td>Amazon Redshift</td><td>Customer-facing audience analytics</td></tr>
+          <tr><td>Embedded BI</td><td>Sisense</td><td>Unity UI dashboards for clients</td></tr>
+          <tr><td>Revenue</td><td>Airflow + BQ</td><td>Automated revenue recognition reports</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Pipelines -->
+    <section id="pipelines">
+      <h2>Reporting Pipelines</h2>
+
+      <h3>daap-segment-library-reporting</h3>
+      <p>A Spark-based pipeline that reads audience segment metadata from the DAAP library and generates activation performance reports — reach, frequency, match rates — and loads them into Redshift.</p>
+
+      <pre><code class="language-sql">-- Segment Performance Report (Redshift)
+SELECT
+    s.segment_id,
+    s.segment_name,
+    s.org_id,
+    COUNT(DISTINCT sp.ucid)                    AS reached_users,
+    COUNT(DISTINCT d.destination_id)           AS active_destinations,
+    AVG(act.match_rate)                        AS avg_match_rate,
+    SUM(act.impressions)                       AS total_impressions,
+    DATE_TRUNC('day', act.activated_at)        AS activation_date
+FROM segment_profiles sp
+JOIN segments s         ON sp.segment_id = s.id
+JOIN activations act    ON sp.segment_id = act.segment_id
+JOIN destinations d     ON act.destination_id = d.id
+WHERE act.activated_at >= CURRENT_DATE - INTERVAL '30 days'
+GROUP BY 1,2,3,8
+ORDER BY reached_users DESC;</code></pre>
+
+      <h3>redshift-reporting-cron</h3>
+      <p>A cron-scheduled service that runs SQL refresh jobs on Redshift, maintaining pre-aggregated views used by Sisense dashboards. Configured with:</p>
+
+      <pre><code class="language-json">{
+  "jobs": [
+    {
+      "name": "audience_size_daily",
+      "schedule": "0 3 * * *",
+      "query": "CALL sp_refresh_audience_size_daily()",
+      "timeout_minutes": 30
+    },
+    {
+      "name": "activation_performance_weekly",
+      "schedule": "0 4 * * 1",
+      "query": "CALL sp_refresh_activation_performance()",
+      "timeout_minutes": 60
+    },
+    {
+      "name": "identity_match_rates",
+      "schedule": "0 2 * * *",
+      "query": "CALL sp_refresh_identity_metrics()",
+      "timeout_minutes": 45
+    }
+  ]
+}</code></pre>
+    </section>
+
+    <!-- Sisense -->
+    <section id="sisense">
+      <h2>Sisense CDP Analytics (Embedded)</h2>
+      <p>Sisense is embedded directly in the <strong>Unity</strong> Angular frontend, providing client-facing analytics dashboards without leaving the Zeotap product. The <code>sisense-cdp-analytics</code> repo contains the Sisense data model, elasticube configs, and custom JavaScript widgets.</p>
+
+      <div class="mermaid">
+graph LR
+    UNITY["Unity Angular UI"] -->|iframe embed| SISENSE["Sisense JS SDK"]
+    SISENSE --> EC["Elasticube<br/>(Redshift connector)"]
+    EC --> RS2["Redshift<br/>(analytics tables)"]
+    SISENSE --> WIDGET["Custom Widgets<br/>(audience reach chart,<br/>match rate gauge,<br/>destination heatmap)"]
+      </div>
+
+      <h3>Standard Dashboard Modules</h3>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-icon">👥</div>
+          <h3>Audience Insights</h3>
+          <p>Demographics breakdown, attribute distribution, audience size trend over 90 days.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📡</div>
+          <h3>Activation Performance</h3>
+          <p>Reach by destination, match rates, impression counts, export success rate.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔗</div>
+          <h3>Identity Coverage</h3>
+          <p>ID resolution rates, email/phone/device coverage per org, UCID growth over time.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📈</div>
+          <h3>Data Quality</h3>
+          <p>Ingestion success rates, schema validation pass/fail, data freshness indicators.</p>
+        </div>
+      </div>
+
+      <h3>Sisense Embed Token</h3>
+      <pre><code class="language-typescript">// Unity Angular — Sisense embed service
+@Injectable({ providedIn: 'root' })
+export class SisenseService {
+  embedDashboard(orgId: number, dashboardId: string, container: HTMLElement): void {
+    const jwt = this.authService.getSisenseToken(orgId); // scoped JWT
+    SisenseJS.connect({
+      server: 'https://analytics.zeotap.com',
+      token: jwt,
+    }).then(app => {
+      app.dashboards.load(dashboardId).then(dashboard => {
+        dashboard.attach(container);
+        dashboard.refresh();
+      });
+    });
+  }
+}</code></pre>
+    </section>
+
+    <!-- Revenue -->
+    <section id="revenue">
+      <h2>Revenue Reporting</h2>
+      <p>The <code>revenue-reporting-ingestion</code> pipeline automates revenue recognition by ingesting activation events (audience pushes, API calls) and attributing them to commercial agreements:</p>
+
+      <div class="mermaid">
+sequenceDiagram
+    participant Act as Activation Events<br/>(Pub/Sub)
+    participant Ingest as revenue-reporting-ingestion<br/>(Dataflow)
+    participant BQ2 as BigQuery<br/>(revenue_events)
+    participant Enrich as Enrichment Job<br/>(contract lookup)
+    participant Report as Revenue Report<br/>(monthly PDF/CSV)
+
+    Act->>Ingest: Streaming audience export events
+    Ingest->>BQ2: Write event + metadata
+    BQ2->>Enrich: Join with contract table
+    Enrich->>BQ2: Write enriched revenue rows
+    BQ2->>Report: Scheduled Looker report generation
+    Report-->>Finance: Email delivery
+      </div>
+
+      <pre><code class="language-sql">-- Monthly Revenue Summary (BigQuery)
+SELECT
+  org_id,
+  org_name,
+  contract_type,
+  SUM(activation_count)    AS total_activations,
+  SUM(billable_records)    AS billable_records,
+  SUM(revenue_usd)         AS revenue_usd,
+  DATE_TRUNC(activated_at, MONTH) AS month
+FROM `zeotap-prod.revenue.enriched_activations`
+WHERE DATE_TRUNC(activated_at, MONTH) = DATE_TRUNC(CURRENT_DATE(), MONTH) - INTERVAL 1 MONTH
+GROUP BY 1,2,3,7
+ORDER BY revenue_usd DESC;</code></pre>
+    </section>
+
+    <!-- Metrics Reference -->
+    <section id="metrics">
+      <h2>Key Metrics Reference</h2>
+      <table>
+        <thead>
+          <tr><th>Metric</th><th>Definition</th><th>Data Source</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Audience Reach</td><td>Unique UCIDs in segment</td><td>Segment Estimator</td></tr>
+          <tr><td>Match Rate</td><td>% of UCIDs matched by destination partner</td><td>Activation Events</td></tr>
+          <tr><td>ID Coverage</td><td>% of profiles with ≥2 identifier types</td><td>Profile Store</td></tr>
+          <tr><td>Data Freshness</td><td>Hours since last profile update</td><td>Profile Store metadata</td></tr>
+          <tr><td>Ingestion Success</td><td>% of events processed without error</td><td>DAAP pipeline metrics</td></tr>
+          <tr><td>Activation Volume</td><td>Records pushed per day per destination</td><td>Activation Events</td></tr>
+          <tr><td>Consent Rate</td><td>% of profiles with marketing consent</td><td>GDPR backend</td></tr>
+          <tr><td>LTV High %</td><td>% of customers in LTV = high segment</td><td>AI Attributes (ML)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
+      <a href="12-unity-dashboard.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 12 · Unity Angular Dashboard →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

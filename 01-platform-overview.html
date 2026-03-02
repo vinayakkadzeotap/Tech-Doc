@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Architecture Overview — Zeotap CDP Docs</title>
+  <link rel="stylesheet" href="assets/style.css?v=4">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#0057FF', primaryTextColor: '#fff', primaryBorderColor: '#003EC8', lineColor: '#6B7280', secondaryColor: '#E8EFFF', tertiaryColor: '#f9fafb' } });</script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <a href="index.html" class="sidebar-logo">
+    <div class="logo-mark">Z</div>
+    <div>
+      <div class="logo-text">Zeotap</div>
+      <div class="logo-sub">Technical Docs</div>
+    </div>
+  </a>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <nav class="sidebar-nav">
+      <a href="index.html">Table of Contents</a>
+      <a href="01-platform-overview.html" class="active">Platform Overview</a>
+    </nav>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">On This Page</div>
+    <nav class="sidebar-nav sub-nav">
+      <a href="#what-is-zeotap">What is Zeotap?</a>
+      <a href="#three-pillars">The Three Pillars</a>
+      <a href="#architecture">System Architecture</a>
+      <a href="#data-flow">End-to-End Data Flow</a>
+      <a href="#tech-stack">Technology Stack</a>
+      <a href="#deployment">Deployment Model</a>
+    </nav>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Core Modules</div>
+    <nav class="sidebar-nav">
+      <a href="02-data-collection.html">Data Collection & SDKs</a>
+      <a href="03-identity-resolution.html">Identity Resolution</a>
+      <a href="04-genai-zoe.html">GenAI / Zoe</a>
+    </nav>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">›</span>
+      <span class="current">Platform Architecture Overview</span>
+    </div>
+    <div class="topbar-actions">
+      <span class="version-badge">Platform Overview</span>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="module-tag">Foundation</div>
+      <h1>Platform Architecture Overview</h1>
+      <p class="lead">
+        Zeotap CDP is an enterprise Customer Data Platform that unifies identity, enriches profiles, and activates audiences across channels — built on a microservices architecture deployed on Google Cloud Platform and AWS.
+      </p>
+      <div class="meta">
+        <div class="meta-item">Java · Scala · Python · Go · TypeScript</div>
+        <div class="meta-divider"></div>
+        <div class="meta-item">GCP · AWS · Kubernetes</div>
+        <div class="meta-divider"></div>
+        <div class="meta-item">497 repositories</div>
+      </div>
+    </div>
+
+    <!-- ── WHAT IS ZEOTAP ── -->
+    <h2 id="what-is-zeotap">What is Zeotap CDP?</h2>
+    <p>
+      Zeotap is a privacy-first Customer Data Platform (CDP) that enables enterprises to collect first-party data, resolve identities across devices and channels, build rich customer audiences, and activate those audiences across 100+ destinations in real time.
+    </p>
+    <p>
+      The platform sits at the intersection of <strong>data engineering</strong>, <strong>identity resolution</strong>, <strong>machine learning</strong>, and <strong>real-time activation</strong>, serving telcos, retailers, financial services, and media companies globally.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📡</div>
+        <div class="card-title">Collect</div>
+        <p class="card-desc">Ingest first-party data from web, mobile, CRM, offline, and third-party sources via SDKs and batch pipelines.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <div class="card-title">Unify</div>
+        <p class="card-desc">Stitch identities across devices and channels into a single customer profile using the ID Graph engine.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">Activate</div>
+        <p class="card-desc">Deliver audiences to DSPs, CRMs, social platforms, and custom destinations in real time or batch.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <div class="card-title">Analyze</div>
+        <p class="card-desc">AI-powered insights, natural language querying via Zoe, segment recommendations, and journey analytics.</p>
+      </div>
+    </div>
+
+    <!-- ── THREE PILLARS ── -->
+    <h2 id="three-pillars">The Three Core Pillars</h2>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🔷 CDP Platform Pillars</div>
+      <div class="mermaid">
+graph LR
+    subgraph COLLECT["📡 COLLECT"]
+      direction TB
+      WS[Web SDK]
+      MS[Mobile SDK]
+      BP[Batch Pipelines]
+      TP[3rd-Party Integrations]
+    end
+
+    subgraph UNIFY["🔗 UNIFY"]
+      direction TB
+      IG[Identity Graph]
+      PS[Profile Store]
+      DA[Data Alchemy]
+      ML[ML Enrichment]
+    end
+
+    subgraph ACTIVATE["⚡ ACTIVATE"]
+      direction TB
+      AUD[Audience Builder]
+      JRN[Journeys]
+      DEST[Destinations]
+      RT[Real-time API]
+    end
+
+    COLLECT --> UNIFY
+    UNIFY --> ACTIVATE
+
+    style COLLECT fill:#EFF6FF,stroke:#93C5FD,color:#1D4ED8
+    style UNIFY fill:#ECFDF5,stroke:#6EE7B7,color:#065F46
+    style ACTIVATE fill:#FDF4FF,stroke:#D8B4FE,color:#5B21B6
+      </div>
+    </div>
+
+    <!-- ── SYSTEM ARCHITECTURE ── -->
+    <h2 id="architecture">System Architecture</h2>
+    <p>
+      Zeotap is built as a collection of domain-oriented microservices organized around the <strong>Collect → Unify → Activate</strong> data lifecycle. Services communicate via REST, gRPC, and event streaming (Kafka / GCP Pub/Sub).
+    </p>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🏗️ High-Level System Architecture</div>
+      <div class="mermaid">
+graph TB
+    subgraph CLIENTS["Client Layer"]
+      WebSDK["🌐 Web SDK\nanalytics-sdk"]
+      iOS["📱 iOS SDK\nZeotapCollect"]
+      Android["🤖 Android SDK"]
+      GTM["📌 GTM Template"]
+    end
+
+    subgraph GATEWAY["API Gateway Layer"]
+      GW["⚙️ API Gateway\napi-gateway"]
+      CF["🛡️ CF Gateway\ncf-api-gateway"]
+    end
+
+    subgraph INGEST["Ingestion Layer"]
+      COL["📥 Collect Service\nZeotapCollect"]
+      BATCH["📦 Batch Ingestion\ndaap-3P-ingestion"]
+      STREAM["🌊 Stream Processing\nKafka / Pub/Sub"]
+    end
+
+    subgraph CORE["Core Platform"]
+      IDG["🔗 Identity Graph\nid-graph-lib-v2-go"]
+      PROF["👤 Profile Store\nzeocore-commons"]
+      SEG["👥 Audience Engine\naudiences (Scala)"]
+      JRN["🗺️ Journeys\njourneys-ai"]
+    end
+
+    subgraph AI["AI / Analytics Layer"]
+      ZOE["🤖 Zoe AI\nzeotap-genai"]
+      AGT["🧠 Agentic Server\nzeotap-agentic-server"]
+      MCP["🔌 MCP Server\nzeotap-mcp"]
+    end
+
+    subgraph STORE["Data Stores"]
+      BT["⚡ BigTable\n(Identity/Profiles)"]
+      BQ["📊 BigQuery\n(Analytics)"]
+      RS["🔴 Redshift\n(Reporting)"]
+      CACHE["🗄️ Redis\n(Cache)"]
+    end
+
+    subgraph DELIVER["Delivery Layer"]
+      DEST["📤 Destinations\ndata-destination"]
+      SP["🎯 SmartPixel\nSmartPixel-3P"]
+      FB["📘 Facebook OTR\notr-facebook"]
+    end
+
+    CLIENTS --> GATEWAY
+    GATEWAY --> INGEST
+    INGEST --> CORE
+    CORE --> STORE
+    CORE --> AI
+    CORE --> DELIVER
+
+    style CLIENTS fill:#FEF3C7,stroke:#F59E0B,color:#92400E
+    style GATEWAY fill:#EDE9FE,stroke:#A78BFA,color:#4C1D95
+    style INGEST fill:#DBEAFE,stroke:#93C5FD,color:#1E40AF
+    style CORE fill:#DCFCE7,stroke:#6EE7B7,color:#065F46
+    style AI fill:#FDF4FF,stroke:#D8B4FE,color:#5B21B6
+    style STORE fill:#F3F4F6,stroke:#9CA3AF,color:#374151
+    style DELIVER fill:#FEE2E2,stroke:#FCA5A5,color:#7F1D1D
+      </div>
+    </div>
+
+    <!-- ── DATA FLOW ── -->
+    <h2 id="data-flow">End-to-End Data Flow</h2>
+    <p>
+      The following sequence diagram shows the complete journey of a data event from client-side collection through identity resolution to activation.
+    </p>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🔄 Event Lifecycle — Collect to Activate</div>
+      <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Browser as 🌐 Browser<br/>(analytics-sdk)
+    participant Gateway as ⚙️ API Gateway
+    participant Collect as 📥 Collect Service
+    participant Stream as 🌊 Kafka/Pub/Sub
+    participant IDGraph as 🔗 ID Graph
+    participant Profile as 👤 Profile Store
+    participant Audience as 👥 Audience Engine
+    participant Dest as 📤 Destination
+
+    Browser->>Gateway: POST /collect/event<br/>{event, userId, properties}
+    Gateway->>Gateway: Auth + Rate Limit
+    Gateway->>Collect: Forward event
+    Collect->>Collect: Validate schema<br/>Apply consent rules
+    Collect->>Stream: Publish to topic<br/>events.raw.{orgId}
+    Stream->>IDGraph: Consume event
+    IDGraph->>IDGraph: Resolve UCID<br/>Stitch device IDs
+    IDGraph->>Profile: Upsert profile<br/>attributes
+    Profile->>Audience: Trigger segment<br/>re-evaluation
+    Audience->>Audience: Evaluate rules<br/>Update membership
+    Audience->>Dest: Push to active<br/>destinations
+    Dest-->>Browser: ✅ 200 OK (async)
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <div class="callout-title">Event Processing Latency</div>
+        <p class="callout-text">The full pipeline from event collection to audience membership update is designed for <strong>&lt;500ms p99 latency</strong> for real-time use cases. Batch ingestion operates on a separate pipeline with configurable scheduling.</p>
+      </div>
+    </div>
+
+    <!-- ── TECH STACK ── -->
+    <h2 id="tech-stack">Technology Stack</h2>
+    <p>Zeotap's polyglot architecture uses the right language for each domain:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Technology</th>
+            <th>Key Repositories</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-yellow">Frontend</span></td>
+            <td>Angular 15+, TypeScript, NgRx</td>
+            <td><code>unity</code>, <code>ZUILibrary</code>, <code>opsui</code></td>
+            <td>Enterprise dashboard, operator UI</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">Backend APIs</span></td>
+            <td>Java (Spring, Play), Scala</td>
+            <td><code>zeocore-api</code>, <code>audiences</code>, <code>daap</code></td>
+            <td>Core API services, segment engine</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-green">Real-time Services</span></td>
+            <td>Go 1.24, Gin framework</td>
+            <td><code>id-graph-lib-v2-go</code>, <code>segmentestimator</code></td>
+            <td>High-throughput identity resolution</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-purple">AI / ML</span></td>
+            <td>Python 3.10+, FastAPI, Google ADK</td>
+            <td><code>zeotap-genai</code>, <code>zeotap-agentic-server</code></td>
+            <td>LLM integration, agentic workflows</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-yellow">Data Processing</span></td>
+            <td>Apache Spark, Scala, CDAP, Beam</td>
+            <td><code>daap-processing</code>, <code>zai-v2-dataflow</code></td>
+            <td>Batch and stream ETL</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">Client SDKs</span></td>
+            <td>JavaScript, Swift (iOS), Kotlin (Android)</td>
+            <td><code>analytics-sdk</code>, <code>ZeotapCollect</code></td>
+            <td>First-party data collection</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-green">Primary Database</span></td>
+            <td>Google BigTable, BigQuery</td>
+            <td><code>id-graph-lib-v2-go</code></td>
+            <td>Profile store, analytics warehouse</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-gray">Cache</span></td>
+            <td>Redis, Aerospike</td>
+            <td><code>cache-client</code></td>
+            <td>L2 cache for profiles and config</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-yellow">Messaging</span></td>
+            <td>Apache Kafka, GCP Pub/Sub</td>
+            <td><code>zeocore-idu-microservices</code></td>
+            <td>Event streaming backbone</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-purple">Reporting DB</span></td>
+            <td>AWS Redshift, Druid</td>
+            <td><code>redshift-reporting-cron</code></td>
+            <td>Business intelligence, dashboards</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">Infrastructure</span></td>
+            <td>Kubernetes, Terraform, Helm, Ansible</td>
+            <td><code>DevOps</code>, <code>gcp-terraform-modules</code></td>
+            <td>Cloud provisioning, orchestration</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-green">CI/CD</span></td>
+            <td>CircleCI, GitHub Actions, Harness</td>
+            <td><code>harness-deployments</code></td>
+            <td>Build, test, deploy automation</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-gray">Monitoring</span></td>
+            <td>Prometheus, Grafana, Alertmanager</td>
+            <td><code>prometheus</code>, <code>observability</code></td>
+            <td>Metrics, alerting, SLO tracking</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── DEPLOYMENT MODEL ── -->
+    <h2 id="deployment">Deployment Model</h2>
+    <p>
+      Zeotap runs on a multi-cloud Kubernetes-based infrastructure with GCP as primary and AWS for specific workloads. Services are containerized via Docker and deployed using Helm charts with Harness for progressive delivery.
+    </p>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">☁️ Cloud Infrastructure Topology</div>
+      <div class="mermaid">
+graph TB
+    subgraph GCP["☁️ Google Cloud Platform (Primary)"]
+      subgraph K8S["Kubernetes Cluster (GKE)"]
+        API["API Services\n(Java/Go/Python pods)"]
+        WORKER["Worker Pods\n(Spark on K8s)"]
+        MLSERVE["ML Serving\n(Python inference)"]
+      end
+      subgraph DATA["Data Layer"]
+        BIGTABLE["Cloud BigTable\n(Identity/Profiles)"]
+        BIGQUERY["BigQuery\n(Analytics Warehouse)"]
+        PUBSUB["Cloud Pub/Sub\n(Event Streaming)"]
+        GCS["Cloud Storage\n(Data Lake)"]
+      end
+      subgraph AI_INFRA["AI Infrastructure"]
+        VERTEX["Vertex AI\n(Model Training)"]
+        GEMINI["Gemini API\n(LLM Backend)"]
+      end
+    end
+
+    subgraph AWS["🟠 AWS (Secondary)"]
+      REDSHIFT["Redshift\n(BI Reporting)"]
+      S3["S3\n(Archival Storage)"]
+    end
+
+    subgraph CDN["🌍 Edge / CDN"]
+      CF["Cloudflare\n(DDoS, WAF)"]
+      SDKHost["SDK Hosting\ncontent.zeotap.com"]
+    end
+
+    CDN --> K8S
+    K8S --> DATA
+    K8S --> AI_INFRA
+    DATA --> AWS
+
+    style GCP fill:#EFF6FF,stroke:#93C5FD
+    style AWS fill:#FFF7ED,stroke:#FED7AA
+    style CDN fill:#F9FAFB,stroke:#E5E7EB
+      </div>
+    </div>
+
+    <h3>Kubernetes Namespace Organization</h3>
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">bash</span>
+        <button class="code-copy">Copy</button>
+      </div>
+      <pre><code><span class="tok-comment"># Core namespaces per environment</span>
+kubectl get namespaces
+
+<span class="tok-key">NAME</span>                    <span class="tok-value">STATUS</span>   <span class="tok-comment"># Purpose</span>
+zeotap-core             Active   <span class="tok-comment"># Core API services (zeocore-api, etc.)</span>
+zeotap-ingestion        Active   <span class="tok-comment"># Data collection + DAAP processing</span>
+zeotap-identity         Active   <span class="tok-comment"># ID Graph + Profile Store</span>
+zeotap-audience         Active   <span class="tok-comment"># Audience engine + segment eval</span>
+zeotap-activation       Active   <span class="tok-comment"># Destinations + SmartPixel</span>
+zeotap-ai               Active   <span class="tok-comment"># Zoe, agentic server, MCP</span>
+zeotap-reporting        Active   <span class="tok-comment"># Analytics + BI services</span>
+zeotap-monitoring       Active   <span class="tok-comment"># Prometheus + Alertmanager</span>
+zeotap-privacy          Active   <span class="tok-comment"># GDPR + Consent management</span></code></pre>
+    </div>
+
+    <h3>Environment Configuration</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Environment</th><th>GCP Project</th><th>Purpose</th><th>Access</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-green">Production</span></td>
+            <td><code>zeotap-cdp-prod-datascience</code></td>
+            <td>Live customer traffic</td>
+            <td>Restricted — SRE + L3</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-yellow">QA / Staging</span></td>
+            <td><code>zeotap-dev-datascience</code></td>
+            <td>Pre-release testing</td>
+            <td>Engineering team</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">Development</span></td>
+            <td>Local / Docker Compose</td>
+            <td>Feature development</td>
+            <td>All engineers</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body">
+        <div class="callout-title">VPN Requirement</div>
+        <p class="callout-text">Access to QA and Production environments requires an active VPN connection. Internal IP ranges <code>10.184.16.x</code> (QA) and <code>10.127.0.x</code> (Prod) are only reachable over VPN.</p>
+      </div>
+    </div>
+
+    <hr>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">
+      <a href="index.html" style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px">← Table of Contents</a>
+      <a href="02-data-collection.html" style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;background:var(--brand-primary);color:white;padding:10px 20px;border-radius:8px;text-decoration:none">Chapter 2: Data Collection & SDKs →</a>
+    </div>
+  </div>
+</div>
+
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

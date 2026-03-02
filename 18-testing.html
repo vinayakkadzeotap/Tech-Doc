@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 18: Testing & QA — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART VII — INFRASTRUCTURE</div>
+      <a href="17-cicd.html" class="nav-item">CI/CD</a>
+      <a href="18-testing.html" class="nav-item active">Testing & QA</a>
+      <div class="nav-section">APPENDICES</div>
+      <a href="appendix-a-api-reference.html" class="nav-item">API Reference</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#unit" class="nav-item">Unit Testing</a>
+      <a href="#integration" class="nav-item">Integration Testing</a>
+      <a href="#journey-regression" class="nav-item">Journey Regression Suite</a>
+      <a href="#api-automation" class="nav-item">API Automation</a>
+      <a href="#rbac-testing" class="nav-item">RBAC Test Suite</a>
+      <a href="#test-pyramid" class="nav-item">Test Pyramid</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Part VII — Infrastructure</span><span>›</span>
+        <span>Testing & QA</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Testing & QA</h1>
+      <p class="page-subtitle">Zeotap's multi-layer quality assurance: ScalaTest/JUnit unit tests, Spark integration tests, pytest journey regression suites, REST Assured API automation, and RBAC access-control validation.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">pytest</div><div class="stat-label">Journey Regression</div></div>
+      <div class="stat-card"><div class="stat-value">ScalaTest</div><div class="stat-label">Spark Unit Tests</div></div>
+      <div class="stat-card"><div class="stat-value">REST Assured</div><div class="stat-label">API Automation</div></div>
+      <div class="stat-card"><div class="stat-value">JUnit + Mockito</div><div class="stat-label">Java Unit Tests</div></div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Testing Strategy</h2>
+      <p>Zeotap follows a test pyramid with emphasis on fast unit tests at the base, service-level integration tests in the middle, and end-to-end journey regression at the top. All test layers run automatically in CircleCI on every push.</p>
+
+      <div class="mermaid">
+graph TB
+    E2E["🔺 End-to-End (Journey Regression)<br/>journey-regression-suite (pytest)<br/>Slow · High confidence · Low count"]
+    INT["▲ Integration Tests<br/>api-automation (REST Assured) · backend-automation-tests<br/>Medium speed · Service interactions"]
+    UNIT["▬ Unit Tests<br/>ScalaTest (Spark) · JUnit + Mockito (Java) · Go test<br/>Fast · Isolated · High count"]
+
+    E2E --> INT --> UNIT
+
+    style E2E fill:#fce4ec,stroke:#c62828
+    style INT fill:#fff8e1,stroke:#f9a825
+    style UNIT fill:#e8f5e9,stroke:#2e7d32
+      </div>
+
+      <h3>Test Repositories</h3>
+      <table>
+        <thead>
+          <tr><th>Repository</th><th>Language</th><th>Test Type</th><th>Scope</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>journey-regression-suite</code></td><td>Python/pytest</td><td>End-to-end regression</td><td>Customer Journey workflows</td></tr>
+          <tr><td><code>api-automation</code></td><td>Java/REST Assured</td><td>API integration</td><td>SmartPixel, ZAI, ZAT APIs</td></tr>
+          <tr><td><code>backend-automation-framework</code></td><td>Java/JUnit</td><td>API + RBAC</td><td>All backend microservices</td></tr>
+          <tr><td><code>backend-automation-tests</code></td><td>Java</td><td>Integration</td><td>Backend services end-to-end</td></tr>
+          <tr><td>Per-service <code>src/test</code></td><td>Scala/Java/Go</td><td>Unit + integration</td><td>Service-specific logic</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Unit Testing -->
+    <section id="unit">
+      <h2>Unit Testing</h2>
+
+      <h3>Scala — Spark Unit Tests (ScalaTest + spark-testing-base)</h3>
+      <p>All Spark-based services (Profile Store, DAAP, identity graph) use <strong>ScalaTest</strong> with <code>holdenkarau:spark-testing-base</code> for in-process Spark session unit tests:</p>
+
+      <pre><code class="language-scala">// ProfileMergeDriverTest.scala
+class ProfileMergeDriverTest extends FunSuite with SharedSparkContext {
+
+  test("should merge DPM and Apps data by UCID") {
+    val appsData = TestDataGenerator.createAppsDataFrame(spark,
+      Seq(
+        ("zt_ucid_001", "test@example.com", "2024-10-01"),
+        ("zt_ucid_002", "user2@test.com",   "2024-10-02")
+      ))
+
+    val dpmData = TestDataGenerator.createDPMDataFrame(spark,
+      Seq(
+        ("zt_ucid_001", "25-34", "M", "automotive"),
+        ("zt_ucid_003", "35-44", "F", "finance")
+      ))
+
+    val merged = new MultiDPMergeProcessor()
+      .mergeDataframes(appsData, List(dpmData))
+
+    assert(merged.count() == 3)
+    assert(merged.filter(col("ucid") === "zt_ucid_001").first()
+      .getAs[String]("age_range") == "25-34")
+  }
+
+  test("should exclude deleted UCIDs from output") {
+    val deletions = spark.createDataset(Seq(DeletionRequest("zt_ucid_del")))
+    val profiles  = TestDataGenerator.createProfilesWithDeletion(spark)
+    val cleaned   = new DpmIduJoinProcessor().process(deletions, profiles, testOutputPath)
+    assert(cleaned.filter(col("ucid") === "zt_ucid_del").count() == 0)
+  }
+}</code></pre>
+
+      <h3>Go Unit Tests (segmentestimator)</h3>
+      <pre><code class="language-go">// bitmap/bitmap_test.go
+func TestBitmapAND(t *testing.T) {
+    a := NewBitmapFromList([]int{1, 0, 1, 1, 0})
+    b := NewBitmapFromList([]int{1, 1, 0, 1, 0})
+
+    result, err := a.AND(b)
+    require.NoError(t, err)
+    assert.Equal(t, 2, result.Count()) // bits 0 and 3 are both set
+}
+
+func TestEstimateSize(t *testing.T) {
+    bmp := NewBitmap(1000)
+    // Set 100 bits (10% of 1000)
+    for i := 0; i < 100; i++ { bmp.Set(i) }
+
+    // With 0.1% sample rate, extrapolated = 100 / 0.001 = 100,000
+    estimated := EstimateSize(bmp, 0.001)
+    assert.Equal(t, int64(100000), estimated)
+}
+
+// cache/querycache_test.go
+func TestQueryCacheTTL(t *testing.T) {
+    cache := NewQueryCache(2 * time.Second)
+    cache.Set("key1", 42)
+    assert.Equal(t, 42, cache.Get("key1"))
+
+    time.Sleep(3 * time.Second)
+    assert.Nil(t, cache.Get("key1")) // expired
+}</code></pre>
+
+      <h3>Java Unit Tests (Mockito)</h3>
+      <pre><code class="language-java">// AudienceSummaryControllerTest.java
+@RunWith(MockitoJUnitRunner.class)
+public class AudienceSummaryControllerTest {
+    @Mock
+    private AudienceService audienceService;
+
+    @InjectMocks
+    private AudienceSummaryController controller;
+
+    @Test
+    public void testListAudienceSummaries_returnsOk() {
+        List&lt;AudienceSummary&gt; mockData = Arrays.asList(
+            new AudienceSummary("aud_001", "Test Audience", 50000)
+        );
+        when(audienceService.listSummaries(4521)).thenReturn(mockData);
+
+        CompletionStage&lt;Result&gt; result = controller.listAudienceSummaries(mockRequest, 4521);
+        assertEquals(Http.Status.OK, result.toCompletableFuture().get().status());
+    }
+}</code></pre>
+    </section>
+
+    <!-- Integration -->
+    <section id="integration">
+      <h2>Integration Testing</h2>
+      <p>Service-level integration tests run against a real QA environment (not mocks), validating that microservices correctly communicate with each other and with GCP data stores.</p>
+
+      <div class="mermaid">
+sequenceDiagram
+    participant Test as Integration Test
+    participant AUD_API as audiences-api (QA)
+    participant EST as segmentestimator (QA)
+    participant PG as PostgreSQL (QA)
+    participant BQ5 as BigQuery (QA)
+
+    Test->>AUD_API: POST /audience/v1/orgs/4521/folders (create folder)
+    AUD_API->>PG: INSERT folder
+    PG-->>AUD_API: folder_id = 99
+    AUD_API-->>Test: { id: 99, status: 201 }
+
+    Test->>EST: POST /estimate { rules: [...], country: "ind" }
+    EST->>BQ5: Run sampling query
+    BQ5-->>EST: 12345 matching records
+    EST-->>Test: { estimated_size: 12345000, latency_ms: 234 }
+
+    Test->>AUD_API: GET /audience/v1/orgs/4521/audienceSummaries
+    AUD_API->>PG: SELECT audiences
+    PG-->>AUD_API: [...]
+    AUD_API-->>Test: { audiences: [...], total: 3 }
+      </div>
+    </section>
+
+    <!-- Journey Regression -->
+    <section id="journey-regression">
+      <h2>Journey Regression Suite</h2>
+      <p>The <code>journey-regression-suite</code> is a Python pytest suite that validates the full end-to-end execution of customer journeys in QA. It sends events, waits for journey execution, then queries BigQuery to verify each step was correctly processed.</p>
+
+      <h3>Test Structure</h3>
+      <pre><code class="language-text">journey-regression-suite/
+├── config/
+│   ├── journeys.yaml        # journey ID mappings (QA workflow IDs)
+│   └── env.yaml             # QA environment URLs
+├── lib/
+│   ├── event_sender.py      # HTTP client for sending test events
+│   ├── bq_reader.py         # BigQuery journey trace reader
+│   └── verifier.py          # Step execution verifier
+└── tests/
+    ├── test_simple.py        # Basic single-step journey
+    ├── test_entry_condition.py  # Entry condition filtering
+    ├── test_multi_step.py    # Multi-node journeys
+    ├── test_multi_journey.py # Parallel journey execution
+    ├── test_nce_predicate.py # NCE (Not-Converted Event) logic
+    ├── test_timestamp_operator.py  # Date/time predicates
+    ├── test_integerList_operator.py
+    ├── test_stringList_operator.py
+    ├── test_doubleList_operator.py
+    └── test_double_operator.py</code></pre>
+
+      <h3>Test Example — Simple Journey</h3>
+      <pre><code class="language-python"># tests/test_simple.py
+import pytest
+from lib.event_sender import send_event
+from lib.bq_reader import fetch_journey_traces_by_testuuid_and_workflowId
+from lib.verifier import verify_step_execution
+
+@pytest.mark.smoke
+@pytest.mark.integration
+def test_simple():
+    """Validates basic 1-step journey: entry → destination"""
+
+    expected_steps = {
+        "08fd76e2-033e-4ce5-972a-396ca6d0eeda",  # entry node
+        "6cdbeecc-29ed-4a30-9656-ca97a48ab6f5"   # destination node
+    }
+
+    payload = {
+        "user": {
+            "email_raw": "simple@test.com",
+            "vistior_Id": "18894",
+            "date_of_birth": "1993-03-15"
+        },
+        "event": { "eventName": "simpleTest", "countryCode": "US" },
+        "country": "US"
+    }
+
+    # 1. Send test event to journey engine
+    test_uuid = send_event(payload)
+
+    # 2. Poll BigQuery for journey execution trace (max 60s)
+    traces = fetch_journey_traces_by_testuuid_and_workflowId(
+        test_uuid=test_uuid,
+        workflow_id=config["journeys"]["simple_entry"],
+        timeout_seconds=60
+    )
+
+    # 3. Verify all expected steps were executed successfully
+    verify_step_execution(traces, expected_steps, expected_failed=set())
+
+@pytest.mark.regression
+def test_entry_condition_filter():
+    """Verifies users NOT matching entry condition are excluded"""
+    # Send event that should NOT trigger the journey
+    payload = {"event": {"eventName": "wrongEvent"}, "country": "DE"}
+    test_uuid = send_event(payload)
+
+    traces = fetch_journey_traces_by_testuuid_and_workflowId(
+        test_uuid, workflow_id=config["journeys"]["entry_condition"], timeout_seconds=30)
+
+    assert len(traces) == 0, "Journey should NOT have triggered for this event"</code></pre>
+
+      <h3>pytest Configuration</h3>
+      <pre><code class="language-ini"># pytest.ini
+[pytest]
+markers =
+    smoke: Quick smoke tests (fast, run on every deploy)
+    simple: Simple single-step journey tests
+    integration: Full integration tests
+    regression: Full regression suite
+    custom: Custom scenario tests
+
+addopts = --tb=short -v --junit-xml=reports/results.xml</code></pre>
+    </section>
+
+    <!-- API Automation -->
+    <section id="api-automation">
+      <h2>API Automation</h2>
+      <p>The <code>api-automation</code> Java project uses <strong>REST Assured</strong> to test Zeotap's public APIs — SmartPixel, ZAI (Insights), and ZAT (Targeting).</p>
+
+      <pre><code class="language-json">// api-automation/Resources/SmartPixel/smartPixel.json
+{
+  "event_name": "Purchase",
+  "event_time": 1698825600,
+  "action_source": "website",
+  "user_data": {
+    "email": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35"
+  },
+  "custom_data": {
+    "currency": "EUR",
+    "value": 149.99
+  }
+}</code></pre>
+
+      <pre><code class="language-java">// SmartPixel API automation test
+@Test
+public void testSmartPixelEventIngestion() {
+    String payload = readFile("Resources/SmartPixel/smartPixel.json");
+
+    given()
+        .header("Authorization", "Bearer " + getApiKey())
+        .contentType(ContentType.JSON)
+        .body(payload)
+    .when()
+        .post("/api/v1/events/smartpixel")
+    .then()
+        .statusCode(200)
+        .body("status", equalTo("ACCEPTED"))
+        .body("event_id", notNullValue())
+        .time(lessThan(500L));  // SLA: < 500ms
+}</code></pre>
+    </section>
+
+    <!-- RBAC Testing -->
+    <section id="rbac-testing">
+      <h2>RBAC Access Control Tests</h2>
+      <p>The <code>backend-automation-framework</code> includes a dedicated RBAC test suite that validates role-based access enforcement across all APIs:</p>
+
+      <pre><code class="language-java">// RBACAPITests.java
+public class RBACAPITests {
+
+    @Test
+    public void testReadOnlyRoleCannotCreateAudience() {
+        String readOnlyToken = getTokenForRole("READ_ONLY", 4521);
+
+        given()
+            .header("Authorization", "Bearer " + readOnlyToken)
+            .body(createAudiencePayload())
+        .when()
+            .post("/audience/v1/orgs/4521/audiences")
+        .then()
+            .statusCode(403);  // Forbidden
+    }
+
+    @Test
+    public void testMarketerRoleCanCreateAndEditAudience() {
+        String marketerToken = getTokenForRole("MARKETER", 4521);
+        String audienceId = createAudience(marketerToken);
+
+        given()
+            .header("Authorization", "Bearer " + marketerToken)
+            .body(editAudiencePayload())
+        .when()
+            .patch("/audience/v1/orgs/4521/audiences/" + audienceId)
+        .then()
+            .statusCode(200);
+    }
+
+    @Test
+    public void testCrossOrgDataIsolation() {
+        String org1Token = getTokenForOrg(4521);
+
+        // User from org 4521 should NOT access org 9999 data
+        given()
+            .header("Authorization", "Bearer " + org1Token)
+        .when()
+            .get("/audience/v1/orgs/9999/audienceSummaries")
+        .then()
+            .statusCode(403);
+    }
+}</code></pre>
+    </section>
+
+    <!-- Test Pyramid -->
+    <section id="test-pyramid">
+      <h2>Test Coverage Targets</h2>
+      <table>
+        <thead>
+          <tr><th>Layer</th><th>Coverage Target</th><th>Tool</th><th>CI Gate</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Unit Tests (JVM)</td><td>≥ 80% line coverage</td><td>JaCoCo + Codacy</td><td>Fail build if below threshold</td></tr>
+          <tr><td>Unit Tests (Go)</td><td>≥ 70% coverage</td><td>go test -cover</td><td>Report only</td></tr>
+          <tr><td>Integration (API)</td><td>All happy paths + 3xx auth errors</td><td>REST Assured</td><td>Fail QA gate</td></tr>
+          <tr><td>Journey Regression</td><td>All journey types (simple/multi/delay)</td><td>pytest</td><td>Required for prod deploy</td></tr>
+          <tr><td>RBAC / Security</td><td>All role × resource combinations</td><td>JUnit + custom</td><td>Fail release if any fail</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next: Appendices</div>
+      <a href="appendix-a-api-reference.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Full API Reference →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

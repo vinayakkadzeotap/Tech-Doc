@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Appendix C: Glossary — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">APPENDICES</div>
+      <a href="appendix-a-api-reference.html" class="nav-item">API Reference</a>
+      <a href="appendix-b-data-dictionary.html" class="nav-item">Data Dictionary</a>
+      <a href="appendix-c-glossary.html" class="nav-item active">Glossary</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#a" class="nav-item">A</a>
+      <a href="#b" class="nav-item">B</a>
+      <a href="#c" class="nav-item">C</a>
+      <a href="#d" class="nav-item">D</a>
+      <a href="#e" class="nav-item">E</a>
+      <a href="#f" class="nav-item">F</a>
+      <a href="#g" class="nav-item">G</a>
+      <a href="#i" class="nav-item">I</a>
+      <a href="#j" class="nav-item">J</a>
+      <a href="#k" class="nav-item">K</a>
+      <a href="#l" class="nav-item">L</a>
+      <a href="#m" class="nav-item">M</a>
+      <a href="#p" class="nav-item">P</a>
+      <a href="#r" class="nav-item">R</a>
+      <a href="#s" class="nav-item">S</a>
+      <a href="#t" class="nav-item">T</a>
+      <a href="#u" class="nav-item">U</a>
+      <a href="#v" class="nav-item">V</a>
+      <a href="#z" class="nav-item">Z</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Appendices</span><span>›</span>
+        <span>Appendix C — Glossary</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Glossary of Terms</h1>
+      <p class="page-subtitle">Definitions for technical terms, acronyms, and Zeotap-specific concepts used throughout this documentation. Terms are alphabetically ordered with cross-references to relevant chapters.</p>
+    </div>
+
+    <div class="callout callout-info">
+      <div><strong>Navigation Tip</strong> — Click any letter in the sidebar to jump to that alphabetical section. Cross-reference links in format <em>[Ch N]</em> point to the corresponding chapter.</div>
+    </div>
+
+    <!-- A -->
+    <section id="a">
+      <h2>A</h2>
+      <dl>
+        <dt><strong>Activation</strong></dt>
+        <dd>The process of pushing audience segments and profiles to downstream marketing destinations, ad platforms, or CRM systems. Zeotap's activation layer encompasses audiences, destinations, journeys, and real-time exports. See <a href="08-data-activation.html">Ch 8 — Data Activation</a>.</dd>
+
+        <dt><strong>ADK (Agent Development Kit)</strong></dt>
+        <dd>Google's framework for building multi-agent AI systems, used in <code>journeys-ai</code>. Provides <code>SequentialAgent</code>, <code>LoopAgent</code>, and tool-calling primitives. See <a href="07-customer-journeys.html">Ch 7 — Customer Journeys</a>.</dd>
+
+        <dt><strong>Aerospike</strong></dt>
+        <dd>An in-memory NoSQL key-value store used by Zeotap's Profile Store for low-latency identity lookups. Monitored via a custom Prometheus exporter on port <code>9999</code>. See <a href="16-observability.html">Ch 16 — Observability</a>.</dd>
+
+        <dt><strong>AI Attributes</strong></dt>
+        <dd>Machine-learning-derived attributes appended to the Unified Customer Profile by Zeotap's ML Platform. Examples: <code>ai_propensity_score</code>, <code>ai_ltv_score</code>, <code>ai_lookalike_score</code>, <code>ai_churn_risk</code>. See <a href="10-ml-platform.html">Ch 10 — ML Platform</a>.</dd>
+
+        <dt><strong>Airflow</strong></dt>
+        <dd>Apache Airflow, an open-source workflow orchestration platform. Deployed in GCP as Cloud Composer (managed Airflow). Used for batch ETL, data partner ingestion, and reporting pipelines. See <a href="03-data-ingestion.html">Ch 3 — Data Ingestion</a>.</dd>
+
+        <dt><strong>Alertmanager</strong></dt>
+        <dd>Prometheus component that routes, deduplicates, and silences alerts. Configured with three notification channels: Slack, PagerDuty, and email. Routes by <code>team</code> label and <code>severity: page</code>. See <a href="16-observability.html">Ch 16 — Observability</a>.</dd>
+
+        <dt><strong>ANN (Approximate Nearest Neighbour)</strong></dt>
+        <dd>An algorithm for finding dataset members most similar to a query vector without exhaustively checking all candidates. Used by the Segment Estimator's bitmap engine and Atlas AI's lookalike modelling. See <a href="06-audience-management.html">Ch 6</a> and <a href="10-ml-platform.html">Ch 10</a>.</dd>
+
+        <dt><strong>Ansible</strong></dt>
+        <dd>An agentless configuration management tool using YAML playbooks. Zeotap uses it for Druid cluster setup, Qubole node configuration, jump host hardening (CIS benchmark), and SSL certificate renewal. See <a href="15-infrastructure.html">Ch 15 — Infrastructure</a>.</dd>
+
+        <dt><strong>Artifact Registry (GAR)</strong></dt>
+        <dd>Google Artifact Registry — the container image registry used to store Docker images for all Zeotap microservices. Region: <code>europe-west1</code>. See <a href="17-cicd.html">Ch 17 — CI/CD</a>.</dd>
+
+        <dt><strong>Atlas AI</strong></dt>
+        <dd>Zeotap's lookalike modelling engine. Computes cosine similarity between seed audience profile embeddings and the full customer base using Vertex AI Matching Engine for ANN search. See <a href="10-ml-platform.html">Ch 10 — ML Platform</a>.</dd>
+
+        <dt><strong>Audience</strong></dt>
+        <dd>A named, rule-defined segment of customer profiles. Audiences are built via the Audience Builder UI (drag-and-drop conditions), estimated in real time by the Segment Estimator, and activated via Destinations. See <a href="06-audience-management.html">Ch 6 — Audience Management</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- B -->
+    <section id="b">
+      <h2>B</h2>
+      <dl>
+        <dt><strong>Batch Ingest</strong></dt>
+        <dd>The bulk loading of first-party or partner data via file upload (S3/GCS CSV/Parquet) or SFTP, as opposed to streaming ingestion. Handled by Cloud Composer DAGs and Dataflow pipelines. See <a href="03-data-ingestion.html">Ch 3</a>.</dd>
+
+        <dt><strong>BG/NBD Model</strong></dt>
+        <dd>Beta-Geometric/Negative Binomial Distribution — a probabilistic model for predicting customer purchase frequency and lifetime in a non-contractual subscription setting. Used in Zeotap's LTV scoring pipeline. See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+
+        <dt><strong>BigQuery (BQ)</strong></dt>
+        <dd>Google's serverless, fully managed data warehouse. Primary analytics store for Zeotap reporting, audience counts, and ML feature tables. Separate projects for prod-datalake and prod-microsvcs environments. See <a href="11-reporting-bi.html">Ch 11 — Reporting & BI</a>.</dd>
+
+        <dt><strong>BigTable</strong></dt>
+        <dd>Google's NoSQL wide-column store, used as the primary Identity Graph store mapping hash identifiers (email SHA-256, phone SHA-256, device IDs) to canonical <code>zt_id</code> keys. See <a href="03-identity-resolution.html">Ch 3 — Identity Resolution</a>.</dd>
+
+        <dt><strong>Bitmap</strong></dt>
+        <dd>A compact bitset representation used by the Segment Estimator to count unique users matching an audience condition. 64-bit <code>uint64</code> words with Hamming-weight (popcount) operations for O(n/64) population estimation. See <a href="06-audience-management.html">Ch 6</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- C -->
+    <section id="c">
+      <h2>C</h2>
+      <dl>
+        <dt><strong>CAPI (Conversions API)</strong></dt>
+        <dd>Meta (Facebook) Conversions API — a server-side pixel firing API used by SmartPixel-3P to send conversion events directly from Zeotap's servers, bypassing browser-side ad-blocking. See <a href="08-data-activation.html">Ch 8</a>.</dd>
+
+        <dt><strong>CDF (Change Data Feed)</strong></dt>
+        <dd>Delta Lake feature that captures row-level changes (INSERT/UPDATE/DELETE) to a Delta table for downstream consumption. Used in Zeotap's Profile Store to feed incremental merge jobs. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>CDP (Customer Data Platform)</strong></dt>
+        <dd>A software category that unifies first-party customer data from multiple sources into a single, persistent customer profile. Zeotap's CDP consists of Collect, Unify, and Activate product pillars. See <a href="01-platform-overview.html">Ch 1 — Platform Overview</a>.</dd>
+
+        <dt><strong>CircleCI</strong></dt>
+        <dd>Cloud-based continuous integration platform. Zeotap uses CircleCI for SBT (Scala/Play) and Go builds, with JaCoCo test coverage reporting, Codacy integration, and Google Artifact Registry pushes. See <a href="17-cicd.html">Ch 17 — CI/CD</a>.</dd>
+
+        <dt><strong>Cloud Composer</strong></dt>
+        <dd>Google Cloud's managed Apache Airflow service. Used for orchestrating batch ETL, partner data ingestion, and reporting DAGs. Configured via the <code>cloud-composer</code> Terraform module. See <a href="15-infrastructure.html">Ch 15</a>.</dd>
+
+        <dt><strong>Cloud SQL</strong></dt>
+        <dd>Google's fully managed relational database service. Used by Zeotap for Audiences database (PostgreSQL), GDPR consent/erasure records, and various microservice metadata stores. See <a href="15-infrastructure.html">Ch 15</a>.</dd>
+
+        <dt><strong>Codacy</strong></dt>
+        <dd>Automated code quality and coverage reporting tool. Integrated with CircleCI via <code>codacy-coverage-reporter</code> to upload JaCoCo XML coverage reports after each build. See <a href="17-cicd.html">Ch 17</a>.</dd>
+
+        <dt><strong>Consent String</strong></dt>
+        <dd>A base64-encoded binary string conforming to IAB TCF v2.2 format, storing a user's vendor consents and purpose permissions as a bitfield. Parsed and stored in Zeotap's GDPR backend. See <a href="13-privacy-gdpr.html">Ch 13 — Privacy & GDPR</a>.</dd>
+
+        <dt><strong>Cookie ID</strong></dt>
+        <dd>A browser-set persistent identifier stored in a first-party (<code>z_uuid</code>) or third-party cookie. Used as a probabilistic bridge between anonymous browsing sessions and known profiles. See <a href="appendix-b-data-dictionary.html">Appendix B</a>.</dd>
+
+        <dt><strong>CRO (Conversion Rate Optimisation)</strong></dt>
+        <dd>A marketing practice of improving website or campaign experience to increase the percentage of visitors who complete desired actions. Supported by Zeotap's propensity scoring and journey optimisation. See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- D -->
+    <section id="d">
+      <h2>D</h2>
+      <dl>
+        <dt><strong>DAAP (Data As A Product)</strong></dt>
+        <dd>Zeotap's internal framework treating datasets as first-class products, with defined schemas, SLOs, and ownership. The <code>daap-processing</code> service handles profile enrichment pipelines. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>Data Partner</strong></dt>
+        <dd>A third-party data provider whose audience segments or identity data is ingested into the Zeotap platform for enrichment. Managed in the <code>zeotap-prod-datapartner</code> GCP project. See <a href="03-data-ingestion.html">Ch 3</a>.</dd>
+
+        <dt><strong>Dataflow</strong></dt>
+        <dd>Google Cloud Dataflow — a fully managed Apache Beam stream/batch processing service. Used for real-time event enrichment, erasure processing, ML batch scoring, and reporting ingestion pipelines. See <a href="03-data-ingestion.html">Ch 3</a>.</dd>
+
+        <dt><strong>Dataproc</strong></dt>
+        <dd>Google Cloud Dataproc — managed Apache Spark/Hadoop clusters. Used for large-scale batch profile merging, audience export jobs, and ML feature engineering. Two Terraform modules exist: persistent <code>dataproc</code> and single-job <code>ephemeral-dataproc</code>. See <a href="15-infrastructure.html">Ch 15</a>.</dd>
+
+        <dt><strong>Delta Lake</strong></dt>
+        <dd>An open-source storage layer that adds ACID transactions, schema enforcement, and time travel to Apache Spark data lakes. Used as the foundation of Zeotap's Profile Store, storing Unified Customer Profiles as Delta tables. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>Destination</strong></dt>
+        <dd>A configured integration endpoint where Zeotap exports audience data (e.g., Google Ads, Meta, Salesforce, S3 file exports). Managed by the <code>data-destination</code> microservice. See <a href="08-data-activation.html">Ch 8 — Data Activation</a>.</dd>
+
+        <dt><strong>DPM (Data Partner Mapping)</strong></dt>
+        <dd>The process of mapping third-party data partner identifiers to Zeotap's canonical <code>zt_id</code> via the Identity Graph, enabling cross-partner data enrichment. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>Druid</strong></dt>
+        <dd>Apache Druid — a real-time analytics database optimised for sub-second queries on large time-series datasets. Used by Zeotap's Segment Estimator for fast audience size approximation queries. Runs on AWS EC2 (Druid on EC2 Terraform module). See <a href="06-audience-management.html">Ch 6</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- E -->
+    <section id="e">
+      <h2>E</h2>
+      <dl>
+        <dt><strong>Enrichment</strong></dt>
+        <dd>The process of augmenting a customer profile with additional attributes from first-party events, second-party data partner graphs, or AI-derived scores. Processed by the Profile Store merge pipeline. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>Erasure Pipeline</strong></dt>
+        <dd>The GDPR-compliant data deletion workflow that fans out a Right-to-Erasure request across all data stores (Profile Store Delta, BigTable, BigQuery, Audiences DB, Destinations). Triggered via Pub/Sub and implemented with Dataflow jobs. See <a href="13-privacy-gdpr.html">Ch 13</a>.</dd>
+
+        <dt><strong>Event</strong></dt>
+        <dd>A discrete, timestamped user action collected by the Zeotap SDK or API (e.g., <code>page_view</code>, <code>add_to_cart</code>, <code>purchase</code>). Events are the primary raw data unit flowing through the Collect pipeline. See <a href="02-data-collection.html">Ch 2 — Data Collection</a>.</dd>
+
+        <dt><strong>Extrapolation</strong></dt>
+        <dd>In Segment Estimation, the statistical scaling of a sampled audience count (from a subset shard) to the full population size. Used when bitmap shard counts are available for only a fraction of users. See <a href="06-audience-management.html">Ch 6</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- F -->
+    <section id="f">
+      <h2>F</h2>
+      <dl>
+        <dt><strong>Feature Store</strong></dt>
+        <dd>A centralised repository of ML features (pre-computed attributes) used for model training and online scoring. Zeotap's feature store is backed by BigQuery for batch features and Aerospike for low-latency online features. See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+
+        <dt><strong>Firebase</strong></dt>
+        <dd>Google's mobile and web application development platform. Zeotap uses Firebase Authentication as the identity provider, with the Admin SDK validating Firebase ID tokens in the Akbar authenticator. See <a href="14-auth-iam.html">Ch 14 — Auth & IAM</a>.</dd>
+
+        <dt><strong>First-Party Data</strong></dt>
+        <dd>Data collected directly from a brand's own customers and interactions (website, app, CRM, purchase history). Contrasted with second-party (partner-shared) and third-party (purchased) data. Zeotap's Collect and Unify products process first-party data. See <a href="01-platform-overview.html">Ch 1</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- G -->
+    <section id="g">
+      <h2>G</h2>
+      <dl>
+        <dt><strong>GAID (Google Advertising ID)</strong></dt>
+        <dd>A resettable advertising identifier for Android devices, formatted as a UUID. Used as a mobile identity bridge in Zeotap's ID Graph. Type value: <code>gaid</code>. See <a href="appendix-b-data-dictionary.html">Appendix B</a>.</dd>
+
+        <dt><strong>Gamma-Gamma Model</strong></dt>
+        <dd>A probabilistic model that estimates the average transaction value for a customer, conditioned on them being active. Combined with BG/NBD to produce Customer Lifetime Value (LTV) scores. See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+
+        <dt><strong>GCE Service Discovery</strong></dt>
+        <dd>Prometheus's <code>gce_sd_configs</code> mechanism that auto-discovers GCP VM instances by project and zone, using GCE metadata labels (<code>monitoring=yes</code>) to filter scrape targets. See <a href="16-observability.html">Ch 16</a>.</dd>
+
+        <dt><strong>GDPR (General Data Protection Regulation)</strong></dt>
+        <dd>The EU regulation governing the collection, processing, and storage of personal data. Zeotap implements GDPR compliance through consent management, erasure pipelines, and IAB TCF v2.2. See <a href="13-privacy-gdpr.html">Ch 13 — Privacy & GDPR</a>.</dd>
+
+        <dt><strong>GKE (Google Kubernetes Engine)</strong></dt>
+        <dd>Google's managed Kubernetes service. All Zeotap microservices run in GKE clusters organised into five namespaces: <code>collect</code>, <code>unify</code>, <code>activate</code>, <code>ai</code>, and <code>infra</code>. See <a href="15-infrastructure.html">Ch 15</a>.</dd>
+
+        <dt><strong>Grafana</strong></dt>
+        <dd>An open-source observability and data visualisation platform. Zeotap uses Grafana for infrastructure dashboards (Node Exporter, Scylla, Kafka) and application SLO dashboards, backed by Prometheus data sources. See <a href="16-observability.html">Ch 16</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- H -->
+    <section id="h">
+      <h2>H</h2>
+      <dl>
+        <dt><strong>Harness</strong></dt>
+        <dd>A modern continuous delivery platform used by Zeotap for production deployments. Implements a multi-stage pipeline: QA deploy → manual approval gate → canary 10% → full production rollout. See <a href="17-cicd.html">Ch 17 — CI/CD</a>.</dd>
+
+        <dt><strong>HEMS (Hashed Email Match String)</strong></dt>
+        <dd>A standardised, hashed version of an email address used for privacy-safe identity matching across partners. Typically SHA-256 of lowercase, trimmed email. See <a href="appendix-b-data-dictionary.html">Appendix B</a>.</dd>
+
+        <dt><strong>Helm</strong></dt>
+        <dd>The Kubernetes package manager. Zeotap uses Helm charts to template K8s manifests for each microservice, with environment-specific <code>values-prod.yaml</code> / <code>values-qa.yaml</code> overrides. See <a href="17-cicd.html">Ch 17</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- I -->
+    <section id="i">
+      <h2>I</h2>
+      <dl>
+        <dt><strong>IAB TCF (Transparency and Consent Framework)</strong></dt>
+        <dd>An industry standard developed by IAB Europe for managing user consent for advertising data processing. Zeotap implements TCF v2.2 for consent string parsing and vendor permission management. See <a href="13-privacy-gdpr.html">Ch 13</a>.</dd>
+
+        <dt><strong>ID Graph</strong></dt>
+        <dd>A persistent graph data structure mapping multiple device, cookie, and identity identifiers to a single canonical <code>zt_id</code> for a person. Stored in BigTable, built by the <code>id-graph-service</code>. See <a href="03-identity-resolution.html">Ch 3 — Identity Resolution</a>.</dd>
+
+        <dt><strong>IDFA (Identifier for Advertisers)</strong></dt>
+        <dd>Apple's resettable advertising identifier for iOS devices. Used as a mobile identity bridge in Zeotap's ID Graph. Type value: <code>idfa</code>. See <a href="appendix-b-data-dictionary.html">Appendix B</a>.</dd>
+
+        <dt><strong>Ingestion</strong></dt>
+        <dd>The process of loading raw data (events, profiles, partner segments) into Zeotap's data infrastructure. Supports two modes: batch (S3/GCS/SFTP file upload) and streaming (SDK → Pub/Sub → Dataflow). See <a href="03-data-ingestion.html">Ch 3 — Data Ingestion</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- J -->
+    <section id="j">
+      <h2>J</h2>
+      <dl>
+        <dt><strong>JaCoCo</strong></dt>
+        <dd>Java Code Coverage library. Used in Zeotap's SBT build pipeline (via <code>sbt jacoco</code>) to generate XML coverage reports uploaded to Codacy. See <a href="17-cicd.html">Ch 17</a>.</dd>
+
+        <dt><strong>Jaccard Similarity</strong></dt>
+        <dd>A measure of overlap between two sets, computed as |A ∩ B| / |A ∪ B|. Used by the Segment Estimator to calculate the percentage overlap between two audience segments. See <a href="06-audience-management.html">Ch 6</a>.</dd>
+
+        <dt><strong>Journey</strong></dt>
+        <dd>An automated, multi-step marketing workflow in Zeotap's Symphony Workflow Engine. Consists of five block types: ENTRY_CONDITION, CONDITIONAL_SPLIT, MULTIBRANCH, DELAY, and DESTINATION. See <a href="07-customer-journeys.html">Ch 7 — Customer Journeys</a>.</dd>
+
+        <dt><strong>JFrog Artifactory</strong></dt>
+        <dd>A universal binary repository manager. Used by Zeotap alongside Google Artifact Registry to store Maven artifacts (JARs), SBT packages, and shared library releases. See <a href="17-cicd.html">Ch 17</a>.</dd>
+
+        <dt><strong>JOLT</strong></dt>
+        <dd>JSON-to-JSON transformation library. Used by the Akbar authenticator to transform Firebase JWT claims into Zeotap-specific JWT payload format using a declarative spec file. See <a href="14-auth-iam.html">Ch 14</a>.</dd>
+
+        <dt><strong>JWT (JSON Web Token)</strong></dt>
+        <dd>A compact, URL-safe token format used for stateless authentication. Zeotap issues JWTs with a 1-hour TTL from the Akbar service, signed with HMAC-SHA256. Frontend SDKs perform silent refresh before expiry. See <a href="14-auth-iam.html">Ch 14</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- K -->
+    <section id="k">
+      <h2>K</h2>
+      <dl>
+        <dt><strong>Kafka</strong></dt>
+        <dd>Apache Kafka — a distributed event streaming platform. Used by Zeotap as the primary event bus between Collect SDK ingestion and downstream processing pipelines. Monitored via <code>kafka-monitor-connect</code> exporters in EU, US, and IN regions. See <a href="16-observability.html">Ch 16</a>.</dd>
+
+        <dt><strong>Kafka Lag</strong></dt>
+        <dd>The difference between the latest offset produced on a Kafka topic and the offset last consumed by a consumer group. Zeotap monitors consumer lag as a key SLO indicator. See <a href="16-observability.html">Ch 16</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- L -->
+    <section id="l">
+      <h2>L</h2>
+      <dl>
+        <dt><strong>LightGBM</strong></dt>
+        <dd>A gradient boosting framework by Microsoft, optimised for speed on tabular data. Used alongside XGBoost for churn prediction and propensity scoring in Zeotap's ML pipeline. See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+
+        <dt><strong>Lookalike Modelling</strong></dt>
+        <dd>An ML technique that identifies users who share similar attributes to a seed audience (e.g., known purchasers), enabling expansion to high-propensity prospects. Zeotap's implementation uses Vertex AI Matching Engine (Atlas AI). See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+
+        <dt><strong>LRU Cache</strong></dt>
+        <dd>Least-Recently-Used cache — an eviction policy that removes the least recently accessed item when capacity is full. The Segment Estimator uses an LRU cache (TTL 7200s) for audience size query results. See <a href="06-audience-management.html">Ch 6</a>.</dd>
+
+        <dt><strong>LTV (Customer Lifetime Value)</strong></dt>
+        <dd>A prediction of the total revenue a business can expect from a customer over the duration of their relationship. Zeotap's ML platform computes LTV using BG/NBD + Gamma-Gamma models, producing <code>ai_ltv_score</code>. See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- M -->
+    <section id="m">
+      <h2>M</h2>
+      <dl>
+        <dt><strong>MDM Delta Table</strong></dt>
+        <dd>The Master Data Management Delta table — Zeotap's canonical persistent store for Unified Customer Profiles, partitioned by <code>zt_id</code> with full ACID transactional semantics. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>Mermaid</strong></dt>
+        <dd>A JavaScript-based diagramming and charting tool using a Markdown-inspired syntax. Used throughout this documentation to render architecture diagrams, sequence flows, and pipeline flowcharts. See <a href="https://mermaid.js.org">mermaid.js.org</a>.</dd>
+
+        <dt><strong>Microservice</strong></dt>
+        <dd>An independently deployable service with a bounded domain responsibility. Zeotap's platform is entirely microservice-based, running in GKE with each service deployed from its own repository and CI/CD pipeline. See <a href="01-platform-overview.html">Ch 1</a>.</dd>
+
+        <dt><strong>MultiDPMergeProcessor</strong></dt>
+        <dd>A Scala Spark processor in the Profile Store merge pipeline that handles merging attributes from multiple data partners into a single Unified Profile, applying priority rules and conflict resolution logic. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- N -->
+    <section id="n">
+      <h2>N</h2>
+      <dl>
+        <dt><strong>NgRx</strong></dt>
+        <dd>A reactive state management library for Angular, inspired by Redux. Zeotap's Unity frontend uses NgRx for predictable, centralized state management with Actions, Reducers, Effects, and Selectors. See <a href="12-unity-dashboard.html">Ch 12 — Unity Dashboard</a>.</dd>
+
+        <dt><strong>Node Exporter</strong></dt>
+        <dd>A Prometheus exporter that exposes host-level metrics (CPU, memory, disk, network) from Linux servers. Deployed on all GCE instances via Ansible's <code>prometheus-node.yml</code> playbook on port <code>9100</code>. See <a href="16-observability.html">Ch 16</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- O -->
+    <section id="o">
+      <h2>O</h2>
+      <dl>
+        <dt><strong>OAuth 2.0</strong></dt>
+        <dd>An open standard for access delegation. Zeotap's data-destination service manages OAuth tokens for partner integrations (e.g., Google Ads, Meta), handling refresh token rotation and expiry detection automatically. See <a href="08-data-activation.html">Ch 8</a>.</dd>
+
+        <dt><strong>Opt-Out</strong></dt>
+        <dd>A user's exercise of their right to request that their personal data no longer be processed for marketing purposes. Stored in Zeotap's GDPR backend (<code>OptOutUsers</code> table) and propagated to all downstream systems. See <a href="13-privacy-gdpr.html">Ch 13</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- P -->
+    <section id="p">
+      <h2>P</h2>
+      <dl>
+        <dt><strong>PagerDuty</strong></dt>
+        <dd>An incident management and alerting platform. Zeotap routes <code>severity: page</code> alerts from Alertmanager to PagerDuty for on-call engineer notification, with a 30-minute repeat interval. See <a href="16-observability.html">Ch 16</a>.</dd>
+
+        <dt><strong>Play Framework</strong></dt>
+        <dd>A high-performance, reactive web framework for Scala and Java. Used by multiple Zeotap backend services including <code>audiences</code>, <code>data-destination</code>, and <code>gdpr-backend</code>. See <a href="06-audience-management.html">Ch 6</a>, <a href="08-data-activation.html">Ch 8</a>, <a href="13-privacy-gdpr.html">Ch 13</a>.</dd>
+
+        <dt><strong>Profile Store</strong></dt>
+        <dd>Zeotap's core data persistence layer for Unified Customer Profiles. Built on Delta Lake (Apache Spark + HDFS/GCS), implementing a full merge pipeline for multi-source identity and attribute consolidation. See <a href="05-profile-store.html">Ch 5 — Profile Store</a>.</dd>
+
+        <dt><strong>ProfileMergeDriver</strong></dt>
+        <dd>The main Scala Spark class (<code>com.zeotap.profile.merge.drivers.ProfileMergeDriver</code>) that orchestrates the Profile Store merge pipeline, reading CDF from Delta Lake and applying merge processors. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>Prometheus</strong></dt>
+        <dd>An open-source systems monitoring and alerting toolkit. Zeotap's primary metrics backend, scraping 5 GCP projects across 9 zones (EU, US, APAC) with a 1-minute scrape interval. See <a href="16-observability.html">Ch 16 — Observability</a>.</dd>
+
+        <dt><strong>Propensity Score</strong></dt>
+        <dd>A probability (0–1) predicting the likelihood a customer will perform a specific action (purchase, churn, upgrade). Computed by Zeotap's ML platform using XGBoost/LightGBM and stored as <code>ai_propensity_score</code>. See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+
+        <dt><strong>Pub/Sub</strong></dt>
+        <dd>Google Cloud Pub/Sub — a fully managed asynchronous messaging service. Used as Zeotap's event bus between Collect ingestion, Dataflow processing, identity resolution, and erasure pipelines. See <a href="03-data-ingestion.html">Ch 3</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- Q -->
+    <section id="q">
+      <h2>Q</h2>
+      <dl>
+        <dt><strong>Qubole</strong></dt>
+        <dd>A cloud-based big data platform that provides managed Apache Spark, Hive, and Presto clusters. Used by Zeotap for some historical analytics workloads. Configured by Ansible playbooks. See <a href="15-infrastructure.html">Ch 15</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- R -->
+    <section id="r">
+      <h2>R</h2>
+      <dl>
+        <dt><strong>RBAC (Role-Based Access Control)</strong></dt>
+        <dd>An access control model where permissions are assigned to roles, and roles are assigned to users. Zeotap's Akbar authenticator enforces RBAC, with roles like <code>ADMIN</code>, <code>OPERATOR</code>, and <code>VIEWER</code> embedded in JWT claims. See <a href="14-auth-iam.html">Ch 14</a>.</dd>
+
+        <dt><strong>Redshift</strong></dt>
+        <dd>Amazon Redshift — a cloud data warehouse. Used by Zeotap as a secondary analytics store for customer-facing reporting dashboards in Sisense, with data ingested via <code>redshift-reporting-cron</code>. See <a href="11-reporting-bi.html">Ch 11</a>.</dd>
+
+        <dt><strong>Relabel Config</strong></dt>
+        <dd>Prometheus configuration that transforms or filters metric labels during scraping. Used extensively in Zeotap's GCE service discovery to extract GCE labels (<code>role</code>, <code>application</code>, <code>team</code>, <code>owner</code>) as Prometheus labels. See <a href="16-observability.html">Ch 16</a>.</dd>
+
+        <dt><strong>REST Assured</strong></dt>
+        <dd>A Java DSL for testing REST APIs. Used by Zeotap's <code>api-automation</code> and <code>backend-automation-framework</code> test suites for E2E API testing of SmartPixel, ZAI, ZAT, and RBAC endpoints. See <a href="18-testing.html">Ch 18 — Testing</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- S -->
+    <section id="s">
+      <h2>S</h2>
+      <dl>
+        <dt><strong>SBT (Scala Build Tool)</strong></dt>
+        <dd>The primary build tool for Scala/Play Framework projects at Zeotap. Used in CircleCI pipelines to compile, test, and package JARs for services like <code>audiences</code>, <code>profile-store</code>, and <code>gdpr-backend</code>. See <a href="17-cicd.html">Ch 17</a>.</dd>
+
+        <dt><strong>ScalaTest</strong></dt>
+        <dd>The most popular testing library for Scala. Used by Zeotap for unit and integration tests of Spark-based services like Profile Store, combined with <code>spark-testing-base</code> for SparkContext lifecycle management. See <a href="18-testing.html">Ch 18</a>.</dd>
+
+        <dt><strong>Scylla</strong></dt>
+        <dd>A high-performance, drop-in compatible replacement for Apache Cassandra, written in C++. Used by Zeotap's data lake for high-throughput reads/writes. Monitored via Prometheus exporter on port <code>9180</code>. See <a href="16-observability.html">Ch 16</a>.</dd>
+
+        <dt><strong>Secret Manager</strong></dt>
+        <dd>Google Cloud Secret Manager — a service for securely storing API keys, OAuth tokens, passwords, and certificates. All Zeotap microservices retrieve credentials via Secret Manager at runtime, injected as environment variables via K8s <code>secretKeyRef</code>. See <a href="15-infrastructure.html">Ch 15</a>.</dd>
+
+        <dt><strong>Segment Estimator</strong></dt>
+        <dd>A Go microservice (<code>segmentestimator</code>) that provides real-time audience size estimates using distributed bitmap aggregation across sharded nodes. Powers the Audience Builder's live count UI. See <a href="06-audience-management.html">Ch 6</a>.</dd>
+
+        <dt><strong>Sisense</strong></dt>
+        <dd>A business intelligence and analytics platform. Zeotap embeds Sisense dashboards in the Unity Angular frontend using JWT-authenticated iframe embedding, providing customer-facing analytics. See <a href="11-reporting-bi.html">Ch 11</a>.</dd>
+
+        <dt><strong>SLO (Service Level Objective)</strong></dt>
+        <dd>A measurable target for service reliability, e.g., "99.9% of API requests must return in < 500ms" or "error rate must be < 1%". Zeotap defines SLOs as Prometheus alert rules evaluated every 5 minutes. See <a href="16-observability.html">Ch 16</a>.</dd>
+
+        <dt><strong>SmartPixel</strong></dt>
+        <dd>Zeotap's client-side JavaScript tag for event collection on web properties. SmartPixel-3P extends this with server-side pixel firing via the Meta Conversions API, enabling cookieless conversion tracking. See <a href="08-data-activation.html">Ch 8</a>.</dd>
+
+        <dt><strong>Symphony</strong></dt>
+        <dd>Zeotap's internal workflow engine for Customer Journeys. Defines a JSON schema for multi-step marketing automation workflows with branching, delays, and destination actions. See <a href="07-customer-journeys.html">Ch 7</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- T -->
+    <section id="t">
+      <h2>T</h2>
+      <dl>
+        <dt><strong>TCF (Transparency and Consent Framework)</strong></dt>
+        <dd>See <strong>IAB TCF</strong>.</dd>
+
+        <dt><strong>Terraform</strong></dt>
+        <dd>An open-source Infrastructure as Code tool by HashiCorp. Zeotap uses Terraform for all GCP and AWS resource provisioning, organised into reusable modules in the <code>gcp-terraform-modules</code> repository. See <a href="15-infrastructure.html">Ch 15</a>.</dd>
+
+        <dt><strong>Terragrunt</strong></dt>
+        <dd>A thin wrapper for Terraform that provides DRY (Don't Repeat Yourself) configuration reuse across environments (dev/qa/prod). Used to share project IDs, regions, and labels across all Zeotap Terraform modules without duplication. See <a href="15-infrastructure.html">Ch 15</a>.</dd>
+
+        <dt><strong>Time Travel</strong></dt>
+        <dd>A Delta Lake feature enabling queries on historical snapshots of a table using <code>VERSION AS OF</code> or <code>TIMESTAMP AS OF</code> syntax. Used for audit, debugging, and point-in-time profile reconstruction. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- U -->
+    <section id="u">
+      <h2>U</h2>
+      <dl>
+        <dt><strong>Unified Customer Profile (UCP)</strong></dt>
+        <dd>A single, consolidated record for an individual that aggregates identity, behavioural events, and enrichment attributes from all sources. Stored in the MDM Delta table, keyed by <code>zt_id</code>. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>Unity</strong></dt>
+        <dd>Zeotap's web application frontend — an Angular SPA with NgRx state management and lazy-loaded modules for all 7 product areas (ZAT, Insights, Studio, Taxonomy, Connect, Destinations, DPUI). See <a href="12-unity-dashboard.html">Ch 12 — Unity Dashboard</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- V -->
+    <section id="v">
+      <h2>V</h2>
+      <dl>
+        <dt><strong>ValidationProcessor</strong></dt>
+        <dd>A Scala Spark processor in the Profile Store merge pipeline that validates incoming data quality (schema compliance, null checks, format validation) before records are merged into the MDM Delta table. See <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>Vertex AI</strong></dt>
+        <dd>Google Cloud's unified ML platform for training, deploying, and managing ML models. Used by Zeotap for lookalike model training, propensity model training, and the Matching Engine for ANN search in Atlas AI. See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+
+        <dt><strong>VPC (Virtual Private Cloud)</strong></dt>
+        <dd>An isolated network segment within GCP. Zeotap's production infrastructure runs in a custom VPC (<code>zeotap-vpc-prod</code>) with private Google access enabled, ensuring all traffic stays on Google's backbone network. See <a href="15-infrastructure.html">Ch 15</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- W -->
+    <section id="w">
+      <h2>W</h2>
+      <dl>
+        <dt><strong>Workflow Creator Agent</strong></dt>
+        <dd>The first sub-agent in Zeotap's <code>journeys-ai</code> SequentialAgent. Generates a Symphony Workflow JSON from a natural language description using Gemini 2.5 Flash and tool-calling against the client's catalog. See <a href="07-customer-journeys.html">Ch 7</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- X -->
+    <section id="x">
+      <h2>X</h2>
+      <dl>
+        <dt><strong>XGBoost</strong></dt>
+        <dd>An optimised gradient boosting library for supervised learning on tabular data. Used alongside LightGBM in Zeotap's propensity and churn prediction models. See <a href="10-ml-platform.html">Ch 10</a>.</dd>
+      </dl>
+    </section>
+
+    <!-- Z -->
+    <section id="z">
+      <h2>Z</h2>
+      <dl>
+        <dt><strong>ZAI (Zeotap AI)</strong></dt>
+        <dd>Zeotap's AI enrichment service providing taxonomy classification and ML attribute generation via REST API. Exposes <code>/v1/classify</code> for IAB taxonomy and <code>/v1/score</code> for propensity prediction. See <a href="04-genai-zoe.html">Ch 4 — GenAI & Zoe</a>.</dd>
+
+        <dt><strong>ZAT (Zeotap Audience Targeting)</strong></dt>
+        <dd>The primary audience management product module within Unity. Provides the Audience Builder drag-and-drop UI, segment estimation, and audience export functionality. Product ID: 5. See <a href="12-unity-dashboard.html">Ch 12</a>.</dd>
+
+        <dt><strong>Zeotap MCP (Model Context Protocol)</strong></dt>
+        <dd>A microservice exposing Zeotap's data assets to Claude-compatible AI assistants via the Anthropic Model Context Protocol. Runs in the <code>ai</code> GKE namespace (<code>zeotap-mcp</code>, 2 pods). See <a href="04-genai-zoe.html">Ch 4</a>.</dd>
+
+        <dt><strong>Zoe</strong></dt>
+        <dd>Zeotap's GenAI assistant embedded in the Unity dashboard. Powered by Claude (Anthropic) via the MCP protocol, enabling natural language queries over customer data, segment creation, and insights generation. See <a href="04-genai-zoe.html">Ch 4 — GenAI & Zoe</a>.</dd>
+
+        <dt><strong>zt_id</strong></dt>
+        <dd>Zeotap's canonical, internally assigned identifier for a unified customer profile. All identifiers (email SHA-256, IDFA, cookie IDs, etc.) resolve to a single <code>zt_id</code> via the ID Graph. Primary key in the MDM Delta table. See <a href="03-identity-resolution.html">Ch 3</a> and <a href="05-profile-store.html">Ch 5</a>.</dd>
+
+        <dt><strong>ZUILibrary</strong></dt>
+        <dd>Zeotap's internal Angular component library and design system, shared across all product modules in Unity. Provides consistent UI components, typography, colour tokens, and layout primitives. See <a href="12-unity-dashboard.html">Ch 12</a>.</dd>
+      </dl>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Documentation Complete</div>
+      <a href="index.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">← Return to Documentation Index</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

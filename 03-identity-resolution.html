@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identity Resolution & ID Graph — Zeotap CDP Docs</title>
+  <link rel="stylesheet" href="assets/style.css?v=4">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#059669', primaryTextColor: '#fff', primaryBorderColor: '#047857', lineColor: '#6B7280', secondaryColor: '#ECFDF5', tertiaryColor: '#f9fafb' } });</script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <a href="index.html" class="sidebar-logo">
+    <div class="logo-mark">Z</div>
+    <div>
+      <div class="logo-text">Zeotap</div>
+      <div class="logo-sub">Technical Docs</div>
+    </div>
+  </a>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <nav class="sidebar-nav">
+      <a href="index.html">Table of Contents</a>
+      <a href="01-platform-overview.html">Platform Overview</a>
+    </nav>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">On This Page</div>
+    <nav class="sidebar-nav sub-nav">
+      <a href="#overview">Overview</a>
+      <a href="#id-types">Supported ID Types</a>
+      <a href="#ucid">Universal Customer ID</a>
+      <a href="#architecture">Architecture (Go)</a>
+      <a href="#data-stores">Data Stores</a>
+      <a href="#resolution-flow">Resolution Flow</a>
+      <a href="#caching">Multi-Level Caching</a>
+      <a href="#api">Library API</a>
+    </nav>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Core Modules</div>
+    <nav class="sidebar-nav">
+      <a href="02-data-collection.html">Data Collection & SDKs</a>
+      <a href="03-identity-resolution.html" class="active">Identity Resolution</a>
+      <a href="04-genai-zoe.html">GenAI / Zoe</a>
+    </nav>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">›</span>
+      <a href="#">Identity & Unification</a>
+      <span class="sep">›</span>
+      <span class="current">Identity Resolution & ID Graph</span>
+    </div>
+    <div class="topbar-actions">
+      <span class="version-badge">Identity</span>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="module-tag">Identity & Unification</div>
+      <h1>Identity Resolution & ID Graph</h1>
+      <p class="lead">
+        Zeotap's identity layer stitches together multiple device identifiers, PII hashes, and behavioral signals into a single <strong>Universal Customer ID (UCID)</strong> — using a probabilistic + deterministic graph engine backed by Google BigTable and Redis.
+      </p>
+      <div class="meta">
+        <div class="meta-item"><code>id-graph-lib-v2-go</code> (Go 1.24)</div>
+        <div class="meta-divider"></div>
+        <div class="meta-item">BigTable · Redis · Pub/Sub</div>
+        <div class="meta-divider"></div>
+        <div class="meta-item">PGP-encrypted PII</div>
+      </div>
+    </div>
+
+    <!-- ── OVERVIEW ── -->
+    <h2 id="overview">Overview</h2>
+    <p>
+      Identity resolution is the process of linking multiple partial identifiers (cookie ID, device ID, hashed email, phone number, etc.) to a single canonical customer record. Zeotap's ID graph performs this in near real-time as events arrive, enabling downstream systems to operate on a unified customer view.
+    </p>
+
+    <div class="callout callout-info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <div class="callout-title">Deterministic vs Probabilistic Matching</div>
+        <p class="callout-text">Zeotap uses <strong>deterministic matching</strong> (exact ID overlap) as the primary resolution method, supported by <strong>probabilistic matching</strong> (device fingerprinting, behavioral signals) for anonymous-to-known stitching across devices.</p>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat">
+        <span class="stat-value" style="color:#059669">&lt;5ms</span>
+        <div class="stat-label">UCID lookup p99</div>
+      </div>
+      <div class="stat">
+        <span class="stat-value" style="color:#059669">15+</span>
+        <div class="stat-label">Supported ID Types</div>
+      </div>
+      <div class="stat">
+        <span class="stat-value" style="color:#059669">2-tier</span>
+        <div class="stat-label">Cache Architecture</div>
+      </div>
+      <div class="stat">
+        <span class="stat-value" style="color:#059669">PGP</span>
+        <div class="stat-label">PII Encryption</div>
+      </div>
+    </div>
+
+    <!-- ── ID TYPES ── -->
+    <h2 id="id-types">Supported ID Types</h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>ID Type</th><th>Key Constant</th><th>Source</th><th>Deterministic</th><th>PII</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hashed Email (SHA-256)</td>
+            <td><code>email_sha256</code></td>
+            <td>SDK / CRM</td>
+            <td>✅ Yes</td>
+            <td>⚠️ Pseudonymous</td>
+          </tr>
+          <tr>
+            <td>Hashed Phone (SHA-256)</td>
+            <td><code>phone_sha256</code></td>
+            <td>SDK / CRM</td>
+            <td>✅ Yes</td>
+            <td>⚠️ Pseudonymous</td>
+          </tr>
+          <tr>
+            <td>Cookie ID (1st party)</td>
+            <td><code>zeotap_cookie</code></td>
+            <td>Web SDK</td>
+            <td>✅ Yes</td>
+            <td>🟢 No</td>
+          </tr>
+          <tr>
+            <td>IDFA (iOS)</td>
+            <td><code>idfa</code></td>
+            <td>iOS SDK</td>
+            <td>✅ Yes</td>
+            <td>🟢 No</td>
+          </tr>
+          <tr>
+            <td>GAID (Android)</td>
+            <td><code>gaid</code></td>
+            <td>Android SDK</td>
+            <td>✅ Yes</td>
+            <td>🟢 No</td>
+          </tr>
+          <tr>
+            <td>IDFV (Vendor ID)</td>
+            <td><code>idfv</code></td>
+            <td>iOS SDK</td>
+            <td>✅ Yes</td>
+            <td>🟢 No</td>
+          </tr>
+          <tr>
+            <td>Customer User ID</td>
+            <td><code>cuid</code></td>
+            <td>SDK / Server</td>
+            <td>✅ Yes</td>
+            <td>🟢 No</td>
+          </tr>
+          <tr>
+            <td>Universal Customer ID</td>
+            <td><code>ucid</code></td>
+            <td>System-generated</td>
+            <td>✅ Yes</td>
+            <td>🟢 No</td>
+          </tr>
+          <tr>
+            <td>Third-Party ID (3PID)</td>
+            <td><code>3pid_{partner}</code></td>
+            <td>Partners / DSPs</td>
+            <td>✅ Yes</td>
+            <td>🟢 No</td>
+          </tr>
+          <tr>
+            <td>Device Fingerprint</td>
+            <td><code>fingerprint</code></td>
+            <td>Web SDK</td>
+            <td>❌ Probabilistic</td>
+            <td>🟢 No</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── UCID ── -->
+    <h2 id="ucid">Universal Customer ID (UCID)</h2>
+    <p>
+      The UCID is Zeotap's canonical identifier assigned to every resolved customer entity. It is a deterministic, globally unique ID generated from the first known deterministic identifier and propagated through the ID graph as new IDs are linked.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">go</span><button class="code-copy">Copy</button></div>
+      <pre><code><span class="tok-comment">// types/ucid.go</span>
+<span class="tok-comment">// UCID structure from id-graph-lib-v2-go</span>
+
+<span class="tok-keyword">type</span> <span class="tok-type">UCID</span> <span class="tok-keyword">struct</span> <span class="tok-punctuation">{</span>
+    ID          <span class="tok-type">string</span>    <span class="tok-comment">// Canonical UCID (UUID v4)</span>
+    OrgID       <span class="tok-type">int64</span>     <span class="tok-comment">// Organization scoping</span>
+    CreatedAt   <span class="tok-type">time.Time</span>
+    LastSeenAt  <span class="tok-type">time.Time</span>
+    Confidence  <span class="tok-type">float64</span>   <span class="tok-comment">// Resolution confidence [0.0 - 1.0]</span>
+    IDCount     <span class="tok-type">int</span>       <span class="tok-comment">// Number of linked identifiers</span>
+<span class="tok-punctuation">}</span>
+
+<span class="tok-keyword">type</span> <span class="tok-type">UserProfile</span> <span class="tok-keyword">struct</span> <span class="tok-punctuation">{</span>
+    UCID        <span class="tok-type">UCID</span>
+    Identifiers <span class="tok-punctuation">[]</span><span class="tok-type">Identifier</span>
+    Attributes  <span class="tok-type">map</span><span class="tok-punctuation">[</span><span class="tok-type">string</span><span class="tok-punctuation">]</span><span class="tok-keyword">interface</span><span class="tok-punctuation">{}</span>
+    Segments    <span class="tok-punctuation">[]</span><span class="tok-type">string</span>
+    Consent     <span class="tok-type">ConsentRecord</span>
+    RawPII      <span class="tok-type">RawPIIRecord</span>   <span class="tok-comment">// PGP-encrypted</span>
+<span class="tok-punctuation">}</span>
+
+<span class="tok-keyword">type</span> <span class="tok-type">Identifier</span> <span class="tok-keyword">struct</span> <span class="tok-punctuation">{</span>
+    IDType      <span class="tok-type">string</span>    <span class="tok-comment">// e.g. "email_sha256", "gaid", "ucid"</span>
+    IDValue     <span class="tok-type">string</span>
+    Source      <span class="tok-type">string</span>    <span class="tok-comment">// origin system</span>
+    Timestamp   <span class="tok-type">time.Time</span>
+    IsPrimary   <span class="tok-type">bool</span>
+<span class="tok-punctuation">}</span></code></pre>
+    </div>
+
+    <!-- ── ARCHITECTURE ── -->
+    <h2 id="architecture">Architecture (id-graph-lib-v2-go)</h2>
+    <p>
+      The Go identity library is designed for high-throughput read/write operations. It abstracts the underlying storage from business logic through a clean service layer.
+    </p>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🏗️ Identity Graph Library — Component Diagram</div>
+      <div class="mermaid">
+graph TB
+    subgraph CLIENT["Callers (Services)"]
+      API_SVC["ID Resolution\nService"]
+      COLLECT["Collect\nPipeline"]
+      SEG["Audience\nEngine"]
+    end
+
+    subgraph LIB["id-graph-lib-v2-go"]
+      subgraph SVC["services/"]
+        IDR["IDR Service\n(identity resolution)"]
+        MERGE["Merge Service\n(ID stitching)"]
+        LOOKUP["Lookup Service\n(read path)"]
+      end
+
+      subgraph CACHE["cache/"]
+        L1["L1 Cache\n(in-memory, sync.Map)"]
+        L2["L2 Cache\n(Redis)"]
+        CHAIN["Cache Chain\n(L1 → L2 → BigTable)"]
+      end
+
+      subgraph CLIENTS_LAYER["clients/"]
+        BT_CLI["BigTable Client\n(bigtable.go)"]
+        PS_CLI["Pub/Sub Client\n(pubsub.go)"]
+        SM_CLI["Secret Manager\n(secretmanager.go)"]
+        CT_CLI["Cloud Tasks\n(cloudtasks.go)"]
+      end
+
+      subgraph DB["db/"]
+        BT_DB["BigTable DAO"]
+      end
+    end
+
+    subgraph GCP["Google Cloud Platform"]
+      BT["Cloud BigTable\n(primary store)"]
+      PUBSUB["Cloud Pub/Sub\n(async updates)"]
+      REDIS["Cloud Memorystore\n(Redis)"]
+    end
+
+    CLIENT --> SVC
+    SVC --> CHAIN
+    CHAIN --> L1
+    CHAIN --> L2
+    CHAIN --> BT_DB
+    L2 --> REDIS
+    BT_DB --> BT_CLI
+    BT_CLI --> BT
+    SVC --> PS_CLI
+    PS_CLI --> PUBSUB
+
+    style LIB fill:#ECFDF5,stroke:#6EE7B7
+    style GCP fill:#EFF6FF,stroke:#93C5FD
+    style CLIENT fill:#F9FAFB,stroke:#E5E7EB
+      </div>
+    </div>
+
+    <!-- ── DATA STORES ── -->
+    <h2 id="data-stores">Data Store Design</h2>
+    <h3>BigTable Schema</h3>
+    <p>
+      Google Cloud BigTable stores the identity graph as a wide-column table. Each row key encodes the organization ID and identifier value; column families partition identity vs profile data.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">text — BigTable Schema</span></div>
+      <pre><code><span class="tok-comment">Table: zeotap-identity-graph</span>
+
+<span class="tok-comment">Row Key format:</span>
+  <span class="tok-key">{org_id}#{id_type}#{id_value_hash}</span>
+  <span class="tok-string">Example: "1234#email_sha256#a3b4c5d6..."</span>
+
+<span class="tok-comment">Column Families:</span>
+
+  <span class="tok-type">ids:</span>                    <span class="tok-comment">// Identity mapping</span>
+    ids:ucid               → "ucid_9f8e7d6c-..."
+    ids:linked_ids         → JSON array of linked identifiers
+    ids:id_count           → "15"
+    ids:created_at         → "2024-01-15T10:30:00Z"
+    ids:last_seen          → "2026-02-27T09:15:00Z"
+    ids:confidence         → "0.97"
+
+  <span class="tok-type">profile:</span>               <span class="tok-comment">// User attributes</span>
+    profile:age_band       → "25-34"
+    profile:gender         → "M"
+    profile:interests      → JSON array
+    profile:segments       → JSON array of segment IDs
+
+  <span class="tok-type">consent:</span>              <span class="tok-comment">// Consent state</span>
+    consent:analytics      → "1"
+    consent:marketing      → "0"
+    consent:updated_at     → "2026-01-20T14:00:00Z"
+
+  <span class="tok-type">pii_enc:</span>              <span class="tok-comment">// PGP-encrypted raw PII (restricted)</span>
+    pii_enc:email          → "&lt;PGP ENCRYPTED BLOCK&gt;"
+    pii_enc:phone          → "&lt;PGP ENCRYPTED BLOCK&gt;"</code></pre>
+    </div>
+
+    <!-- ── RESOLUTION FLOW ── -->
+    <h2 id="resolution-flow">Identity Resolution Flow</h2>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🔄 Identity Resolution — Decision Flow</div>
+      <div class="mermaid">
+flowchart TD
+    A["📥 Incoming Event\n{orgId, idType, idValue}"] --> B["Hash & Normalize\nID value"]
+    B --> C{"BigTable Lookup\nRow exists?"}
+
+    C -->|"Hit — UCID found"| D["Return existing UCID\nUpdate last_seen timestamp"]
+    C -->|"Miss — new ID"| E{"Any linked IDs\nin event payload?"}
+
+    E -->|"Yes — has email/phone/cuid"| F["Look up each linked ID\nin BigTable"]
+    E -->|"No — truly anonymous"| G["Generate new UCID\n(UUID v4)"]
+
+    F --> H{"Any linked IDs\nhave existing UCID?"}
+    H -->|"Yes — one match"| I["Assign existing UCID\nto new identifier"]
+    H -->|"Multiple matches"| J["ID Merge\nSelect highest-confidence UCID\nMerge the rest"]
+    H -->|"No matches"| G
+
+    G --> K["Write new row\nto BigTable"]
+    I --> K
+    J --> K
+
+    K --> L["Publish merge event\nto Pub/Sub"]
+    D --> M["✅ Return UCID"]
+    K --> M
+    L --> N["Async: Update\ndownstream profile stores"]
+
+    style D fill:#DCFCE7,stroke:#6EE7B7
+    style G fill:#DBEAFE,stroke:#93C5FD
+    style J fill:#FEF3C7,stroke:#FCD34D
+    style M fill:#DCFCE7,stroke:#6EE7B7
+      </div>
+    </div>
+
+    <!-- ── CACHING ── -->
+    <h2 id="caching">Multi-Level Cache Architecture</h2>
+    <p>
+      To serve identity lookups at &lt;5ms p99, the library implements a two-tier cache chain that intercepts reads before they hit BigTable.
+    </p>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🗄️ Cache Read Path</div>
+      <div class="mermaid">
+sequenceDiagram
+    participant S as Service
+    participant L1 as L1 Cache (Memory)
+    participant L2 as L2 Cache (Redis)
+    participant BT as BigTable
+
+    S->>L1: GetUCID(orgId, idType, idValue)
+    alt L1 Hit (TTL: 60s)
+        L1-->>S: UCID (from memory)
+    else L1 Miss
+        L1->>L2: Forward lookup
+        alt L2 Hit (TTL: 300s)
+            L2-->>L1: UCID (populate L1)
+            L1-->>S: UCID
+        else L2 Miss
+            L2->>BT: ReadRow(rowKey)
+            BT-->>L2: Row data
+            L2-->>L1: UCID (populate both caches)
+            L1-->>S: UCID
+        end
+    end
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">go</span><button class="code-copy">Copy</button></div>
+      <pre><code><span class="tok-comment">// cache/chain.go — Cache chain implementation</span>
+
+<span class="tok-keyword">type</span> <span class="tok-type">CacheChain</span> <span class="tok-keyword">struct</span> <span class="tok-punctuation">{</span>
+    L1  <span class="tok-type">*MemoryCache</span>   <span class="tok-comment">// sync.Map — goroutine-safe</span>
+    L2  <span class="tok-type">*RedisCache</span>    <span class="tok-comment">// Redis with configurable TTL</span>
+    DB  <span class="tok-type">IDRDatabase</span>    <span class="tok-comment">// BigTable DAO interface</span>
+<span class="tok-punctuation">}</span>
+
+<span class="tok-keyword">func</span> <span class="tok-punctuation">(</span>c <span class="tok-operator">*</span><span class="tok-type">CacheChain</span><span class="tok-punctuation">)</span> <span class="tok-function">GetUCID</span><span class="tok-punctuation">(</span>ctx <span class="tok-type">context.Context</span><span class="tok-punctuation">,</span>
+    orgID <span class="tok-type">int64</span><span class="tok-punctuation">,</span> idType<span class="tok-punctuation">,</span> idValue <span class="tok-type">string</span><span class="tok-punctuation">)</span> <span class="tok-punctuation">(</span><span class="tok-type">string</span><span class="tok-punctuation">,</span> <span class="tok-type">error</span><span class="tok-punctuation">) {</span>
+
+    key <span class="tok-operator">:=</span> <span class="tok-function">buildCacheKey</span><span class="tok-punctuation">(</span>orgID<span class="tok-punctuation">,</span> idType<span class="tok-punctuation">,</span> idValue<span class="tok-punctuation">)</span>
+
+    <span class="tok-comment">// 1. L1 — in-process memory</span>
+    <span class="tok-keyword">if</span> ucid<span class="tok-punctuation">,</span> ok <span class="tok-operator">:=</span> c<span class="tok-punctuation">.</span>L1<span class="tok-punctuation">.</span><span class="tok-function">Get</span><span class="tok-punctuation">(</span>key<span class="tok-punctuation">);</span> ok <span class="tok-punctuation">{</span>
+        <span class="tok-keyword">return</span> ucid<span class="tok-punctuation">,</span> <span class="tok-keyword">nil</span>
+    <span class="tok-punctuation">}</span>
+
+    <span class="tok-comment">// 2. L2 — Redis</span>
+    <span class="tok-keyword">if</span> ucid<span class="tok-punctuation">,</span> err <span class="tok-operator">:=</span> c<span class="tok-punctuation">.</span>L2<span class="tok-punctuation">.</span><span class="tok-function">Get</span><span class="tok-punctuation">(</span>ctx<span class="tok-punctuation">,</span> key<span class="tok-punctuation">);</span> err <span class="tok-operator">==</span> <span class="tok-keyword">nil</span> <span class="tok-punctuation">{</span>
+        c<span class="tok-punctuation">.</span>L1<span class="tok-punctuation">.</span><span class="tok-function">Set</span><span class="tok-punctuation">(</span>key<span class="tok-punctuation">,</span> ucid<span class="tok-punctuation">,</span> <span class="tok-number">60</span><span class="tok-operator">*</span>time<span class="tok-punctuation">.</span>Second<span class="tok-punctuation">)</span>
+        <span class="tok-keyword">return</span> ucid<span class="tok-punctuation">,</span> <span class="tok-keyword">nil</span>
+    <span class="tok-punctuation">}</span>
+
+    <span class="tok-comment">// 3. BigTable — source of truth</span>
+    profile<span class="tok-punctuation">,</span> err <span class="tok-operator">:=</span> c<span class="tok-punctuation">.</span>DB<span class="tok-punctuation">.</span><span class="tok-function">GetProfile</span><span class="tok-punctuation">(</span>ctx<span class="tok-punctuation">,</span> orgID<span class="tok-punctuation">,</span> idType<span class="tok-punctuation">,</span> idValue<span class="tok-punctuation">)</span>
+    <span class="tok-keyword">if</span> err <span class="tok-operator">!=</span> <span class="tok-keyword">nil</span> <span class="tok-punctuation">{</span>
+        <span class="tok-keyword">return</span> <span class="tok-string">""</span><span class="tok-punctuation">,</span> err
+    <span class="tok-punctuation">}</span>
+
+    <span class="tok-comment">// Backfill caches</span>
+    c<span class="tok-punctuation">.</span>L2<span class="tok-punctuation">.</span><span class="tok-function">Set</span><span class="tok-punctuation">(</span>ctx<span class="tok-punctuation">,</span> key<span class="tok-punctuation">,</span> profile<span class="tok-punctuation">.</span>UCID<span class="tok-punctuation">.</span>ID<span class="tok-punctuation">,</span> <span class="tok-number">5</span><span class="tok-operator">*</span>time<span class="tok-punctuation">.</span>Minute<span class="tok-punctuation">)</span>
+    c<span class="tok-punctuation">.</span>L1<span class="tok-punctuation">.</span><span class="tok-function">Set</span><span class="tok-punctuation">(</span>key<span class="tok-punctuation">,</span> profile<span class="tok-punctuation">.</span>UCID<span class="tok-punctuation">.</span>ID<span class="tok-punctuation">,</span> <span class="tok-number">60</span><span class="tok-operator">*</span>time<span class="tok-punctuation">.</span>Second<span class="tok-punctuation">)</span>
+    <span class="tok-keyword">return</span> profile<span class="tok-punctuation">.</span>UCID<span class="tok-punctuation">.</span>ID<span class="tok-punctuation">,</span> <span class="tok-keyword">nil</span>
+<span class="tok-punctuation">}</span></code></pre>
+    </div>
+
+    <!-- ── API ── -->
+    <h2 id="api">Library API Reference</h2>
+    <p>Core functions exposed by <code>id-graph-lib-v2-go</code> for integration by upstream services:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Function</th><th>Signature</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GetUCID</code></td>
+            <td><code>(ctx, orgID, idType, idValue) → (ucid, error)</code></td>
+            <td>Look up or resolve UCID for a given identifier. Creates new UCID if not found.</td>
+          </tr>
+          <tr>
+            <td><code>GetProfile</code></td>
+            <td><code>(ctx, orgID, ucid) → (UserProfile, error)</code></td>
+            <td>Fetch the full customer profile by UCID, including all linked IDs, attributes, segments.</td>
+          </tr>
+          <tr>
+            <td><code>UpsertIdentifier</code></td>
+            <td><code>(ctx, orgID, ucid, identifier) → error</code></td>
+            <td>Link a new identifier to an existing UCID. Triggers merge if identifier is already linked to another UCID.</td>
+          </tr>
+          <tr>
+            <td><code>MergeUCIDs</code></td>
+            <td><code>(ctx, orgID, primary, secondary) → error</code></td>
+            <td>Merge two UCIDs into one. All identifiers from secondary are re-linked to primary.</td>
+          </tr>
+          <tr>
+            <td><code>DeleteProfile</code></td>
+            <td><code>(ctx, orgID, ucid) → error</code></td>
+            <td>GDPR right-to-erasure. Deletes all rows related to a UCID across all identifier types.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-danger">
+      <div class="callout-icon">🚨</div>
+      <div class="callout-body">
+        <div class="callout-title">GDPR Deletion — Irreversible</div>
+        <p class="callout-text"><code>DeleteProfile</code> performs a <strong>hard delete</strong> across BigTable, all cache layers, and triggers a Pub/Sub event for downstream deletion. This operation cannot be undone. Requires <code>gdpr:delete</code> IAM role. See Chapter 13 for the full GDPR workflow.</p>
+      </div>
+    </div>
+
+    <hr>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">
+      <a href="02-data-collection.html" style="font-size:14px;font-weight:600">← Data Collection & SDKs</a>
+      <a href="04-genai-zoe.html" style="font-size:14px;font-weight:600;background:var(--brand-primary);color:white;padding:10px 20px;border-radius:8px;text-decoration:none">Chapter 9: GenAI / Zoe →</a>
+    </div>
+  </div>
+</div>
+
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

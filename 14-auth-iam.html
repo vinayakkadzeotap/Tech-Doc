@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 14: Authentication & IAM — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART VI — GOVERNANCE</div>
+      <a href="13-privacy-gdpr.html" class="nav-item">Privacy & GDPR</a>
+      <a href="14-auth-iam.html" class="nav-item active">Auth & IAM</a>
+      <a href="15-infrastructure.html" class="nav-item">Infrastructure</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#akbar" class="nav-item">Akbar Authenticator</a>
+      <a href="#rbac" class="nav-item">RBAC Model</a>
+      <a href="#token-flow" class="nav-item">Token Lifecycle</a>
+      <a href="#firebase" class="nav-item">Firebase Auth</a>
+      <a href="#api-keys" class="nav-item">API Key Management</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Part VI — Governance</span><span>›</span>
+        <span>Authentication & IAM</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Authentication & IAM</h1>
+      <p class="page-subtitle">Zeotap's multi-layer identity and access management: Akbar RBAC authenticator, Firebase-based SSO, JWT lifecycle management, and role-based product permissions.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">Akbar</div><div class="stat-label">RBAC Engine</div></div>
+      <div class="stat-card"><div class="stat-value">Firebase Auth</div><div class="stat-label">SSO Provider</div></div>
+      <div class="stat-card"><div class="stat-value">JWT</div><div class="stat-label">Token Standard</div></div>
+      <div class="stat-card"><div class="stat-value">JOLT</div><div class="stat-label">Token Transformation</div></div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>IAM Architecture</h2>
+      <p>Zeotap's authentication and authorisation layer uses a two-tier model:</p>
+      <ul>
+        <li><strong>Authentication</strong> — Handled by Firebase Authentication (Google Identity Platform), providing SSO via Google, SAML, and email/password.</li>
+        <li><strong>Authorisation</strong> — Handled by <strong>Akbar</strong> (<code>akbar-the-authenticator</code>), Zeotap's internal RBAC library. Akbar validates JWT tokens, resolves user roles, and enforces product-level permissions.</li>
+      </ul>
+
+      <div class="mermaid">
+sequenceDiagram
+    participant User as User (Browser)
+    participant Unity as Unity SPA
+    participant Firebase as Firebase Auth<br/>(Google Identity)
+    participant Akbar as Akbar<br/>(RBAC Authenticator)
+    participant API as Backend API<br/>(audiences, destinations...)
+
+    User->>Unity: Login (Google SSO or email)
+    Unity->>Firebase: signInWithPopup / signInWithEmailAndPassword
+    Firebase-->>Unity: Firebase ID Token (JWT)
+    Unity->>Akbar: POST /auth/login { firebase_token }
+    Akbar->>Firebase: Verify ID Token (Firebase Admin SDK)
+    Firebase-->>Akbar: Verified claims { uid, email, org_id }
+    Akbar->>Akbar: Lookup RBAC roles for user+org
+    Akbar-->>Unity: Zeotap Session JWT { roles, products, org_id }
+    Unity->>Unity: Store JWT in localStorage
+    Unity->>API: Any request with Authorization: Bearer {jwt}
+    API->>Akbar: Validate token + check permission
+    Akbar-->>API: { valid: true, userId, roles }
+    API-->>Unity: Authorized response
+      </div>
+    </section>
+
+    <!-- Akbar -->
+    <section id="akbar">
+      <h2>Akbar RBAC Authenticator</h2>
+      <p>The <code>akbar-the-authenticator</code> Maven library (<code>com.zeotap.backend:rbac-authenticator</code>) is a shared Java library embedded in all Zeotap backend services. It provides:</p>
+
+      <ul>
+        <li><strong>JWT validation</strong> — Verifies Zeotap-issued session tokens using shared secret or RSA public key</li>
+        <li><strong>RBAC resolution</strong> — Maps user+org to product entitlements and permission sets</li>
+        <li><strong>Async validation</strong> — Non-blocking token check via <code>AsyncRbacAuthUtil</code></li>
+        <li><strong>Exception handling</strong> — <code>InvalidTokenException</code>, <code>RbacAuthException</code>, <code>InvalidResponseException</code></li>
+      </ul>
+
+      <h3>Core Classes</h3>
+      <pre><code class="language-java">// com.zeotap.backend.akbar.utils.CommonUtils
+// Token validation utilities using JOLT JSON transformation
+
+// RbacLoginRequestDTO — login request
+public class RbacLoginRequestDTO {
+    private String firebaseToken;   // Firebase ID token from frontend
+    private Integer orgId;          // Org context for multi-org users
+}
+
+// RbacRequestDTO — per-request authorisation check
+public class RbacRequestDTO {
+    private String sessionToken;    // Zeotap JWT
+    private String resource;        // resource being accessed (e.g., "segments")
+    private String action;          // "read" | "write" | "delete" | "admin"
+}
+
+// TokenStatus enum
+public enum TokenStatus { ALL }     // all active token states
+
+// FetchPathsConfig enum — API endpoint configurations for RBAC lookups
+public enum FetchPathsConfig {
+    USER_PRODUCTS("/rbac/v1/user/products"),
+    USER_ROLES("/rbac/v1/user/roles"),
+    ORG_USERS("/rbac/v1/org/users");
+}</code></pre>
+
+      <h3>JOLT Token Transformation</h3>
+      <p>Akbar uses the <strong>JOLT</strong> library (<code>com.bazaarvoice.jolt</code>) to transform token payloads between Firebase claim format and Zeotap internal RBAC format without manual field mapping:</p>
+
+      <pre><code class="language-json">// JOLT spec: Firebase claims → Zeotap RBAC token
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "uid":      "userId",
+      "email":    "email",
+      "org_id":   "orgId",
+      "custom_claims": {
+        "products": "products",
+        "roles":    "roles"
+      }
+    }
+  },
+  {
+    "operation": "default",
+    "spec": {
+      "tokenVersion": "2",
+      "issuer": "zeotap"
+    }
+  }
+]</code></pre>
+    </section>
+
+    <!-- RBAC Model -->
+    <section id="rbac">
+      <h2>RBAC Model</h2>
+      <p>The RBAC model follows a <strong>User → Role → Permission</strong> hierarchy, scoped to organisations:</p>
+
+      <div class="mermaid">
+graph LR
+    USER["User"] -->|belongs to| ORG["Organisation"]
+    USER -->|has| ROLES["Roles[]"]
+    ROLES -->|grants| PERMS["Permissions[]"]
+    PERMS -->|on| RESOURCES["Resources<br/>(segments, destinations,<br/>reports, admin)"]
+    ORG -->|licensed for| PRODUCTS["Products[]<br/>(ZAT, Insights, Studio...)"]
+
+    style USER fill:#e3f2fd,stroke:#1565c0
+    style ROLES fill:#f3e5f5,stroke:#7b1fa2
+    style PRODUCTS fill:#e8f5e9,stroke:#2e7d32
+      </div>
+
+      <h3>Standard Roles</h3>
+      <table>
+        <thead>
+          <tr><th>Role</th><th>Products Accessible</th><th>Permissions</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>ORG_ADMIN</code></td><td>All</td><td>Full CRUD + user management + billing</td></tr>
+          <tr><td><code>PRODUCT_ADMIN</code></td><td>Licensed products</td><td>Full CRUD on assigned products</td></tr>
+          <tr><td><code>ANALYST</code></td><td>Insights, Reporting</td><td>Read-only on all data, export</td></tr>
+          <tr><td><code>MARKETER</code></td><td>Targeting, Studio</td><td>Create/edit audiences and journeys</td></tr>
+          <tr><td><code>READ_ONLY</code></td><td>Assigned products</td><td>Read-only, no exports</td></tr>
+          <tr><td><code>DATA_PARTNER</code></td><td>DPUI only</td><td>Upload data, view match reports</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Token Flow -->
+    <section id="token-flow">
+      <h2>Token Lifecycle</h2>
+
+      <div class="mermaid">
+stateDiagram-v2
+    [*] --> ISSUED: Login successful
+    ISSUED --> ACTIVE: Token stored in localStorage
+    ACTIVE --> ACTIVE: API calls (add to every request)
+    ACTIVE --> REFRESHING: Token TTL within 5 min of expiry
+    REFRESHING --> ACTIVE: Silent refresh (Firebase refresh token)
+    ACTIVE --> EXPIRED: TTL exceeded (default 1 hour)
+    EXPIRED --> [*]: User redirected to login
+    ACTIVE --> REVOKED: Admin revokes / user logs out
+    REVOKED --> [*]: Immediate invalidation
+      </div>
+
+      <h3>JWT Payload Structure</h3>
+      <pre><code class="language-json">// Zeotap Session JWT — decoded payload
+{
+  "sub": "uid_firebase_abc123",
+  "email": "jane@company.com",
+  "userId": 12345,
+  "orgId": 4521,
+  "orgName": "Acme Corp",
+  "products": {
+    "5":  { "name": "ZAT",          "roles": ["MARKETER"] },
+    "8":  { "name": "INSIGHTS",     "roles": ["ANALYST"] },
+    "12": { "name": "DESTINATIONS", "roles": ["PRODUCT_ADMIN"] }
+  },
+  "roles": ["MARKETER", "ANALYST", "PRODUCT_ADMIN"],
+  "issuer": "zeotap",
+  "tokenVersion": "2",
+  "iat": 1698825600,
+  "exp": 1698829200,
+  "jti": "jwt_uuid_xyz789"
+}</code></pre>
+    </section>
+
+    <!-- Firebase -->
+    <section id="firebase">
+      <h2>Firebase Authentication</h2>
+      <p>The <code>firebase-authenticator</code> library wraps the Firebase Admin SDK for server-side token verification. It is used by Akbar to validate incoming Firebase ID tokens before issuing Zeotap session JWTs.</p>
+
+      <pre><code class="language-java">// Server-side Firebase token verification (Java)
+FirebaseApp.initializeApp(FirebaseOptions.builder()
+    .setCredentials(GoogleCredentials.getApplicationDefault())
+    .setProjectId("zeotap-prod")
+    .build());
+
+// Verify Firebase token
+FirebaseToken decodedToken = FirebaseAuth.getInstance()
+    .verifyIdToken(firebaseIdToken);
+
+String uid    = decodedToken.getUid();
+String email  = decodedToken.getEmail();
+Map<String, Object> claims = decodedToken.getClaims();</code></pre>
+
+      <h3>Supported Auth Providers</h3>
+      <table>
+        <thead>
+          <tr><th>Provider</th><th>Use Case</th><th>Configuration</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Google SSO</td><td>Internal Zeotap employees + Google Workspace clients</td><td>Firebase Google Sign-In</td></tr>
+          <tr><td>Email / Password</td><td>External clients and partners</td><td>Firebase Email Auth with email verification</td></tr>
+          <tr><td>SAML 2.0</td><td>Enterprise SSO (Okta, Azure AD, Ping)</td><td>Firebase SAML provider</td></tr>
+          <tr><td>API Keys</td><td>Server-to-server API integrations</td><td>Zeotap-issued API keys (separate from user JWTs)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- API Keys -->
+    <section id="api-keys">
+      <h2>API Key Management</h2>
+      <p>For machine-to-machine integrations (SDK ingestion, batch activation), Zeotap issues org-scoped API keys independent of user JWTs:</p>
+
+      <pre><code class="language-json">// API Key structure
+{
+  "key_id": "zak_live_abc123def456",
+  "org_id": 4521,
+  "name": "Production SDK Key",
+  "scopes": ["collect:write", "profile:read"],
+  "rate_limit": {
+    "requests_per_minute": 10000,
+    "requests_per_day": 5000000
+  },
+  "created_at": "2024-01-01T00:00:00Z",
+  "expires_at": null,
+  "last_used": "2024-11-01T08:42:00Z",
+  "status": "ACTIVE"
+}
+
+// Usage in analytics-sdk initialization
+zeotap.initialize({
+  writeKey: "zak_live_abc123def456",
+  // ...
+});</code></pre>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
+      <a href="15-infrastructure.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 15 · Infrastructure as Code →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 16: Observability & Monitoring — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART VII — INFRASTRUCTURE</div>
+      <a href="15-infrastructure.html" class="nav-item">Infrastructure</a>
+      <a href="16-observability.html" class="nav-item active">Observability</a>
+      <a href="17-cicd.html" class="nav-item">CI/CD</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#prometheus" class="nav-item">Prometheus</a>
+      <a href="#alertmanager" class="nav-item">Alertmanager</a>
+      <a href="#alert-rules" class="nav-item">Alert Rules</a>
+      <a href="#grafana" class="nav-item">Grafana Dashboards</a>
+      <a href="#exporters" class="nav-item">Custom Exporters</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Part VII — Infrastructure</span><span>›</span>
+        <span>Observability & Monitoring</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Observability & Monitoring</h1>
+      <p class="page-subtitle">Full-stack observability for Zeotap: Prometheus metrics collection, Alertmanager routing (Slack/PagerDuty/Email), Grafana dashboards, and custom exporters for Aerospike, Scylla, and BigQuery.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">Prometheus</div><div class="stat-label">Metrics Storage</div></div>
+      <div class="stat-card"><div class="stat-value">Alertmanager</div><div class="stat-label">Alert Routing</div></div>
+      <div class="stat-card"><div class="stat-value">PagerDuty</div><div class="stat-label">On-Call Paging</div></div>
+      <div class="stat-card"><div class="stat-value">1m / 5m</div><div class="stat-label">Scrape / Eval Intervals</div></div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Observability Stack</h2>
+      <p>Zeotap uses the <strong>Prometheus + Alertmanager + Grafana</strong> stack deployed on GCP, with GCE service discovery to automatically scrape metrics from all production hosts.</p>
+
+      <div class="mermaid">
+graph LR
+    subgraph Targets["Metric Targets"]
+        GCE["GCE VMs<br/>(node_exporter :9100)"]
+        AS["Aerospike<br/>(aerospike_exporter)"]
+        SC["ScyllaDB<br/>(scylla_exporter)"]
+        BQ4["BigQuery<br/>(prometheus-bigquery-exporter)"]
+        APPS["GKE Apps<br/>(custom /metrics)"]
+    end
+
+    subgraph Core["Prometheus Stack"]
+        PROM2["Prometheus<br/>(scrape + store)"]
+        AM2["Alertmanager<br/>(route + deduplicate)"]
+        GRAF2["Grafana<br/>(dashboards)"]
+    end
+
+    subgraph Notify["Notification Channels"]
+        SLACK["Slack<br/>(#alerts-devops)"]
+        EMAIL["Email<br/>(prometheus@zeotap.com)"]
+        PD["PagerDuty<br/>(on-call rotation)"]
+    end
+
+    Targets -->|pull metrics| PROM2
+    PROM2 -->|fire alerts| AM2
+    PROM2 -->|data source| GRAF2
+    AM2 --> SLACK
+    AM2 --> EMAIL
+    AM2 --> PD
+
+    style Core fill:#f0f4ff,stroke:#4361ee
+    style Notify fill:#e8f5e9,stroke:#2e7d32
+      </div>
+    </section>
+
+    <!-- Prometheus -->
+    <section id="prometheus">
+      <h2>Prometheus Configuration</h2>
+
+      <pre><code class="language-yaml"># prometheus.yml (gcp-prometheus-monitoring/prometheus/prometheus.yml)
+global:
+  scrape_interval:     1m
+  scrape_timeout:      15s
+  evaluation_interval: 5m
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["prometheus.zeotap.net:9093"]
+      timeout: 30s
+
+rule_files:
+  - /etc/prometheus/rules/host_metrics.yml
+  - /etc/prometheus/rules/aerospike_metrics.yml
+  - /etc/prometheus/rules/scylla_metrics.yml
+
+scrape_configs:
+  - job_name: prod-datalake
+    gce_sd_configs:
+      - project: zeotap-prod-datalake
+        zone: europe-west1-b
+        refresh_interval: 10m
+        port: 9100
+      - project: zeotap-prod-datalake
+        zone: us-east1-b
+        refresh_interval: 10m
+        port: 9100
+    relabel_configs:
+      - source_labels: [__meta_gce_label_team]
+        target_label: team
+      - source_labels: [__meta_gce_label_role]
+        target_label: role
+      - source_labels: [__meta_gce_status]
+        target_label: instance_status</code></pre>
+
+      <p>GCE service discovery automatically picks up all tagged GCE instances across EU and US zones. Labels from GCE instance metadata (<code>team</code>, <code>role</code>) are remapped to Prometheus labels for alert routing.</p>
+    </section>
+
+    <!-- Alertmanager -->
+    <section id="alertmanager">
+      <h2>Alertmanager Configuration</h2>
+      <p>Alertmanager routes alerts to the correct team channel based on label matching:</p>
+
+      <pre><code class="language-yaml"># alertmanager.yml
+global:
+  resolve_timeout: 1m
+  slack_api_url: https://hooks.slack.com/services/...
+  smtp_from: prometheus@zeotap.com
+  smtp_smarthost: smtp.sendgrid.net:587
+  pagerduty_url: https://events.pagerduty.com/v2/enqueue
+
+route:
+  receiver: slack-notifications
+  routes:
+    - receiver: slack-notifications           # all alerts → Slack
+      match:
+        notify: devops-engineering
+      continue: true
+
+    - receiver: email-notifications           # critical/page → email
+      match_re:
+        severity: critical|page
+      continue: true
+
+    - receiver: pagerduty-notifications       # page → PagerDuty (30m repeat)
+      match:
+        severity: page
+      repeat_interval: 30m
+
+    - receiver: data-engineering-notifications
+      match: { team: data-engineering }
+
+    - receiver: backend-engineering-notifications
+      match: { team: backend-engineering }
+
+    - receiver: connect-engineering-notifications
+      match: { team: connect-engineering }</code></pre>
+
+      <h3>Receiver Configuration</h3>
+      <pre><code class="language-yaml">receivers:
+  - name: slack-notifications
+    slack_configs:
+      - channel: "#alerts-devops"
+        title: "{{ template \"slack.title\" . }}"
+        text: "{{ template \"slack.text\" . }}"
+        send_resolved: true
+
+  - name: pagerduty-notifications
+    pagerduty_configs:
+      - routing_key: &lt;PAGERDUTY_SERVICE_KEY&gt;
+        description: "{{ .CommonAnnotations.summary }}"
+        severity: "{{ if .CommonLabels.severity }}{{ .CommonLabels.severity }}{{ else }}warning{{ end }}"
+
+  - name: email-notifications
+    email_configs:
+      - to: devops@zeotap.com
+        html: "{{ template \"email.html\" . }}"</code></pre>
+    </section>
+
+    <!-- Alert Rules -->
+    <section id="alert-rules">
+      <h2>Alert Rules</h2>
+
+      <h3>Host / Infrastructure Alerts</h3>
+      <pre><code class="language-yaml"># rules/host_metrics.yml
+groups:
+  - name: common
+    rules:
+      - alert: node_exporter_down
+        expr: up{instance_status="RUNNING",job!="scylla-metrics"} == 0
+        for: 10m
+        labels:
+          severity: critical
+          notify: devops-engineering
+        annotations:
+          summary: "Node exporter down on {{ $labels.instance }}"
+
+      - alert: instance_down
+        expr: up{instance_status!="RUNNING"} == 0
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+
+  - name: data-engineering
+    rules:
+      - alert: critical_disk_usage
+        expr: |
+          (1 - (node_filesystem_free_bytes{fstype=~"ext3|ext4|xfs",team="data-engineering"}
+                / node_filesystem_size_bytes{fstype=~"ext3|ext4|xfs"})) * 100 > 90
+        for: 15m
+        labels:
+          team: data-engineering
+          severity: critical
+        annotations:
+          summary: "Disk usage > 90% on {{ $labels.instance }}"
+          description: "Current value: {{ $value | printf \"%.1f\" }}%"
+
+      - alert: critical_memory_usage
+        expr: |
+          ((node_memory_MemTotal_bytes{team="data-engineering",role!="as"}
+            - node_memory_MemAvailable_bytes)
+           / node_memory_MemTotal_bytes) * 100 > 95
+        for: 15m
+        labels:
+          team: data-engineering
+          severity: critical
+        annotations:
+          summary: "Memory usage > 95% on {{ $labels.instance }}"</code></pre>
+
+      <h3>Application SLO Alerts (GKE services)</h3>
+      <pre><code class="language-yaml">  - name: application-slos
+    rules:
+      - alert: high_error_rate
+        expr: |
+          rate(http_requests_total{status=~"5.."}[5m])
+          / rate(http_requests_total[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: page
+          notify: devops-engineering
+        annotations:
+          summary: "Error rate > 1% on {{ $labels.service }}"
+
+      - alert: high_latency_p99
+        expr: |
+          histogram_quantile(0.99,
+            rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "P99 latency > 2s on {{ $labels.service }}"
+
+      - alert: identity_resolution_lag
+        expr: |
+          kafka_consumer_group_lag{topic="identity-events"} > 100000
+        for: 5m
+        labels:
+          severity: critical
+          team: backend-engineering
+        annotations:
+          summary: "Identity resolution Kafka lag > 100k messages"</code></pre>
+    </section>
+
+    <!-- Grafana -->
+    <section id="grafana">
+      <h2>Grafana Dashboards</h2>
+      <p>Grafana is deployed as a GKE Deployment, connected to Prometheus as its data source. Standard dashboards cover all production layers:</p>
+
+      <table>
+        <thead>
+          <tr><th>Dashboard</th><th>Key Panels</th><th>Audience</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Platform Overview</td><td>Request rate, error rate, P50/P99 latency per service</td><td>All engineers</td></tr>
+          <tr><td>Identity Resolution</td><td>UCID creation rate, cache hit rate, BigTable read latency</td><td>Backend team</td></tr>
+          <tr><td>Data Ingestion</td><td>Events/sec, batch job duration, failed records count</td><td>Data team</td></tr>
+          <tr><td>Audience Platform</td><td>Estimate latency, bitmap memory, Druid query time</td><td>Product team</td></tr>
+          <tr><td>Activation / Destinations</td><td>Records exported, match rates, export success %</td><td>Operations</td></tr>
+          <tr><td>Aerospike Cluster</td><td>Read/write TPS, memory usage, replication lag</td><td>Infra team</td></tr>
+          <tr><td>Node Health</td><td>CPU, memory, disk per GCE instance by team label</td><td>DevOps</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Exporters -->
+    <section id="exporters">
+      <h2>Custom Prometheus Exporters</h2>
+
+      <h3>prometheus-bigquery-exporter</h3>
+      <p>Runs SQL queries against BigQuery on a schedule and exposes results as Prometheus gauge metrics — enabling alerting on business-level SLOs:</p>
+
+      <pre><code class="language-yaml"># BigQuery exporter config
+metrics:
+  - name: zeotap_daily_profile_count
+    query: |
+      SELECT COUNT(DISTINCT ucid) as value
+      FROM `zeotap-prod.profiles.master_profiles`
+      WHERE DATE(last_updated) = CURRENT_DATE()
+    interval: 3600s
+
+  - name: zeotap_activation_success_rate
+    query: |
+      SELECT
+        COUNTIF(status = 'SUCCESS') / COUNT(*) as value
+      FROM `zeotap-prod.activations.export_events`
+      WHERE DATE(exported_at) = CURRENT_DATE()
+    interval: 300s</code></pre>
+
+      <h3>prometheus-query-exporter</h3>
+      <p>A Python-based exporter that runs pre-defined PromQL queries and re-exposes the results as new metrics (useful for pre-computing complex aggregations).</p>
+
+      <h3>prometheus-query-monitor</h3>
+      <p>Monitors the health of Prometheus itself — checks that key scrape jobs are returning data and that alerting rules are evaluating correctly. Sends Slack alerts if Prometheus appears unhealthy.</p>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
+      <a href="17-cicd.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 17 · CI/CD & Deployment Pipelines →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

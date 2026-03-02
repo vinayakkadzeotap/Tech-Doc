@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 12: Unity Angular Dashboard — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART V — FRONTEND</div>
+      <a href="11-reporting-bi.html" class="nav-item">Reporting & BI</a>
+      <a href="12-unity-dashboard.html" class="nav-item active">Unity Dashboard</a>
+      <a href="13-privacy-gdpr.html" class="nav-item">Privacy & GDPR</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#architecture" class="nav-item">Architecture</a>
+      <a href="#products" class="nav-item">Product Modules</a>
+      <a href="#ngrx" class="nav-item">NgRx State Management</a>
+      <a href="#routing" class="nav-item">Routing & Auth Guards</a>
+      <a href="#zui" class="nav-item">ZUI Design System</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Part V — Frontend</span><span>›</span>
+        <span>Unity Angular Dashboard</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Unity Angular Dashboard</h1>
+      <p class="page-subtitle">The Zeotap unified product front-end: an Angular 12 SPA with NgRx state management, lazy-loaded feature modules, role-based routing, and the ZUI component library.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">Angular</div><div class="stat-label">Framework</div></div>
+      <div class="stat-card"><div class="stat-value">NgRx</div><div class="stat-label">State Management</div></div>
+      <div class="stat-card"><div class="stat-value">7 Products</div><div class="stat-label">Feature Modules</div></div>
+      <div class="stat-card"><div class="stat-value">ZUI</div><div class="stat-label">Design System</div></div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Overview</h2>
+      <p><strong>Unity</strong> is Zeotap's unified Angular SPA that serves as the single product interface for all CDP capabilities. It dynamically loads product modules based on the authenticated user's product entitlements — a customer licensed only for Targeting sees only the Targeting module; a customer licensed for all products sees the full suite.</p>
+
+      <p>Unity uses <strong>lazy loading</strong> extensively: each product module (Targeting, Insights, Studio, Connect, Destinations, DPUI) is a separate Angular module that is only loaded when the user navigates to that product, significantly reducing initial bundle size.</p>
+    </section>
+
+    <!-- Architecture -->
+    <section id="architecture">
+      <h2>Architecture</h2>
+
+      <div class="mermaid">
+graph TB
+    subgraph Bootstrap["App Bootstrap"]
+        APP["AppComponent"]
+        NAVBAR["NavbarComponent"]
+        TOPBAR["TopbarComponent"]
+        AUTH["AuthGuard (RBAC)"]
+    end
+
+    subgraph Store["NgRx Store"]
+        ROOT_STORE["Root Store"]
+        SEG_STORE["Segments Store"]
+        CH_STORE["Channel Store"]
+        USER_STORE["User/Org Store"]
+    end
+
+    subgraph Modules["Lazy-Loaded Feature Modules"]
+        ZAT["SegmentsModule (ZAT)<br/>/targeting"]
+        INS["InsightsModule<br/>/insights"]
+        STU["StudioModule<br/>/studio"]
+        CON["ConnectModule<br/>/connect"]
+        DEST["ChannelPlatformModule<br/>/destinations"]
+        DPUI["DpuiModule<br/>/dpui"]
+        TAX["TaxonomyModule<br/>/taxonomy"]
+    end
+
+    subgraph Shared["Shared Infrastructure"]
+        SHARED_MOD["SharedModule<br/>(pipes, directives, guards)"]
+        ZUI_LIB["ZUILibrary<br/>(component library)"]
+        API_SVC["API Services<br/>(HttpClient wrappers)"]
+    end
+
+    APP --> NAVBAR
+    APP --> TOPBAR
+    APP --> AUTH
+    AUTH --> Modules
+    APP --> ROOT_STORE
+    ROOT_STORE --> SEG_STORE
+    ROOT_STORE --> CH_STORE
+    ROOT_STORE --> USER_STORE
+    Modules --> Shared
+
+    style Bootstrap fill:#e3f2fd,stroke:#1565c0
+    style Store fill:#f3e5f5,stroke:#7b1fa2
+    style Modules fill:#e8f5e9,stroke:#2e7d32
+    style Shared fill:#fff8e1,stroke:#f9a825
+      </div>
+
+      <h3>App Module (AppModule)</h3>
+      <pre><code class="language-typescript">@NgModule({
+  declarations: [
+    AppComponent, NavbarComponent, TopbarComponent,
+    ErrorComponent, SettingsComponent, HelpComponent
+  ],
+  imports: [
+    BrowserModule,
+    SharedModule.forRoot(),
+    RouterModule.forRoot(appRoutes),      // lazy-loaded routes
+    StoreModule.forRoot({}),              // NgRx root store
+    EffectsModule.forRoot([]),            // NgRx root effects
+    SegmentModule.forRoot(),              // shared segment state
+    BootstrapModalModule.forRoot({ container: document.body }),
+    !environment.production
+      ? StoreDevtoolsModule.instrument({ maxAge: 10 })
+      : []
+  ],
+  providers: [DOMService],
+  bootstrap: [AppComponent]
+})</code></pre>
+    </section>
+
+    <!-- Products -->
+    <section id="products">
+      <h2>Product Modules</h2>
+      <p>Each product is an independent Angular feature module loaded via the Router. Product availability is controlled by the <code>prod_info</code> object stored in localStorage after authentication:</p>
+
+      <table>
+        <thead>
+          <tr><th>Product ID</th><th>Module</th><th>Route Path</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>5</td><td>SegmentsModule (ZAT)</td><td><code>/targeting</code></td><td>Audience Builder — create, edit, size segments</td></tr>
+          <tr><td>8</td><td>InsightsModule</td><td><code>/insights</code></td><td>Sisense-embedded analytics dashboards</td></tr>
+          <tr><td>9</td><td>StudioModule</td><td><code>/studio</code></td><td>Customer Journey builder (Symphony Workflows)</td></tr>
+          <tr><td>10</td><td>TaxonomyModule</td><td><code>/taxonomy</code></td><td>Attribute taxonomy management tool</td></tr>
+          <tr><td>11</td><td>ConnectModule</td><td><code>/connect</code></td><td>Data source connection wizard</td></tr>
+          <tr><td>12</td><td>ChannelPlatformModule</td><td><code>/destinations</code></td><td>Destination management UI</td></tr>
+          <tr><td>–</td><td>DpuiModule</td><td><code>/dpui</code></td><td>Data Partner Console (DMP UI)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="mermaid">
+graph LR
+    AUTH_GUARD["AuthGuard"] --> PROD_CHK{Check prod_info<br/>in localStorage}
+    PROD_CHK -->|prodId=5| ZAT2["/targeting → SegmentsModule"]
+    PROD_CHK -->|prodId=8| INS2["/insights → InsightsModule"]
+    PROD_CHK -->|prodId=9| STU2["/studio → StudioModule"]
+    PROD_CHK -->|prodId=10| TAX2["/taxonomy → TaxonomyModule"]
+    PROD_CHK -->|prodId=11| CON2["/connect → ConnectModule"]
+    PROD_CHK -->|prodId=12| DEST2["/destinations → ChannelPlatformModule"]
+    PROD_CHK -->|no access| ERR["/error"]
+      </div>
+    </section>
+
+    <!-- NgRx -->
+    <section id="ngrx">
+      <h2>NgRx State Management</h2>
+      <p>Unity uses <strong>NgRx</strong> (Redux for Angular) for predictable, testable state management across all feature modules. The store is split into feature slices:</p>
+
+      <div class="tabs">
+        <div class="tab-list">
+          <button class="tab-btn active" onclick="switchTab(this,'Actions')">Actions</button>
+          <button class="tab-btn" onclick="switchTab(this,'Reducers')">Reducers</button>
+          <button class="tab-btn" onclick="switchTab(this,'Effects')">Effects</button>
+        </div>
+
+        <div id="Actions" class="tab-pane active">
+          <pre><code class="language-typescript">// Segment Actions (SegmentsModule)
+export const loadSegments = createAction(
+  '[Segments] Load Segments',
+  props&lt;{ orgId: number; page: number }&gt;()
+);
+
+export const loadSegmentsSuccess = createAction(
+  '[Segments] Load Segments Success',
+  props&lt;{ segments: Segment[]; total: number }&gt;()
+);
+
+export const loadSegmentsFailure = createAction(
+  '[Segments] Load Segments Failure',
+  props&lt;{ error: string }&gt;()
+);
+
+export const estimateSegmentSize = createAction(
+  '[Segments] Estimate Size',
+  props&lt;{ rules: AudienceRule[]; country: string }&gt;()
+);</code></pre>
+        </div>
+
+        <div id="Reducers" class="tab-pane" style="display:none">
+          <pre><code class="language-typescript">// Segments Reducer
+export interface SegmentsState {
+  segments: Segment[];
+  total: number;
+  loading: boolean;
+  estimatedSize: number | null;
+  error: string | null;
+}
+
+export const segmentsReducer = createReducer(
+  initialState,
+  on(loadSegments, state => ({ ...state, loading: true })),
+  on(loadSegmentsSuccess, (state, { segments, total }) => ({
+    ...state, loading: false, segments, total
+  })),
+  on(loadSegmentsFailure, (state, { error }) => ({
+    ...state, loading: false, error
+  })),
+  on(estimateSegmentSizeSuccess, (state, { size }) => ({
+    ...state, estimatedSize: size
+  }))
+);</code></pre>
+        </div>
+
+        <div id="Effects" class="tab-pane" style="display:none">
+          <pre><code class="language-typescript">// Segments Effects (API calls)
+@Injectable()
+export class SegmentsEffects {
+  loadSegments$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(loadSegments),
+      switchMap(({ orgId, page }) =>
+        this.segmentsApi.list(orgId, page).pipe(
+          map(resp => loadSegmentsSuccess({
+            segments: resp.segments,
+            total: resp.total
+          })),
+          catchError(err => of(loadSegmentsFailure({ error: err.message })))
+        )
+      )
+    )
+  );
+
+  estimateSize$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(estimateSegmentSize),
+      debounceTime(300),              // debounce UI typing
+      switchMap(({ rules, country }) =>
+        this.estimatorApi.estimate(rules, country).pipe(
+          map(r => estimateSegmentSizeSuccess({ size: r.estimated_size }))
+        )
+      )
+    )
+  );
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Routing -->
+    <section id="routing">
+      <h2>Routing & Authentication Guards</h2>
+
+      <pre><code class="language-typescript">// app.routing.ts — lazy-loaded routes
+export const appRoutes: Routes = [
+  {
+    path: PRODUCTS.ZAT.path,           // 'targeting'
+    loadChildren: './containers/+segments#SegmentsModule',
+    canActivateChild: [AuthGuard],
+    data: { product: PRODUCTS.ZAT.name, permission: '' }
+  },
+  {
+    path: PRODUCTS.INSIGHTS.path,      // 'insights'
+    loadChildren: './containers/+insights#InsightsModule',
+    canActivateChild: [AuthGuard],
+    data: { product: PRODUCTS.INSIGHTS.name }
+  },
+  {
+    path: PRODUCTS.STUDIO.path,        // 'studio'
+    loadChildren: './containers/+studio#StudioModule',
+    canActivateChild: [AuthGuard]
+  },
+  {
+    path: PRODUCTS.DESTINATIONS.path,  // 'destinations'
+    loadChildren: './containers/+channel-platform#ChannelPlatformModule',
+    canActivateChild: [AuthGuard]
+  },
+  { path: 'error', component: ErrorComponent },
+  { path: '', redirectTo: getInitialRoutingProduct(), pathMatch: 'full' }
+];
+
+// AuthGuard — checks RBAC permissions
+@Injectable({ providedIn: 'root' })
+export class AuthGuard implements CanActivateChild {
+  canActivateChild(route: ActivatedRouteSnapshot): boolean {
+    const prodInfo = JSON.parse(localStorage.getItem('prod_info') || '{}');
+    const product  = route.data['product'];
+    return !!prodInfo[product];   // returns true if product is licensed
+  }
+}</code></pre>
+    </section>
+
+    <!-- ZUI -->
+    <section id="zui">
+      <h2>ZUI Design System</h2>
+      <p>The <code>ZUILibrary</code> is Zeotap's internal Angular component library — a design system that enforces visual consistency across Unity and all future Zeotap products.</p>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-icon">🎨</div>
+          <h3>Design Tokens</h3>
+          <p>CSS custom properties for brand colors (<code>--zui-primary</code>, <code>--zui-accent</code>), typography scale, spacing grid, border-radius system.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧩</div>
+          <h3>Core Components</h3>
+          <p>ZuiButton, ZuiInput, ZuiSelect, ZuiModal, ZuiTable, ZuiPaginator, ZuiToast — all with accessible ARIA attributes.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <h3>Chart Components</h3>
+          <p>ZuiBarChart, ZuiLineChart, ZuiDonutChart — wrapping ECharts/D3.js with Zeotap brand theming.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔧</div>
+          <h3>Form Controls</h3>
+          <p>ReactiveFormsModule-compatible controls for rule builders, date pickers, multi-selects with search, and tag inputs.</p>
+        </div>
+      </div>
+
+      <h3>Component Usage</h3>
+      <pre><code class="language-html">&lt;!-- ZUI component examples in Unity templates --&gt;
+&lt;zui-button variant="primary" (click)="saveAudience()"&gt;
+  Save Audience
+&lt;/zui-button&gt;
+
+&lt;zui-table
+  [data]="audiences$ | async"
+  [columns]="audienceColumns"
+  [loading]="loading$ | async"
+  [pageable]="true"
+  (rowClick)="openAudience($event)"&gt;
+&lt;/zui-table&gt;
+
+&lt;zui-rule-builder
+  [attributes]="availableAttributes"
+  [(rules)]="audienceRules"
+  (rulesChange)="onRulesChange($event)"&gt;
+&lt;/zui-rule-builder&gt;</code></pre>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
+      <a href="13-privacy-gdpr.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 13 · Privacy & GDPR Compliance →</a>
+    </div>
+  </main>
+</div>
+
+<script>
+function switchTab(btn, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+  btn.classList.add('active');
+  document.getElementById(id).style.display = 'block';
+}
+</script>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

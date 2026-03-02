@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Appendix B: Data Dictionary — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">APPENDICES</div>
+      <a href="appendix-a-api-reference.html" class="nav-item">API Reference</a>
+      <a href="appendix-b-data-dictionary.html" class="nav-item active">Data Dictionary</a>
+      <a href="appendix-c-glossary.html" class="nav-item">Glossary</a>
+      <div class="nav-section">SECTIONS</div>
+      <a href="#identifiers" class="nav-item">Identifier Types</a>
+      <a href="#profile-fields" class="nav-item">Profile Fields</a>
+      <a href="#ai-attributes" class="nav-item">AI Attributes</a>
+      <a href="#event-schema" class="nav-item">Event Schema</a>
+      <a href="#consent-fields" class="nav-item">Consent Fields</a>
+      <a href="#audience-fields" class="nav-item">Audience Fields</a>
+      <a href="#destination-fields" class="nav-item">Destination Fields</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Appendices</span><span>›</span>
+        <span>Data Dictionary</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Data Dictionary</h1>
+      <p class="page-subtitle">Complete field reference for all data models in the Zeotap CDP: profile attributes, identifier types, event schemas, consent fields, and AI-generated scores.</p>
+    </div>
+
+    <!-- Identifier Types -->
+    <section id="identifiers">
+      <h2>Identifier Types</h2>
+      <p>Zeotap resolves users across 10 supported identifier types. All PII-containing identifiers are stored only as SHA-256 hashes.</p>
+
+      <table>
+        <thead>
+          <tr><th>Type Key</th><th>Display Name</th><th>Format</th><th>Hash Required</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>email_sha256</code></td><td>Email (hashed)</td><td>64-char hex string</td><td>Yes (SHA-256)</td><td>SDK identify(), batch upload</td></tr>
+          <tr><td><code>phone_sha256</code></td><td>Phone (hashed)</td><td>64-char hex string</td><td>Yes (SHA-256, E.164)</td><td>SDK identify(), batch upload</td></tr>
+          <tr><td><code>idfa</code></td><td>Apple IDFA</td><td>UUID v4 (uppercase)</td><td>No</td><td>iOS SDK</td></tr>
+          <tr><td><code>gaid</code></td><td>Google AAID</td><td>UUID v4 (lowercase)</td><td>No</td><td>Android SDK</td></tr>
+          <tr><td><code>cookie_id</code></td><td>Zeotap Cookie</td><td><code>zck_</code> prefix + random</td><td>No</td><td>JS SDK (1P cookie)</td></tr>
+          <tr><td><code>external_id</code></td><td>External CRM ID</td><td>Org-defined string</td><td>No</td><td>Batch upload, API</td></tr>
+          <tr><td><code>hems</code></td><td>Hashed Email MD5</td><td>32-char hex</td><td>Yes (MD5)</td><td>Legacy data partners</td></tr>
+          <tr><td><code>tv_id</code></td><td>Connected TV ID</td><td>UUID or platform ID</td><td>No</td><td>CTV SDK</td></tr>
+          <tr><td><code>custom_id_1</code></td><td>Custom ID (slot 1)</td><td>Org-defined</td><td>Optional</td><td>Batch upload</td></tr>
+          <tr><td><code>custom_id_2</code></td><td>Custom ID (slot 2)</td><td>Org-defined</td><td>Optional</td><td>Batch upload</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Profile Fields -->
+    <section id="profile-fields">
+      <h2>User Profile Fields (MDM Delta Table)</h2>
+      <p>Full field reference for the Master Data Management (MDM) Delta table — the unified profile store.</p>
+
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Nullable</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>ucid</code></td><td>string</td><td>No</td><td>Universal Customer ID. Primary key. Format: <code>zt_{16-char-hex}</code></td></tr>
+          <tr><td><code>org_id</code></td><td>integer</td><td>No</td><td>Organisation identifier</td></tr>
+          <tr><td><code>region</code></td><td>string</td><td>No</td><td>Data region: <code>eu</code>, <code>us</code>, <code>in</code>, <code>ap</code></td></tr>
+          <tr><td><code>created_at</code></td><td>timestamp</td><td>No</td><td>Profile creation timestamp (UTC)</td></tr>
+          <tr><td><code>last_updated</code></td><td>timestamp</td><td>No</td><td>Last profile modification (UTC)</td></tr>
+          <tr><td><code>identifiers</code></td><td>map&lt;string, array&gt;</td><td>Yes</td><td>Map of identifier type → list of values</td></tr>
+          <tr><td><code>attributes.age_range</code></td><td>string</td><td>Yes</td><td>Demographic age range: <code>18-24</code>, <code>25-34</code>, <code>35-44</code>, <code>45-54</code>, <code>55+</code></td></tr>
+          <tr><td><code>attributes.gender</code></td><td>string</td><td>Yes</td><td><code>M</code>, <code>F</code>, <code>U</code> (unknown)</td></tr>
+          <tr><td><code>attributes.income_band</code></td><td>string</td><td>Yes</td><td><code>low</code>, <code>mid</code>, <code>high</code>, <code>very_high</code></td></tr>
+          <tr><td><code>attributes.interests</code></td><td>array&lt;string&gt;</td><td>Yes</td><td>IAB interest categories</td></tr>
+          <tr><td><code>attributes.country</code></td><td>string</td><td>Yes</td><td>ISO 3166-1 alpha-2 country code</td></tr>
+          <tr><td><code>attributes.language</code></td><td>string</td><td>Yes</td><td>ISO 639-1 language code</td></tr>
+          <tr><td><code>app_signals.page_views_7d</code></td><td>integer</td><td>Yes</td><td>Page views in last 7 days</td></tr>
+          <tr><td><code>app_signals.page_views_30d</code></td><td>integer</td><td>Yes</td><td>Page views in last 30 days</td></tr>
+          <tr><td><code>app_signals.purchases_30d</code></td><td>integer</td><td>Yes</td><td>Purchase count in last 30 days</td></tr>
+          <tr><td><code>app_signals.last_seen</code></td><td>timestamp</td><td>Yes</td><td>Last event timestamp</td></tr>
+          <tr><td><code>app_signals.avg_session_duration_s</code></td><td>float</td><td>Yes</td><td>Average session duration in seconds</td></tr>
+          <tr><td><code>data_partners</code></td><td>array&lt;string&gt;</td><td>Yes</td><td>List of data partner IDs contributing to this profile</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- AI Attributes -->
+    <section id="ai-attributes">
+      <h2>AI-Generated Attributes</h2>
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Range</th><th>Model</th><th>Refresh</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>predictive_scores.purchase_propensity</code></td><td>float</td><td>0.0–1.0</td><td>XGBoost</td><td>Weekly</td></tr>
+          <tr><td><code>predictive_scores.churn_probability</code></td><td>float</td><td>0.0–1.0</td><td>LightGBM</td><td>Weekly</td></tr>
+          <tr><td><code>predictive_scores.ltv_segment</code></td><td>enum</td><td>high/mid/low/at_risk</td><td>BG/NBD+GG</td><td>Monthly</td></tr>
+          <tr><td><code>predictive_scores.email_open_propensity</code></td><td>float</td><td>0.0–1.0</td><td>Logistic Regression</td><td>Weekly</td></tr>
+          <tr><td><code>predictive_scores.price_sensitivity</code></td><td>enum</td><td>low/med/high</td><td>K-Means Clustering</td><td>Monthly</td></tr>
+          <tr><td><code>predictive_scores.brand_affinity_score</code></td><td>float</td><td>0.0–1.0</td><td>Embedding Model</td><td>Monthly</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Event Schema -->
+    <section id="event-schema">
+      <h2>Event Schema (analytics-sdk)</h2>
+      <p>All events collected by the analytics SDK follow this canonical envelope schema:</p>
+
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>messageId</code></td><td>string (UUID)</td><td>Yes</td><td>Unique event ID, SDK-generated</td></tr>
+          <tr><td><code>timestamp</code></td><td>ISO 8601</td><td>Yes</td><td>Event timestamp (client-side)</td></tr>
+          <tr><td><code>receivedAt</code></td><td>ISO 8601</td><td>Yes</td><td>Server receipt timestamp</td></tr>
+          <tr><td><code>type</code></td><td>enum</td><td>Yes</td><td><code>track</code> / <code>identify</code> / <code>page</code></td></tr>
+          <tr><td><code>event</code></td><td>string</td><td>For track</td><td>Event name (e.g., "Product Added")</td></tr>
+          <tr><td><code>userId</code></td><td>string</td><td>No</td><td>Known user ID (hashed PII)</td></tr>
+          <tr><td><code>anonymousId</code></td><td>string</td><td>Yes</td><td>SDK-generated anonymous ID</td></tr>
+          <tr><td><code>writeKey</code></td><td>string</td><td>Yes</td><td>Org API key</td></tr>
+          <tr><td><code>properties</code></td><td>object</td><td>No</td><td>Custom event properties</td></tr>
+          <tr><td><code>traits</code></td><td>object</td><td>For identify</td><td>User traits/attributes</td></tr>
+          <tr><td><code>context.library</code></td><td>object</td><td>Yes</td><td>SDK name and version</td></tr>
+          <tr><td><code>context.page</code></td><td>object</td><td>For web</td><td>URL, referrer, title</td></tr>
+          <tr><td><code>context.device</code></td><td>object</td><td>For mobile</td><td>OS, model, manufacturer</td></tr>
+          <tr><td><code>context.consent</code></td><td>object</td><td>Yes (EU)</td><td>TCF string, GDPR applies flag</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Consent Fields -->
+    <section id="consent-fields">
+      <h2>Consent Fields</h2>
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>consent.gdpr</code></td><td>boolean</td><td>Overall GDPR consent granted</td></tr>
+          <tr><td><code>consent.marketing</code></td><td>boolean</td><td>Marketing communications consent</td></tr>
+          <tr><td><code>consent.analytics</code></td><td>boolean</td><td>Analytics / measurement consent</td></tr>
+          <tr><td><code>consent.personalisation</code></td><td>boolean</td><td>Personalised content/ads consent</td></tr>
+          <tr><td><code>consent.tcf_string</code></td><td>string</td><td>IAB TCF v2.2 encoded consent string</td></tr>
+          <tr><td><code>consent.cmp_id</code></td><td>integer</td><td>IAB CMP ID that generated the consent</td></tr>
+          <tr><td><code>consent.updated_at</code></td><td>timestamp</td><td>Last consent update timestamp</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Audience Fields -->
+    <section id="audience-fields">
+      <h2>Audience Segment Fields</h2>
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>string</td><td>Audience ID (format: <code>aud_{hex}</code>)</td></tr>
+          <tr><td><code>name</code></td><td>string</td><td>Human-readable audience name</td></tr>
+          <tr><td><code>description</code></td><td>string</td><td>Optional description</td></tr>
+          <tr><td><code>org_id</code></td><td>integer</td><td>Owning organisation</td></tr>
+          <tr><td><code>folder_id</code></td><td>string</td><td>Parent folder ID</td></tr>
+          <tr><td><code>status</code></td><td>enum</td><td><code>DRAFT</code> / <code>ACTIVE</code> / <code>PAUSED</code> / <code>ARCHIVED</code></td></tr>
+          <tr><td><code>size_estimate</code></td><td>integer</td><td>Last computed size estimate (UCIDs)</td></tr>
+          <tr><td><code>rules</code></td><td>array</td><td>Audience definition rules (attribute + operator + value)</td></tr>
+          <tr><td><code>tags</code></td><td>array&lt;string&gt;</td><td>Org-defined labels for organisation</td></tr>
+          <tr><td><code>created_at</code></td><td>timestamp</td><td>Creation timestamp</td></tr>
+          <tr><td><code>last_modified</code></td><td>timestamp</td><td>Last modification timestamp</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Destination Fields -->
+    <section id="destination-fields">
+      <h2>Destination Configuration Fields</h2>
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>long</td><td>Destination ID</td></tr>
+          <tr><td><code>name</code></td><td>string</td><td>Human-readable destination name</td></tr>
+          <tr><td><code>integration_partner</code></td><td>string</td><td>Partner ID (e.g., <code>facebook</code>, <code>amazon_s3</code>)</td></tr>
+          <tr><td><code>secret_type</code></td><td>enum</td><td><code>S3</code> / <code>SFTP</code> / <code>GCP</code> / <code>AZURE</code> / <code>OAUTH</code> / <code>DEFAULT</code></td></tr>
+          <tr><td><code>status</code></td><td>enum</td><td><code>ACTIVE</code> / <code>PAUSED</code> / <code>ERROR</code></td></tr>
+          <tr><td><code>config.bucket</code></td><td>string</td><td>S3/GCS bucket name (for file destinations)</td></tr>
+          <tr><td><code>config.file_format</code></td><td>enum</td><td><code>csv</code> / <code>tsv</code> / <code>json</code></td></tr>
+          <tr><td><code>config.hash_algorithm</code></td><td>enum</td><td><code>sha256</code> / <code>md5</code> / <code>plain</code></td></tr>
+          <tr><td><code>schedule.frequency</code></td><td>enum</td><td><code>realtime</code> / <code>hourly</code> / <code>daily</code> / <code>weekly</code></td></tr>
+          <tr><td><code>last_export</code></td><td>timestamp</td><td>Last successful export timestamp</td></tr>
+          <tr><td><code>export_count</code></td><td>integer</td><td>Total exports to this destination</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Appendix</div>
+      <a href="appendix-c-glossary.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Glossary of Terms →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

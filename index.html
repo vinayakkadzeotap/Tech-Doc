@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="engineering">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zeotap CDP — Platform Intelligence Hub</title>
+  <meta name="description" content="Technical documentation for the Zeotap Customer Data Platform — a living system map of every service, pipeline, and API." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- D3 v7 -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+
+  <!-- Design System -->
+  <link rel="stylesheet" href="assets/dark-system.css" />
+
+  <style>
+    /* ── CSS variable aliases (dark-system.css naming reconciliation) ── */
+    :root {
+      --border:        var(--border-def);
+      --border-subtle: var(--border-sub);
+      --text-mute:     var(--text-muted);
+      --cyan:          var(--cyan-bright);
+    }
+
+    /* ── Critical: fix scripts.js search overlay — it appends to body
+          which is display:flex, making it a 3rd flex column.
+          Force it to fixed-position overlay. ──────────────────────── */
+    .search-overlay {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 99999 !important;
+      display: none !important;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 80px;
+      background: rgba(5,11,20,0.82) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+    }
+    .search-overlay.open { display: flex !important; }
+
+    .search-modal {
+      width: 100%; max-width: 640px;
+      background: #0b1527 !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      border-radius: 16px !important;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.8) !important;
+      flex-shrink: 0;
+    }
+    .search-input-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .search-input-row input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: #dce8ff; font-size: 15px; font-family: var(--font);
+    }
+    .search-input-row input::placeholder { color: rgba(255,255,255,0.25); }
+    .search-input-icon { color: rgba(255,255,255,0.3); display: flex; }
+    .search-clear { background: transparent; border: none; color: rgba(255,255,255,0.3); font-size: 14px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+    .search-clear:hover { color: #fff; background: rgba(255,255,255,0.08); }
+    .search-clear.visible { opacity: 1; }
+    .search-results { max-height: 420px; overflow-y: auto; padding: 8px; }
+    .search-results::-webkit-scrollbar { width: 4px; }
+    .search-results::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .search-hint { padding: 8px 6px; }
+    .search-hint-label { font-size: 11px; color: rgba(255,255,255,0.3); font-weight: 600; margin-right: 8px; letter-spacing: 0.05em; text-transform: uppercase; }
+    .search-hint-chip {
+      display: inline-block; margin: 3px; padding: 4px 10px;
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 20px; font-size: 12px; color: #60a5fa;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .search-hint-chip:hover { background: rgba(59,130,246,0.2); }
+    .search-group-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 10px 8px 4px; }
+    .search-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      border-radius: 10px; text-decoration: none; color: #dce8ff;
+      transition: background 0.12s; margin-bottom: 2px;
+    }
+    .search-item:hover, .search-item.selected { background: rgba(59,130,246,0.12); }
+    .search-item-icon { font-size: 14px; flex-shrink: 0; color: rgba(255,255,255,0.4); }
+    .search-item-title { font-size: 13.5px; font-weight: 600; color: #dce8ff; }
+    .search-item-subtitle { font-size: 11.5px; color: rgba(255,255,255,0.35); margin-top: 1px; }
+    .search-item-type { margin-left: auto; font-size: 10px; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.3); font-weight: 600; flex-shrink: 0; }
+    .search-footer {
+      display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+      border-top: 1px solid rgba(255,255,255,0.07); flex-wrap: wrap;
+    }
+    .search-footer-hint { font-size: 11px; color: rgba(255,255,255,0.25); display: flex; align-items: center; gap: 5px; }
+    .search-footer-hint kbd { background: rgba(255,255,255,0.08); padding: 2px 5px; border-radius: 4px; font-size: 10px; font-family: var(--mono); }
+    .search-footer-right { margin-left: auto; }
+    mark { background: rgba(59,130,246,0.3); color: #60a5fa; border-radius: 2px; padding: 0 1px; }
+
+    /* ── Index-page additions ───────────────────────────────────── */
+
+    /* Sidebar sections */
+    .ds-sidebar-section { padding: 0 12px; margin-bottom: 6px; }
+    .ds-sidebar-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-muted);
+      padding: 10px 8px 4px;
+    }
+
+    /* Task buttons */
+    .ds-task-btn {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; padding: 8px 10px;
+      background: transparent; border: none; border-radius: 8px;
+      color: var(--text-secondary); font-size: 12.5px; font-weight: 500;
+      cursor: pointer; text-align: left;
+      transition: all 0.18s var(--ease); line-height: 1.35;
+    }
+    .ds-task-btn .task-icon {
+      width: 28px; height: 28px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 13px;
+      background: rgba(255,255,255,0.05);
+    }
+    .ds-task-btn:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+    .ds-task-btn:hover .task-icon { background: rgba(59,130,246,0.18); }
+    .ds-task-btn.active { background: rgba(59,130,246,0.12); color: var(--blue); }
+    .ds-task-btn.active .task-icon { background: rgba(59,130,246,0.22); }
+
+    /* Sidebar nav links */
+    .ds-nav-link {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 10px; border-radius: 7px;
+      color: var(--text-secondary); font-size: 12.5px; font-weight: 500;
+      text-decoration: none; transition: all 0.15s;
+    }
+    .ds-nav-link:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    .ds-nav-link .nav-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text-mute); flex-shrink: 0;
+    }
+    .ds-nav-link.cat-ingestion .nav-dot  { background: #22d3ee; }
+    .ds-nav-link.cat-core .nav-dot       { background: #3b82f6; }
+    .ds-nav-link.cat-storage .nav-dot    { background: #8b5cf6; }
+    .ds-nav-link.cat-activation .nav-dot { background: #f59e0b; }
+    .ds-nav-link.cat-intelligence .nav-dot { background: #10b981; }
+    .ds-nav-link.cat-compliance .nav-dot { background: #f97316; }
+
+    /* System health */
+    .ds-sys-health {
+      margin: 0 12px 12px;
+      padding: 10px 12px;
+      background: rgba(16,185,129,0.07);
+      border: 1px solid rgba(16,185,129,0.18);
+      border-radius: 10px;
+    }
+    .ds-sys-health-row { display: flex; align-items: center; justify-content: space-between; }
+    .ds-health-label { font-size: 10.5px; font-weight: 600; color: var(--text-mute); letter-spacing: 0.06em; }
+    .ds-health-badge { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--green); }
+    .ds-health-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: ds-pulse 2s infinite; }
+    .ds-health-bars { display: flex; gap: 2px; margin-top: 6px; }
+    .ds-health-bar { height: 3px; border-radius: 2px; background: var(--green); flex: 1; opacity: 0.25; }
+    .ds-health-bar.on { opacity: 1; }
+
+    /* Hero */
+    .ds-hero { padding: 52px 64px 36px; position: relative; }
+    .ds-hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 18px;
+      padding: 5px 12px;
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 20px;
+    }
+    .ds-hero-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); animation: ds-pulse 2s infinite; }
+    .ds-hero-title {
+      font-size: clamp(30px, 4vw, 50px); font-weight: 800;
+      line-height: 1.08; letter-spacing: -0.03em;
+      color: var(--text-primary); margin: 0 0 14px;
+    }
+    .ds-hero-title .glow-blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .ds-hero-sub {
+      font-size: 16px; color: var(--text-secondary); font-weight: 400;
+      max-width: 580px; line-height: 1.65; margin-bottom: 28px;
+    }
+
+    /* Metric strip */
+    .ds-metric-strip {
+      display: flex; gap: 0;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; max-width: 780px;
+    }
+    .ds-metric {
+      flex: 1; padding: 14px 20px;
+      border-right: 1px solid var(--border); position: relative;
+    }
+    .ds-metric:last-child { border-right: none; }
+    .ds-metric-val {
+      font-size: 21px; font-weight: 800; color: var(--text-primary);
+      font-family: var(--mono); letter-spacing: -0.02em; line-height: 1;
+    }
+    .ds-metric-val.blue   { color: var(--blue); }
+    .ds-metric-val.purple { color: var(--purple); }
+    .ds-metric-val.green  { color: var(--green); }
+    .ds-metric-val.amber  { color: var(--amber); }
+    .ds-metric-val.cyan   { color: var(--cyan); }
+    .ds-metric-label { font-size: 10.5px; font-weight: 600; color: var(--text-mute); margin-top: 3px; letter-spacing: 0.05em; }
+    .ds-metric-trend { position: absolute; top: 12px; right: 14px; font-size: 10px; font-weight: 700; color: var(--green); }
+
+    /* Section headers */
+    .ds-section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
+    .ds-section-title { font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+    .ds-section-sub { font-size: 13px; color: var(--text-mute); margin-top: 2px; }
+    .ds-section-link { font-size: 12px; color: var(--blue); text-decoration: none; font-weight: 600; }
+    .ds-section-link:hover { opacity: 0.8; }
+
+    /* Graph section */
+    .kg-section { padding: 0 64px 48px; }
+    .kg-shell-wrap {
+      background: rgba(255,255,255,0.018); border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden; position: relative;
+    }
+    .kg-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 18px; border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.025);
+    }
+    .kg-toolbar-left { display: flex; align-items: center; gap: 12px; }
+    .kg-toolbar-title { font-size: 12px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.05em; }
+    .kg-toolbar-hint { font-size: 11px; color: var(--text-mute); }
+    .kg-legend-wrap { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .kg-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-mute); font-weight: 500; }
+    .kg-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+    #knowledge-graph { width: 100%; height: 540px; display: block; cursor: grab; }
+    #knowledge-graph:active { cursor: grabbing; }
+    .kg-reset-btn {
+      position: absolute; bottom: 14px; right: 14px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-mute); font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; font-family: var(--font);
+    }
+    .kg-reset-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+
+    /* Module cards */
+    .mod-section { padding: 0 64px 48px; }
+    .ds-mod-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    @media (max-width: 1100px) { .ds-mod-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 720px)  { .ds-mod-grid { grid-template-columns: 1fr; } }
+
+    .ds-mod-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 20px 22px 18px;
+      text-decoration: none; display: block; position: relative;
+      overflow: hidden; transition: all 0.22s var(--ease);
+      animation: ds-fade-up 0.5s both;
+    }
+    .ds-mod-card::before {
+      content: ''; position: absolute; inset: 0;
+      opacity: 0; transition: opacity 0.22s; border-radius: 16px;
+    }
+    .ds-mod-card:hover { border-color: rgba(255,255,255,0.14); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .ds-mod-card:hover::before { opacity: 1; }
+
+    .ds-mod-card.cat-ingestion:hover    { border-color: rgba(34,211,238,0.3); }
+    .ds-mod-card.cat-ingestion::before  { background: radial-gradient(ellipse at top left, rgba(34,211,238,0.06) 0%, transparent 70%); }
+    .ds-mod-card.cat-core:hover         { border-color: rgba(59,130,246,0.3); }
+    .ds-mod-card.cat-core::before       { background: radial-gradient(ellipse at top left, rgba(59,130,246,0.07) 0%, transparent 70%); }
+    .ds-mod-card.cat-storage:hover      { border-color: rgba(139,92,246,0.3); }
+    .ds-mod-card.cat-storage::before    { background: radial-gradient(ellipse at top left, rgba(139,92,246,0.07) 0%, transparent 70%); }
+    .ds-mod-card.cat-activation:hover   { border-color: rgba(245,158,11,0.3); }
+    .ds-mod-card.cat-activation::before { background: radial-gradient(ellipse at top left, rgba(245,158,11,0.06) 0%, transparent 70%); }
+    .ds-mod-card.cat-intelligence:hover { border-color: rgba(16,185,129,0.3); }
+    .ds-mod-card.cat-intelligence::before { background: radial-gradient(ellipse at top left, rgba(16,185,129,0.06) 0%, transparent 70%); }
+    .ds-mod-card.cat-compliance:hover   { border-color: rgba(249,115,22,0.3); }
+    .ds-mod-card.cat-compliance::before { background: radial-gradient(ellipse at top left, rgba(249,115,22,0.06) 0%, transparent 70%); }
+
+    .mod-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .mod-card-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .mod-card-icon svg { width: 20px; height: 20px; }
+    .cat-ingestion .mod-card-icon   { background: rgba(34,211,238,0.12);  color: #22d3ee; }
+    .cat-core .mod-card-icon        { background: rgba(59,130,246,0.12);  color: #3b82f6; }
+    .cat-storage .mod-card-icon     { background: rgba(139,92,246,0.12);  color: #8b5cf6; }
+    .cat-activation .mod-card-icon  { background: rgba(245,158,11,0.12);  color: #f59e0b; }
+    .cat-intelligence .mod-card-icon{ background: rgba(16,185,129,0.12);  color: #10b981; }
+    .cat-compliance .mod-card-icon  { background: rgba(249,115,22,0.12);  color: #f97316; }
+
+    .mod-status {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10.5px; font-weight: 700;
+      padding: 3px 9px; border-radius: 12px;
+    }
+    .mod-status.live   { background: rgba(16,185,129,0.12); color: var(--green); }
+    .mod-status.stable { background: rgba(59,130,246,0.12); color: var(--blue); }
+    .mod-status.beta   { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .mod-status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+    .mod-card-name { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px; letter-spacing: -0.01em; }
+    .mod-card-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 14px; }
+    .mod-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .mod-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .mod-tag {
+      font-size: 10px; font-weight: 600; padding: 3px 8px;
+      border-radius: 6px; background: rgba(255,255,255,0.06);
+      color: var(--text-mute); font-family: var(--mono); letter-spacing: 0.02em;
+    }
+    .mod-arrow { color: var(--text-mute); font-size: 16px; flex-shrink: 0; transition: transform 0.18s, color 0.18s; }
+    .ds-mod-card:hover .mod-arrow { transform: translateX(3px); color: var(--blue); }
+
+    .mod-io {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 10.5px; color: var(--text-mute); margin-bottom: 10px; font-family: var(--mono);
+    }
+    .mod-io-pill { padding: 2px 7px; border-radius: 5px; font-weight: 600; }
+    .mod-io-pill.in  { background: rgba(34,211,238,0.1); color: #22d3ee; }
+    .mod-io-pill.out { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+
+    /* Data lineage */
+    .lineage-section { padding: 0 64px 48px; }
+    .ds-lineage {
+      display: flex; align-items: stretch;
+      background: rgba(255,255,255,0.018); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+    }
+    .ds-lineage-stage {
+      flex: 1; padding: 20px 16px;
+      border-right: 1px solid var(--border); position: relative;
+      transition: background 0.2s;
+    }
+    .ds-lineage-stage:last-child { border-right: none; }
+    .ds-lineage-stage:hover { background: rgba(255,255,255,0.03); }
+    .lineage-num  { font-size: 10px; font-weight: 800; color: var(--text-mute); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+    .lineage-name { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .lineage-tech { font-size: 11px; color: var(--text-mute); font-family: var(--mono); margin-bottom: 10px; line-height: 1.5; }
+    .lineage-metric { font-size: 10.5px; font-weight: 700; color: var(--green); }
+    .lineage-arrow {
+      position: absolute; right: -10px; top: 50%; transform: translateY(-50%); z-index: 2;
+      width: 20px; height: 20px; background: var(--bg-base); border: 1px solid var(--border);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: var(--text-mute);
+    }
+    .lineage-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; }
+    .lineage-bar.cyan   { background: linear-gradient(90deg, #22d3ee, transparent); }
+    .lineage-bar.blue   { background: linear-gradient(90deg, #3b82f6, transparent); }
+    .lineage-bar.purple { background: linear-gradient(90deg, #8b5cf6, transparent); }
+    .lineage-bar.amber  { background: linear-gradient(90deg, #f59e0b, transparent); }
+    .lineage-bar.green  { background: linear-gradient(90deg, #10b981, transparent); }
+
+    /* Task grid */
+    .task-section { padding: 0 64px 48px; }
+    .ds-task-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 14px;
+    }
+    @media (max-width: 1200px) { .ds-task-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 720px)  { .ds-task-grid { grid-template-columns: 1fr; } }
+
+    .ds-task-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 18px 16px;
+      cursor: pointer; text-align: left; font-family: var(--font);
+      transition: all 0.2s var(--ease); position: relative; overflow: hidden;
+    }
+    .ds-task-card::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s; }
+    .ds-task-card:hover { border-color: rgba(59,130,246,0.35); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .ds-task-card:hover::before { opacity: 1; background: radial-gradient(ellipse at top left, rgba(59,130,246,0.07) 0%, transparent 70%); }
+
+    .task-card-q     { font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--blue); margin-bottom: 5px; }
+    .task-card-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; line-height: 1.35; }
+    .task-card-desc  { font-size: 12px; color: var(--text-mute); line-height: 1.55; margin-bottom: 12px; }
+    .task-card-links { display: flex; flex-direction: column; gap: 4px; }
+    .task-card-link {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11.5px; color: var(--text-secondary);
+      text-decoration: none; font-weight: 500; transition: color 0.15s;
+    }
+    .task-card-link:hover { color: var(--blue); }
+    .task-card-link::before { content: '→'; color: var(--text-mute); font-size: 11px; }
+
+    /* Quick reference */
+    .quick-section { padding: 0 64px 64px; }
+    .ds-quick-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; }
+    @media (max-width: 900px) { .ds-quick-grid { grid-template-columns: 1fr; } }
+
+    .ds-quick-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; }
+    .ds-quick-title {
+      font-size: 14px; font-weight: 700; color: var(--text-primary);
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .ds-quick-title svg { color: var(--blue); flex-shrink: 0; }
+    .ds-quick-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+    .ds-quick-list li a {
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--text-secondary); text-decoration: none; font-size: 13px;
+      padding: 6px 10px; border-radius: 8px; transition: all 0.15s;
+    }
+    .ds-quick-list li a:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    .ds-quick-list li a .badge {
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px;
+      background: rgba(59,130,246,0.12); color: var(--blue); font-family: var(--mono);
+    }
+    .ds-quick-list li a .badge.new { background: rgba(16,185,129,0.12); color: var(--green); }
+
+    /* Topbar search */
+    .ds-search-trigger {
+      display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text-mute); font-size: 12.5px;
+      cursor: pointer; transition: all 0.15s; font-family: var(--font); min-width: 210px;
+    }
+    .ds-search-trigger:hover { border-color: rgba(255,255,255,0.12); color: var(--text-secondary); background: rgba(255,255,255,0.06); }
+    .ds-search-trigger svg { flex-shrink: 0; }
+    .ds-search-trigger kbd {
+      margin-left: auto; font-size: 10px; background: rgba(255,255,255,0.07);
+      padding: 2px 6px; border-radius: 5px; color: var(--text-mute); font-family: var(--mono);
+    }
+
+    /* Mode switcher */
+    .ds-mode-group {
+      display: flex; gap: 4px; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 10px; padding: 3px;
+    }
+    .ds-mode-btn {
+      padding: 5px 13px; border: none; border-radius: 7px;
+      background: transparent; color: var(--text-mute);
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: all 0.18s var(--ease); font-family: var(--font); white-space: nowrap;
+    }
+    .ds-mode-btn:hover { color: var(--text-secondary); background: rgba(255,255,255,0.05); }
+    .ds-mode-btn.active { background: var(--blue); color: #fff; box-shadow: 0 0 12px var(--blue-glow); }
+    .ds-mode-btn[data-mode="business"].active { background: var(--amber); box-shadow: 0 0 12px rgba(245,158,11,0.3); }
+    .ds-mode-btn[data-mode="infra"].active    { background: var(--cyan); color: #0c1a28; box-shadow: 0 0 12px rgba(6,182,212,0.3); }
+    .ds-mode-btn[data-mode="debug"].active    { background: var(--green); color: #042014; box-shadow: 0 0 12px rgba(16,185,129,0.3); }
+
+    /* View mode visibility */
+    [data-mode="business"] .mode-engineering,
+    [data-mode="business"] .mode-infra,
+    [data-mode="business"] .mode-debug   { display: none !important; }
+    [data-mode="engineering"] .mode-business,
+    [data-mode="engineering"] .mode-infra,
+    [data-mode="engineering"] .mode-debug { display: none !important; }
+    [data-mode="infra"] .mode-business,
+    [data-mode="infra"] .mode-engineering,
+    [data-mode="infra"] .mode-debug      { display: none !important; }
+    [data-mode="debug"] .mode-business,
+    [data-mode="debug"] .mode-engineering,
+    [data-mode="debug"] .mode-infra      { display: none !important; }
+
+    /* Graph tooltip */
+    #graph-tooltip {
+      position: fixed; z-index: 9999; pointer-events: none;
+      background: rgba(9,15,26,0.96); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; padding: 14px 18px; max-width: 260px;
+      backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      opacity: 0; transform: translateY(4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    #graph-tooltip.visible { opacity: 1; transform: translateY(0); }
+    .kg-tip-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px; }
+    .kg-tip-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 8px; margin-bottom: 7px; }
+    .kg-tip-desc  { font-size: 11.5px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 8px; }
+    .kg-tip-tech  { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .kg-tip-tech span { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 5px; background: rgba(255,255,255,0.07); color: var(--text-mute); font-family: var(--mono); }
+    .kg-tip-hint  { font-size: 10.5px; color: var(--text-mute); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 7px; }
+
+    /* Misc */
+    .ds-main { overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
+    .ds-main::-webkit-scrollbar { width: 5px; }
+    .ds-main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+    /* Topbar breadcrumb — prevent wrap */
+    .ds-topbar { gap: 16px; }
+    .ds-topbar > div:first-child { white-space: nowrap; flex-shrink: 0; }
+    .ds-topbar > div:last-child { flex-shrink: 0; }
+    .ds-divider { height: 1px; background: var(--border); margin: 0 64px 40px; opacity: 0.5; }
+
+    /* Card stagger */
+    .ds-mod-card:nth-child(1) { animation-delay: 0.05s; }
+    .ds-mod-card:nth-child(2) { animation-delay: 0.10s; }
+    .ds-mod-card:nth-child(3) { animation-delay: 0.15s; }
+    .ds-mod-card:nth-child(4) { animation-delay: 0.20s; }
+    .ds-mod-card:nth-child(5) { animation-delay: 0.25s; }
+    .ds-mod-card:nth-child(6) { animation-delay: 0.30s; }
+    .ds-mod-card:nth-child(7) { animation-delay: 0.35s; }
+    .ds-mod-card:nth-child(8) { animation-delay: 0.40s; }
+    .ds-mod-card:nth-child(9) { animation-delay: 0.45s; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .ds-hero, .kg-section, .mod-section, .lineage-section, .task-section, .quick-section { padding-left: 32px; padding-right: 32px; }
+      .ds-divider { margin-left: 32px; margin-right: 32px; }
+    }
+    @media (max-width: 720px) {
+      .ds-hero, .kg-section, .mod-section, .lineage-section, .task-section, .quick-section { padding-left: 20px; padding-right: 20px; }
+      .ds-divider { margin-left: 20px; margin-right: 20px; }
+      .ds-metric-strip { flex-direction: column; }
+      .ds-metric { border-right: none; border-bottom: 1px solid var(--border); }
+      .ds-metric:last-child { border-bottom: none; }
+      .ds-lineage { flex-direction: column; }
+      .ds-lineage-stage { border-right: none; border-bottom: 1px solid var(--border); }
+      .lineage-arrow { display: none; }
+    }
+
+    /* ── BACK-TO-TOP BUTTON (injected by scripts.js) ── */
+    .back-to-top {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 40px;
+      height: 40px;
+      background: var(--brand-primary, #4361ee);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+    }
+    .back-to-top.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    .back-to-top:hover { background: #3a56d4; }
+  </style>
+</head>
+<body class="ds-body">
+
+<!-- ── SIDEBAR ─────────────────────────────────────────────────────── -->
+<aside class="ds-sidebar">
+  <!-- Logo -->
+  <div class="ds-sidebar-logo">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="8" fill="rgba(59,130,246,0.15)"/>
+        <path d="M8 14C8 10.686 10.686 8 14 8C17.314 8 20 10.686 20 14" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
+        <path d="M11 17C11 15.343 12.343 14 14 14C15.657 14 17 15.343 17 17" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="14" cy="20" r="2" fill="#3b82f6"/>
+      </svg>
+      <div>
+        <div style="font-size:13px;font-weight:800;color:var(--text-primary);letter-spacing:-0.02em;">Zeotap CDP</div>
+        <div style="font-size:10px;color:var(--text-mute);font-weight:600;">Platform Intelligence Hub</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scrollable area -->
+  <div style="flex:1;overflow-y:auto;padding-bottom:8px;">
+
+    <!-- I want to... -->
+    <div class="ds-sidebar-section">
+      <div class="ds-sidebar-label">I want to…</div>
+
+      <button class="ds-task-btn" data-highlight="collect,ingest,validate" onclick="handleTaskClick(this)">
+        <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+        <span>Ingest events from my app</span>
+      </button>
+      <button class="ds-task-btn" data-highlight="identity,profiles,privacy" onclick="handleTaskClick(this)">
+        <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+        <span>Resolve user identities</span>
+      </button>
+      <button class="ds-task-btn" data-highlight="audiences,segmentation,rules" onclick="handleTaskClick(this)">
+        <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+        <span>Build audience segments</span>
+      </button>
+      <button class="ds-task-btn" data-highlight="destinations,activation,journeys" onclick="handleTaskClick(this)">
+        <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span>
+        <span>Activate to destinations</span>
+      </button>
+      <button class="ds-task-btn" data-highlight="zoe,calc,segmentation" onclick="handleTaskClick(this)">
+        <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+        <span>Use AI for predictions</span>
+      </button>
+      <button class="ds-task-btn" data-highlight="privacy,consent,compliance" onclick="handleTaskClick(this)">
+        <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        <span>Manage consent &amp; privacy</span>
+      </button>
+      <button class="ds-task-btn" data-highlight="collect,identity,profiles,audiences" onclick="handleTaskClick(this)">
+        <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+        <span>Understand the data pipeline</span>
+      </button>
+      <button class="ds-task-btn" data-highlight="infra,api,security" onclick="handleTaskClick(this)">
+        <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg></span>
+        <span>Operate infrastructure</span>
+      </button>
+    </div>
+
+    <!-- Chapters -->
+    <div class="ds-sidebar-section" style="margin-top:16px;">
+      <div class="ds-sidebar-label">Chapters</div>
+      <a href="01-platform-overview.html"      class="ds-nav-link"><div class="nav-dot"></div>Platform Overview</a>
+      <a href="02-data-collection.html"        class="ds-nav-link cat-ingestion"><div class="nav-dot"></div>Data Collection</a>
+      <a href="03-identity-resolution.html"    class="ds-nav-link cat-core"><div class="nav-dot"></div>Identity Resolution</a>
+      <a href="05-profile-store.html"    class="ds-nav-link cat-core"><div class="nav-dot"></div>Customer Data Model</a>
+      <a href="05-profile-store.html"          class="ds-nav-link cat-storage"><div class="nav-dot"></div>Profile Store</a>
+      <a href="06-audience-management.html"           class="ds-nav-link cat-storage"><div class="nav-dot"></div>Segmentation Engine</a>
+      <a href="07-customer-journeys.html"               class="ds-nav-link cat-activation"><div class="nav-dot"></div>Journeys &amp; Orchestration</a>
+      <a href="08-data-activation.html"             class="ds-nav-link cat-activation"><div class="nav-dot"></div>Activation Layer</a>
+      <a href="04-genai-zoe.html"                 class="ds-nav-link cat-intelligence"><div class="nav-dot"></div>Zoe AI Engine</a>
+      <a href="13-privacy-gdpr.html"     class="ds-nav-link cat-compliance"><div class="nav-dot"></div>Privacy &amp; Compliance</a>
+      <a href="03-data-ingestion.html"         class="ds-nav-link cat-ingestion"><div class="nav-dot"></div>Data Ingestion</a>
+      <a href="10-ml-platform.html"  class="ds-nav-link cat-intelligence"><div class="nav-dot"></div>Calculated Attributes</a>
+      <a href="12-unity-dashboard.html"                class="ds-nav-link"><div class="nav-dot"></div>Data Catalog</a>
+      <a href="03-data-ingestion.html"              class="ds-nav-link cat-ingestion"><div class="nav-dot"></div>Real-Time Streaming</a>
+      <a href="11-reporting-bi.html"              class="ds-nav-link"><div class="nav-dot" style="background:#f43f5e;"></div>Analytics &amp; Insights</a>
+      <a href="08-data-activation.html"           class="ds-nav-link cat-activation"><div class="nav-dot"></div>Integrations &amp; Partners</a>
+      <a href="14-auth-iam.html"               class="ds-nav-link cat-compliance"><div class="nav-dot"></div>Security Architecture</a>
+      <a href="15-infrastructure.html"         class="ds-nav-link"><div class="nav-dot"></div>Infrastructure &amp; SRE</a>
+    </div>
+
+    <!-- Reference -->
+    <div class="ds-sidebar-section" style="margin-top:8px;">
+      <div class="ds-sidebar-label">Reference</div>
+      <a href="appendix-a-api-reference.html" class="ds-nav-link"><div class="nav-dot" style="background:var(--amber);"></div>API Reference</a>
+      <a href="appendix-b-data-dictionary.html"      class="ds-nav-link"><div class="nav-dot"></div>Glossary</a>
+      <a href="appendix-c-glossary.html"      class="ds-nav-link"><div class="nav-dot"></div>Runbooks</a>
+    </div>
+  </div>
+
+</aside>
+
+<!-- ── MAIN ────────────────────────────────────────────────────────── -->
+<div class="ds-main">
+
+  <!-- Topbar -->
+  <header class="ds-topbar">
+    <div style="font-size:12px;color:var(--text-mute);font-weight:500;">
+      <span style="color:var(--text-secondary);">Zeotap CDP</span>
+      <span style="margin:0 6px;opacity:0.4;">/</span>
+      Platform Intelligence Hub
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="ds-search-trigger" onclick="openSearch()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <span>Search docs…</span>
+        <kbd>⌘K</kbd>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── HERO ──────────────────────────────────────────────────────── -->
+  <section class="ds-hero">
+    <div class="ds-hero-eyebrow">
+      <span class="ds-hero-eyebrow-dot"></span>
+      18 Chapters · 3 Appendices
+    </div>
+    <h1 class="ds-hero-title">
+      The Zeotap CDP<br>
+      <span class="glow-blue">Architecture Intelligence</span>
+    </h1>
+    <p class="ds-hero-sub">
+      A living map of every service, pipeline, and API that powers the Customer Data Platform.
+      Explore the graph, trace data lineage, and navigate by workflow.
+    </p>
+
+  </section>
+
+  <!-- ── KNOWLEDGE GRAPH ───────────────────────────────────────────── -->
+  <section class="kg-section">
+    <div class="ds-section-header">
+      <div>
+        <div class="ds-section-title">System Architecture Graph</div>
+        <div class="ds-section-sub">17 modules · 20 data flows · hover to inspect · click to navigate</div>
+      </div>
+      <a href="01-platform-overview.html" class="ds-section-link">Full Architecture →</a>
+    </div>
+
+    <div class="kg-shell-wrap">
+      <div class="kg-toolbar">
+        <div class="kg-toolbar-left">
+          <span class="kg-toolbar-title">CDP MODULE MAP</span>
+          <span class="kg-toolbar-hint">Use sidebar tasks to highlight flows · drag nodes to rearrange</span>
+        </div>
+        <div id="graph-legend" class="kg-legend-wrap"></div>
+      </div>
+      <svg id="knowledge-graph"></svg>
+      <button class="kg-reset-btn" onclick="if(window.KG) KG.reset()">Reset View</button>
+    </div>
+  </section>
+
+  <div class="ds-divider"></div>
+
+  <!-- ── MODULE CARDS ──────────────────────────────────────────────── -->
+  <section class="mod-section">
+    <div class="ds-section-header">
+      <div>
+        <div class="ds-section-title">Core Modules</div>
+        <div class="ds-section-sub">9 platform subsystems — click any card to open its chapter</div>
+      </div>
+    </div>
+
+    <div class="ds-mod-grid">
+
+      <!-- Data Collection -->
+      <a href="02-data-collection.html" class="ds-mod-card cat-ingestion">
+        <div class="mod-card-top">
+          <div class="mod-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+        </div>
+        <div class="mod-card-name">Data Collection</div>
+        <div class="mod-io">
+          <span class="mod-io-pill in">IN</span>
+          <span style="color:var(--border);">·</span>
+          <span>Web · Mobile · Server · Batch</span>
+          <span style="color:var(--border);">·</span>
+          <span class="mod-io-pill out">→ Kafka</span>
+        </div>
+        <div class="mod-card-desc">JS/TS analytics SDK, iOS/Android native, GTM template, server-side API, and batch file ingestion pipeline with schema validation.</div>
+        <div class="mod-card-footer">
+          <div class="mod-tags"><span class="mod-tag">JS/TS</span><span class="mod-tag">Swift</span><span class="mod-tag">Kotlin</span><span class="mod-tag">GTM</span></div>
+          <div class="mod-arrow">→</div>
+        </div>
+      </a>
+
+      <!-- Identity Resolution -->
+      <a href="03-identity-resolution.html" class="ds-mod-card cat-core">
+        <div class="mod-card-top">
+          <div class="mod-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </div>
+        </div>
+        <div class="mod-card-name">Identity Resolution</div>
+        <div class="mod-io">
+          <span class="mod-io-pill in">IN</span>
+          <span style="color:var(--border);">·</span>
+          <span>Cookie · Device · Email · UCID</span>
+          <span style="color:var(--border);">·</span>
+          <span class="mod-io-pill out">→ Profiles</span>
+        </div>
+        <div class="mod-card-desc">id-graph-lib-v2 in Go 1.24. Deterministic + probabilistic resolution via BigTable identity graph with Redis hot-path cache.</div>
+        <div class="mod-card-footer">
+          <div class="mod-tags"><span class="mod-tag">Go 1.24</span><span class="mod-tag">BigTable</span><span class="mod-tag">Redis</span></div>
+          <div class="mod-arrow">→</div>
+        </div>
+      </a>
+
+      <!-- Profile Store -->
+      <a href="05-profile-store.html" class="ds-mod-card cat-storage">
+        <div class="mod-card-top">
+          <div class="mod-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+          </div>
+        </div>
+        <div class="mod-card-name">Profile Store</div>
+        <div class="mod-io">
+          <span class="mod-io-pill in">IN</span>
+          <span style="color:var(--border);">·</span>
+          <span>Events · Resolved Identities</span>
+          <span style="color:var(--border);">·</span>
+          <span class="mod-io-pill out">→ Profile API</span>
+        </div>
+        <div class="mod-card-desc">Unified customer profile ledger. Scylla hot-path (p99 &lt;8ms), BigQuery analytics twin, Spanner for ACID operations and DSR compliance.</div>
+        <div class="mod-card-footer">
+          <div class="mod-tags"><span class="mod-tag">Scylla</span><span class="mod-tag">BigQuery</span><span class="mod-tag">Spanner</span></div>
+          <div class="mod-arrow">→</div>
+        </div>
+      </a>
+
+      <!-- Segmentation -->
+      <a href="06-audience-management.html" class="ds-mod-card cat-storage">
+        <div class="mod-card-top">
+          <div class="mod-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          </div>
+        </div>
+        <div class="mod-card-name">Segmentation Engine</div>
+        <div class="mod-io">
+          <span class="mod-io-pill in">IN</span>
+          <span style="color:var(--border);">·</span>
+          <span>Rules · Profile attributes</span>
+          <span style="color:var(--border);">·</span>
+          <span class="mod-io-pill out">→ Audiences</span>
+        </div>
+        <div class="mod-card-desc">Rust-native rule evaluation engine with BigQuery SQL runner. 800+ condition types, real-time streaming and batch segment computation.</div>
+        <div class="mod-card-footer">
+          <div class="mod-tags"><span class="mod-tag">Rust</span><span class="mod-tag">BigQuery</span><span class="mod-tag">Flink</span></div>
+          <div class="mod-arrow">→</div>
+        </div>
+      </a>
+
+      <!-- Journeys -->
+      <a href="07-customer-journeys.html" class="ds-mod-card cat-activation">
+        <div class="mod-card-top">
+          <div class="mod-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+        </div>
+        <div class="mod-card-name">Journeys &amp; Orchestration</div>
+        <div class="mod-io">
+          <span class="mod-io-pill in">IN</span>
+          <span style="color:var(--border);">·</span>
+          <span>Triggers · Segments</span>
+          <span style="color:var(--border);">·</span>
+          <span class="mod-io-pill out">→ Channels</span>
+        </div>
+        <div class="mod-card-desc">Visual journey builder backed by Apache Airflow + custom DAG executor. Event-triggered and scheduled branching logic with A/B support.</div>
+        <div class="mod-card-footer">
+          <div class="mod-tags"><span class="mod-tag">Airflow</span><span class="mod-tag">Python</span><span class="mod-tag">React</span></div>
+          <div class="mod-arrow">→</div>
+        </div>
+      </a>
+
+      <!-- Activation -->
+      <a href="08-data-activation.html" class="ds-mod-card cat-activation">
+        <div class="mod-card-top">
+          <div class="mod-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+        </div>
+        <div class="mod-card-name">Activation Layer</div>
+        <div class="mod-io">
+          <span class="mod-io-pill in">IN</span>
+          <span style="color:var(--border);">·</span>
+          <span>Segments · Profiles</span>
+          <span style="color:var(--border);">·</span>
+          <span class="mod-io-pill out">→ 200+ Destinations</span>
+        </div>
+        <div class="mod-card-desc">connector-hub-scala orchestrates pushes to 200+ ad platforms, CRMs, and cloud warehouses. OAuth refresh, rate limiting, retry queues built-in.</div>
+        <div class="mod-card-footer">
+          <div class="mod-tags"><span class="mod-tag">Scala</span><span class="mod-tag">Kafka</span><span class="mod-tag">GCS</span></div>
+          <div class="mod-arrow">→</div>
+        </div>
+      </a>
+
+      <!-- Zoe AI -->
+      <a href="04-genai-zoe.html" class="ds-mod-card cat-intelligence">
+        <div class="mod-card-top">
+          <div class="mod-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 12l4-4"/><circle cx="18" cy="6" r="3"/></svg>
+          </div>
+        </div>
+        <div class="mod-card-name">Zoe AI Engine</div>
+        <div class="mod-io">
+          <span class="mod-io-pill in">IN</span>
+          <span style="color:var(--border);">·</span>
+          <span>Profile data · Behavioural</span>
+          <span style="color:var(--border);">·</span>
+          <span class="mod-io-pill out">→ Predictions</span>
+        </div>
+        <div class="mod-card-desc">Vertex AI Pipelines + TF Serving. LTV prediction, churn propensity, NLP cohort builder via natural language segment interface.</div>
+        <div class="mod-card-footer">
+          <div class="mod-tags"><span class="mod-tag">Vertex AI</span><span class="mod-tag">TensorFlow</span><span class="mod-tag">Python</span></div>
+          <div class="mod-arrow">→</div>
+        </div>
+      </a>
+
+      <!-- Privacy -->
+      <a href="13-privacy-gdpr.html" class="ds-mod-card cat-compliance">
+        <div class="mod-card-top">
+          <div class="mod-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+        </div>
+        <div class="mod-card-name">Privacy &amp; Compliance</div>
+        <div class="mod-io">
+          <span class="mod-io-pill in">IN</span>
+          <span style="color:var(--border);">·</span>
+          <span>Consent signals · DSR</span>
+          <span style="color:var(--border);">·</span>
+          <span class="mod-io-pill out">→ All modules</span>
+        </div>
+        <div class="mod-card-desc">ConsentManager microservice gates every pipeline stage. GDPR / CCPA / LGPD compliance. DSR fanout with 72-hour SLA enforcement.</div>
+        <div class="mod-card-footer">
+          <div class="mod-tags"><span class="mod-tag">Go</span><span class="mod-tag">Spanner</span><span class="mod-tag">PubSub</span></div>
+          <div class="mod-arrow">→</div>
+        </div>
+      </a>
+
+      <!-- Real-Time Streaming -->
+      <a href="03-data-ingestion.html" class="ds-mod-card cat-ingestion">
+        <div class="mod-card-top">
+          <div class="mod-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+        </div>
+        <div class="mod-card-name">Real-Time Streaming</div>
+        <div class="mod-io">
+          <span class="mod-io-pill in">IN</span>
+          <span style="color:var(--border);">·</span>
+          <span>Kafka topics · Pub/Sub</span>
+          <span style="color:var(--border);">·</span>
+          <span class="mod-io-pill out">→ Flink · BQ</span>
+        </div>
+        <div class="mod-card-desc">Apache Kafka (MSK) → Apache Flink 1.18 streaming jobs → Scylla + BigQuery. Event-time windowing, watermarks, exactly-once semantics.</div>
+        <div class="mod-card-footer">
+          <div class="mod-tags"><span class="mod-tag">Kafka</span><span class="mod-tag">Flink 1.18</span><span class="mod-tag">Java</span></div>
+          <div class="mod-arrow">→</div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <div class="ds-divider"></div>
+
+  <!-- ── DATA LINEAGE ───────────────────────────────────────────────── -->
+  <section class="lineage-section">
+    <div class="ds-section-header">
+      <div>
+        <div class="ds-section-title">Data Lineage</div>
+        <div class="ds-section-sub">End-to-end flow from raw event to activated audience</div>
+      </div>
+      <a href="03-data-ingestion.html" class="ds-section-link">Ingestion Deep Dive →</a>
+    </div>
+
+    <div class="ds-lineage">
+      <div class="ds-lineage-stage">
+        <div class="lineage-num">01 · Source</div>
+        <div class="lineage-name">Raw Sources</div>
+        <div class="lineage-tech">JS SDK · Mobile SDK<br>Server API · Batch CSV<br>Cloud Storage</div>
+        <div class="lineage-bar cyan"></div>
+        <div class="lineage-arrow">→</div>
+      </div>
+      <div class="ds-lineage-stage">
+        <div class="lineage-num">02 · Collection</div>
+        <div class="lineage-name">Ingest &amp; Validate</div>
+        <div class="lineage-tech">Kafka MSK cluster<br>PubSub topics<br>Schema registry</div>
+        <div class="lineage-bar cyan"></div>
+        <div class="lineage-arrow">→</div>
+      </div>
+      <div class="ds-lineage-stage">
+        <div class="lineage-num">03 · Resolution</div>
+        <div class="lineage-name">Identity Graph</div>
+        <div class="lineage-tech">id-graph-lib-v2<br>BigTable ID store<br>Redis hot-cache</div>
+        <div class="lineage-bar blue"></div>
+        <div class="lineage-arrow">→</div>
+      </div>
+      <div class="ds-lineage-stage">
+        <div class="lineage-num">04 · Profile</div>
+        <div class="lineage-name">Profile Store</div>
+        <div class="lineage-tech">Scylla hot (8ms)<br>BigQuery analytics<br>Spanner ACID</div>
+        <div class="lineage-bar purple"></div>
+        <div class="lineage-arrow">→</div>
+      </div>
+      <div class="ds-lineage-stage">
+        <div class="lineage-num">05 · Segment</div>
+        <div class="lineage-name">Segmentation</div>
+        <div class="lineage-tech">Rust rule engine<br>BQ SQL runner<br>Flink streaming</div>
+        <div class="lineage-bar purple"></div>
+        <div class="lineage-arrow">→</div>
+      </div>
+      <div class="ds-lineage-stage">
+        <div class="lineage-num">06 · Orchestrate</div>
+        <div class="lineage-name">Journeys</div>
+        <div class="lineage-tech">Airflow DAGs<br>Step executor<br>A/B framework</div>
+        <div class="lineage-bar amber"></div>
+        <div class="lineage-arrow">→</div>
+      </div>
+      <div class="ds-lineage-stage">
+        <div class="lineage-num">07 · Activate</div>
+        <div class="lineage-name">Destinations</div>
+        <div class="lineage-tech">connector-hub<br>200+ integrations<br>OAuth · S3 · SFTP</div>
+        <div class="lineage-bar amber"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ds-divider"></div>
+
+  <!-- ── TASK GRID ─────────────────────────────────────────────────── -->
+  <section class="task-section">
+    <div class="ds-section-header">
+      <div>
+        <div class="ds-section-title">Navigate by Workflow</div>
+        <div class="ds-section-sub">Jump straight to what you need to build</div>
+      </div>
+    </div>
+
+    <div class="ds-task-grid">
+
+      <div class="ds-task-card" onclick="window.location='02-data-collection.html'">
+        <div class="task-card-q">I want to…</div>
+        <div class="task-card-title">Send events from my web app</div>
+        <div class="task-card-desc">Integrate analytics-sdk.js, configure event schemas, validate payloads.</div>
+        <div class="task-card-links">
+          <a href="02-data-collection.html" class="task-card-link" onclick="event.stopPropagation()">JS SDK Quickstart</a>
+          <a href="appendix-a-api-reference.html#collect" class="task-card-link" onclick="event.stopPropagation()">Collection API Reference</a>
+        </div>
+      </div>
+
+      <div class="ds-task-card" onclick="window.location='03-identity-resolution.html'">
+        <div class="task-card-q">I want to…</div>
+        <div class="task-card-title">Stitch cross-device identities</div>
+        <div class="task-card-desc">Understand deterministic vs probabilistic resolution and configure merge rules.</div>
+        <div class="task-card-links">
+          <a href="03-identity-resolution.html" class="task-card-link" onclick="event.stopPropagation()">Identity Graph Architecture</a>
+          <a href="05-profile-store.html" class="task-card-link" onclick="event.stopPropagation()">Customer Data Model</a>
+        </div>
+      </div>
+
+      <div class="ds-task-card" onclick="window.location='06-audience-management.html'">
+        <div class="task-card-q">I want to…</div>
+        <div class="task-card-title">Build a high-value audience</div>
+        <div class="task-card-desc">Create rule-based or AI-powered segments targeting specific user behaviours.</div>
+        <div class="task-card-links">
+          <a href="06-audience-management.html" class="task-card-link" onclick="event.stopPropagation()">Rule Builder Guide</a>
+          <a href="04-genai-zoe.html" class="task-card-link" onclick="event.stopPropagation()">AI Lookalike Modelling</a>
+        </div>
+      </div>
+
+      <div class="ds-task-card" onclick="window.location='08-data-activation.html'">
+        <div class="task-card-q">I want to…</div>
+        <div class="task-card-title">Push segments to Google Ads</div>
+        <div class="task-card-desc">Configure a destination connector, map identity fields, schedule syncs.</div>
+        <div class="task-card-links">
+          <a href="08-data-activation.html" class="task-card-link" onclick="event.stopPropagation()">Connector Catalogue</a>
+          <a href="08-data-activation.html" class="task-card-link" onclick="event.stopPropagation()">Partner Integrations</a>
+        </div>
+      </div>
+
+      <div class="ds-task-card" onclick="window.location='05-profile-store.html'">
+        <div class="task-card-q">I want to…</div>
+        <div class="task-card-title">Read a customer profile via API</div>
+        <div class="task-card-desc">Call POST /cdp/v1/users/_search to fetch unified profile data programmatically.</div>
+        <div class="task-card-links">
+          <a href="05-profile-store.html" class="task-card-link" onclick="event.stopPropagation()">Profile Store API</a>
+          <a href="appendix-a-api-reference.html" class="task-card-link" onclick="event.stopPropagation()">API Request Examples</a>
+        </div>
+      </div>
+
+      <div class="ds-task-card" onclick="window.location='13-privacy-gdpr.html'">
+        <div class="task-card-q">I want to…</div>
+        <div class="task-card-title">Handle a GDPR erasure request</div>
+        <div class="task-card-desc">Trigger DSR fanout, verify 7-day erasure SLA, audit downstream propagation.</div>
+        <div class="task-card-links">
+          <a href="13-privacy-gdpr.html" class="task-card-link" onclick="event.stopPropagation()">DSR Processing Flow</a>
+          <a href="appendix-c-glossary.html" class="task-card-link" onclick="event.stopPropagation()">Erasure Runbook</a>
+        </div>
+      </div>
+
+      <div class="ds-task-card" onclick="window.location='04-genai-zoe.html'">
+        <div class="task-card-q">I want to…</div>
+        <div class="task-card-title">Predict customer churn</div>
+        <div class="task-card-desc">Deploy a Vertex AI churn propensity model and use scores in segmentation rules.</div>
+        <div class="task-card-links">
+          <a href="04-genai-zoe.html" class="task-card-link" onclick="event.stopPropagation()">Churn Model Architecture</a>
+          <a href="10-ml-platform.html" class="task-card-link" onclick="event.stopPropagation()">ML-backed Attributes</a>
+        </div>
+      </div>
+
+      <div class="ds-task-card" onclick="window.location='15-infrastructure.html'">
+        <div class="task-card-q">I want to…</div>
+        <div class="task-card-title">Debug a pipeline incident</div>
+        <div class="task-card-desc">Trace events through Kafka, validate Flink job state, check Scylla write path.</div>
+        <div class="task-card-links">
+          <a href="15-infrastructure.html" class="task-card-link" onclick="event.stopPropagation()">Observability Stack</a>
+          <a href="appendix-c-glossary.html" class="task-card-link" onclick="event.stopPropagation()">Incident Runbooks</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="ds-divider"></div>
+
+  <!-- ── QUICK REFERENCE ───────────────────────────────────────────── -->
+  <section class="quick-section">
+    <div class="ds-section-header">
+      <div>
+        <div class="ds-section-title">Quick Reference</div>
+        <div class="ds-section-sub">Frequently accessed APIs, service versions, runbooks, and SLAs</div>
+      </div>
+    </div>
+
+    <div class="ds-quick-grid">
+
+      <div class="ds-quick-card">
+        <div class="ds-quick-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M9 3h10a2 2 0 0 1 2 2v4"/><path d="M9 3v18"/><path d="M3 9h18"/></svg>
+          API Endpoints
+        </div>
+        <ul class="ds-quick-list">
+          <li><a href="appendix-a-api-reference.html#collect"><span>POST /collect/v2/events</span><span class="badge">Ingest</span></a></li>
+          <li><a href="appendix-a-api-reference.html#profile-api"><span>POST /cdp/v1/users/_search</span><span class="badge">Profile</span></a></li>
+          <li><a href="appendix-a-api-reference.html#profile-api"><span>POST /cdp/v1/users</span><span class="badge">Write</span></a></li>
+          <li><a href="appendix-a-api-reference.html#profile-api"><span>POST /cdp/v1/users/_delete</span><span class="badge">Delete</span></a></li>
+          <li><a href="appendix-a-api-reference.html#audiences"><span>GET /segments/v1/{id}/members</span><span class="badge">Segment</span></a></li>
+          <li><a href="appendix-a-api-reference.html"><span>View all 23 endpoints →</span></a></li>
+        </ul>
+      </div>
+
+      <div class="ds-quick-card">
+        <div class="ds-quick-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          Core Services
+        </div>
+        <ul class="ds-quick-list">
+          <li><a href="02-data-collection.html"><span>analytics-sdk · JS/TS</span><span class="badge new">v3.4</span></a></li>
+          <li><a href="03-identity-resolution.html"><span>id-graph-lib-v2 · Go</span><span class="badge">v2.11</span></a></li>
+          <li><a href="06-audience-management.html"><span>segment-engine · Rust</span><span class="badge">v1.8</span></a></li>
+          <li><a href="08-data-activation.html"><span>connector-hub · Scala</span><span class="badge">v4.2</span></a></li>
+          <li><a href="04-genai-zoe.html"><span>zoe-inference · Python</span><span class="badge new">beta</span></a></li>
+          <li><a href="appendix-b-data-dictionary.html"><span>Full service registry →</span></a></li>
+        </ul>
+      </div>
+
+      <div class="ds-quick-card">
+        <div class="ds-quick-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Runbooks
+        </div>
+        <ul class="ds-quick-list">
+          <li><a href="appendix-c-glossary.html"><span>Kafka Consumer Lag</span><span class="badge">SRE</span></a></li>
+          <li><a href="appendix-c-glossary.html"><span>Scylla Hotspot Recovery</span><span class="badge">SRE</span></a></li>
+          <li><a href="appendix-c-glossary.html"><span>DSR SLA Breach Protocol</span><span class="badge">Privacy</span></a></li>
+          <li><a href="appendix-c-glossary.html"><span>Identity Graph Rollback</span><span class="badge">Core</span></a></li>
+          <li><a href="appendix-c-glossary.html"><span>Stale Segment Recovery</span><span class="badge">Seg</span></a></li>
+          <li><a href="appendix-c-glossary.html"><span>All 14 runbooks →</span></a></li>
+        </ul>
+      </div>
+
+      <div class="ds-quick-card">
+        <div class="ds-quick-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Rate Limits &amp; SLAs
+        </div>
+        <ul class="ds-quick-list">
+          <li><a href="appendix-a-api-reference.html"><span>Profile API — 10k req/min</span><span class="badge">API</span></a></li>
+          <li><a href="02-data-collection.html"><span>Collect — 50k events/s</span><span class="badge">SDK</span></a></li>
+          <li><a href="05-profile-store.html"><span>Profile read — p99 &lt;8ms</span><span class="badge">SLA</span></a></li>
+          <li><a href="03-data-ingestion.html"><span>Stream processing — p99 &lt;45ms</span><span class="badge">SLA</span></a></li>
+          <li><a href="13-privacy-gdpr.html"><span>DSR erasure — 7-day SLA</span><span class="badge">Legal</span></a></li>
+          <li><a href="15-infrastructure.html"><span>Platform SLO dashboard →</span></a></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+</div><!-- /.ds-main -->
+
+<!-- Graph tooltip -->
+<div id="graph-tooltip">
+  <div class="kg-tip-title" id="tip-title"></div>
+  <div class="kg-tip-badge" id="tip-badge"></div>
+  <div class="kg-tip-desc"  id="tip-desc"></div>
+  <div class="kg-tip-tech"  id="tip-tech"></div>
+  <div class="kg-tip-hint">Click to open chapter →</div>
+</div>
+
+<!-- Scripts -->
+<script src="assets/search-index.js"></script>
+<script src="assets/knowledge-graph.js"></script>
+<script src="assets/scripts.js?v=6"></script>
+
+<script>
+/* ── Mode switcher ─────────────────────────────────────────────────── */
+function setMode(mode) {
+  document.documentElement.setAttribute('data-mode', mode);
+  document.querySelectorAll('.ds-mode-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+}
+
+/* ── Task buttons → graph highlight ───────────────────────────────── */
+function handleTaskClick(btn) {
+  var wasActive = btn.classList.contains('active');
+  document.querySelectorAll('.ds-task-btn').forEach(function(b) { b.classList.remove('active'); });
+
+  if (wasActive) {
+    if (window.KG) KG.reset();
+    return;
+  }
+  btn.classList.add('active');
+
+  var ids = (btn.dataset.highlight || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  if (window.KG && ids.length) {
+    KG.highlight(ids);
+    var graphEl = document.querySelector('.kg-section');
+    if (graphEl) graphEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+/* ── Search trigger (⌘K) ──────────────────────────────────────────── */
+function openSearch() {
+  var overlay = document.getElementById('search-overlay');
+  if (overlay) {
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    var inp = document.getElementById('search-input');
+    if (inp) setTimeout(function(){ inp.focus(); }, 40);
+  }
+}
+document.addEventListener('keydown', function(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+});
+
+/* ── Back-to-top: listen on .ds-main (the actual scroll container on this page) ── */
+(function() {
+  var main = document.querySelector('.ds-main');
+  var btt  = document.querySelector('.back-to-top');
+  if (main && btt) {
+    main.addEventListener('scroll', function() {
+      btt.classList.toggle('visible', main.scrollTop > 400);
+    }, { passive: true });
+    /* Override click to scroll .ds-main instead of window */
+    btt.addEventListener('click', function(e) {
+      e.stopPropagation();
+      main.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

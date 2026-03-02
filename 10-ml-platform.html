@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 10: ML & Data Science Platform — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART IV — INTELLIGENCE</div>
+      <a href="04-genai-zoe.html" class="nav-item">GenAI & Zoe</a>
+      <a href="10-ml-platform.html" class="nav-item active">ML Platform</a>
+      <a href="11-reporting-bi.html" class="nav-item">Reporting & BI</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#mlops" class="nav-item">MLOps Pipeline</a>
+      <a href="#atlas-ai" class="nav-item">Atlas AI</a>
+      <a href="#attributes" class="nav-item">AI Attributes</a>
+      <a href="#nlp" class="nav-item">NLP Discovery</a>
+      <a href="#beam" class="nav-item">Apache Beam Jobs</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Part IV — Intelligence</span><span>›</span>
+        <span>ML & Data Science Platform</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>ML & Data Science Platform</h1>
+      <p class="page-subtitle">End-to-end MLOps: training, serving, and embedding propensity models, LTV predictions, lookalike audiences, and NLP-powered attribute discovery into the Zeotap CDP.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">Apache Beam</div><div class="stat-label">Feature Pipeline</div></div>
+      <div class="stat-card"><div class="stat-value">GCP Vertex AI</div><div class="stat-label">Model Training</div></div>
+      <div class="stat-card"><div class="stat-value">BigQuery ML</div><div class="stat-label">In-DB Models</div></div>
+      <div class="stat-card"><div class="stat-value">Atlas AI</div><div class="stat-label">Lookalike Engine</div></div>
+    </div>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Platform Overview</h2>
+      <p>The Zeotap ML Platform enables the CDP to go beyond raw data storage and segment-building — it generates <em>predictive intelligence</em> at the individual profile level. This includes:</p>
+
+      <ul>
+        <li><strong>Propensity Models</strong> — Purchase propensity, churn risk, email open likelihood</li>
+        <li><strong>LTV Segmentation</strong> — Customer lifetime value prediction (high/mid/low/at-risk)</li>
+        <li><strong>Lookalike Audiences</strong> — Finding users who resemble a seed audience (Atlas AI)</li>
+        <li><strong>AI Attributes</strong> — Model-derived attributes attached to every profile</li>
+        <li><strong>NLP Discovery</strong> — Extracting audience attributes from unstructured text (product descriptions, reviews)</li>
+      </ul>
+
+      <div class="mermaid">
+graph LR
+    subgraph Input["Data Inputs"]
+        PS["Profile Store<br/>(Delta Lake)"]
+        BQ2["BigQuery<br/>(Analytics)"]
+        RAW["Raw Events<br/>(Kafka / Pub/Sub)"]
+    end
+
+    subgraph MLOps["MLOps Pipeline"]
+        FE["Feature Engineering<br/>(Apache Beam / Dataflow)"]
+        TRAIN["Model Training<br/>(Vertex AI / BigQuery ML)"]
+        EVAL["Model Evaluation<br/>(A/B Testing, AUC/ROC)"]
+        SERVE["Model Serving<br/>(Vertex AI Endpoints)"]
+    end
+
+    subgraph Models["ML Models"]
+        PROP["Propensity Model<br/>(XGBoost / LightGBM)"]
+        LTV["LTV Model<br/>(BG/NBD + Gamma-Gamma)"]
+        LOOK["Lookalike Model<br/>(Atlas AI — cosine sim)"]
+        NLP["NLP Model<br/>(discover-nlp)"]
+    end
+
+    subgraph Output["Output"]
+        AI_ATTR["AI Attributes<br/>(written to Profile Store)"]
+        SEGMENTS["Lookalike Audiences<br/>(written to audiences DB)"]
+    end
+
+    Input --> FE
+    FE --> TRAIN
+    TRAIN --> EVAL
+    EVAL --> SERVE
+    SERVE --> PROP
+    SERVE --> LTV
+    SERVE --> LOOK
+    SERVE --> NLP
+    PROP --> AI_ATTR
+    LTV --> AI_ATTR
+    LOOK --> SEGMENTS
+    NLP --> AI_ATTR
+
+    style MLOps fill:#f0f4ff,stroke:#4361ee
+    style Models fill:#fff8f0,stroke:#f77f00
+      </div>
+    </section>
+
+    <!-- MLOps -->
+    <section id="mlops">
+      <h2>MLOps Pipeline</h2>
+      <p>The <code>mlops</code> repository contains the orchestration layer for training, evaluating, and deploying ML models at scale on GCP. It uses <strong>Apache Beam</strong> (running on Dataflow) for distributed feature engineering and <strong>Vertex AI Pipelines</strong> for training orchestration.</p>
+
+      <h3>Pipeline Stages</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <strong>Feature Engineering (Beam / Dataflow)</strong> — Reads raw profile data from Delta Lake, computes rolling aggregates (7d, 30d, 90d page views, purchases, sessions), and writes feature vectors to BigQuery feature store.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <strong>Model Training (Vertex AI)</strong> — Triggered on schedule (weekly) or on-demand. Trains XGBoost/LightGBM propensity models and BG/NBD LTV models using BigQuery training datasets.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <strong>Evaluation & Champion/Challenger</strong> — New model versions are evaluated against held-out test sets (AUC, precision@k, RMSE). A champion/challenger framework determines which version promotes to production.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <strong>Batch Scoring</strong> — The production model scores all UCID profiles via a Beam job, writing predicted scores (<code>purchase_propensity</code>, <code>churn_probability</code>, <code>ltv_segment</code>) back to the Profile Store.
+          </div>
+        </div>
+      </div>
+
+      <h3>Feature Vector Schema</h3>
+      <pre><code class="language-json">{
+  "ucid": "zt_a3f7c21d89b0e4",
+  "feature_date": "2024-11-01",
+  "features": {
+    "page_views_7d": 12,
+    "page_views_30d": 42,
+    "page_views_90d": 118,
+    "purchases_30d": 1,
+    "purchases_90d": 3,
+    "avg_session_duration_s": 187,
+    "days_since_last_visit": 3,
+    "email_opens_30d": 5,
+    "has_consented_marketing": 1,
+    "country_enc": 0.72,          // embedded country code
+    "age_range_enc": 0.45,        // embedded demographic
+    "top_category_enc": 0.81      // embedded interest category
+  }
+}</code></pre>
+    </section>
+
+    <!-- Atlas AI -->
+    <section id="atlas-ai">
+      <h2>Atlas AI — Lookalike Audience Engine</h2>
+      <p><code>atlas-ai</code> is Zeotap's proprietary lookalike modelling system. Given a seed audience (e.g., "our top 5,000 buyers"), Atlas AI finds similar users in the broader profile database using embedding-based cosine similarity.</p>
+
+      <div class="mermaid">
+sequenceDiagram
+    participant User as Marketer
+    participant API as Atlas AI API
+    participant EMBED as Embedding Service<br/>(Vertex AI)
+    participant INDEX as Vector Index<br/>(Vertex AI Matching Engine)
+    participant SCORE as Scoring Job
+    participant OUT as Audience Output
+
+    User->>API: POST /lookalike { seed_audience_id, scale: 5x }
+    API->>EMBED: Embed seed profiles → vectors
+    EMBED-->>API: seed_vector_centroid[]
+    API->>INDEX: ANN Search (approximate nearest neighbours)
+    INDEX-->>API: Top-N similar UCIDs + distances
+    API->>SCORE: Apply similarity threshold + consent filter
+    SCORE-->>OUT: New audience (scale x seed size)
+    OUT-->>User: lookalike_audience_id
+      </div>
+
+      <h3>Lookalike Configuration</h3>
+      <pre><code class="language-json">// POST /atlas-ai/lookalike
+{
+  "org_id": 4521,
+  "seed_audience_id": "aud_7a3b9c",
+  "name": "Lookalike — High-Value Buyers 5x",
+  "scale_factor": 5,
+  "similarity_threshold": 0.75,
+  "exclude_audience_ids": ["aud_existing_customers"],
+  "consent_required": ["marketing"],
+  "region": "eu"
+}
+
+// Response
+{
+  "lookalike_audience_id": "aud_la_001",
+  "seed_size": 5000,
+  "lookalike_size": 24800,
+  "avg_similarity_score": 0.83,
+  "status": "READY",
+  "created_at": "2024-11-01T12:30:00Z"
+}</code></pre>
+    </section>
+
+    <!-- AI Attributes -->
+    <section id="attributes">
+      <h2>AI Attributes</h2>
+      <p>The <code>AI-Attributes</code> module appends model-derived attributes to every user profile. These are surfaced in the audience builder UI alongside first-party and third-party attributes.</p>
+
+      <table>
+        <thead>
+          <tr><th>Attribute</th><th>Type</th><th>Range</th><th>Model</th><th>Refresh</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>purchase_propensity</code></td><td>float</td><td>0.0–1.0</td><td>XGBoost</td><td>Weekly</td></tr>
+          <tr><td><code>churn_probability</code></td><td>float</td><td>0.0–1.0</td><td>LightGBM</td><td>Weekly</td></tr>
+          <tr><td><code>ltv_segment</code></td><td>enum</td><td>high/mid/low/at_risk</td><td>BG/NBD+GG</td><td>Monthly</td></tr>
+          <tr><td><code>email_open_propensity</code></td><td>float</td><td>0.0–1.0</td><td>LogReg</td><td>Weekly</td></tr>
+          <tr><td><code>price_sensitivity</code></td><td>enum</td><td>low/med/high</td><td>Clustering</td><td>Monthly</td></tr>
+          <tr><td><code>brand_affinity_score</code></td><td>float</td><td>0.0–1.0</td><td>Embedding</td><td>Monthly</td></tr>
+        </tbody>
+      </table>
+
+      <pre><code class="language-python"># AI Attributes Beam pipeline (simplified)
+class ScoreProfilesFn(beam.DoFn):
+    def setup(self):
+        self.model = load_model("gs://ml-models/propensity/v7/model.json")
+
+    def process(self, profile):
+        features = extract_features(profile)
+        score = self.model.predict_proba([features])[0][1]
+        yield {
+            "ucid": profile["ucid"],
+            "purchase_propensity": round(score, 4),
+            "scored_at": datetime.utcnow().isoformat()
+        }
+
+# Run scoring pipeline on Dataflow
+with beam.Pipeline(options=DataflowPipelineOptions()) as p:
+    (p
+     | "ReadProfiles" >> ReadFromBigQuery(query=PROFILE_QUERY)
+     | "ScoreProfiles" >> beam.ParDo(ScoreProfilesFn())
+     | "WriteScores"  >> WriteToBigQuery(
+         table="project.dataset.ai_attributes",
+         write_disposition=BigQueryDisposition.WRITE_TRUNCATE)
+    )</code></pre>
+    </section>
+
+    <!-- NLP -->
+    <section id="nlp">
+      <h2>NLP Discovery (discover-nlp)</h2>
+      <p>The <code>discover-nlp</code> service uses transformer-based NLP to extract structured audience attributes from unstructured text — product catalogues, editorial content, user reviews — enabling contextual targeting without explicit user labelling.</p>
+
+      <div class="callout callout-info">
+        <div><strong>Use case:</strong> A publisher ingests article content → NLP service extracts topics (e.g., "electric vehicles", "luxury travel") → these are mapped to IAB content categories → users reading these articles receive topic affinity attributes on their profile.</div>
+      </div>
+
+      <pre><code class="language-python"># discover-nlp API
+POST /nlp/classify
+{
+  "text": "The new BMW i7 sets a benchmark for electric luxury sedans...",
+  "taxonomy": "IAB_v3"
+}
+
+// Response
+{
+  "categories": [
+    { "id": "IAB2-8",  "name": "Electric Vehicles", "score": 0.94 },
+    { "id": "IAB2-1",  "name": "Automotive",        "score": 0.91 },
+    { "id": "IAB20-3", "name": "Luxury Travel",     "score": 0.67 }
+  ],
+  "entities": ["BMW", "i7", "electric", "luxury"],
+  "language": "en"
+}</code></pre>
+    </section>
+
+    <!-- Beam Jobs -->
+    <section id="beam">
+      <h2>Apache Beam Jobs</h2>
+      <p>The <code>mlops/beam</code> module contains Dataflow-compatible Apache Beam pipelines for large-scale ML data processing:</p>
+
+      <table>
+        <thead>
+          <tr><th>Job</th><th>Schedule</th><th>Input</th><th>Output</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Feature Engineering</td><td>Daily</td><td>Profile Store (Delta)</td><td>BigQuery feature table</td></tr>
+          <tr><td>Batch Scoring</td><td>Weekly</td><td>BQ feature table + model</td><td>Profile Store (scores)</td></tr>
+          <tr><td>NLP Classification</td><td>On content ingest</td><td>Article text (GCS)</td><td>Profile attributes</td></tr>
+          <tr><td>Lookalike Embedding</td><td>On demand</td><td>Seed audience profiles</td><td>Vertex AI Matching Engine</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
+      <a href="11-reporting-bi.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 11 · Reporting & Business Intelligence →</a>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

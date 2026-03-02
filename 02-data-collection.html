@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Collection & SDKs — Zeotap CDP Docs</title>
+  <link rel="stylesheet" href="assets/style.css?v=4">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#0057FF', primaryTextColor: '#fff', primaryBorderColor: '#003EC8', lineColor: '#6B7280', secondaryColor: '#E8EFFF', tertiaryColor: '#f9fafb' } });</script>
+  <style>
+    .sdk-tabs-row { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .sdk-tab-chip {
+      padding: 8px 16px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+    }
+    .sdk-tab-chip.active { background: var(--brand-primary); color: white; border-color: var(--brand-primary); }
+    .prop-row { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .prop-name { font-family: var(--font-mono); font-size: 13px; color: var(--brand-primary); font-weight: 600; width: 160px; flex-shrink: 0; }
+    .prop-type { font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: #F3F4F6; color: #6B7280; flex-shrink: 0; margin-top: 2px; }
+    .prop-desc { flex: 1; font-size: 13.5px; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <a href="index.html" class="sidebar-logo">
+    <div class="logo-mark">Z</div>
+    <div>
+      <div class="logo-text">Zeotap</div>
+      <div class="logo-sub">Technical Docs</div>
+    </div>
+  </a>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Getting Started</div>
+    <nav class="sidebar-nav">
+      <a href="index.html">Table of Contents</a>
+      <a href="01-platform-overview.html">Platform Overview</a>
+    </nav>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">On This Page</div>
+    <nav class="sidebar-nav sub-nav">
+      <a href="#overview">Overview</a>
+      <a href="#sdk-architecture">SDK Architecture</a>
+      <a href="#web-sdk">Web SDK (JavaScript)</a>
+      <a href="#ios-sdk">iOS SDK (Swift)</a>
+      <a href="#android-sdk">Android SDK</a>
+      <a href="#event-schema">Event Schema</a>
+      <a href="#consent">Consent Management</a>
+      <a href="#gtm">GTM Integration</a>
+    </nav>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Core Modules</div>
+    <nav class="sidebar-nav">
+      <a href="02-data-collection.html" class="active">Data Collection & SDKs</a>
+      <a href="03-identity-resolution.html">Identity Resolution</a>
+      <a href="04-genai-zoe.html">GenAI / Zoe</a>
+    </nav>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <a href="index.html">Docs</a>
+      <span class="sep">›</span>
+      <a href="#">Data Ingestion</a>
+      <span class="sep">›</span>
+      <span class="current">Data Collection & SDKs</span>
+    </div>
+    <div class="topbar-actions">
+      <span class="version-badge">Data Collection</span>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="module-tag">Data Collection</div>
+      <h1>Data Collection & SDKs</h1>
+      <p class="lead">
+        Zeotap's collection layer spans web, mobile, and server-side environments. The <code>analytics-sdk</code> (JS), <code>ZeotapCollect</code> (iOS/Swift), and Android SDK provide unified event tracking, identity management, and consent enforcement across all client surfaces.
+      </p>
+      <div class="meta">
+        <div class="meta-item"><code>analytics-sdk</code> v4.4.5</div>
+        <div class="meta-divider"></div>
+        <div class="meta-item">ZeotapCollect (Swift)</div>
+        <div class="meta-divider"></div>
+        <div class="meta-item">analytics-android-sdk</div>
+      </div>
+    </div>
+
+    <!-- ── OVERVIEW ── -->
+    <h2 id="overview">Overview</h2>
+    <p>
+      Zeotap provides four data collection mechanisms, each designed for a specific integration surface:
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <div class="card-title">Collect SDK (Web)</div>
+        <p class="card-desc">JavaScript library for web event tracking. Tracks page views, custom events, user identities, and consent signals.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🍎</div>
+        <div class="card-title">ZeotapCollect (iOS)</div>
+        <p class="card-desc">Native Swift package for iOS apps. Supports offline queuing, background flush, and IDFA/IDFV capture.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <div class="card-title">Android SDK</div>
+        <p class="card-desc">Kotlin/Java Android library with automatic screen tracking, lifecycle events, and GAID resolution.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏷️</div>
+        <div class="card-title">GTM Template</div>
+        <p class="card-desc">Google Tag Manager community template for no-code Zeotap integration without SDK deployment.</p>
+      </div>
+    </div>
+
+    <!-- ── SDK ARCHITECTURE ── -->
+    <h2 id="sdk-architecture">SDK Architecture</h2>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🔷 SDK Internal Architecture (analytics-sdk)</div>
+      <div class="mermaid">
+graph TB
+    subgraph SDK["analytics-sdk (zeo-analytics v4.4.5)"]
+      subgraph COLLECT_MOD["Collect SDK"]
+        EVENTS["Event Tracker"]
+        PAGE["Page Tracker"]
+        ID["ID Manager"]
+        CONSENT["Consent Handler"]
+        STORAGE["Local Storage\n+ Cookie Store"]
+        QUEUE["Event Queue\n(offline support)"]
+      end
+      subgraph IDP_MOD["IDP SDK"]
+        IDP["IDP Cookie\nStamping"]
+      end
+      subgraph MAPPER_MOD["Mapper SDK"]
+        MAPPER["Cookie Sync\n(SmartPixel)"]
+      end
+      subgraph INTERACT_MOD["Interact SDK"]
+        INTERACT["Personalization\nTriggers"]
+      end
+    end
+
+    EVENTS --> QUEUE
+    PAGE --> QUEUE
+    ID --> STORAGE
+    CONSENT --> STORAGE
+    QUEUE -->|"Batch flush\n(configurable interval)"| API["🌐 Zeotap\nCollect Endpoint"]
+
+    style SDK fill:#EFF6FF,stroke:#93C5FD
+    style COLLECT_MOD fill:#DCFCE7,stroke:#6EE7B7
+    style IDP_MOD fill:#FDF4FF,stroke:#D8B4FE
+    style MAPPER_MOD fill:#FEF3C7,stroke:#FCD34D
+    style INTERACT_MOD fill:#FEE2E2,stroke:#FCA5A5
+      </div>
+    </div>
+
+    <h3>SDK Bundle Outputs</h3>
+    <p>The analytics-sdk uses Rollup to produce multiple module formats for different integration patterns:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Bundle</th><th>Format</th><th>File</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>build-collect</code></td>
+            <td>CJS · ESM · UMD</td>
+            <td><code>dist/zeo-analytics.{cjs,esm,umd}.js</code></td>
+            <td>Primary web tracking</td>
+          </tr>
+          <tr>
+            <td><code>build-idp</code></td>
+            <td>UMD (minified)</td>
+            <td><code>dist/idp.min.js</code></td>
+            <td>IDP cookie stamping</td>
+          </tr>
+          <tr>
+            <td><code>build-mapper</code></td>
+            <td>UMD (minified)</td>
+            <td><code>dist/mapper.min.js</code></td>
+            <td>Cookie sync via SmartPixel</td>
+          </tr>
+          <tr>
+            <td><code>build-interact</code></td>
+            <td>UMD (minified)</td>
+            <td><code>dist/interact.min.js</code></td>
+            <td>Personalization triggers</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── WEB SDK ── -->
+    <h2 id="web-sdk">Web SDK — JavaScript</h2>
+    <p>
+      The Collect SDK is the primary web integration. It loads asynchronously and queues events until the SDK initializes.
+    </p>
+
+    <h3>Installation</h3>
+
+    <div class="tabs">
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab(this, 'snippet')">Async Snippet</button>
+        <button class="tab-btn" onclick="switchTab(this, 'npm')">npm / ESM</button>
+        <button class="tab-btn" onclick="switchTab(this, 'gtm-install')">Via GTM</button>
+      </div>
+
+      <div id="snippet" class="tab-content active">
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">html</span><button class="code-copy">Copy</button></div>
+          <pre><code><span class="tok-comment">&lt;!-- Place before &lt;/head&gt; --&gt;</span>
+<span class="tok-punctuation">&lt;</span><span class="tok-keyword">script</span><span class="tok-punctuation">&gt;</span>
+<span class="tok-punctuation">!</span><span class="tok-keyword">function</span><span class="tok-punctuation">(</span>e<span class="tok-punctuation">,</span>t<span class="tok-punctuation">){</span>
+  <span class="tok-keyword">var</span> n<span class="tok-operator">=</span>e<span class="tok-punctuation">.</span>zeotap<span class="tok-operator">=</span>e<span class="tok-punctuation">.</span>zeotap<span class="tok-operator">||</span><span class="tok-punctuation">{};</span>
+  n<span class="tok-punctuation">.</span>_q<span class="tok-operator">=</span>n<span class="tok-punctuation">.</span>_q<span class="tok-operator">||</span><span class="tok-punctuation">[];</span>
+  <span class="tok-keyword">var</span> s<span class="tok-operator">=</span><span class="tok-punctuation">[</span><span class="tok-string">"init"</span><span class="tok-punctuation">,</span><span class="tok-string">"setUserId"</span><span class="tok-punctuation">,</span><span class="tok-string">"track"</span><span class="tok-punctuation">,</span><span class="tok-string">"page"</span><span class="tok-punctuation">,</span><span class="tok-string">"setUserProperties"</span><span class="tok-punctuation">];</span>
+  s<span class="tok-punctuation">.</span><span class="tok-function">forEach</span><span class="tok-punctuation">(</span><span class="tok-keyword">function</span><span class="tok-punctuation">(</span>e<span class="tok-punctuation">){</span>
+    n<span class="tok-punctuation">[</span>e<span class="tok-punctuation">]</span><span class="tok-operator">=</span><span class="tok-keyword">function</span><span class="tok-punctuation">(){</span>n<span class="tok-punctuation">.</span>_q<span class="tok-punctuation">.</span><span class="tok-function">push</span><span class="tok-punctuation">([</span>e<span class="tok-punctuation">].</span><span class="tok-function">concat</span><span class="tok-punctuation">(</span>Array<span class="tok-punctuation">.</span>prototype<span class="tok-punctuation">.</span>slice<span class="tok-punctuation">.</span><span class="tok-function">call</span><span class="tok-punctuation">(</span>arguments<span class="tok-punctuation">)))</span><span class="tok-punctuation">}</span>
+  <span class="tok-punctuation">});</span>
+  <span class="tok-keyword">var</span> r<span class="tok-operator">=</span>t<span class="tok-punctuation">.</span><span class="tok-function">createElement</span><span class="tok-punctuation">(</span><span class="tok-string">"script"</span><span class="tok-punctuation">);</span>
+  r<span class="tok-punctuation">.</span>src<span class="tok-operator">=</span><span class="tok-string">"https://content.zeotap.com/sdk/latest/zeotap.js"</span><span class="tok-punctuation">;</span>
+  r<span class="tok-punctuation">.</span>async<span class="tok-operator">=</span><span class="tok-keyword">true</span><span class="tok-punctuation">;</span>
+  t<span class="tok-punctuation">.</span><span class="tok-function">getElementsByTagName</span><span class="tok-punctuation">(</span><span class="tok-string">"head"</span><span class="tok-punctuation">)[</span><span class="tok-number">0</span><span class="tok-punctuation">].</span><span class="tok-function">appendChild</span><span class="tok-punctuation">(</span>r<span class="tok-punctuation">);</span>
+<span class="tok-punctuation">}(</span>window<span class="tok-punctuation">,</span>document<span class="tok-punctuation">);</span>
+
+<span class="tok-comment">// Initialize with your Write Key</span>
+zeotap<span class="tok-punctuation">.</span><span class="tok-function">init</span><span class="tok-punctuation">(</span><span class="tok-string">"YOUR_WRITE_KEY"</span><span class="tok-punctuation">,</span> <span class="tok-punctuation">{</span>
+  <span class="tok-key">region</span><span class="tok-punctuation">:</span> <span class="tok-string">"EU"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">consentRequired</span><span class="tok-punctuation">:</span> <span class="tok-keyword">true</span>
+<span class="tok-punctuation">});</span>
+<span class="tok-punctuation">&lt;/</span><span class="tok-keyword">script</span><span class="tok-punctuation">&gt;</span></code></pre>
+        </div>
+      </div>
+
+      <div id="npm" class="tab-content">
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">bash</span><button class="code-copy">Copy</button></div>
+          <pre><code><span class="tok-comment"># Install from npm registry</span>
+npm install zeo-analytics
+
+<span class="tok-comment"># Or with yarn</span>
+yarn add zeo-analytics</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">javascript</span><button class="code-copy">Copy</button></div>
+          <pre><code><span class="tok-keyword">import</span> <span class="tok-punctuation">{</span> ZeotapSDK <span class="tok-punctuation">}</span> <span class="tok-keyword">from</span> <span class="tok-string">'zeo-analytics'</span><span class="tok-punctuation">;</span>
+
+<span class="tok-keyword">const</span> sdk <span class="tok-operator">=</span> <span class="tok-keyword">new</span> <span class="tok-function">ZeotapSDK</span><span class="tok-punctuation">({</span>
+  <span class="tok-key">writeKey</span><span class="tok-punctuation">:</span> <span class="tok-string">'YOUR_WRITE_KEY'</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">region</span><span class="tok-punctuation">:</span> <span class="tok-string">'EU'</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">consentRequired</span><span class="tok-punctuation">:</span> <span class="tok-keyword">true</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">debug</span><span class="tok-punctuation">:</span> process<span class="tok-punctuation">.</span>env<span class="tok-punctuation">.</span>NODE_ENV <span class="tok-operator">!==</span> <span class="tok-string">'production'</span>
+<span class="tok-punctuation">});</span></code></pre>
+        </div>
+      </div>
+
+      <div id="gtm-install" class="tab-content">
+        <div class="callout callout-info">
+          <div class="callout-icon">ℹ️</div>
+          <div class="callout-body">
+            <div class="callout-title">GTM Community Template</div>
+            <p class="callout-text">Search for "Zeotap" in the Google Tag Manager Template Gallery or import the template from <code>zeocollect-gtm-template/</code> in the repository. No code deployment required.</p>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Import Template</div>
+              <p class="step-desc">In GTM → Templates → Search Gallery → "Zeotap Collect". Or upload <code>template.tpl</code> from <code>zeocollect-gtm-template/</code>.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">Configure Tag</div>
+              <p class="step-desc">Add your Write Key and select trigger (All Pages). Map GTM Data Layer variables to Zeotap event properties.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">Publish</div>
+              <p class="step-desc">Preview, test with GTM Preview mode, then publish. The Zeotap SDK loads asynchronously on all matched triggers.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Core API Methods</h3>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">javascript</span><button class="code-copy">Copy</button></div>
+      <pre><code><span class="tok-comment">// ① Identify a user</span>
+zeotap<span class="tok-punctuation">.</span><span class="tok-function">setUserId</span><span class="tok-punctuation">(</span><span class="tok-string">"user_12345"</span><span class="tok-punctuation">,</span> <span class="tok-punctuation">{</span>
+  <span class="tok-key">hashMethod</span><span class="tok-punctuation">:</span> <span class="tok-string">"SHA-256"</span>   <span class="tok-comment">// automatic PII hashing</span>
+<span class="tok-punctuation">});</span>
+
+<span class="tok-comment">// ② Set user profile properties</span>
+zeotap<span class="tok-punctuation">.</span><span class="tok-function">setUserProperties</span><span class="tok-punctuation">({</span>
+  <span class="tok-key">email</span><span class="tok-punctuation">:</span> <span class="tok-string">"user@example.com"</span><span class="tok-punctuation">,</span>   <span class="tok-comment">// auto-hashed</span>
+  <span class="tok-key">name</span><span class="tok-punctuation">:</span> <span class="tok-string">"Jane Doe"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">plan</span><span class="tok-punctuation">:</span> <span class="tok-string">"premium"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">age</span><span class="tok-punctuation">:</span> <span class="tok-number">32</span>
+<span class="tok-punctuation">});</span>
+
+<span class="tok-comment">// ③ Track a page view</span>
+zeotap<span class="tok-punctuation">.</span><span class="tok-function">page</span><span class="tok-punctuation">({</span>
+  <span class="tok-key">title</span><span class="tok-punctuation">:</span> <span class="tok-string">"Product Detail Page"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">url</span><span class="tok-punctuation">:</span> window<span class="tok-punctuation">.</span>location<span class="tok-punctuation">.</span>href<span class="tok-punctuation">,</span>
+  <span class="tok-key">referrer</span><span class="tok-punctuation">:</span> document<span class="tok-punctuation">.</span>referrer
+<span class="tok-punctuation">});</span>
+
+<span class="tok-comment">// ④ Track a custom event</span>
+zeotap<span class="tok-punctuation">.</span><span class="tok-function">track</span><span class="tok-punctuation">(</span><span class="tok-string">"Product Added"</span><span class="tok-punctuation">,</span> <span class="tok-punctuation">{</span>
+  <span class="tok-key">productId</span><span class="tok-punctuation">:</span> <span class="tok-string">"SKU-789"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">productName</span><span class="tok-punctuation">:</span> <span class="tok-string">"Wireless Headphones"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">category</span><span class="tok-punctuation">:</span> <span class="tok-string">"Electronics"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">price</span><span class="tok-punctuation">:</span> <span class="tok-number">99.99</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">currency</span><span class="tok-punctuation">:</span> <span class="tok-string">"USD"</span>
+<span class="tok-punctuation">});</span></code></pre>
+    </div>
+
+    <!-- ── iOS SDK ── -->
+    <h2 id="ios-sdk">iOS SDK — Swift (ZeotapCollect)</h2>
+    <p>
+      <code>ZeotapCollect</code> is a native Swift package (Swift Package Manager) designed for iOS 13+ applications.
+    </p>
+
+    <h3>Installation via SPM</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">swift</span><button class="code-copy">Copy</button></div>
+      <pre><code><span class="tok-comment">// Package.swift — Add dependency</span>
+<span class="tok-punctuation">.</span><span class="tok-function">package</span><span class="tok-punctuation">(</span>
+    url<span class="tok-punctuation">:</span> <span class="tok-string">"https://github.com/zeotap/ZeotapCollect"</span><span class="tok-punctuation">,</span>
+    <span class="tok-punctuation">.</span><span class="tok-function">upToNextMajor</span><span class="tok-punctuation">(</span>from<span class="tok-punctuation">:</span> <span class="tok-string">"2.0.0"</span><span class="tok-punctuation">)</span>
+<span class="tok-punctuation">)</span></code></pre>
+    </div>
+
+    <h3>Initialization & Usage</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">swift</span><button class="code-copy">Copy</button></div>
+      <pre><code><span class="tok-keyword">import</span> ZeotapCollect
+
+<span class="tok-comment">// AppDelegate.swift</span>
+<span class="tok-keyword">func</span> <span class="tok-function">application</span><span class="tok-punctuation">(</span>_<span class="tok-punctuation">:</span> UIApplication<span class="tok-punctuation">,</span>
+    didFinishLaunchingWithOptions<span class="tok-punctuation">:</span> <span class="tok-punctuation">[</span>UIApplication.LaunchOptionsKey<span class="tok-punctuation">:</span> Any<span class="tok-punctuation">]?)</span> <span class="tok-punctuation">-></span> Bool <span class="tok-punctuation">{</span>
+
+    <span class="tok-comment">// Initialize SDK</span>
+    Zeotap<span class="tok-punctuation">.</span><span class="tok-function">initialize</span><span class="tok-punctuation">(</span>
+        writeKey<span class="tok-punctuation">:</span> <span class="tok-string">"YOUR_WRITE_KEY"</span><span class="tok-punctuation">,</span>
+        configuration<span class="tok-punctuation">:</span> ZeotapConfiguration<span class="tok-punctuation">(</span>
+            region<span class="tok-punctuation">:</span> <span class="tok-punctuation">.</span>EU<span class="tok-punctuation">,</span>
+            flushInterval<span class="tok-punctuation">:</span> <span class="tok-number">30</span><span class="tok-punctuation">,</span>          <span class="tok-comment">// seconds</span>
+            flushAt<span class="tok-punctuation">:</span> <span class="tok-number">20</span><span class="tok-punctuation">,</span>                <span class="tok-comment">// events</span>
+            trackApplicationLifecycleEvents<span class="tok-punctuation">:</span> <span class="tok-keyword">true</span>
+        <span class="tok-punctuation">)</span>
+    <span class="tok-punctuation">)</span>
+    <span class="tok-keyword">return</span> <span class="tok-keyword">true</span>
+<span class="tok-punctuation">}</span>
+
+<span class="tok-comment">// Identify user</span>
+Zeotap<span class="tok-punctuation">.</span>shared<span class="tok-punctuation">.</span><span class="tok-function">identify</span><span class="tok-punctuation">(</span>
+    userId<span class="tok-punctuation">:</span> <span class="tok-string">"user_12345"</span><span class="tok-punctuation">,</span>
+    traits<span class="tok-punctuation">:</span> <span class="tok-punctuation">[</span>
+        <span class="tok-string">"email"</span><span class="tok-punctuation">:</span> <span class="tok-string">"user@example.com"</span><span class="tok-punctuation">,</span>
+        <span class="tok-string">"plan"</span><span class="tok-punctuation">:</span> <span class="tok-string">"premium"</span>
+    <span class="tok-punctuation">]</span>
+<span class="tok-punctuation">)</span>
+
+<span class="tok-comment">// Track event</span>
+Zeotap<span class="tok-punctuation">.</span>shared<span class="tok-punctuation">.</span><span class="tok-function">track</span><span class="tok-punctuation">(</span>
+    event<span class="tok-punctuation">:</span> <span class="tok-string">"Purchase Completed"</span><span class="tok-punctuation">,</span>
+    properties<span class="tok-punctuation">:</span> <span class="tok-punctuation">[</span>
+        <span class="tok-string">"orderId"</span><span class="tok-punctuation">:</span> <span class="tok-string">"ORD-9876"</span><span class="tok-punctuation">,</span>
+        <span class="tok-string">"revenue"</span><span class="tok-punctuation">:</span> <span class="tok-number">149.99</span><span class="tok-punctuation">,</span>
+        <span class="tok-string">"currency"</span><span class="tok-punctuation">:</span> <span class="tok-string">"USD"</span>
+    <span class="tok-punctuation">]</span>
+<span class="tok-punctuation">)</span></code></pre>
+    </div>
+
+    <!-- ── EVENT SCHEMA ── -->
+    <h2 id="event-schema">Event Schema</h2>
+    <p>All Zeotap events follow a common envelope schema. Every event carries a set of mandatory context fields alongside custom properties.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">json</span><button class="code-copy">Copy</button></div>
+      <pre><code><span class="tok-punctuation">{</span>
+  <span class="tok-comment">// ── Envelope (auto-populated by SDK) ──</span>
+  <span class="tok-key">"messageId"</span><span class="tok-punctuation">:</span>  <span class="tok-string">"a1b2c3d4-e5f6-7890-abcd-ef1234567890"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">"timestamp"</span><span class="tok-punctuation">:</span>  <span class="tok-string">"2026-02-27T10:30:00.000Z"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">"type"</span><span class="tok-punctuation">:</span>       <span class="tok-string">"track"</span><span class="tok-punctuation">,</span>           <span class="tok-comment">// "track" | "page" | "identify"</span>
+  <span class="tok-key">"writeKey"</span><span class="tok-punctuation">:</span>  <span class="tok-string">"wk_prod_xxxxxxxxxxxx"</span><span class="tok-punctuation">,</span>
+
+  <span class="tok-comment">// ── Identity ──</span>
+  <span class="tok-key">"userId"</span><span class="tok-punctuation">:</span>    <span class="tok-string">"user_12345"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">"anonymousId"</span><span class="tok-punctuation">:</span> <span class="tok-string">"anon_9f8e7d6c5b4a3210"</span><span class="tok-punctuation">,</span>
+
+  <span class="tok-comment">// ── Event payload ──</span>
+  <span class="tok-key">"event"</span><span class="tok-punctuation">:</span>     <span class="tok-string">"Product Added"</span><span class="tok-punctuation">,</span>
+  <span class="tok-key">"properties"</span><span class="tok-punctuation">:</span> <span class="tok-punctuation">{</span>
+    <span class="tok-key">"productId"</span><span class="tok-punctuation">:</span>   <span class="tok-string">"SKU-789"</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"productName"</span><span class="tok-punctuation">:</span> <span class="tok-string">"Wireless Headphones"</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"price"</span><span class="tok-punctuation">:</span>       <span class="tok-number">99.99</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"currency"</span><span class="tok-punctuation">:</span>    <span class="tok-string">"USD"</span>
+  <span class="tok-punctuation">},</span>
+
+  <span class="tok-comment">// ── Context (auto-populated) ──</span>
+  <span class="tok-key">"context"</span><span class="tok-punctuation">:</span> <span class="tok-punctuation">{</span>
+    <span class="tok-key">"library"</span><span class="tok-punctuation">:</span>   <span class="tok-punctuation">{</span> <span class="tok-key">"name"</span><span class="tok-punctuation">:</span> <span class="tok-string">"zeo-analytics"</span><span class="tok-punctuation">,</span> <span class="tok-key">"version"</span><span class="tok-punctuation">:</span> <span class="tok-string">"4.4.5"</span> <span class="tok-punctuation">},</span>
+    <span class="tok-key">"userAgent"</span><span class="tok-punctuation">:</span> <span class="tok-string">"Mozilla/5.0 ..."</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"locale"</span><span class="tok-punctuation">:</span>    <span class="tok-string">"en-US"</span><span class="tok-punctuation">,</span>
+    <span class="tok-key">"page"</span><span class="tok-punctuation">:</span>      <span class="tok-punctuation">{</span>
+      <span class="tok-key">"url"</span><span class="tok-punctuation">:</span>      <span class="tok-string">"https://shop.example.com/products/789"</span><span class="tok-punctuation">,</span>
+      <span class="tok-key">"title"</span><span class="tok-punctuation">:</span>    <span class="tok-string">"Wireless Headphones — Shop"</span><span class="tok-punctuation">,</span>
+      <span class="tok-key">"referrer"</span><span class="tok-punctuation">:</span> <span class="tok-string">"https://google.com"</span>
+    <span class="tok-punctuation">},</span>
+    <span class="tok-key">"consent"</span><span class="tok-punctuation">:</span>   <span class="tok-punctuation">{</span>
+      <span class="tok-key">"analytics"</span><span class="tok-punctuation">:</span> <span class="tok-keyword">true</span><span class="tok-punctuation">,</span>
+      <span class="tok-key">"marketing"</span><span class="tok-punctuation">:</span> <span class="tok-keyword">false</span><span class="tok-punctuation">,</span>
+      <span class="tok-key">"tcf"</span><span class="tok-punctuation">:</span>       <span class="tok-string">"CO9n5aBO9n5..."</span>     <span class="tok-comment">// TCF v2.2 consent string</span>
+    <span class="tok-punctuation">}</span>
+  <span class="tok-punctuation">}</span>
+<span class="tok-punctuation">}</span></code></pre>
+    </div>
+
+    <!-- ── CONSENT ── -->
+    <h2 id="consent">Consent Management</h2>
+    <p>
+      The SDK integrates with CMP (Consent Management Platforms) via the IAB TCF v2.2 standard. Consent signals gate which data is collected and forwarded.
+    </p>
+
+    <div class="diagram-wrapper">
+      <div class="diagram-title">🔒 Consent Flow</div>
+      <div class="mermaid">
+flowchart LR
+    A["🌐 Page Load"] --> B{"CMP\nPresent?"}
+    B -->|Yes| C["Read TCF v2.2\nConsent String"]
+    B -->|No| D["Implicit Consent\n(if configured)"]
+    C --> E{"Consent\nGranted?"}
+    D --> E
+    E -->|Analytics ✓| F["Track Events"]
+    E -->|Analytics ✗| G["Queue Events\n(pending consent)"]
+    F --> H["Collect Endpoint"]
+    G --> I{"Later consent\ngranted?"}
+    I -->|Yes| F
+    I -->|No| J["Discard Queue"]
+    H --> K["🔗 ID Graph\nProcessing"]
+
+    style F fill:#DCFCE7,stroke:#6EE7B7
+    style G fill:#FEF3C7,stroke:#FCD34D
+    style J fill:#FEE2E2,stroke:#FCA5A5
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">javascript</span><button class="code-copy">Copy</button></div>
+      <pre><code><span class="tok-comment">// Manual consent update (e.g., after CMP interaction)</span>
+zeotap<span class="tok-punctuation">.</span><span class="tok-function">updateConsent</span><span class="tok-punctuation">({</span>
+  <span class="tok-key">analytics</span><span class="tok-punctuation">:</span>  <span class="tok-keyword">true</span><span class="tok-punctuation">,</span>    <span class="tok-comment">// enable analytics tracking</span>
+  <span class="tok-key">marketing</span><span class="tok-punctuation">:</span>  <span class="tok-keyword">true</span><span class="tok-punctuation">,</span>    <span class="tok-comment">// enable marketing activation</span>
+  <span class="tok-key">tcfString</span><span class="tok-punctuation">:</span>  <span class="tok-string">"CO9n5aBO..."</span>  <span class="tok-comment">// raw IAB TCF v2.2 string</span>
+<span class="tok-punctuation">});</span>
+
+<span class="tok-comment">// Listen for CMP events automatically (OneTrust, Didomi, etc.)</span>
+zeotap<span class="tok-punctuation">.</span><span class="tok-function">init</span><span class="tok-punctuation">(</span><span class="tok-string">"WRITE_KEY"</span><span class="tok-punctuation">,</span> <span class="tok-punctuation">{</span>
+  <span class="tok-key">cmpIntegration</span><span class="tok-punctuation">:</span> <span class="tok-string">"auto"</span><span class="tok-punctuation">,</span>   <span class="tok-comment">// auto-detect CMP</span>
+  <span class="tok-key">consentRequired</span><span class="tok-punctuation">:</span> <span class="tok-keyword">true</span>
+<span class="tok-punctuation">});</span></code></pre>
+    </div>
+
+    <div class="callout callout-success">
+      <div class="callout-icon">✅</div>
+      <div class="callout-body">
+        <div class="callout-title">GDPR Compliance Built-in</div>
+        <p class="callout-text">All Zeotap SDKs are designed with privacy by default. PII fields (email, phone) are SHA-256 hashed before transmission. Consent gates block data collection when not granted. See <strong>Chapter 13: Privacy & GDPR</strong> for server-side enforcement.</p>
+      </div>
+    </div>
+
+    <!-- ── GTM ── -->
+    <h2 id="gtm">Adobe & GTM Extensions</h2>
+    <p>For tag-management based deployments, Zeotap provides dedicated extensions:</p>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Integration</th><th>Repository</th><th>Type</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Google Tag Manager</td>
+            <td><code>zeocollect-gtm-template</code></td>
+            <td>GTM Community Template (.tpl)</td>
+            <td><span class="tag tag-green">Stable</span></td>
+          </tr>
+          <tr>
+            <td>Adobe Experience Platform</td>
+            <td><code>zeocollect-adobe-extension</code></td>
+            <td>AEP Launch Extension</td>
+            <td><span class="tag tag-green">Stable</span></td>
+          </tr>
+          <tr>
+            <td>E-commerce Web Client</td>
+            <td><code>websdk-ecomm-client</code></td>
+            <td>Pre-built event schema (checkout, cart)</td>
+            <td><span class="tag tag-blue">Beta</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">
+      <a href="01-platform-overview.html" style="font-size:14px;font-weight:600">← Platform Overview</a>
+      <a href="03-identity-resolution.html" style="font-size:14px;font-weight:600;background:var(--brand-primary);color:white;padding:10px 20px;border-radius:8px;text-decoration:none">Chapter 4: Identity Resolution →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(btn, id) {
+  btn.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.closest('.tabs').querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>

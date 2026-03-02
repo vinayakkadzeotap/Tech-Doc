@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 6: Audience Management — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">Z</div>
+      <span class="logo-text">Zeotap Docs</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">PART II — DATA PLATFORM</div>
+      <a href="05-profile-store.html" class="nav-item">Profile Store</a>
+      <a href="06-audience-management.html" class="nav-item active">Audience Management</a>
+      <a href="07-customer-journeys.html" class="nav-item">Customer Journeys</a>
+      <a href="08-data-activation.html" class="nav-item">Data Activation</a>
+      <div class="nav-section">ON THIS PAGE</div>
+      <a href="#overview" class="nav-item">Overview</a>
+      <a href="#service-arch" class="nav-item">Service Architecture</a>
+      <a href="#estimator" class="nav-item">Segment Estimator</a>
+      <a href="#bitmap" class="nav-item">Bitmap Engine</a>
+      <a href="#overlap" class="nav-item">Segment Overlap</a>
+      <a href="#api-ref" class="nav-item">API Reference</a>
+      <a href="#bulk" class="nav-item">Bulk Operations</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a>
+        <span>›</span>
+        <span>Part II — Data Platform</span>
+        <span>›</span>
+        <span>Audience Management</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>Audience Management</h1>
+      <p class="page-subtitle">Building, sizing, overlapping, and managing customer segments: from SQL-defined cohorts to real-time bitmap-powered size estimates at scale.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">Play/Scala</div>
+        <div class="stat-label">Audience API</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">Go + Bitmap</div>
+        <div class="stat-label">Segment Estimator</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">Druid/BigQuery</div>
+        <div class="stat-label">Query Backends</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">&lt;500ms</div>
+        <div class="stat-label">Estimate Latency</div>
+      </div>
+    </div>
+
+    <!-- Section 1: Overview -->
+    <section id="overview">
+      <h2>Audience Management Overview</h2>
+      <p>Audiences are the core output of Zeotap's Unify layer — they define <em>who</em> to reach, before Activate delivers to channels. The Audience Management system consists of four micro-services working in concert:</p>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-icon">📋</div>
+          <h3>Audiences API</h3>
+          <p>Play Framework (Scala) service that manages audience CRUD, folder organization, and lifecycle. Central orchestration hub.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📐</div>
+          <h3>Segment Estimator</h3>
+          <p>Go service providing real-time audience size estimates using bitmap indexes and Druid/Qubole/BigQuery sampling.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔵</div>
+          <h3>Segment Overlap</h3>
+          <p>Computes Jaccard similarity and overlap counts between any two audience segments. Used for reach de-duplication.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <h3>Bulk Segment Creation</h3>
+          <p>Spark-based batch pipeline for creating hundreds of audience segments simultaneously from a single rule manifest.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Service Architecture -->
+    <section id="service-arch">
+      <h2>Service Architecture</h2>
+
+      <div class="mermaid">
+graph LR
+    subgraph FE["Frontend (Unity/Angular)"]
+        UI["Audience Builder UI"]
+    end
+
+    subgraph AudienceMS["Audience Microservices"]
+        API["audiences<br/>Play/Scala :9000"]
+        EST["segmentestimator<br/>Go + gin :3000"]
+        OVL["segment-overlap<br/>Go/Python"]
+        BULK["bulk-segment-creation<br/>Spark Job"]
+    end
+
+    subgraph DataBackends["Query Backends"]
+        DRD["Apache Druid"]
+        BQ["BigQuery"]
+        QUB["Qubole/HiveQL"]
+        PS["Profile Store<br/>(Delta Lake)"]
+    end
+
+    subgraph Store["State Store"]
+        PG["PostgreSQL<br/>(audience metadata)"]
+        GCS["GCS<br/>(bitmap files)"]
+        S3["S3<br/>(estimator data)"]
+        CACHE["In-Process Cache<br/>(LRU, 7200s TTL)"]
+    end
+
+    UI --> API
+    UI --> EST
+    API --> PG
+    API --> EST
+    EST --> DRD
+    EST --> BQ
+    EST --> QUB
+    EST --> GCS
+    EST --> S3
+    EST --> CACHE
+    OVL --> PS
+    BULK --> PS
+    BULK --> PG
+
+    style AudienceMS fill:#f0f4ff,stroke:#4361ee
+    style DataBackends fill:#fff8f0,stroke:#f77f00
+    style Store fill:#f0fff4,stroke:#38d9a9
+      </div>
+
+      <h3>Audiences API (Play Framework / Scala)</h3>
+      <p>The <code>audiences</code> service is a Play Framework application that handles the audience lifecycle — creation, editing, folder management, and summary views. It persists metadata to PostgreSQL and delegates size computation to the estimator.</p>
+
+      <h4>API Routes</h4>
+      <pre><code class="language-text">GET    /audience/v1/healthCheckup
+GET    /audience/v1/orgs/:orgId/folders/
+POST   /audience/v1/orgs/:orgId/folders
+PATCH  /audience/v1/orgs/:orgId/folders/:folderId
+DELETE /audience/v1/orgs/:orgId/folders/:folderId
+GET    /audience/v1/orgs/:orgId/audienceSummaries</code></pre>
+    </section>
+
+    <!-- Section 3: Segment Estimator -->
+    <section id="estimator">
+      <h2>Segment Estimator Service</h2>
+      <p>The <code>segmentestimator</code> is a Go service (using <strong>gin</strong> HTTP framework) that answers the critical question: <em>"How many users match this audience definition?"</em> It does so in under 500ms for most queries by combining pre-computed bitmaps with sampled queries.</p>
+
+      <h3>Architecture</h3>
+      <div class="mermaid">
+flowchart TD
+    REQ["POST /estimate"] --> PARSE["Parse Audience Rules<br/>(Extension list)"]
+    PARSE --> CACHE_CHK{In-process<br/>LRU Cache?}
+    CACHE_CHK -->|HIT| RETURN["Return cached count"]
+    CACHE_CHK -->|MISS| FETCH_DATA["Fetch Extension Data<br/>(S3 or GCS path)"]
+    FETCH_DATA --> BMP["Load Bitmap Index<br/>(uint64[] roaring)"]
+    BMP --> AND_OP["Bitwise AND across<br/>all rule extensions"]
+    AND_OP --> COUNT["Popcount (Hamming weight)<br/>× inverse sample rate"]
+    COUNT --> PEER["Aggregate from<br/>peer replicas"]
+    PEER --> STORE_CACHE["Store in LRU Cache<br/>(TTL: 7200s)"]
+    STORE_CACHE --> RETURN
+
+    style CACHE_CHK fill:#fff8f0,stroke:#f77f00
+    style BMP fill:#f0f4ff,stroke:#4361ee
+      </div>
+
+      <h3>Extension Configuration</h3>
+      <p>The estimator uses <em>extensions</em> — pre-indexed audience feature slices stored as bitmap files:</p>
+      <pre><code class="language-go">// extension.go
+type Extension struct {
+    Prefix        string  `json:"prefix"`         // feature category
+    Path          string  `json:"path"`            // S3/GCS path to bitmap
+    SizePct       float64 `json:"size_pct"`        // sample rate (0.001 = 0.1%)
+    QueryString   string  `json:"query_string"`    // Druid filter
+    Index         int     `json:"index"`           // bitmap shard index
+    IngestionSpec string  `json:"ingestion_spec"`  // Druid ingestion spec
+}
+
+func NewExtensionList() ([]*Extension, error) {
+    // Parses ESTIMATOR_EXTENSION_LIST env var
+    // Format: "prefix%path%size_pct%index1+index2,..."
+    extensions := viper.GetString(constants.ExtensionList)
+    var extList []*Extension
+    for _, extStr := range strings.Split(extensions, ",") {
+        extMember := strings.Split(extStr, "%")
+        // Creates Extension with bitmap metadata
+    }
+    return extList, nil
+}</code></pre>
+
+      <h3>Environment Configuration</h3>
+      <pre><code class="language-bash">CATALOG_COUNTRIES=ind,eu,us
+CATALOG_URL=http://catalog-service:1234
+API_MODE=release
+API_PORT=3000
+ESTIMATOR_DATA_REFRESH=enabled
+ESTIMATOR_REMOTE_DATA_PATH=s3://zeotap-estimator/bitmaps
+ESTIMATOR_UPDATE_FREQUENCY=7200     # refresh bitmaps every 2 hours
+ESTIMATOR_IND_SAMPLE_SIZE_PCT=0.001 # 0.1% sample for IND
+ESTIMATOR_RECENCY_VALUES=15,30,60,90,5000
+ESTIMATOR_FETCHER=qubole            # qubole | bigquery
+ESTIMATOR_NUM_BUCKETS=1000
+ESTIMATOR_PEER_IP_LIST=10.0.0.1:3000,10.0.0.2:3000  # replica peers</code></pre>
+    </section>
+
+    <!-- Section 4: Bitmap Engine -->
+    <section id="bitmap">
+      <h2>Bitmap Engine</h2>
+      <p>The estimator uses a compact <strong>roaring-style bitmap</strong> (backed by <code>[]uint64</code>) to represent user sets. Each bit corresponds to a user slot; bitwise AND between two bitmaps gives the intersection count instantly.</p>
+
+      <pre><code class="language-go">// bitmap/bitmap.go
+type Bitmap struct {
+    values []uint64  // 64 users per uint64 word
+    size   int
+}
+
+// NewBitmap creates an all-zero bitmap for 'size' users
+func NewBitmap(size int) *Bitmap {
+    length := (size-1)/64 + 1
+    return &Bitmap{
+        values: make([]uint64, length),
+        size:   size,
+    }
+}
+
+// AND returns a new bitmap = intersection of a ∩ b
+func (a *Bitmap) AND(b *Bitmap) (*Bitmap, error) {
+    result := NewBitmap(a.size)
+    for i := range a.values {
+        result.values[i] = a.values[i] & b.values[i]
+    }
+    return result, nil
+}
+
+// Count returns the number of set bits (Hamming weight)
+func (b *Bitmap) Count() int {
+    count := 0
+    for _, v := range b.values {
+        count += bits.OnesCount64(v)
+    }
+    return count
+}
+
+// Extrapolated audience size = Count() / SizePct
+func EstimateSize(intersection *Bitmap, sampleRate float64) int64 {
+    return int64(float64(intersection.Count()) / sampleRate)
+}</code></pre>
+
+      <h3>Bitmap Lifecycle</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <strong>Ingestion</strong> — A Qubole/BigQuery job runs on a 2-hour cadence, pulling a sampled UCID list for each feature extension and writing bitmap binary files to S3/GCS.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <strong>Loading</strong> — On startup and every <code>ESTIMATOR_UPDATE_FREQUENCY</code> seconds, the estimator pulls the latest bitmap files and hydrates in-memory Bitmap objects.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <strong>Querying</strong> — Incoming audience rules are parsed into extension lookups. Bitmaps for matching extensions are AND-ed together, the bit count is extrapolated, and the result is cached.
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <strong>Peer Aggregation</strong> — Each estimator replica only holds a subset of the user space (<code>ESTIMATOR_PEER_IP_LIST</code>). The requesting node fans out to all peers and sums the counts.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Segment Overlap -->
+    <section id="overlap">
+      <h2>Segment Overlap Analysis</h2>
+      <p>The <code>segment-overlap</code> service computes how much two audience segments share in common — essential for reach planning, suppression, and lookalike seeding.</p>
+
+      <div class="mermaid">
+flowchart LR
+    A["Audience A<br/>(UCIDs set)"] --> INTER["Intersection<br/>Bitmap AND"]
+    B["Audience B<br/>(UCIDs set)"] --> INTER
+    INTER --> COUNT_AB["count(A ∩ B)"]
+    A --> COUNT_A["count(A)"]
+    B --> COUNT_B["count(B)"]
+    COUNT_AB --> METRICS["Overlap Metrics"]
+    COUNT_A --> METRICS
+    COUNT_B --> METRICS
+    METRICS --> OUT["JSON Response:<br/>overlap_count<br/>jaccard_similarity<br/>a_only, b_only"]
+      </div>
+
+      <pre><code class="language-json">// POST /overlap
+// Request
+{
+  "audience_a_id": "aud_7a3b9c",
+  "audience_b_id": "aud_2f1d8e",
+  "org_id": 4521
+}
+
+// Response
+{
+  "audience_a_size": 245000,
+  "audience_b_size": 189000,
+  "overlap_count": 62000,
+  "jaccard_similarity": 0.166,
+  "a_only_count": 183000,
+  "b_only_count": 127000,
+  "computed_at": "2024-11-01T10:30:00Z"
+}</code></pre>
+    </section>
+
+    <!-- Section 6: API Reference -->
+    <section id="api-ref">
+      <h2>Full API Reference</h2>
+
+      <h3>Audience Summary</h3>
+      <div class="endpoint-block">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/audience/v1/orgs/{orgId}/audienceSummaries</span>
+      </div>
+      <pre><code class="language-json">// Response
+{
+  "audiences": [
+    {
+      "id": "aud_7a3b9c",
+      "name": "High-Value Automotive Buyers",
+      "description": "Users with 3+ car-related page views in 30 days",
+      "size_estimate": 245000,
+      "size_updated_at": "2024-11-01T08:00:00Z",
+      "status": "ACTIVE",
+      "folder_id": "fld_001",
+      "created_at": "2024-08-15T12:00:00Z",
+      "last_modified": "2024-10-30T09:22:00Z",
+      "tags": ["automotive", "high-value"]
+    }
+  ],
+  "total": 47,
+  "page": 1,
+  "page_size": 20
+}</code></pre>
+
+      <h3>Folder Management</h3>
+      <div class="endpoint-block">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/audience/v1/orgs/{orgId}/folders</span>
+      </div>
+      <pre><code class="language-json">// Request: CreateFolderRequest
+{
+  "name": "Q4 2024 Campaigns",
+  "parent_folder_id": null,
+  "description": "All audiences for Q4 holiday campaigns"
+}
+
+// Response: GetFolderResponse
+{
+  "id": "fld_042",
+  "name": "Q4 2024 Campaigns",
+  "org_id": 4521,
+  "audience_count": 0,
+  "created_at": "2024-11-01T12:00:00Z"
+}</code></pre>
+
+      <h3>Size Estimation</h3>
+      <div class="endpoint-block">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/estimate (Segment Estimator :3000)</span>
+      </div>
+      <pre><code class="language-json">// Request
+{
+  "org_id": 4521,
+  "country": "ind",
+  "rules": [
+    { "attribute": "age_range", "operator": "in", "values": ["25-34", "35-44"] },
+    { "attribute": "interests",  "operator": "contains", "values": ["automotive"] },
+    { "attribute": "recency",    "operator": "lte", "values": [30] }
+  ]
+}
+
+// Response
+{
+  "estimated_size": 245000,
+  "confidence": "high",
+  "sample_rate": 0.001,
+  "cached": false,
+  "computed_at": "2024-11-01T10:31:02Z",
+  "latency_ms": 187
+}</code></pre>
+    </section>
+
+    <!-- Section 7: Bulk -->
+    <section id="bulk">
+      <h2>Bulk Segment Creation</h2>
+      <p>The <code>bulk-segment-creation</code> Spark job enables data teams to create hundreds of audience segments in a single batch from a manifest file — typically used for onboarding a new data partner's taxonomy:</p>
+
+      <pre><code class="language-json">// segment-manifest.json
+{
+  "org_id": 4521,
+  "run_mode": "create",
+  "segments": [
+    {
+      "name": "Luxury Auto Intenders",
+      "rules": [
+        { "attr": "brand_affinity", "op": "in", "vals": ["BMW","Mercedes","Audi"] }
+      ],
+      "folder": "Automotive"
+    },
+    {
+      "name": "First-Time Home Buyers",
+      "rules": [
+        { "attr": "life_stage", "op": "eq", "vals": ["first_home"] }
+      ],
+      "folder": "Finance"
+    }
+  ]
+}</code></pre>
+
+      <pre><code class="language-bash"># Submit bulk segment creation Spark job
+spark-submit \
+  --class com.zeotap.bulk.SegmentCreationDriver \
+  bulk-segment-creation.jar \
+  --manifest-path gs://bucket/manifests/q4-segments.json \
+  --audiences-api-url http://audiences-svc:9000 \
+  --org-id 4521</code></pre>
+    </section>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
+        <a href="07-customer-journeys.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 7 · Customer Journeys →</a>
+      </div>
+    </div>
+  </main>
+</div>
+  <script src="assets/search-index.js"></script>
+  <script src="assets/scripts.js?v=6"></script>
+</body>
+</html>
