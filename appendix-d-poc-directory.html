@@ -207,7 +207,7 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 2rem;
-      max-width: 560px;
+      max-width: 640px;
       width: 100%;
       max-height: 80vh;
       overflow-y: auto;
@@ -248,15 +248,30 @@
     .modal-module-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: .5rem;
       padding: .6rem .9rem;
       border-radius: 8px;
       background: var(--bg-subtle);
       border: 1px solid var(--border);
       font-size: .85rem;
+      min-width: 0;
     }
-    .modal-module-row .mod-label { color: var(--text-secondary); font-weight: 500; }
-    .modal-module-row .role-badge { font-size: .72rem; padding: .15rem .45rem; border-radius: 999px; }
+    .modal-module-row .mod-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .modal-module-row .role-badge {
+      font-size: .72rem;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
 
     /* ── No-results ─────────────────────────────────── */
     .no-results {
@@ -730,9 +745,9 @@
       const row = document.createElement('div');
       row.className = 'modal-module-row';
       row.innerHTML = `
-        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.color};margin-right:.5rem;flex-shrink:0"></span>
-        <span class="mod-label">${e.module} › ${e.subModule}</span>
-        <span class="person-badge ${roleCls} role-badge" style="cursor:default">${e.role}</span>`;
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.color};flex-shrink:0;"></span>
+        <span class="mod-label" title="${e.module} › ${e.subModule}">${e.module} › ${e.subModule}</span>
+        <span class="person-badge ${roleCls} role-badge" style="cursor:default;margin-left:auto;">${e.role}</span>`;
       modalMods.appendChild(row);
     });
 
