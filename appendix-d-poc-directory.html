@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>POC Directory — Zeotap Technical Documentation</title>
+  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <style>
+    /* ── Search bar ─────────────────────────────────── */
+    .poc-search-wrap {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+    .poc-search-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    #poc-search {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.75rem;
+      font-size: 0.95rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color .2s;
+    }
+    #poc-search:focus { border-color: var(--brand); }
+    #poc-search::placeholder { color: var(--text-muted); }
+
+    /* ── Stats chips ─────────────────────────────────── */
+    .poc-stats {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .35rem .8rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 600;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .stat-chip .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    /* ── Module color palette ───────────────────────── */
+    :root {
+      --poc-collect:     #3b82f6;
+      --poc-admin:       #f59e0b;
+      --poc-orchestrate: #8b5cf6;
+      --poc-dest:        #10b981;
+      --poc-audience:    #ef4444;
+      --poc-unify:       #06b6d4;
+      --poc-ui:          #f97316;
+      --poc-sdk:         #6b7280;
+      --poc-integrations:#ec4899;
+    }
+
+    /* ── Module section ─────────────────────────────── */
+    .poc-module {
+      margin-bottom: 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .poc-module-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .9rem 1.25rem;
+      background: var(--bg-subtle);
+      border-bottom: 1px solid var(--border);
+    }
+    .poc-module-header .module-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .poc-module-header h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .poc-module-header .sub-count {
+      margin-left: auto;
+      font-size: .75rem;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── POC table ──────────────────────────────────── */
+    .poc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+    .poc-table thead th {
+      padding: .6rem 1rem;
+      text-align: left;
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+    }
+    .poc-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .poc-table tbody tr:last-child { border-bottom: none; }
+    .poc-table tbody tr:hover { background: var(--bg-hover, rgba(99,102,241,.04)); }
+    .poc-table td {
+      padding: .7rem 1rem;
+      vertical-align: top;
+      color: var(--text-primary);
+    }
+    .poc-table td.sub-module {
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    /* ── Person badges ──────────────────────────────── */
+    .person-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+    }
+    .person-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .2rem .6rem;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .person-badge.mgr  { background: rgba(99,102,241,.1); color: #6366f1; border-color: rgba(99,102,241,.25); }
+    .person-badge.engg { background: rgba(16,185,129,.1); color: #10b981; border-color: rgba(16,185,129,.25); }
+    .person-badge.prod { background: rgba(245,158,11,.1);  color: #f59e0b;  border-color: rgba(245,158,11,.25); }
+    .person-badge:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .person-badge svg  { width: 10px; height: 10px; }
+
+    /* ── Legend ─────────────────────────────────────── */
+    .legend {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      font-size: .8rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      color: var(--text-muted);
+    }
+    .legend-badge {
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 600;
+    }
+    .legend-badge.mgr  { background: rgba(99,102,241,.1); color: #6366f1; border: 1px solid rgba(99,102,241,.25); }
+    .legend-badge.engg { background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.25); }
+    .legend-badge.prod { background: rgba(245,158,11,.1);  color: #f59e0b;  border: 1px solid rgba(245,158,11,.25); }
+
+    /* ── Person spotlight modal ─────────────────────── */
+    #person-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,.45);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #person-modal.open { display: flex; }
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 560px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 48px rgba(0,0,0,.3);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .modal-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand), #a78bfa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .modal-name { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); }
+    .modal-subtitle { font-size: .8rem; color: var(--text-muted); margin-top: .15rem; }
+    .modal-close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: .4rem;
+      border-radius: 8px;
+      transition: background .15s;
+    }
+    .modal-close:hover { background: var(--bg-subtle); }
+    .modal-modules { display: flex; flex-direction: column; gap: .5rem; }
+    .modal-module-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .6rem .9rem;
+      border-radius: 8px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      font-size: .85rem;
+    }
+    .modal-module-row .mod-label { color: var(--text-secondary); font-weight: 500; }
+    .modal-module-row .role-badge { font-size: .72rem; padding: .15rem .45rem; border-radius: 999px; }
+
+    /* ── No-results ─────────────────────────────────── */
+    .no-results {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      display: none;
+    }
+    .no-results svg { width: 40px; height: 40px; margin-bottom: .75rem; opacity: .4; }
+
+    /* ── Hidden via search ──────────────────────────── */
+    .poc-row-hidden { display: none !important; }
+    .poc-module-hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">APPENDICES</div>
+      <a href="appendix-a-api-reference.html" class="nav-item">API Reference</a>
+      <a href="appendix-b-data-dictionary.html" class="nav-item">Data Dictionary</a>
+      <a href="appendix-c-glossary.html" class="nav-item">Glossary</a>
+      <a href="appendix-d-poc-directory.html" class="nav-item active">POC Directory</a>
+      <div class="nav-section">JUMP TO MODULE</div>
+      <a href="#sources-collect"  class="nav-item">Sources / Collect</a>
+      <a href="#admin"            class="nav-item">Admin (RBAC)</a>
+      <a href="#orchestrate"      class="nav-item">Orchestrate</a>
+      <a href="#destinations"     class="nav-item">Destinations</a>
+      <a href="#audience"         class="nav-item">Audience</a>
+      <a href="#unify"            class="nav-item">Unify</a>
+      <a href="#ui"               class="nav-item">UI</a>
+      <a href="#sdk"              class="nav-item">SDK</a>
+      <a href="#integrations"     class="nav-item">Integrations</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <a href="index.html">Zeotap Docs</a><span>›</span>
+        <span>Appendices</span><span>›</span>
+        <span>Appendix D — POC Directory</span>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1>POC Directory</h1>
+      <p class="page-subtitle">Instantly find the right Engineering and Product owner for any Zeotap module or sub-module. Click any name badge to see all modules that person owns.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="poc-stats">
+      <div class="stat-chip"><span class="dot" style="background:#6366f1"></span> 9 Modules</div>
+      <div class="stat-chip"><span class="dot" style="background:#10b981"></span> 22 Sub-Modules</div>
+      <div class="stat-chip"><span class="dot" style="background:#f59e0b"></span> Live Search</div>
+    </div>
+
+    <!-- Search -->
+    <div class="poc-search-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input id="poc-search" type="text" placeholder="Search module, sub-module, or person…" autocomplete="off"/>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item"><span class="legend-badge mgr">Engg Manager</span></div>
+      <div class="legend-item"><span class="legend-badge engg">Engg POC</span></div>
+      <div class="legend-item"><span class="legend-badge prod">Product POC</span></div>
+      <div style="margin-left:auto;font-size:.78rem;color:var(--text-muted)">Click any name badge to see all their modules</div>
+    </div>
+
+    <!-- No results message -->
+    <div class="no-results" id="no-results">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto .75rem">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/>
+      </svg>
+      No modules or people match your search.
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MODULE: Sources / Collect
+    ══════════════════════════════════════════════ -->
+    <div class="poc-module" id="sources-collect" data-module="sources collect">
+      <div class="poc-module-header">
+        <span class="module-dot" style="background:var(--poc-collect)"></span>
+        <h3>Sources / Collect</h3>
+        <span class="sub-count">11 sub-modules</span>
+      </div>
+      <table class="poc-table">
+        <thead>
+          <tr>
+            <th>Sub-Module</th>
+            <th>Engg Manager</th>
+            <th>Engg POC</th>
+            <th>Product POC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-search="files book keeper shubham aniket awati amlan harshit rishabh pritika yash">
+            <td class="sub-module">Files (Book Keeper)</td>
+            <td><div class="person-list"><span class="person-badge mgr" data-person="Shubham">Shubham</span><span class="person-badge mgr" data-person="Aniket Awati">Aniket Awati</span></div></td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Amlan">Amlan</span><span class="person-badge engg" data-person="Harshit">Harshit</span><span class="person-badge engg" data-person="Rishabh">Rishabh</span></div></td>
+            <td><div class="person-list"><span class="person-badge prod" data-person="Pritika">Pritika</span><span class="person-badge prod" data-person="Yash">Yash</span></div></td>
+          </tr>
+          <tr data-search="source analytics amlan">
+            <td class="sub-module">Source Analytics</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Amlan">Amlan</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="mapping pranav raj harshit">
+            <td class="sub-module">Mapping</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Pranav Raj">Pranav Raj</span><span class="person-badge engg" data-person="Harshit">Harshit</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="preview pranav raj harshit">
+            <td class="sub-module">Preview</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Pranav Raj">Pranav Raj</span><span class="person-badge engg" data-person="Harshit">Harshit</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="ingestions ojasv raja harshit utsav">
+            <td class="sub-module">Ingestions</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Ojasv">Ojasv</span><span class="person-badge engg" data-person="Raja">Raja</span><span class="person-badge engg" data-person="Harshit">Harshit</span><span class="person-badge engg" data-person="Utsav">Utsav</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="etl ojasv raja harshit">
+            <td class="sub-module">ETL</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Ojasv">Ojasv</span><span class="person-badge engg" data-person="Raja">Raja</span><span class="person-badge engg" data-person="Harshit">Harshit</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="id resolution customer 360 utsav">
+            <td class="sub-module">ID Resolution + Customer 360</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Utsav">Utsav</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="profile api utsav rohan aniket patel">
+            <td class="sub-module">Profile API</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Utsav">Utsav</span><span class="person-badge engg" data-person="Rohan">Rohan</span><span class="person-badge engg" data-person="Aniket Patel">Aniket Patel</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="cardinality rishabh rola">
+            <td class="sub-module">Cardinality</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Rishabh Rola">Rishabh Rola</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="asset provisioning utsav">
+            <td class="sub-module">Asset Provisioning</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Utsav">Utsav</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="dataflow cloud run pubsub utsav amlan">
+            <td class="sub-module">Dataflow / Cloud Run / Pubsub Issues</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Utsav">Utsav</span><span class="person-badge engg" data-person="Amlan">Amlan</span></div></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MODULE: Admin
+    ══════════════════════════════════════════════ -->
+    <div class="poc-module" id="admin" data-module="admin rbac">
+      <div class="poc-module-header">
+        <span class="module-dot" style="background:var(--poc-admin)"></span>
+        <h3>Admin (RBAC)</h3>
+        <span class="sub-count">1 sub-module</span>
+      </div>
+      <table class="poc-table">
+        <thead>
+          <tr><th>Sub-Module</th><th>Engg Manager</th><th>Engg POC</th><th>Product POC</th></tr>
+        </thead>
+        <tbody>
+          <tr data-search="rbac admin shubham utsav madhav garvita harsha pritika">
+            <td class="sub-module">RBAC</td>
+            <td><div class="person-list"><span class="person-badge mgr" data-person="Shubham">Shubham</span></div></td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Utsav">Utsav</span><span class="person-badge engg" data-person="Madhav">Madhav</span></div></td>
+            <td><div class="person-list"><span class="person-badge prod" data-person="Garvita">Garvita</span><span class="person-badge prod" data-person="Harsha">Harsha</span><span class="person-badge prod" data-person="Pritika">Pritika</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MODULE: Orchestrate
+    ══════════════════════════════════════════════ -->
+    <div class="poc-module" id="orchestrate" data-module="orchestrate journeys symphony">
+      <div class="poc-module-header">
+        <span class="module-dot" style="background:var(--poc-orchestrate)"></span>
+        <h3>Orchestrate</h3>
+        <span class="sub-count">1 sub-module</span>
+      </div>
+      <table class="poc-table">
+        <thead>
+          <tr><th>Sub-Module</th><th>Engg Manager</th><th>Engg POC</th><th>Product POC</th></tr>
+        </thead>
+        <tbody>
+          <tr data-search="journeys orchestrate shubham aniket awati rohan saxena aniket patel garvita harsha">
+            <td class="sub-module">Journeys</td>
+            <td><div class="person-list"><span class="person-badge mgr" data-person="Shubham">Shubham</span><span class="person-badge mgr" data-person="Aniket Awati">Aniket Awati</span></div></td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Rohan Saxena">Rohan Saxena</span><span class="person-badge engg" data-person="Aniket Patel">Aniket Patel</span></div></td>
+            <td><div class="person-list"><span class="person-badge prod" data-person="Garvita">Garvita</span><span class="person-badge prod" data-person="Harsha">Harsha</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MODULE: Destinations
+    ══════════════════════════════════════════════ -->
+    <div class="poc-module" id="destinations" data-module="destinations destination uploader">
+      <div class="poc-module-header">
+        <span class="module-dot" style="background:var(--poc-dest)"></span>
+        <h3>Destinations</h3>
+        <span class="sub-count">1 sub-module</span>
+      </div>
+      <table class="poc-table">
+        <thead>
+          <tr><th>Sub-Module</th><th>Engg Manager</th><th>Engg POC</th><th>Product POC</th></tr>
+        </thead>
+        <tbody>
+          <tr data-search="destination uploader sudarshan ananth suryanarayan shiva sanjay aswin srinivas mayur akanksh harsha">
+            <td class="sub-module">Destination Uploader</td>
+            <td><div class="person-list"><span class="person-badge mgr" data-person="Sudarshan">Sudarshan</span><span class="person-badge mgr" data-person="Ananth Suryanarayan">Ananth Suryanarayan</span></div></td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Shiva">Shiva</span><span class="person-badge engg" data-person="Sanjay">Sanjay</span><span class="person-badge engg" data-person="Aswin">Aswin</span><span class="person-badge engg" data-person="Srinivas">Srinivas</span></div></td>
+            <td><div class="person-list"><span class="person-badge prod" data-person="Mayur">Mayur</span><span class="person-badge prod" data-person="Akanksh">Akanksh</span><span class="person-badge prod" data-person="Harsha">Harsha</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MODULE: Audience
+    ══════════════════════════════════════════════ -->
+    <div class="poc-module" id="audience" data-module="audience be de segments">
+      <div class="poc-module-header">
+        <span class="module-dot" style="background:var(--poc-audience)"></span>
+        <h3>Audience</h3>
+        <span class="sub-count">2 sub-modules</span>
+      </div>
+      <table class="poc-table">
+        <thead>
+          <tr><th>Sub-Module</th><th>Engg Manager</th><th>Engg POC</th><th>Product POC</th></tr>
+        </thead>
+        <tbody>
+          <tr data-search="audience be sudarshan hemant shailesh rachit simran pritika">
+            <td class="sub-module">Audience BE</td>
+            <td><div class="person-list"><span class="person-badge mgr" data-person="Sudarshan">Sudarshan</span></div></td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Hemant">Hemant</span><span class="person-badge engg" data-person="Shailesh">Shailesh</span><span class="person-badge engg" data-person="Rachit">Rachit</span></div></td>
+            <td><div class="person-list"><span class="person-badge prod" data-person="Simran">Simran</span><span class="person-badge prod" data-person="Pritika">Pritika</span></div></td>
+          </tr>
+          <tr data-search="audience de hemant surya">
+            <td class="sub-module">Audience DE</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Hemant">Hemant</span><span class="person-badge engg" data-person="Surya">Surya</span></div></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MODULE: Unify
+    ══════════════════════════════════════════════ -->
+    <div class="poc-module" id="unify" data-module="unify calculated attribute rtca catalogue">
+      <div class="poc-module-header">
+        <span class="module-dot" style="background:var(--poc-unify)"></span>
+        <h3>Unify</h3>
+        <span class="sub-count">3 sub-modules</span>
+      </div>
+      <table class="poc-table">
+        <thead>
+          <tr><th>Sub-Module</th><th>Engg Manager</th><th>Engg POC</th><th>Product POC</th></tr>
+        </thead>
+        <tbody>
+          <tr data-search="calculated attribute shubham amlan pritika garvita">
+            <td class="sub-module">Calculated Attribute</td>
+            <td><div class="person-list"><span class="person-badge mgr" data-person="Shubham">Shubham</span></div></td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Amlan">Amlan</span></div></td>
+            <td><div class="person-list"><span class="person-badge prod" data-person="Pritika">Pritika</span><span class="person-badge prod" data-person="Garvita">Garvita</span></div></td>
+          </tr>
+          <tr data-search="rtca real time calculated attributes aniket patel rohan saxena">
+            <td class="sub-module">RTCA</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Aniket Patel">Aniket Patel</span><span class="person-badge engg" data-person="Rohan Saxena">Rohan Saxena</span></div></td>
+            <td>—</td>
+          </tr>
+          <tr data-search="catalogue pranav raj harshit pritika yash">
+            <td class="sub-module">Catalogue</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Pranav Raj">Pranav Raj</span><span class="person-badge engg" data-person="Harshit">Harshit</span></div></td>
+            <td><div class="person-list"><span class="person-badge prod" data-person="Pritika">Pritika</span><span class="person-badge prod" data-person="Yash">Yash</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MODULE: UI
+    ══════════════════════════════════════════════ -->
+    <div class="poc-module" id="ui" data-module="ui unity frontend">
+      <div class="poc-module-header">
+        <span class="module-dot" style="background:var(--poc-ui)"></span>
+        <h3>UI</h3>
+        <span class="sub-count">1 sub-module</span>
+      </div>
+      <table class="poc-table">
+        <thead>
+          <tr><th>Sub-Module</th><th>Engg Manager</th><th>Engg POC</th><th>Product POC</th></tr>
+        </thead>
+        <tbody>
+          <tr data-search="unity ui aniket awati shikhar aman saiteja krishna divye product module">
+            <td class="sub-module">Unity UI</td>
+            <td><div class="person-list"><span class="person-badge mgr" data-person="Aniket Awati">Aniket Awati</span></div></td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Shikhar">Shikhar</span><span class="person-badge engg" data-person="Aman">Aman</span><span class="person-badge engg" data-person="Saiteja">Saiteja</span><span class="person-badge engg" data-person="Krishna">Krishna</span><span class="person-badge engg" data-person="Divye">Divye</span></div></td>
+            <td><div class="person-list"><span class="person-badge prod" style="cursor:default">Based on Product/Module</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MODULE: SDK
+    ══════════════════════════════════════════════ -->
+    <div class="poc-module" id="sdk" data-module="sdk mobile web">
+      <div class="poc-module-header">
+        <span class="module-dot" style="background:var(--poc-sdk)"></span>
+        <h3>SDK</h3>
+        <span class="sub-count">1 sub-module</span>
+      </div>
+      <table class="poc-table">
+        <thead>
+          <tr><th>Sub-Module</th><th>Engg Manager</th><th>Engg POC</th><th>Product POC</th></tr>
+        </thead>
+        <tbody>
+          <tr data-search="sdk shikhar rishabh divye">
+            <td class="sub-module">SDK</td>
+            <td>—</td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Shikhar">Shikhar</span><span class="person-badge engg" data-person="Rishabh">Rishabh</span><span class="person-badge engg" data-person="Divye">Divye</span></div></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         MODULE: Integrations
+    ══════════════════════════════════════════════ -->
+    <div class="poc-module" id="integrations" data-module="integrations sources destinations connectors">
+      <div class="poc-module-header">
+        <span class="module-dot" style="background:var(--poc-integrations)"></span>
+        <h3>Integrations</h3>
+        <span class="sub-count">2 sub-modules</span>
+      </div>
+      <table class="poc-table">
+        <thead>
+          <tr><th>Sub-Module</th><th>Engg Manager</th><th>Engg POC</th><th>Product POC</th></tr>
+        </thead>
+        <tbody>
+          <tr data-search="integrations sources sudarshan ananth suryanarayan amlan sanjay aswin pull sources akanksh">
+            <td class="sub-module">Sources</td>
+            <td><div class="person-list"><span class="person-badge mgr" data-person="Sudarshan">Sudarshan</span><span class="person-badge mgr" data-person="Ananth Suryanarayan">Ananth Suryanarayan</span></div></td>
+            <td><div class="person-list"><span class="person-badge engg" data-person="Amlan">Amlan</span><span class="person-badge engg" data-person="Sanjay">Sanjay</span><span class="person-badge engg" data-person="Aswin">Aswin</span></div></td>
+            <td><div class="person-list"><span class="person-badge prod" data-person="Akanksh">Akanksh</span></div></td>
+          </tr>
+          <tr data-search="integrations destinations shailesh rachit audience shiva sanjay aswin uploader mayur akanksh">
+            <td class="sub-module">Destinations</td>
+            <td>—</td>
+            <td>
+              <div class="person-list" style="margin-bottom:.3rem">
+                <span class="person-badge engg" data-person="Shailesh">Shailesh</span>
+                <span class="person-badge engg" data-person="Rachit">Rachit</span>
+                <span style="font-size:.7rem;color:var(--text-muted);align-self:center">(Audience Side)</span>
+              </div>
+              <div class="person-list">
+                <span class="person-badge engg" data-person="Shiva">Shiva</span>
+                <span class="person-badge engg" data-person="Sanjay">Sanjay</span>
+                <span class="person-badge engg" data-person="Aswin">Aswin</span>
+                <span style="font-size:.7rem;color:var(--text-muted);align-self:center">(Uploader Side)</span>
+              </div>
+            </td>
+            <td><div class="person-list"><span class="person-badge prod" data-person="Mayur">Mayur</span><span class="person-badge prod" data-person="Akanksh">Akanksh</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Back to Docs</div>
+      <a href="index.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">← Return to Documentation Index</a>
+    </div>
+  </main>
+</div>
+
+<!-- ── Person spotlight modal ─────────────────────────────────────── -->
+<div id="person-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-avatar" id="modal-avatar">A</div>
+      <div>
+        <div class="modal-name" id="modal-name">Person Name</div>
+        <div class="modal-subtitle" id="modal-subtitle">Owns X module(s)</div>
+      </div>
+      <button class="modal-close" id="modal-close" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-modules" id="modal-modules"></div>
+  </div>
+</div>
+
+<script src="assets/search-index.js"></script>
+<script src="assets/scripts.js?v=6"></script>
+<script>
+(function () {
+  // ── Build person → modules index ────────────────────────────
+  const personMap = {};  // { "Amlan": [{module, subModule, role, color}] }
+
+  document.querySelectorAll('.poc-module').forEach(modEl => {
+    const modLabel = modEl.querySelector('h3').textContent.trim();
+    const color    = modEl.querySelector('.module-dot').style.background;
+
+    modEl.querySelectorAll('tbody tr').forEach(tr => {
+      const subModule = tr.querySelector('.sub-module')?.textContent.trim() || '—';
+      tr.querySelectorAll('.person-badge[data-person]').forEach(badge => {
+        const name = badge.dataset.person;
+        const role = badge.classList.contains('mgr')  ? 'Engg Manager' :
+                     badge.classList.contains('engg') ? 'Engg POC' : 'Product POC';
+        if (!personMap[name]) personMap[name] = [];
+        // avoid duplicate entries per (module+sub+role)
+        const key = `${modLabel}|${subModule}|${role}`;
+        if (!personMap[name].find(e => e.key === key)) {
+          personMap[name].push({ key, module: modLabel, subModule, role, color });
+        }
+      });
+    });
+  });
+
+  // ── Modal logic ─────────────────────────────────────────────
+  const modal     = document.getElementById('person-modal');
+  const modalName = document.getElementById('modal-name');
+  const modalSub  = document.getElementById('modal-subtitle');
+  const modalAv   = document.getElementById('modal-avatar');
+  const modalMods = document.getElementById('modal-modules');
+  const closeBtn  = document.getElementById('modal-close');
+
+  function openModal(name) {
+    const entries = personMap[name] || [];
+    modalName.textContent = name;
+    modalAv.textContent   = name.charAt(0).toUpperCase();
+    modalSub.textContent  = `Owns ${entries.length} module assignment${entries.length !== 1 ? 's' : ''}`;
+    modalMods.innerHTML   = '';
+
+    entries.forEach(e => {
+      const roleCls = e.role === 'Engg Manager' ? 'mgr' : e.role === 'Engg POC' ? 'engg' : 'prod';
+      const row = document.createElement('div');
+      row.className = 'modal-module-row';
+      row.innerHTML = `
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.color};margin-right:.5rem;flex-shrink:0"></span>
+        <span class="mod-label">${e.module} › ${e.subModule}</span>
+        <span class="person-badge ${roleCls} role-badge" style="cursor:default">${e.role}</span>`;
+      modalMods.appendChild(row);
+    });
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  document.querySelectorAll('.person-badge[data-person]').forEach(b => {
+    b.addEventListener('click', () => openModal(b.dataset.person));
+  });
+
+  // ── Live search filter ───────────────────────────────────────
+  const searchInput = document.getElementById('poc-search');
+  const noResults   = document.getElementById('no-results');
+  const modules     = document.querySelectorAll('.poc-module');
+
+  searchInput.addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+
+    if (!q) {
+      // Reset everything
+      modules.forEach(m => {
+        m.classList.remove('poc-module-hidden');
+        m.querySelectorAll('tbody tr').forEach(r => r.classList.remove('poc-row-hidden'));
+      });
+      noResults.style.display = 'none';
+      return;
+    }
+
+    let anyVisible = false;
+
+    modules.forEach(modEl => {
+      const modSearch  = (modEl.dataset.module || '').toLowerCase();
+      const modMatch   = modSearch.includes(q);
+      let   rowVisible = 0;
+
+      modEl.querySelectorAll('tbody tr').forEach(tr => {
+        const rowSearch = (tr.dataset.search || '').toLowerCase();
+        const match     = modMatch || rowSearch.includes(q);
+        tr.classList.toggle('poc-row-hidden', !match);
+        if (match) rowVisible++;
+      });
+
+      const hide = !modMatch && rowVisible === 0;
+      modEl.classList.toggle('poc-module-hidden', hide);
+      if (!hide) anyVisible = true;
+    });
+
+    noResults.style.display = anyVisible ? 'none' : 'block';
+  });
+})();
+</script>
+</body>
+</html>
