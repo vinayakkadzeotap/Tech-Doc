@@ -190,28 +190,37 @@
     .legend-badge.engg { background: rgba(16,185,129,.1); color: #10b981; border: 1px solid rgba(16,185,129,.25); }
     .legend-badge.prod { background: rgba(245,158,11,.1);  color: #f59e0b;  border: 1px solid rgba(245,158,11,.25); }
 
-    /* ── Person spotlight modal ─────────────────────── */
+    /* ── Person spotlight modal (native <dialog> = top layer) ── */
     #person-modal {
-      display: none;
+      border: none;
+      border-radius: 16px;
+      padding: 0;
+      background: transparent;
+      max-width: 100vw;
+      width: 100%;
+      box-shadow: none;
+      /* center it */
       position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: rgba(0,0,0,.45);
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
     }
-    #person-modal.open { display: flex; }
+    #person-modal::backdrop {
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(2px);
+    }
     .modal-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
+      background: var(--bg-card, #fff);
+      border: 1px solid var(--border, #e5e7eb);
       border-radius: 16px;
       padding: 2rem;
       max-width: 640px;
-      width: 100%;
+      width: calc(100vw - 2rem);
       max-height: 80vh;
       overflow-y: auto;
-      box-shadow: 0 24px 48px rgba(0,0,0,.3);
+      box-shadow: 0 24px 48px rgba(0,0,0,.25);
+      margin: 0 auto;
     }
     .modal-header {
       display: flex;
@@ -679,8 +688,8 @@
   </main>
 </div>
 
-<!-- ── Person spotlight modal ─────────────────────────────────────── -->
-<div id="person-modal">
+<!-- ── Person spotlight modal (native dialog = browser top layer) ── -->
+<dialog id="person-modal">
   <div class="modal-card">
     <div class="modal-header">
       <div class="modal-avatar" id="modal-avatar">A</div>
@@ -696,7 +705,7 @@
     </div>
     <div class="modal-modules" id="modal-modules"></div>
   </div>
-</div>
+</dialog>
 
 <script src="assets/search-index.js"></script>
 <script src="assets/scripts.js?v=6"></script>
@@ -751,18 +760,24 @@
       modalMods.appendChild(row);
     });
 
-    modal.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    modal.showModal();  // renders in browser top layer — always above everything
   }
 
   function closeModal() {
-    modal.classList.remove('open');
-    document.body.style.overflow = '';
+    modal.close();
   }
 
   closeBtn.addEventListener('click', closeModal);
-  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  // click on ::backdrop closes modal
+  modal.addEventListener('click', e => {
+    const rect = modal.getBoundingClientRect();
+    const clickedInside = (
+      e.clientX >= rect.left && e.clientX <= rect.right &&
+      e.clientY >= rect.top  && e.clientY <= rect.bottom
+    );
+    if (!clickedInside) closeModal();
+  });
+  // Escape key is handled natively by <dialog>
 
   document.querySelectorAll('.person-badge[data-person]').forEach(b => {
     b.addEventListener('click', () => openModal(b.dataset.person));
