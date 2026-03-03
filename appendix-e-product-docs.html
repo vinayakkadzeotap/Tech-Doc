@@ -18,17 +18,6 @@
     #pd-search:focus { border-color:var(--brand); }
     #pd-search::placeholder { color:var(--text-muted); }
 
-    /* ── Auth notice ─────────────────────────────── */
-    .auth-notice {
-      display:flex; align-items:flex-start; gap:.75rem;
-      padding:1rem 1.25rem; border-radius:10px;
-      background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.3);
-      margin-bottom:2rem; font-size:.875rem; color:var(--text-secondary);
-    }
-    .auth-notice svg { flex-shrink:0; margin-top:.1rem; color:#f59e0b; }
-    .auth-notice a { color:#f59e0b; text-decoration:none; font-weight:600; }
-    .auth-notice a:hover { text-decoration:underline; }
-
     /* ── Stats ───────────────────────────────────── */
     .pd-stats { display:flex; gap:.75rem; flex-wrap:wrap; margin-bottom:2rem; }
     .stat-chip {
@@ -97,28 +86,6 @@
     .pd-sections li:last-child { border-bottom:none; }
     .pd-sections li svg { width:12px; height:12px; color:var(--text-muted); flex-shrink:0; }
 
-    .pd-card-footer {
-      padding:.85rem 1.25rem;
-      border-top:1px solid var(--border);
-      background:var(--bg-subtle);
-      display:flex; align-items:center; justify-content:space-between;
-      gap:.5rem;
-    }
-    .pd-link {
-      display:inline-flex; align-items:center; gap:.35rem;
-      font-size:.8rem; font-weight:600; color:var(--brand);
-      text-decoration:none; padding:.35rem .75rem;
-      border-radius:7px; background:rgba(99,102,241,.08);
-      border:1px solid rgba(99,102,241,.2); transition:all .15s;
-    }
-    .pd-link:hover { background:rgba(99,102,241,.15); }
-    .pd-link svg { width:12px; height:12px; }
-    .pd-auth-tag {
-      font-size:.7rem; color:var(--text-muted);
-      display:flex; align-items:center; gap:.3rem;
-    }
-    .pd-auth-tag svg { width:11px; height:11px; }
-
     /* ── Section divider ─────────────────────────── */
     .pd-section-label {
       font-size:.7rem; font-weight:700; text-transform:uppercase;
@@ -179,16 +146,7 @@
       <h1>Product Documentation</h1>
       <p class="page-subtitle">Official Zeotap CDP product documentation — all modules, features, APIs, and guides in one place. Links open the official Zeotap Help Center.</p>
     </div>
-
-    <!-- Auth notice -->
-    <div class="auth-notice">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-      </svg>
-      <div>
-        <strong>Zeotap credentials required</strong> — All article links open <a href="https://docs.zeotap.com/home/en-us/" target="_blank" rel="noopener">docs.zeotap.com</a> which requires login with your Zeotap Okta SSO account. The homepage and this directory are publicly accessible.
-      </div>
-    </div>
+</div>
 
     <!-- Stats -->
     <div class="pd-stats">
@@ -233,14 +191,7 @@
             <li><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>Step 5 — Launch Journeys &amp; monitor via Dashboard</li>
           </ul>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!get-started-guide/getting-started/" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
       <div class="pd-card" data-search="what's new release notes product updates changelog">
         <div class="pd-card-header">
@@ -267,14 +218,7 @@
             <span class="pd-feat">IAB Taxonomy 1.1 (Apr 2023)</span>
           </div>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/smart/project-product-release-notes/product-updates" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
     </div>
 
@@ -308,16 +252,7 @@
             <span class="pd-feat">FB Conversions API</span><span class="pd-feat">Amazon DSP</span><span class="pd-feat">Google Consent Mode</span>
           </div>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!integrate-customer/integrate" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <a class="pd-link" href="https://docs.zeotap.com/articles/integrations-master-list-publication/integrations-master-list" target="_blank" rel="noopener" style="background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.18);color:#3b82f6">
-            Integrations List →
-          </a>
-        </div>
-      </div>
+</div>
 
       <!-- UNIFY -->
       <div class="pd-card" id="unify" data-search="unify catalogue calculated attributes id strategy identity stitching ucid golden record taxonomy">
@@ -345,14 +280,7 @@
             <span class="pd-feat">Identity Stitching</span><span class="pd-feat">UCID</span>
           </div>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!unify-customer/unify" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
       <!-- SEGMENT -->
       <div class="pd-card" id="segment" data-search="segment audiences cohorts segmentation ml lookalike churn clv acquisition retention targeting">
@@ -381,14 +309,7 @@
             <span class="pd-feat">Segment Membership API</span><span class="pd-feat">Right to Erasure</span>
           </div>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!segment-customer/audience" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
       <!-- ORCHESTRATE -->
       <div class="pd-card" id="orchestrate" data-search="orchestrate journeys symphony workflow automation personalisation omnichannel next best action webhook delay entry condition">
@@ -417,14 +338,7 @@
             <span class="pd-feat">RTCA Mid-Journey</span><span class="pd-feat">Webhooks</span>
           </div>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!orchestrate-customer/orchestrate" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
       <!-- DASHBOARD -->
       <div class="pd-card" id="dashboard" data-search="dashboard analytics usage metrics consumption source analytics segment lifecycle account health">
@@ -452,14 +366,7 @@
             <span class="pd-feat">Engagement Correlation</span>
           </div>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!dashboard-customer/overview" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
       <!-- PROTECT -->
       <div class="pd-card" id="protect" data-search="protect consent gdpr ccpa customer 360 data lifecycle privacy erasure dsr right to be forgotten compliance iab">
@@ -486,14 +393,7 @@
             <span class="pd-feat">Delete API</span><span class="pd-feat">Audit Logs</span>
           </div>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!protect-customer/protect" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
     </div>
 
@@ -520,14 +420,7 @@
             <li><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>MFA, unique user IDs, monthly access review</li>
           </ul>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!admin-customer/admin" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
       <!-- TARGET -->
       <div class="pd-card" id="target" data-search="target third party audiences deterministic programmatic iab taxonomy advertising france germany uk">
@@ -548,14 +441,7 @@
             <li><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>Activation on Tier 1 programmatic and social platforms</li>
           </ul>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!targeting-customer/2969141372" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
       <!-- ID+ -->
       <div class="pd-card" id="idplus" data-search="id plus identity cookieless addressability universal id audience boost match rates fuel privacy">
@@ -576,14 +462,7 @@
             <li><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>Combined with Zeotap Fuel for unmatched match rates</li>
           </ul>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!id-publication/basic-integration-guide_v2" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Login required</span>
-        </div>
-      </div>
+</div>
 
     </div>
 
@@ -617,16 +496,7 @@
             <span class="pd-feat">GDPR Delete</span><span class="pd-feat">Real-time Personalisation</span>
           </div>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!api-doc-customer/profile-api" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <a class="pd-link" href="appendix-a-api-reference.html" style="background:rgba(99,102,241,.06);border-color:rgba(99,102,241,.18);color:#6366f1">
-            Internal API Reference →
-          </a>
-        </div>
-      </div>
+</div>
 
       <!-- S2S API -->
       <div class="pd-card" data-search="server to server s2s http api data collection events user page device consent write key endpoint ingest">
@@ -648,16 +518,7 @@
             <li><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>Each call requires at least one identifier (preferably first-party user ID)</li>
           </ul>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/#!integrate-customer/integrate" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <a class="pd-link" href="02-data-collection.html" style="background:rgba(99,102,241,.06);border-color:rgba(99,102,241,.18);color:#6366f1">
-            Data Collection Chapter →
-          </a>
-        </div>
-      </div>
+</div>
 
       <!-- Integrations Master List -->
       <div class="pd-card" data-search="integrations master list connectors sources destinations all 150 braze salesforce google meta adobe amazon">
@@ -682,32 +543,8 @@
             <span class="pd-feat">Rokt</span><span class="pd-feat">Microsoft Dynamics 365</span>
           </div>
         </div>
-        <div class="pd-card-footer">
-          <a class="pd-link" href="https://docs.zeotap.com/articles/integrations-master-list-publication/integrations-master-list" target="_blank" rel="noopener">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            Open in Zeotap Docs
-          </a>
-          <span class="pd-auth-tag" style="color:var(--emerald,#10b981)">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
-            Publicly accessible
-          </span>
-        </div>
-      </div>
+</div>
 
-    </div>
-
-    <!-- ── Quick links footer ── -->
-    <div style="margin-top:2rem;padding:1.5rem;background:var(--bg-subtle);border-radius:12px;border:1px solid var(--border)">
-      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.75rem">Quick Access Links</div>
-      <div style="display:flex;flex-wrap:wrap;gap:.5rem">
-        <a href="https://docs.zeotap.com/home/en-us/" target="_blank" rel="noopener" class="pd-link">📚 Zeotap Help Center</a>
-        <a href="https://docs.zeotap.com/articles/#!get-started-guide/getting-started/" target="_blank" rel="noopener" class="pd-link">🚀 Getting Started</a>
-        <a href="https://docs.zeotap.com/smart/project-product-release-notes/product-updates" target="_blank" rel="noopener" class="pd-link">🆕 What's New</a>
-        <a href="https://docs.zeotap.com/articles/integrations-master-list-publication/integrations-master-list" target="_blank" rel="noopener" class="pd-link">🔗 Integrations List</a>
-        <a href="https://docs.zeotap.com/articles/#!api-doc-customer/profile-api" target="_blank" rel="noopener" class="pd-link">⚡ Profile API</a>
-        <a href="appendix-a-api-reference.html" class="pd-link">🔧 Internal API Ref</a>
-        <a href="appendix-d-poc-directory.html" class="pd-link">👥 POC Directory</a>
-      </div>
     </div>
 
     <div style="margin-top:2rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
