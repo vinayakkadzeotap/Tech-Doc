@@ -15,6 +15,7 @@
   <nav class="sidebar-nav sub-nav">
     <a href="#overview">Overview</a><a href="#daap">DAAP Architecture</a><a href="#batch">Batch Ingestion</a>
     <a href="#streaming">Stream Processing</a><a href="#schema">Schema Management</a><a href="#quality">Data Quality</a>
+    <a href="#service-layer">Service Architecture</a><a href="#ingestion-debug">Debugging</a>
   </nav></div>
   <div class="sidebar-section"><div class="sidebar-section-title">Core Modules</div>
   <nav class="sidebar-nav">
@@ -194,6 +195,120 @@ sequenceDiagram
   <span class="tok-key">"alertChannel"</span><span class="tok-punctuation">:</span> <span class="tok-string">"slack:#data-quality-alerts"</span>
 <span class="tok-punctuation">}</span></code></pre>
     </div>
+    <!-- File Ingestion Service Layer -->
+    <h2 id="service-layer">File Ingestion Service Architecture</h2>
+    <p>When a client uploads a file (CSV, JSON, etc.), a chain of services handles the full lifecycle — from raw file on GCS through to final data stores. This is the service-level view from the KT sessions with the data platform team.</p>
+
+    <h3>UI-Facing Services</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Service / Repo</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><code>data_manager</code></td><td>Handles the Unity UI for data uploads: data previews, and saves final field mappings from source fields to Zeotap catalog attributes</td></tr>
+        <tr><td><code>canon</code></td><td>Manages the <strong>attribute catalog</strong> — the master list of standardised attributes (e.g., country, product name, email). All incoming fields are mapped to canon attributes</td></tr>
+        <tr><td><code>source_analytics</code></td><td>Powers the source report in the UI — shows per-file ingestion metadata (file count, record count, status)</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>File Ingestion Pipeline (Step-by-Step)</h3>
+    <div class="diagram-wrapper">
+      <div class="diagram-title">📂 File Upload → Final Data Store Pipeline</div>
+      <div class="mermaid">
+sequenceDiagram
+    participant UI as Unity UI (data_manager)
+    participant GCS as GCS Bucket
+    participant PS as Pub/Sub
+    participant SW as stratos_worker
+    participant ST as stratos
+    participant BK as bookkeeper
+    participant SCH as schematic
+    participant BQ as BigQuery (RT_records)
+    participant STORE as Final Stores<br/>(id_store, event_store)
+
+    UI->>GCS: Upload raw file
+    GCS->>PS: Trigger Pub/Sub message
+    PS->>SW: Consume message (data handling)
+    PS->>ST: Consume message (UI generation)
+    SW->>UI: Generate preview data
+    ST->>UI: Generate schema preview
+    UI->>UI: User maps source fields → canon attributes
+    UI->>UI: Pre-save validation (duplicate columns, type checks)
+    UI->>BK: Trigger ETL with final mappings
+    BK->>GCS: Read raw file data
+    BK->>BQ: Write to RT_records table
+    SCH->>BQ: Hourly ETL — read RT_records
+    SCH->>STORE: Populate id_store, event_store, etc.
+      </div>
+    </div>
+
+    <h3>Repository Responsibilities</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Repository</th><th>Responsibility</th></tr></thead>
+      <tbody>
+        <tr><td><code>stratos_worker</code></td><td>Consumes Pub/Sub message, performs data handling, generates the preview used in the UI</td></tr>
+        <tr><td><code>stratos</code></td><td>Schema generation — infers the schema from the uploaded file for field mapping</td></tr>
+        <tr><td><code>canon</code></td><td>Attribute catalog management — maps source fields to standardised Zeotap attributes</td></tr>
+        <tr><td><code>source_analytics</code></td><td>Powers the source report (ingestion metadata, success/failure counts)</td></tr>
+        <tr><td><code>igs</code></td><td>Data flow code for writing events to the <code>RT_records</code> BigQuery table</td></tr>
+        <tr><td><code>bookkeeper</code></td><td>Reads raw GCS data and writes it to the <code>RT_records</code> BigQuery staging table</td></tr>
+        <tr><td><code>schematic</code></td><td>ETL orchestration — runs hourly, reads <code>RT_records</code>, populates final stores (<code>id_store</code>, <code>event_store</code>, etc.) via rule-based relation processing</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Key Database Tables</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>DB</th><th>Table</th><th>Contents</th></tr></thead>
+      <tbody>
+        <tr><td><code>data_manager DB</code></td><td><code>data_sets</code></td><td>Core dataset metadata — ID, org ID, source type, status</td></tr>
+        <tr><td><code>data_manager DB</code></td><td><code>data_groups</code></td><td>Final field mappings — source field → target canon attribute</td></tr>
+        <tr><td><code>source_analytics DB</code></td><td><code>files</code></td><td>Ingestion metadata per file — file count, record count, status</td></tr>
+        <tr><td><code>schematic DB</code></td><td><code>job_history</code></td><td>ETL job logs — BQ job IDs, error messages, org_id, timestamps</td></tr>
+        <tr><td><code>BigQuery</code></td><td><code>RT_records</code></td><td>Staging table written by bookkeeper; read hourly by schematic</td></tr>
+      </tbody>
+    </table></div>
+
+    <!-- Debugging -->
+    <h2 id="ingestion-debug">Debugging File Ingestion</h2>
+
+    <h3>Real-Time Logs — Groundcover</h3>
+    <div class="callout callout-info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <div class="callout-title">Groundcover Setup</div>
+        <p class="callout-text">Navigate to <strong>GKE DCR Prod EU</strong> namespace in Groundcover. Select the relevant workload (e.g., <code>data_manager</code>) and paste a request ID to filter logs for a specific upload session.</p>
+      </div>
+    </div>
+
+    <h3>Historical ETL Failures — schematic DB</h3>
+    <p>For ingestion failures that occurred in the past (e.g., a file that failed to process yesterday's hourly ETL):</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">sql — schematic DB: debug ETL failures</span></div>
+      <pre><code>-- Step 1: Find failed jobs for an org
+SELECT id, org_id, metadata, error, created_at
+FROM job_history
+WHERE org_id = {org_id}
+  AND status = 'FAILED'
+ORDER BY created_at DESC
+LIMIT 20;
+
+-- The `metadata` column contains the BigQuery job ID
+-- The `error` column contains the exact error message
+
+-- Step 2: Use the BQ job ID from `metadata` to inspect
+-- the query and full execution details in the BigQuery UI</code></pre>
+    </div>
+
+    <h3>Debug Flow</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Symptom</th><th>Where to Look</th><th>Tool</th></tr></thead>
+      <tbody>
+        <tr><td>Preview not loading after upload</td><td><code>stratos_worker</code> / <code>stratos</code> workload</td><td>Groundcover (GKE DCR Prod EU)</td></tr>
+        <tr><td>Field mapping save failing</td><td><code>data_manager</code> workload, filter by request ID</td><td>Groundcover</td></tr>
+        <tr><td>Records not appearing in final store</td><td><code>job_history</code> table for the org</td><td>schematic DB (Redash)</td></tr>
+        <tr><td>BQ write error</td><td>BQ job ID from <code>job_history.metadata</code></td><td>BigQuery UI</td></tr>
+        <tr><td>Source report showing wrong counts</td><td><code>files</code> table for the dataset</td><td>source_analytics DB (Redash)</td></tr>
+      </tbody>
+    </table></div>
+
     <hr>
     <div style="display:flex;justify-content:space-between;margin-top:24px">
       <a href="02-data-collection.html" style="font-size:14px;font-weight:600">← Data Collection & SDKs</a>

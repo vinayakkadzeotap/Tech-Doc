@@ -24,6 +24,12 @@
       <a href="#token-flow" class="nav-item">Token Lifecycle</a>
       <a href="#firebase" class="nav-item">Firebase Auth</a>
       <a href="#api-keys" class="nav-item">API Key Management</a>
+      <div class="nav-section">ARBEC</div>
+      <a href="#arbec" class="nav-item">ARBEC System</a>
+      <a href="#arbec-db" class="nav-item">Database Schema</a>
+      <a href="#arbec-custom" class="nav-item">Custom Roles & Folders</a>
+      <a href="#arbec-debug" class="nav-item">Troubleshooting</a>
+      <a href="#arbec-api" class="nav-item">ARBEC APIs</a>
     </nav>
   </aside>
 
@@ -279,6 +285,216 @@ zeotap.initialize({
   writeKey: "zak_live_abc123def456",
   // ...
 });</code></pre>
+    </section>
+
+    <!-- ── ARBEC ────────────────────────────────────────────── -->
+    <section id="arbec">
+      <h2>ARBEC — Access Role-Based Entitlement Control</h2>
+      <p><strong>ARBEC</strong> is Zeotap's comprehensive access management system that controls user permissions across all products and services. It operates on top of the Akbar/Firebase layer to enforce <em>what</em> a user can do once authenticated — mapping users to product groups and granular feature permissions (~650 total features).</p>
+
+      <h3>Access Hierarchy</h3>
+      <p>ARBEC follows a strict four-level hierarchy from broad package access down to individual feature permissions:</p>
+      <table>
+        <thead><tr><th>Level</th><th>Description</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Users</strong></td><td>Individual users belonging to an organisation</td><td><code>user_id: 12345</code></td></tr>
+          <tr><td><strong>Package Roles</strong></td><td>Roles that grant access to a product package</td><td><code>CDP Admin</code>, <code>Targeting User</code></td></tr>
+          <tr><td><strong>Product Groups</strong></td><td>Permission sets for a specific product</td><td>Segments Read-Only, Journeys Full Access</td></tr>
+          <tr><td><strong>Features</strong></td><td>Granular permissions defining specific actions (~650 total)</td><td><code>audiences.create</code>, <code>destinations.delete</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Organisation Hierarchy</h3>
+      <p>Organisations follow a <strong>parent-child tree</strong> with two key rules:</p>
+      <ul>
+        <li><strong>Parent caps child access</strong> — A parent org's product access is the maximum ceiling for all child orgs. A child cannot have more access than its parent.</li>
+        <li><strong>Zeotap is global parent</strong> — Zeotap itself is the root organisation with access to all orgs in the system. Used for internal tooling and cross-org support operations.</li>
+      </ul>
+
+      <h3>Package–Product Mapping</h3>
+      <p>Default product access per package is hardcoded in <code>user_service/common.py</code>:</p>
+      <pre><code class="language-python">PACKAGE_PRODUCT_MAP = {
+    1: [1, 12, 21, 15, 23],  # CDP Package     — CDP, RB, Destinations, etc.
+    2: [1, 5, 12],           # Targeting Package — Targeting products
+    3: [1, 19]               # Other Package
+}</code></pre>
+      <p>Additional products (e.g., Journeys) can be toggled on/off per org via the UI. These are stored in the <code>product_org_map</code> database table and take effect immediately.</p>
+
+      <h3>User → Product Access Flow</h3>
+      <div class="mermaid">
+graph LR
+    U["User"] -->|belongs to| O["Organisation"]
+    U -->|assigned| PR["Package Role<br/>(e.g. CDP Admin)"]
+    PR -->|grants| PG["Product Groups"]
+    PG -->|composed of| F["Features (~650)<br/>(granular permissions)"]
+    O -->|licensed for| PM["product_org_map<br/>(package defaults + toggles)"]
+    PM --> PG
+
+    style U fill:#e3f2fd,stroke:#1565c0
+    style PR fill:#f3e5f5,stroke:#7b1fa2
+    style PG fill:#fff8e1,stroke:#f9a825
+    style F fill:#e8f5e9,stroke:#2e7d32
+      </div>
+    </section>
+
+    <!-- ── ARBEC DB ─────────────────────────────────────────── -->
+    <section id="arbec-db">
+      <h2>ARBEC Database Architecture</h2>
+      <p>ARBEC data is stored in the <strong>Arc DB</strong>, accessible via Redash for support queries. The following tables are the core of the permission model:</p>
+
+      <table>
+        <thead><tr><th>Table</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>user_product_group</code></td><td>Links users to product groups for specific orgs/products — the central join table</td></tr>
+          <tr><td><code>product_feature_group_map</code></td><td>Maps product groups → their individual feature permissions</td></tr>
+          <tr><td><code>product_org_map</code></td><td>Stores organisation-product access mappings (enabled products per org)</td></tr>
+          <tr><td><code>product_group</code></td><td>Defines product groups, including custom roles (custom groups have non-null <code>org_id</code>)</td></tr>
+          <tr><td><code>group_role_map</code></td><td>Maps custom roles → product groups</td></tr>
+          <tr><td><code>product_features</code></td><td>Master list of all ~650 features available in the system</td></tr>
+          <tr><td><code>user_roles</code></td><td>Exposes custom roles to clients for display in the Unity UI</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Table Relationships</h3>
+      <div class="mermaid">
+erDiagram
+    user_product_group }o--|| product_group : "user -> product group"
+    product_feature_group_map }o--|| product_features : "group -> feature"
+    group_role_map }o--|| product_group : "role -> product group"
+    product_org_map }o--|| product_group : "org -> product"
+    product_group ||--o| user_roles : "exposed as custom role"
+      </div>
+
+      <h3>Key SQL Queries (Support Cheat Sheet)</h3>
+      <p>Use these on Redash (Arc DB) to debug access issues:</p>
+      <pre><code class="language-sql">-- Check all product groups a user belongs to in an org
+SELECT * FROM user_product_group
+WHERE user_id = {user_id}
+AND org_id = {org_id};
+
+-- Check which features a product group grants
+SELECT f.* FROM product_features f
+JOIN product_feature_group_map m ON f.id = m.feature_id
+WHERE m.product_group_id = {group_id};
+
+-- Check which products an org has access to
+SELECT * FROM product_org_map
+WHERE org_id = {org_id};</code></pre>
+    </section>
+
+    <!-- ── ARBEC Custom Roles & Folders ────────────────────── -->
+    <section id="arbec-custom">
+      <h2>Custom Roles &amp; Folder Management</h2>
+
+      <h3>Custom Roles</h3>
+      <p>Custom Roles allow organisations to create roles with bespoke permission sets, bypassing the predefined package roles. This addresses use cases requiring fine-grained control beyond CDP Admin / Targeting User defaults.</p>
+      <ul>
+        <li><strong>Implementation</strong> — Custom roles create new <code>product_group</code> rows with a non-null <code>org_id</code>, scoping them to that organisation.</li>
+        <li><strong>Role mapping</strong> — Stored in <code>group_role_map</code>. Exposed to clients via <code>user_roles</code>.</li>
+        <li><strong>Restriction</strong> — Certain permissions are reserved for <code>CDP Admin</code> and <code>Zeotap Admin</code> roles. Do not create custom roles for these — enabling them via UI toggles is not permitted.</li>
+      </ul>
+
+      <h3>Folder Management</h3>
+      <p>Folder-level access restrictions (Audience folders, Journey folders) have been migrated from independent services into ARBEC, enabling centralised folder-level RBAC:</p>
+      <ul>
+        <li>Folder access is configured at the <strong>Product Group level</strong> in the <code>product_group</code> table.</li>
+        <li>A <code>null</code> folder value grants access to <em>all</em> folders — the default open state.</li>
+        <li>Populating the folder field restricts the group to only the listed folder IDs.</li>
+      </ul>
+    </section>
+
+    <!-- ── ARBEC Troubleshooting ───────────────────────────── -->
+    <section id="arbec-debug">
+      <h2>Troubleshooting Guide</h2>
+
+      <h3>Issue 1: User Cannot Access a Product</h3>
+      <p>User reports they can't access a product they should have access to. Follow these steps:</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content"><strong>Check <code>user_product_group</code></strong> — Verify the user has an entry linking them to the required product group for their org.</div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content"><strong>Check <code>product_org_map</code></strong> — Confirm the user's organisation has the product enabled.</div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content"><strong>Check package role</strong> — Ensure the user's package role includes the product in <code>PACKAGE_PRODUCT_MAP</code>.</div>
+        </div>
+      </div>
+
+      <h3>Issue 2: User Has Product Group But Missing a Feature</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content"><strong>Check <code>product_feature_group_map</code></strong> — Verify the product group is linked to the required feature ID.</div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content"><strong>Check <code>product_features</code></strong> — Confirm the feature exists and is active in the master feature table.</div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content"><strong>Custom role check</strong> — If using a custom role, use the <code>custom_roles</code> API to verify the feature is bound directly.</div>
+        </div>
+      </div>
+
+      <h3>Debug Decision Tree</h3>
+      <table>
+        <thead><tr><th>Symptom</th><th>First Action</th><th>Table / Tool</th></tr></thead>
+        <tbody>
+          <tr><td>User cannot access product</td><td>Check user's product group assignment</td><td><code>user_product_group</code></td></tr>
+          <tr><td>User missing specific feature</td><td>Check group → feature mapping</td><td><code>product_feature_group_map</code></td></tr>
+          <tr><td>Custom role issue</td><td>Call custom_roles API</td><td><code>GET /api/v5/organization/roles/</code></td></tr>
+          <tr><td>Org-level access problem</td><td>Check org → product mapping</td><td><code>product_org_map</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── ARBEC APIs ──────────────────────────────────────── -->
+    <section id="arbec-api">
+      <h2>ARBEC Internal APIs</h2>
+
+      <h3>Token Decrypt API</h3>
+      <p>Validates a user's JWT and returns their permission payload for a given org and product. Used internally by all Zeotap services to check specific user permissions.</p>
+      <div class="endpoint-block">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">http://rbac-prod.zeotap.net/internal/api/v3/token/payload</span>
+      </div>
+      <pre><code class="language-bash">curl --location 'http://rbac-prod.zeotap.net/internal/api/v3/token/payload' \
+  --header 'accept: application/json' \
+  --header 'content-type: application/json' \
+  --header 'authorization: {internal_token}' \
+  --data '{
+    "token": "{user_jwt_token}",
+    "org_ids": [2110],
+    "product_ids": [12]
+  }'</code></pre>
+      <table>
+        <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>token</code></td><td>string</td><td>User's JWT session token</td></tr>
+          <tr><td><code>org_ids</code></td><td>array[int]</td><td>Organisation IDs to check permissions for</td></tr>
+          <tr><td><code>product_ids</code></td><td>array[int]</td><td>Product IDs to scope the permission check</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Custom Roles API</h3>
+      <p>Returns a custom role's direct feature bindings, bypassing the product group layer. Useful for debugging custom role permissions without querying the DB.</p>
+      <div class="endpoint-block">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">https://account-v3.zeotap.com/api/v5/organization/roles/?orgIds={orgId}</span>
+      </div>
+      <pre><code class="language-bash">curl 'https://account-v3.zeotap.com/api/v5/organization/roles/?orgIds=1894' \
+  -H 'accept: application/json' \
+  -H 'authorization: {user_token}' \
+  -H 'content-type: application/json' \
+  -H 'zeotap-org-id: 1894'</code></pre>
+
+      <div class="callout callout-info">
+        <div><strong>Reference</strong> — Full ARBEC documentation is maintained in Confluence: <a href="https://zeotap.atlassian.net/wiki/spaces/PENGUIN/pages/4150296578" target="_blank">PENGUIN space → ARBEC Technical Documentation</a>. Database access via Redash (Arc DB). Technical contact: Madhav Jain.</div>
+      </div>
     </section>
 
     <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
