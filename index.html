@@ -18,8 +18,13 @@
   <!-- D3 v7 -->
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 
+  <!-- Performance Optimizer (load early) -->
+  <script src="assets/performance-optimizer.js"></script>
+
   <!-- Design System -->
   <link rel="stylesheet" href="assets/dark-system.css?v=1.1" />
+  <link rel="stylesheet" href="assets/enhanced-design-system.css?v=2.0" />
+  <link rel="stylesheet" href="assets/interaction-polish.css?v=1.0" />
 
   <style>
     /* ── CSS variable aliases (dark-system.css naming reconciliation) ── */
@@ -28,6 +33,41 @@
       --border-subtle: var(--border-sub);
       --text-mute: var(--text-muted);
       --cyan: var(--cyan-bright);
+    }
+
+    /* ── PAGE TRANSITIONS ────────────────────────────────────────── */
+    body {
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    body.page-enter {
+      animation: fade-in 200ms ease forwards;
+    }
+
+    body.page-exit {
+      animation: fade-out 200ms ease forwards;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fade-out {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
     }
 
     /* ── Critical: fix scripts.js search overlay — it appends to body
@@ -2697,9 +2737,14 @@
         <div class="kg-toolbar">
           <div class="kg-toolbar-left">
             <span class="kg-toolbar-title">CDP MODULE MAP</span>
-            <span class="kg-toolbar-hint">Use sidebar tasks to highlight flows · drag nodes to rearrange</span>
+            <span class="kg-toolbar-hint">Use sidebar tasks to highlight flows · drag nodes to rearrange · shift+click for focus mode</span>
           </div>
-          <div id="graph-legend" class="kg-legend-wrap"></div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button class="flow-btn" onclick="if(window.KG) KG.animateFlow()" title="Animate data flow">
+              <span class="flow-btn-play">▶</span> Flow
+            </button>
+            <div id="graph-legend" class="kg-legend-wrap"></div>
+          </div>
         </div>
         <svg id="knowledge-graph"></svg>
         <button class="kg-reset-btn" onclick="if(window.KG) KG.reset()">Reset View</button>
@@ -2708,7 +2753,66 @@
 
     <div class="ds-divider"></div>
 
-    <!-- ── MODULE CARDS ──────────────────────────────────────────────── -->
+    <!-- ── INTERACTIVE LEARNING: MISSIONS ───────────────────────────– -->
+    <section class="enh-section">
+      <div class="ds-section-header">
+        <div>
+          <div class="ds-section-title">🎯 Learn the Platform</div>
+          <div class="ds-section-sub">5 interactive missions to understand system architecture</div>
+        </div>
+      </div>
+
+      <div class="ds-task-grid">
+        <div class="ds-task-card" onclick="if(window.MissionMode) MissionMode.startMission('trace_event')">
+          <div class="task-card-q">Mission 1</div>
+          <div class="task-card-title">Trace a User Event</div>
+          <div class="task-card-desc">Follow a customer event from collection through activation. Understand the complete data pipeline.</div>
+          <div class="task-card-links">
+            <a href="javascript:" onclick="event.stopPropagation(); if(window.MissionMode) MissionMode.startMission('trace_event')">Start Mission →</a>
+          </div>
+        </div>
+
+        <div class="ds-task-card" onclick="if(window.MissionMode) MissionMode.startMission('identity_resolution')">
+          <div class="task-card-q">Mission 2</div>
+          <div class="task-card-title">Understand Identity Resolution</div>
+          <div class="task-card-desc">Learn how cookies, emails, and device IDs are unified into a single customer view.</div>
+          <div class="task-card-links">
+            <a href="javascript:" onclick="event.stopPropagation(); if(window.MissionMode) MissionMode.startMission('identity_resolution')">Start Mission →</a>
+          </div>
+        </div>
+
+        <div class="ds-task-card" onclick="if(window.MissionMode) MissionMode.startMission('build_segment')">
+          <div class="task-card-q">Mission 3</div>
+          <div class="task-card-title">Build a Segment</div>
+          <div class="task-card-desc">Create audience segments with SQL rules and watch them evaluate in real-time.</div>
+          <div class="task-card-links">
+            <a href="javascript:" onclick="event.stopPropagation(); if(window.MissionMode) MissionMode.startMission('build_segment')">Start Mission →</a>
+          </div>
+        </div>
+
+        <div class="ds-task-card" onclick="if(window.MissionMode) MissionMode.startMission('trigger_journey')">
+          <div class="task-card-q">Mission 4</div>
+          <div class="task-card-title">Trigger a Customer Journey</div>
+          <div class="task-card-desc">Orchestrate multi-step journeys with branching logic and real-time activation.</div>
+          <div class="task-card-links">
+            <a href="javascript:" onclick="event.stopPropagation(); if(window.MissionMode) MissionMode.startMission('trigger_journey')">Start Mission →</a>
+          </div>
+        </div>
+
+        <div class="ds-task-card" onclick="if(window.MissionMode) MissionMode.startMission('activate_audience')" style="grid-column: 1 / 2;">
+          <div class="task-card-q">Mission 5</div>
+          <div class="task-card-title">Activate an Audience</div>
+          <div class="task-card-desc">Export audiences to 100+ destinations and watch streams sync in real-time.</div>
+          <div class="task-card-links">
+            <a href="javascript:" onclick="event.stopPropagation(); if(window.MissionMode) MissionMode.startMission('activate_audience')">Start Mission →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ds-divider"></div>
+
+    <!-- ── MODULE CARDS ──────────────────────────────────────────────– -->
     <section class="mod-section">
       <div class="ds-section-header">
         <div>
@@ -3807,7 +3911,11 @@
 
   <script src="assets/scripts.js"></script>
   <script src="assets/knowledge-graph.js"></script>
+  <script src="assets/knowledge-graph-enhanced.js"></script>
   <script src="assets/graph-enhancements.js"></script>
+  <script src="assets/mission-mode.js"></script>
+  <script src="assets/page-transition.js"></script>
+  <script src="assets/tooltip-system.js"></script>
   <script>
     /* ── Platform Tour Logic ── */
     const TOUR_STEPS = [

@@ -14,13 +14,19 @@
 
   --text-primary: #e2e8f0;
   --text-secondary: #94a3b8;
-  --text-muted: #4b5563;
+  --text-muted: #64748b;
+  /* Added for softer contrast than 4b5563 */
 
+  --accent: #38bdf8;
+  --accent-primary: #38bdf8;
+  --danger: #ef4444;
+
+  --border: #1e293b;
   --border-primary: #1e293b;
   --border-subtle: rgba(255, 255, 255, 0.05);
 
-  --accent-primary: #38bdf8;
-  --danger: #ef4444;
+  --radius: 10px;
+  --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.25);
 
   /* Extended UI Tokens */
   --bg-card: rgba(255, 255, 255, 0.02);
@@ -28,69 +34,42 @@
   --bg-glass: rgba(2, 6, 23, 0.8);
 
   --blue: #38bdf8;
+  --blue-bright: #7dd3fc;
   --blue-dim: rgba(56, 189, 248, 0.1);
   --blue-glow: rgba(56, 189, 248, 0.2);
+
+  --purple: #a855f7;
+  --purple-bright: #d8b4fe;
+  --purple-dim: rgba(168, 85, 247, 0.1);
+  --purple-glow: rgba(168, 85, 247, 0.2);
+
+  --cyan: #06b6d4;
+  --cyan-bright: #67e8f9;
+  --cyan-glow: rgba(6, 182, 212, 0.2);
+
+  --green: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.2);
+
+  --amber: #f59e0b;
+  --amber-glow: rgba(245, 158, 11, 0.2);
+
+  --red-glow: rgba(239, 68, 68, 0.2);
+
+  /* Documentation specific aliases */
+  --bg-base: var(--bg-primary);
+  --border-sub: var(--border-subtle);
+  --border-def: var(--border-primary);
+  --border-strong: #334155;
+  --r: var(--radius);
+  --r-sm: 8px;
+  --r-lg: 14px;
+  --r-xl: 20px;
 
   --sidebar-w: 264px;
   --topbar-h: 52px;
   --font: 'Inter', -apple-system, sans-serif;
   --mono: 'JetBrains Mono', monospace;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-[data-theme="light"] {
-  --space-950: #f8fafc;
-  --space-900: #f1f5f9;
-  --space-800: #e2e8f0;
-  --space-700: #cbd5e1;
-  --space-600: #94a3b8;
-
-  --bg-base: #ffffff;
-  --bg-surface: #f8fafc;
-  --bg-elevated: #f1f5f9;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f1f5f9;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-
-  --border-sub: rgba(0, 0, 0, 0.05);
-  --border-def: rgba(0, 0, 0, 0.1);
-  --border-strong: rgba(0, 0, 0, 0.2);
-
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --text-code: #0369a1;
-
-  --blue: #2563eb;
-  --blue-bright: #3b82f6;
-  --blue-dim: rgba(37, 99, 235, 0.08);
-  --blue-glow: rgba(37, 99, 235, 0.15);
-
-  --purple: #7c3aed;
-  --purple-bright: #8b5cf6;
-  --purple-dim: rgba(124, 58, 237, 0.08);
-  --purple-glow: rgba(124, 58, 237, 0.15);
-
-  --cyan: #0891b2;
-  --cyan-bright: #06b6d4;
-  --cyan-glow: rgba(8, 145, 178, 0.15);
-
-  --green: #059669;
-  --green-dim: rgba(5, 150, 105, 0.08);
-  --green-glow: rgba(5, 150, 105, 0.15);
-
-  --amber: #d97706;
-  --amber-glow: rgba(217, 119, 6, 0.15);
-
-  --red: #dc2626;
-  --red-glow: rgba(220, 38, 38, 0.15);
-  --pink: #db2777;
-  --pink-glow: rgba(219, 39, 119, 0.15);
-
-  /* ── Bridge to style.css (Documentation Pages) ── */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --brand-light: #eff6ff;
 }
 
 /* ── BASE ───────────────────────────────────────────────────── */
@@ -1749,6 +1728,7 @@ body.ds-body::before {
   border-color: rgba(0, 0, 0, 0.1) !important;
   color: #64748b !important;
 }
+
 /* ── INTERACTIVE EXPLORER ENHANCEMENTS ─────────────────────── */
 .ds-card {
   background: var(--bg-card) !important;
@@ -1881,6 +1861,13 @@ body.ds-body::before {
   gap: 32px;
 }
 
+@media (max-width: 900px) {
+  .try-it-content {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
 .try-it-controls {
   display: flex;
   flex-direction: column;
@@ -1896,11 +1883,28 @@ body.ds-body::before {
   cursor: pointer;
   text-align: left;
   transition: all 0.2s;
+  font-family: inherit;
+  font-size: 14px;
 }
 
-.try-it-btn:hover {
+.try-it-btn:hover:not(:disabled) {
   border-color: var(--accent-primary);
   background: var(--bg-card-hover);
+}
+
+.try-it-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+select.try-it-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 32px;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
 }
 
 .try-it-output {
@@ -1913,6 +1917,13 @@ body.ds-body::before {
   min-height: 200px;
   position: relative;
   border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+
+.try-it-output pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .pipeline-viz {
@@ -1945,4 +1956,5 @@ body.ds-body::before {
   align-items: center;
   justify-content: center;
   font-size: 10px;
+  transition: border-color 0.3s, background 0.3s;
 }
