@@ -14,12 +14,12 @@
   --space-700: #0d1628;
   --space-600: #111e35;
 
-  --bg-base: var(--space-900);
-  --bg-surface: var(--space-800);
-  --bg-elevated: var(--space-700);
+  --bg-base: var(--space-950);
+  --bg-surface: var(--space-900);
+  --bg-elevated: var(--space-800);
   --bg-card: rgba(255, 255, 255, 0.026);
   --bg-card-hover: rgba(255, 255, 255, 0.05);
-  --bg-glass: rgba(9, 15, 31, 0.75);
+  --bg-glass: rgba(5, 11, 20, 0.85);
 
   --border-sub: rgba(255, 255, 255, 0.055);
   --border-def: rgba(255, 255, 255, 0.09);
@@ -69,6 +69,11 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Bridge to style.css (Documentation Pages) ── */
+  --bg-primary: var(--bg-base);
+  --bg-secondary: var(--bg-surface);
+  --brand-light: var(--blue-dim);
 }
 
 [data-theme="light"] {
@@ -119,6 +124,11 @@
   --red-glow: rgba(220, 38, 38, 0.15);
   --pink: #db2777;
   --pink-glow: rgba(219, 39, 119, 0.15);
+
+  /* ── Bridge to style.css (Documentation Pages) ── */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --brand-light: #eff6ff;
 }
 
 /* ── BASE ───────────────────────────────────────────────────── */
@@ -135,6 +145,30 @@ html {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Force body to use baseline variables (Fix for documentation style.css conflict) */
+body {
+  background: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Ensure doc sidebar and main area follow suit */
+.sidebar,
+.ds-sidebar {
+  background: var(--bg-surface) !important;
+  border-right: 1px solid var(--border-sub) !important;
+}
+
+.main,
+.content {
+  background: var(--bg-base) !important;
+}
+
+.topbar,
+.ds-topbar {
+  background: var(--bg-glass) !important;
+  border-bottom: 1px solid var(--border-sub) !important;
 }
 
 a {
