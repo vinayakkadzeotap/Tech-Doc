@@ -1,250 +1,444 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chapter 7: Customer Journeys — Zeotap Technical Documentation</title>
-  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <link rel="stylesheet" href="assets/style.css?v=4" />
   <link rel="stylesheet" href="assets/dark-system.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'neutral', fontFamily: 'Inter, sans-serif' });</script>
 </head>
+
 <body>
-<div class="layout">
-  <aside class="sidebar">
-    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">PART III — ACTIVATION</div>
-      <a href="06-audience-management.html" class="nav-item">Audience Management</a>
-      <a href="07-customer-journeys.html" class="nav-item active">Customer Journeys</a>
-      <a href="08-data-activation.html" class="nav-item">Data Activation</a>
-      <div class="nav-section">ON THIS PAGE</div>
-      <a href="#overview" class="nav-item">Overview</a>
-      <a href="#symphony" class="nav-item">Symphony Workflow Engine</a>
-      <a href="#building-blocks" class="nav-item">Building Blocks</a>
-      <a href="#rtca" class="nav-item">Real-Time Calc Attributes</a>
-      <a href="#journeys-ai" class="nav-item">Journeys AI (GenAI)</a>
-      <a href="#schema" class="nav-item">Workflow JSON Schema</a>
-      <a href="#orchestration" class="nav-item">Orchestration</a>
-      <a href="#debugging" class="nav-item">Debugging Symphony</a>
-    </nav>
-  </aside>
-
-  <main class="content">
-    <div class="topbar">
-      <div class="breadcrumb">
-        <a href="index.html">Zeotap Docs</a><span>›</span>
-        <span>Part III — Activation</span><span>›</span>
-        <span>Customer Journeys</span>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span>
       </div>
-    </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">PART III — ACTIVATION</div>
+        <a href="06-audience-management.html" class="nav-item">Audience Management</a>
+        <a href="07-customer-journeys.html" class="nav-item active">Customer Journeys</a>
+        <a href="08-data-activation.html" class="nav-item">Data Activation</a>
+        <div class="nav-section">ON THIS PAGE</div>
+        <a href="#overview" class="nav-item">Overview</a>
+        <a href="#symphony" class="nav-item">Symphony Workflow Engine</a>
+        <a href="#building-blocks" class="nav-item">Building Blocks</a>
+        <a href="#rtca" class="nav-item">Real-Time Calc Attributes</a>
+        <a href="#journeys-ai" class="nav-item">Journeys AI (GenAI)</a>
+        <a href="#schema" class="nav-item">Workflow JSON Schema</a>
+        <a href="#orchestration" class="nav-item">Orchestration</a>
+        <a href="#debugging" class="nav-item">Debugging Symphony</a>
+      </nav>
+    </aside>
 
-    <div class="page-header">
-      <h1>Customer Journeys</h1>
-      <p class="page-subtitle">The Symphony Workflow Engine: orchestrating multi-step, event-driven customer journeys with conditional branching, delays, AI-generated flows, and multi-channel destinations.</p>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-value">Symphony</div><div class="stat-label">Workflow Engine</div></div>
-      <div class="stat-card"><div class="stat-value">Google ADK</div><div class="stat-label">AI Journey Creator</div></div>
-      <div class="stat-card"><div class="stat-value">Gemini 2.5</div><div class="stat-label">LLM Model</div></div>
-      <div class="stat-card"><div class="stat-value">5 Block Types</div><div class="stat-label">Journey Building Blocks</div></div>
-    </div>
-
-    <!-- Overview -->
-    <section id="overview">
-      <h2>What are Customer Journeys?</h2>
-      <p>Customer Journeys in Zeotap — built on the <strong>Symphony Workflow Engine</strong> — allow marketers to design automated, multi-step customer experiences: from onboarding sequences to re-engagement flows to purchase nurture tracks. A Journey is triggered by an event (e.g., user signup, cart abandonment), then routes the user through conditional logic, time delays, and multi-channel destinations.</p>
-
-      <p>The system comprises two components:</p>
-      <ul>
-        <li><strong>journeys</strong> — The core Play Framework API managing journey CRUD, lifecycle, and execution state.</li>
-        <li><strong>journeys-ai</strong> — A FastAPI + Google ADK service where marketers describe a journey in plain language and Gemini 2.5 Flash generates the Symphony Workflow JSON automatically.</li>
-      </ul>
-    </section>
-
-    <!-- Symphony Engine -->
-    <section id="symphony">
-      <h2>Symphony Workflow Engine</h2>
-      <p>Symphony is Zeotap's proprietary workflow orchestration engine. A <em>Symphony Workflow</em> is a directed acyclic graph (DAG) of <strong>nodes</strong>, where each node is a typed building block. Execution is event-driven: when a user matches the entry condition, a workflow instance is created and the user progresses through the graph asynchronously.</p>
-
-      <div class="mermaid">
-graph TD
-    ENTRY["🚪 ENTRY_CONDITION<br/>(Event: user_signup<br/>Filter: country=DE)"]
-    SPLIT["🔀 CONDITIONAL_SPLIT<br/>(Has email? Yes/No)"]
-    DELAY1["⏱ DELAY<br/>(Wait 2 days)"]
-    MULTI["🌿 MULTIBRANCH<br/>(Email + SMS parallel)"]
-    DEST_EMAIL["📧 DESTINATION<br/>(Send welcome email)"]
-    DEST_SMS["📱 DESTINATION<br/>(Send SMS)"]
-    DELAY2["⏱ DELAY<br/>(Wait 7 days)"]
-    DEST_PUSH["🔔 DESTINATION<br/>(Push notification)"]
-    EXIT["🏁 END"]
-
-    ENTRY --> SPLIT
-    SPLIT -->|Yes - has email| DELAY1
-    SPLIT -->|No - no email| DEST_SMS
-    DELAY1 --> MULTI
-    MULTI --> DEST_EMAIL
-    MULTI --> DEST_SMS
-    DEST_EMAIL --> DELAY2
-    DEST_SMS --> DELAY2
-    DELAY2 --> DEST_PUSH
-    DEST_PUSH --> EXIT
-
-    style ENTRY fill:#e3f2fd,stroke:#1565c0
-    style SPLIT fill:#fff8e1,stroke:#f9a825
-    style MULTI fill:#f3e5f5,stroke:#7b1fa2
-    style DEST_EMAIL fill:#e8f5e9,stroke:#2e7d32
-    style DEST_SMS fill:#e8f5e9,stroke:#2e7d32
-    style DEST_PUSH fill:#e8f5e9,stroke:#2e7d32
-      </div>
-    </section>
-
-    <!-- Building Blocks -->
-    <section id="building-blocks">
-      <h2>Journey Building Blocks</h2>
-
-      <table>
-        <thead>
-          <tr><th>Block Type</th><th>Purpose</th><th>Key Properties</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>ENTRY_CONDITION</code></td>
-            <td>Journey entry point. Defines the trigger event and filter predicates that users must match to enter the journey. <strong>Required as the first node</strong> — a workflow cannot be published without it.</td>
-            <td><code>event_name</code>, <code>predicates[]</code>, <code>re_entry_cooldown_days</code></td>
-          </tr>
-          <tr>
-            <td><code>CONDITIONAL_SPLIT</code></td>
-            <td>Binary branching: <em>if</em> a condition is true go to the YES branch, otherwise the NO branch. Evaluates event attributes, profile attributes, ID attributes, user attributes, and NCE data.</td>
-            <td><code>condition</code>, <code>yes_node_id</code>, <code>no_node_id</code></td>
-          </tr>
-          <tr>
-            <td><code>MULTIBRANCH</code></td>
-            <td>Parallel execution: all child branches run simultaneously for the same user.</td>
-            <td><code>branch_node_ids[]</code></td>
-          </tr>
-          <tr>
-            <td><code>DELAY</code></td>
-            <td>Time-based wait. <strong>Requires re-enrichment</strong> after the delay expires — user data is refreshed before the next action executes. Not a terminal node.</td>
-            <td><code>duration_value</code>, <code>duration_unit</code> (hours/days/weeks)</td>
-          </tr>
-          <tr>
-            <td><code>DESTINATION</code></td>
-            <td>Action node: send user data to a configured channel destination (email, push, SMS, ad platform).</td>
-            <td><code>destination_id</code>, <code>payload_template</code>, <code>channel</code></td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>Re-entry Logic</h3>
-      <p>After a user completes or exits a journey, re-entry behaviour is configured on the <code>ENTRY_CONDITION</code> node:</p>
-      <table>
-        <thead><tr><th>Re-entry Type</th><th>Behaviour</th><th>Use Case</th></tr></thead>
-        <tbody>
-          <tr><td><strong>No Re-entry</strong></td><td>User's UCID is <em>permanently</em> blocked from re-entering the workflow</td><td>One-time onboarding sequences</td></tr>
-          <tr><td><strong>Time-based Re-entry</strong></td><td>User is blocked for a set duration (e.g., 10 hours), then eligible to re-enter</td><td>Periodic promotions, recurring notifications</td></tr>
-        </tbody>
-      </table>
-
-      <h3>Condition Tool — Attribute Types</h3>
-      <p>The Condition Tool (used in <code>CONDITIONAL_SPLIT</code> and entry predicates) can evaluate these attribute categories:</p>
-      <table>
-        <thead><tr><th>Attribute Type</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td><strong>Event Attributes</strong></td><td>Properties of the triggering event (e.g., <code>cart_value</code>, <code>product_id</code>)</td></tr>
-          <tr><td><strong>Profile Attributes</strong></td><td>User profile data from the Profile Store (e.g., <code>user_city</code>, <code>plan_type</code>)</td></tr>
-          <tr><td><strong>ID Attributes</strong></td><td>User identification fields (e.g., <code>email_sha256</code>, <code>ucid</code>)</td></tr>
-          <tr><td><strong>User Attributes</strong></td><td>General user properties synced from CRM or SDK events</td></tr>
-          <tr><td><strong>NCE (Non-Customer Entity)</strong></td><td>External entity data joined to the primary key of an event or user attribute. NCE fields require a primary key join — either an event attribute or a user/ID attribute</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- RTCA -->
-    <section id="rtca">
-      <h2>Real-Time Calculated Attributes (RTCAs)</h2>
-      <p>RTCAs are a special category of attributes where the <em>system</em> computes the value based on configured logic, rather than the value being sent directly by the user. The computed value can then be used in conditions just like a regular attribute.</p>
-
-      <h3>How RTCAs Work</h3>
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">1</div>
-          <div class="step-content"><strong>Configure the RTCA</strong> — Define an event to watch, optional filter conditions, a time window, and an aggregation operation (count, sum, average, etc.).</div>
-        </div>
-        <div class="step">
-          <div class="step-number">2</div>
-          <div class="step-content"><strong>System computes value</strong> — As matching events arrive, the system continuously calculates the RTCA value per user. The result is stored on the user's profile.</div>
-        </div>
-        <div class="step">
-          <div class="step-number">3</div>
-          <div class="step-content"><strong>Use in conditions</strong> — The computed value is referenced in a <code>CONDITIONAL_SPLIT</code> or entry predicate. E.g., <code>add_to_cart_count &gt; 10</code>.</div>
+    <main class="content">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <a href="index.html">Zeotap Docs</a><span>›</span>
+          <span>Part III — Activation</span><span>›</span>
+          <span>Customer Journeys</span>
         </div>
       </div>
 
-      <h3>Example RTCA Configuration</h3>
-      <table>
-        <thead><tr><th>Configuration Field</th><th>Example Value</th></tr></thead>
-        <tbody>
-          <tr><td>Event</td><td><code>add_to_cart</code></td></tr>
-          <tr><td>Filter Condition</td><td><code>cart_value &gt; 100</code></td></tr>
-          <tr><td>Time Window</td><td>Last 10 days</td></tr>
-          <tr><td>Operation</td><td>Count events matching criteria</td></tr>
-          <tr><td>Result attribute</td><td><code>high_value_cart_count</code></td></tr>
-        </tbody>
-      </table>
-
-      <div class="callout callout-warning">
-        <div><strong>RTCA Publish Dependency</strong> — RTCAs depend on an external computation service. If that service is unavailable, the RTCA will fail to publish, causing the entire workflow publish to fail. Check the RTCA service status first when debugging publish failures that appear RTCA-related.</div>
-      </div>
-    </section>
-
-    <!-- Journeys AI -->
-    <section id="journeys-ai">
-      <h2>Journeys AI — Natural Language to Symphony JSON</h2>
-      <p>The <code>journeys-ai</code> service (FastAPI + Google ADK) lets marketers describe a customer journey in plain English and receive a complete, valid Symphony Workflow JSON. Powered by <strong>Gemini 2.5 Flash</strong> and a multi-agent ReAct loop.</p>
-
-      <h3>Multi-Agent Architecture</h3>
-      <div class="mermaid">
-sequenceDiagram
-    participant User as Marketer
-    participant API as FastAPI (/create-workflow)
-    participant Root as SequentialAgent (root_agent)
-    participant Creator as LlmAgent (workflow_creator_agent)
-    participant Catalog as Tool: get_client_catalog()
-    participant Loop as LoopAgent (refinement_loop)
-    participant Critic as LlmAgent (critic_agent)
-    participant Verifier as Tool: verify_generated_workflow()
-    participant Refiner as LlmAgent (workflow_refiner)
-
-    User->>API: POST /create-workflow { prompt, org_id, user_id }
-    API->>Root: run(prompt)
-    Root->>Creator: Create initial workflow
-    Creator->>Catalog: get_client_catalog()
-    Catalog-->>Creator: { events, attributes }
-    Creator-->>Root: STATE_CURRENT_WORKFLOW = JSON
-
-    loop Up to 5 iterations
-        Root->>Loop: refine(STATE_CURRENT_WORKFLOW)
-        Loop->>Critic: Evaluate quality
-        Critic->>Verifier: verify_generated_workflow(json)
-        Verifier-->>Critic: { status, errors }
-        alt Status = success
-            Critic->>Loop: exit_loop()
-        else Status = failure
-            Critic-->>Loop: STATE_CRITICISM = suggestions
-            Loop->>Refiner: Refine with suggestions
-            Refiner->>Catalog: get_client_catalog()
-            Refiner-->>Loop: Updated STATE_CURRENT_WORKFLOW
-        end
-    end
-
-    Root-->>API: Final workflow JSON
-    API-->>User: { workflow_json }
+      <div class="page-header">
+        <h1>Customer Journeys</h1>
+        <p class="page-subtitle">The Symphony Workflow Engine: orchestrating multi-step, event-driven customer journeys
+          with conditional branching, delays, AI-generated flows, and multi-channel destinations.</p>
       </div>
 
-      <h3>Agent Definitions</h3>
-      <pre><code class="language-python">MODEL_NAME = "gemini-2.5-flash"
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">Symphony</div>
+          <div class="stat-label">Workflow Engine</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">Google ADK</div>
+          <div class="stat-label">AI Journey Creator</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">Gemini 2.5</div>
+          <div class="stat-label">LLM Model</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">5 Block Types</div>
+          <div class="stat-label">Journey Building Blocks</div>
+        </div>
+      </div>
+
+      <!-- Overview -->
+      <section id="overview">
+        <h2>What are Customer Journeys?</h2>
+        <p>Customer Journeys in Zeotap — built on the <strong>Symphony Workflow Engine</strong> — allow marketers to
+          design automated, multi-step customer experiences: from onboarding sequences to re-engagement flows to
+          purchase nurture tracks. A Journey is triggered by an event (e.g., user signup, cart abandonment), then routes
+          the user through conditional logic, time delays, and multi-channel destinations.</p>
+
+        <p>The system comprises two components:</p>
+        <ul>
+          <li><strong>journeys</strong> — The core Play Framework API managing journey CRUD, lifecycle, and execution
+            state.</li>
+          <li><strong>journeys-ai</strong> — A FastAPI + Google ADK service where marketers describe a journey in plain
+            language and Gemini 2.5 Flash generates the Symphony Workflow JSON automatically.</li>
+        </ul>
+      </section>
+
+      <!-- ── INTERACTIVE MODULE ── -->
+      <div class="try-it-container">
+        <div class="try-it-badge">INTERACTIVE MODULE</div>
+        <div class="try-it-title">🎮 Try It: Journey Execution Simulator</div>
+        <p style="margin-bottom: 20px; color: var(--text-secondary); font-size: 14px;">
+          Simulate a user entering a journey and see how the Symphony engine manages state and orchestration.
+        </p>
+
+        <div class="try-it-content">
+          <div class="try-it-controls">
+            <div
+              style="background:var(--bg-card); padding:16px; border-radius:8px; border:1px solid var(--border-primary); margin-bottom:12px;">
+              <strong>Scenario:</strong> 14-Day Re-engagement
+            </div>
+            <button id="run-btn" class="try-it-btn" onclick="runJourney()"
+              style="text-align:center; justify-content:center; background:var(--accent-primary); color:#000; font-weight:800;">
+              🚀 TRIGGER JOURNEY
+            </button>
+          </div>
+          <div class="try-it-output">
+            <div style="font-size:10px; color:rgba(255,255,255,0.3); margin-bottom:8px">// Symphony Engine Logs</div>
+            <div id="journey-logs" style="font-size:11px; white-space:pre-wrap; line-height:1.6">
+              Waiting for trigger...
+            </div>
+          </div>
+        </div>
+
+        <div class="pipeline-viz" style="margin-top:40px">
+          <div id="journey-bar" class="pipeline-progress"></div>
+          <div class="pipeline-node" style="left: 0" id="node-1" title="Trigger">⚡</div>
+          <div class="pipeline-node" style="left: 33%" id="node-2" title="Wait 2 Days">⏱</div>
+          <div class="pipeline-node" style="left: 66%" id="node-3" title="Send Push">🔔</div>
+          <div class="pipeline-node" style="right: 0" id="node-4" title="Success">🏁</div>
+        </div>
+      </div>
+
+      <script>
+        function logStep(msg) {
+          const logs = document.getElementById('journey-logs');
+          logs.innerHTML += `\n<span style="color:#10b981">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+          logs.scrollTop = logs.scrollHeight;
+        }
+
+        function highlightNode(id) {
+          document.querySelectorAll('.pipeline-node').forEach(n => n.style.borderColor = 'var(--border-primary)');
+          const node = document.getElementById(id);
+          if (node) {
+            node.style.borderColor = 'var(--accent-primary)';
+            node.style.background = 'rgba(6,182,212,0.2)';
+          }
+        }
+
+        function runJourney() {
+          const btn = document.getElementById('run-btn');
+          const logs = document.getElementById('journey-logs');
+          const bar = document.getElementById('journey-bar');
+
+          btn.disabled = true;
+          btn.textContent = "RUNNING...";
+          logs.innerHTML = "Initializing Journey Instance...";
+
+          // Step 1: Trigger
+          setTimeout(() => {
+            logStep("ENTRY: user_inactive detected (UCID: a7b2-...)");
+            highlightNode('node-1');
+            bar.style.width = '0%';
+          }, 500);
+
+          // Step 2: Delay
+          setTimeout(() => {
+            logStep("NODE: DELAY (2 days) scheduled.");
+            highlightNode('node-2');
+            bar.style.transition = 'width 1s linear';
+            bar.style.width = '33%';
+          }, 1500);
+
+          // Step 3: Destination
+          setTimeout(() => {
+            logStep("RE-ENRICHING user profile...");
+            logStep("ACTION: Pushing payload to ConnectorHub...");
+            highlightNode('node-3');
+            bar.style.width = '66%';
+          }, 3000);
+
+          // Step 4: End
+          setTimeout(() => {
+            logStep("SUCCESS: Journey completed for UCID.");
+            highlightNode('node-4');
+            bar.style.width = '100%';
+            btn.textContent = "COMPLETED";
+            btn.style.background = "#10b981";
+          }, 4500);
+        }
+      </script>
+
+      <!-- Symphony Engine -->
+      <section id="symphony">
+        <h2>Symphony Workflow Engine</h2>
+        <p>Symphony is Zeotap's proprietary workflow orchestration engine. A <em>Symphony Workflow</em> is a directed
+          acyclic graph (DAG) of <strong>nodes</strong>, where each node is a typed building block. Execution is
+          event-driven: when a user matches the entry condition, a workflow instance is created and the user progresses
+          through the graph asynchronously.</p>
+
+        <div class="mermaid">
+          graph TD
+          ENTRY["🚪 ENTRY_CONDITION<br />(Event: user_signup<br />Filter: country=DE)"]
+          SPLIT["🔀 CONDITIONAL_SPLIT<br />(Has email? Yes/No)"]
+          DELAY1["⏱ DELAY<br />(Wait 2 days)"]
+          MULTI["🌿 MULTIBRANCH<br />(Email + SMS parallel)"]
+          DEST_EMAIL["📧 DESTINATION<br />(Send welcome email)"]
+          DEST_SMS["📱 DESTINATION<br />(Send SMS)"]
+          DELAY2["⏱ DELAY<br />(Wait 7 days)"]
+          DEST_PUSH["🔔 DESTINATION<br />(Push notification)"]
+          EXIT["🏁 END"]
+
+          ENTRY --> SPLIT
+          SPLIT -->|Yes - has email| DELAY1
+          SPLIT -->|No - no email| DEST_SMS
+          DELAY1 --> MULTI
+          MULTI --> DEST_EMAIL
+          MULTI --> DEST_SMS
+          DEST_EMAIL --> DELAY2
+          DEST_SMS --> DELAY2
+          DELAY2 --> DEST_PUSH
+          DEST_PUSH --> EXIT
+
+          style ENTRY fill:#e3f2fd,stroke:#1565c0
+          style SPLIT fill:#fff8e1,stroke:#f9a825
+          style MULTI fill:#f3e5f5,stroke:#7b1fa2
+          style DEST_EMAIL fill:#e8f5e9,stroke:#2e7d32
+          style DEST_SMS fill:#e8f5e9,stroke:#2e7d32
+          style DEST_PUSH fill:#e8f5e9,stroke:#2e7d32
+        </div>
+      </section>
+
+      <!-- Building Blocks -->
+      <section id="building-blocks">
+        <h2>Journey Building Blocks</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Block Type</th>
+              <th>Purpose</th>
+              <th>Key Properties</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>ENTRY_CONDITION</code></td>
+              <td>Journey entry point. Defines the trigger event and filter predicates that users must match to enter
+                the journey. <strong>Required as the first node</strong> — a workflow cannot be published without it.
+              </td>
+              <td><code>event_name</code>, <code>predicates[]</code>, <code>re_entry_cooldown_days</code></td>
+            </tr>
+            <tr>
+              <td><code>CONDITIONAL_SPLIT</code></td>
+              <td>Binary branching: <em>if</em> a condition is true go to the YES branch, otherwise the NO branch.
+                Evaluates event attributes, profile attributes, ID attributes, user attributes, and NCE data.</td>
+              <td><code>condition</code>, <code>yes_node_id</code>, <code>no_node_id</code></td>
+            </tr>
+            <tr>
+              <td><code>MULTIBRANCH</code></td>
+              <td>Parallel execution: all child branches run simultaneously for the same user.</td>
+              <td><code>branch_node_ids[]</code></td>
+            </tr>
+            <tr>
+              <td><code>DELAY</code></td>
+              <td>Time-based wait. <strong>Requires re-enrichment</strong> after the delay expires — user data is
+                refreshed before the next action executes. Not a terminal node.</td>
+              <td><code>duration_value</code>, <code>duration_unit</code> (hours/days/weeks)</td>
+            </tr>
+            <tr>
+              <td><code>DESTINATION</code></td>
+              <td>Action node: send user data to a configured channel destination (email, push, SMS, ad platform).</td>
+              <td><code>destination_id</code>, <code>payload_template</code>, <code>channel</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Re-entry Logic</h3>
+        <p>After a user completes or exits a journey, re-entry behaviour is configured on the
+          <code>ENTRY_CONDITION</code> node:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Re-entry Type</th>
+              <th>Behaviour</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>No Re-entry</strong></td>
+              <td>User's UCID is <em>permanently</em> blocked from re-entering the workflow</td>
+              <td>One-time onboarding sequences</td>
+            </tr>
+            <tr>
+              <td><strong>Time-based Re-entry</strong></td>
+              <td>User is blocked for a set duration (e.g., 10 hours), then eligible to re-enter</td>
+              <td>Periodic promotions, recurring notifications</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Condition Tool — Attribute Types</h3>
+        <p>The Condition Tool (used in <code>CONDITIONAL_SPLIT</code> and entry predicates) can evaluate these attribute
+          categories:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Attribute Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Event Attributes</strong></td>
+              <td>Properties of the triggering event (e.g., <code>cart_value</code>, <code>product_id</code>)</td>
+            </tr>
+            <tr>
+              <td><strong>Profile Attributes</strong></td>
+              <td>User profile data from the Profile Store (e.g., <code>user_city</code>, <code>plan_type</code>)</td>
+            </tr>
+            <tr>
+              <td><strong>ID Attributes</strong></td>
+              <td>User identification fields (e.g., <code>email_sha256</code>, <code>ucid</code>)</td>
+            </tr>
+            <tr>
+              <td><strong>User Attributes</strong></td>
+              <td>General user properties synced from CRM or SDK events</td>
+            </tr>
+            <tr>
+              <td><strong>NCE (Non-Customer Entity)</strong></td>
+              <td>External entity data joined to the primary key of an event or user attribute. NCE fields require a
+                primary key join — either an event attribute or a user/ID attribute</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- RTCA -->
+      <section id="rtca">
+        <h2>Real-Time Calculated Attributes (RTCAs)</h2>
+        <p>RTCAs are a special category of attributes where the <em>system</em> computes the value based on configured
+          logic, rather than the value being sent directly by the user. The computed value can then be used in
+          conditions just like a regular attribute.</p>
+
+        <h3>How RTCAs Work</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content"><strong>Configure the RTCA</strong> — Define an event to watch, optional filter
+              conditions, a time window, and an aggregation operation (count, sum, average, etc.).</div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content"><strong>System computes value</strong> — As matching events arrive, the system
+              continuously calculates the RTCA value per user. The result is stored on the user's profile.</div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content"><strong>Use in conditions</strong> — The computed value is referenced in a
+              <code>CONDITIONAL_SPLIT</code> or entry predicate. E.g., <code>add_to_cart_count &gt; 10</code>.</div>
+          </div>
+        </div>
+
+        <h3>Example RTCA Configuration</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Configuration Field</th>
+              <th>Example Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Event</td>
+              <td><code>add_to_cart</code></td>
+            </tr>
+            <tr>
+              <td>Filter Condition</td>
+              <td><code>cart_value &gt; 100</code></td>
+            </tr>
+            <tr>
+              <td>Time Window</td>
+              <td>Last 10 days</td>
+            </tr>
+            <tr>
+              <td>Operation</td>
+              <td>Count events matching criteria</td>
+            </tr>
+            <tr>
+              <td>Result attribute</td>
+              <td><code>high_value_cart_count</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-warning">
+          <div><strong>RTCA Publish Dependency</strong> — RTCAs depend on an external computation service. If that
+            service is unavailable, the RTCA will fail to publish, causing the entire workflow publish to fail. Check
+            the RTCA service status first when debugging publish failures that appear RTCA-related.</div>
+        </div>
+      </section>
+
+      <!-- Journeys AI -->
+      <section id="journeys-ai">
+        <h2>Journeys AI — Natural Language to Symphony JSON</h2>
+        <p>The <code>journeys-ai</code> service (FastAPI + Google ADK) lets marketers describe a customer journey in
+          plain English and receive a complete, valid Symphony Workflow JSON. Powered by <strong>Gemini 2.5
+            Flash</strong> and a multi-agent ReAct loop.</p>
+
+        <h3>Multi-Agent Architecture</h3>
+        <div class="mermaid">
+          sequenceDiagram
+          participant User as Marketer
+          participant API as FastAPI (/create-workflow)
+          participant Root as SequentialAgent (root_agent)
+          participant Creator as LlmAgent (workflow_creator_agent)
+          participant Catalog as Tool: get_client_catalog()
+          participant Loop as LoopAgent (refinement_loop)
+          participant Critic as LlmAgent (critic_agent)
+          participant Verifier as Tool: verify_generated_workflow()
+          participant Refiner as LlmAgent (workflow_refiner)
+
+          User->>API: POST /create-workflow { prompt, org_id, user_id }
+          API->>Root: run(prompt)
+          Root->>Creator: Create initial workflow
+          Creator->>Catalog: get_client_catalog()
+          Catalog-->>Creator: { events, attributes }
+          Creator-->>Root: STATE_CURRENT_WORKFLOW = JSON
+
+          loop Up to 5 iterations
+          Root->>Loop: refine(STATE_CURRENT_WORKFLOW)
+          Loop->>Critic: Evaluate quality
+          Critic->>Verifier: verify_generated_workflow(json)
+          Verifier-->>Critic: { status, errors }
+          alt Status = success
+          Critic->>Loop: exit_loop()
+          else Status = failure
+          Critic-->>Loop: STATE_CRITICISM = suggestions
+          Loop->>Refiner: Refine with suggestions
+          Refiner->>Catalog: get_client_catalog()
+          Refiner-->>Loop: Updated STATE_CURRENT_WORKFLOW
+          end
+          end
+
+          Root-->>API: Final workflow JSON
+          API-->>User: { workflow_json }
+        </div>
+
+        <h3>Agent Definitions</h3>
+        <pre><code class="language-python">MODEL_NAME = "gemini-2.5-flash"
 
 # Stage 1: Initial creation
 workflow_creator_agent = LlmAgent(
@@ -286,12 +480,12 @@ root_agent = SequentialAgent(
     sub_agents=[workflow_creator_agent, refinement_loop],
 )</code></pre>
 
-      <h3>API Endpoint</h3>
-      <div class="endpoint-block">
-        <span class="method post">POST</span>
-        <span class="endpoint-path">/create-workflow</span>
-      </div>
-      <pre><code class="language-json">// Request
+        <h3>API Endpoint</h3>
+        <div class="endpoint-block">
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/create-workflow</span>
+        </div>
+        <pre><code class="language-json">// Request
 {
   "user_id": "u_abc123",
   "org_id": 4521,
@@ -345,13 +539,13 @@ root_agent = SequentialAgent(
     ]
   }
 }</code></pre>
-    </section>
+      </section>
 
-    <!-- Workflow JSON Schema -->
-    <section id="schema">
-      <h2>Symphony Workflow JSON Schema</h2>
-      <p>Full schema reference for a Symphony Workflow document:</p>
-      <pre><code class="language-json">{
+      <!-- Workflow JSON Schema -->
+      <section id="schema">
+        <h2>Symphony Workflow JSON Schema</h2>
+        <p>Full schema reference for a Symphony Workflow document:</p>
+        <pre><code class="language-json">{
   "name": "string",           // Unique workflow identifier
   "version": "string",        // Semver: "1.0", "2.3"
   "org_id": "integer",
@@ -403,114 +597,196 @@ root_agent = SequentialAgent(
     }
   ]
 }</code></pre>
-    </section>
+      </section>
 
-    <!-- Orchestration -->
-    <section id="orchestration">
-      <h2>Journey Orchestration & Execution</h2>
-      <p>The <code>audience-orchestration</code> service is responsible for:</p>
+      <!-- Orchestration -->
+      <section id="orchestration">
+        <h2>Journey Orchestration & Execution</h2>
+        <p>The <code>audience-orchestration</code> service is responsible for:</p>
 
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            <strong>Trigger Evaluation</strong> — Consuming real-time events from Kafka/Pub/Sub and matching users to journey entry conditions based on profile attributes from the Profile Store.
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <strong>Trigger Evaluation</strong> — Consuming real-time events from Kafka/Pub/Sub and matching users to
+              journey entry conditions based on profile attributes from the Profile Store.
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <strong>State Management</strong> — Maintaining per-user journey execution state (current node, entry
+              time, last updated) in PostgreSQL, ensuring exactly-once delivery semantics.
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <strong>Node Execution</strong> — For each user-journey state, dispatching the appropriate action:
+              enqueuing destination sends, scheduling delays, evaluating conditional splits.
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <strong>Destination Dispatch</strong> — Sending activation payloads to the <code>data-destination</code>
+              service for delivery to channels (email, push, paid media).
+            </div>
           </div>
         </div>
-        <div class="step">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            <strong>State Management</strong> — Maintaining per-user journey execution state (current node, entry time, last updated) in PostgreSQL, ensuring exactly-once delivery semantics.
-          </div>
+      </section>
+
+      <!-- Debugging Symphony -->
+      <section id="debugging">
+        <h2>Debugging Symphony</h2>
+        <p>Two primary tools are used for debugging Journey / Symphony issues: <strong>BigQuery</strong> for event-level
+          trace data and <strong>Groundcover</strong> for system-level logs.</p>
+
+        <h3>Debugging Tools</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Tool</th>
+              <th>Purpose</th>
+              <th>How to Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>BigQuery</strong><br /><code>journey.journey_traces</code></td>
+              <td>Event-level data: full event payload and execution path for a specific user's journey</td>
+              <td>Filter by <code>workflow_id</code> to isolate a specific journey. Note: querying large datasets incurs
+                BQ costs.</td>
+            </tr>
+            <tr>
+              <td><strong>Groundcover</strong><br /><code>real-time-distributor</code></td>
+              <td>System-level logs: API errors, publish request payloads, runtime exceptions</td>
+              <td>Navigate to GKE DCR Prod EU namespace → search <code>real-time-distributor</code> workload. Filter by
+                <code>workflow_id</code>, <code>org_id</code>, <code>event_id</code>, or <code>user_id</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Common Publish Failures</h3>
+
+        <h4>1. Data Type Mismatch (Most Common)</h4>
+        <p>The most frequent cause of workflow publish failures. The UI sends values as one type (e.g., list of
+          integers) but the backend API expects another type (e.g., list of strings).</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>UI Configuration</th>
+              <th>API Request</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Segment IDs / attribute values</td>
+              <td>List of integers</td>
+              <td>Expects list of strings</td>
+              <td>❌ Publish failure / type mismatch error</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>How to debug:</strong> In Groundcover → <code>real-time-distributor</code>, find the publish API
+          request log. Inspect the request payload to identify the mismatched field type.</p>
+
+        <h4>2. RTCA Publishing Failure</h4>
+        <p>Real-Time Calculated Attributes depend on an external service. If that service is down or slow at publish
+          time, the RTCA fails to publish, cascading into a full workflow publish failure. Check RTCA service health
+          first before investigating the workflow itself.</p>
+
+        <h3>Execution Pipeline (Full Trace)</h3>
+        <p>Understanding the full pipeline helps pinpoint exactly where a user's journey broke down:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Step</th>
+              <th>Stage</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><strong>Ingestion &amp; Enrichment</strong></td>
+              <td>Source-ingestion service maps raw event fields to the Zeotap catalog and adds internal IDs (UCID,
+                org_id)</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><strong>Entry Condition Evaluation</strong></td>
+              <td>Enriched event (including any NCE data) is evaluated against all published workflow entry conditions
+                for the org</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><strong>Action / Delay</strong></td>
+              <td>If conditions are met, the Executor triggers the next action (destination send) or schedules a delay
+              </td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><strong>Re-enrichment</strong></td>
+              <td>After a Delay step expires, user data is refreshed before the next node executes</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><strong>Completion</strong></td>
+              <td>Workflow finishes. Execution view in Unity Dashboard is updated.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>System Components</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Symphony Database</strong></td>
+              <td>Stores workflow definitions and per-user execution state</td>
+            </tr>
+            <tr>
+              <td><strong>Executor Master</strong></td>
+              <td>Orchestrates workflow execution — assigns users to executors, manages state transitions</td>
+            </tr>
+            <tr>
+              <td><strong>Workflow Executor-b</strong></td>
+              <td>Processes individual workflow steps for each user</td>
+            </tr>
+            <tr>
+              <td><strong>real-time-distributor</strong></td>
+              <td>Handles event ingestion into the journey pipeline; key service to check in Groundcover logs</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-info">
+          <div><strong>Monitoring Workflow Changes</strong> — Status changes (publish, archive, pause) can affect user
+            entry mid-flight. Search Symphony logs by <code>workflow_id</code> to trace the exact moment a status change
+            occurred and its downstream impact on active users.</div>
         </div>
-        <div class="step">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            <strong>Node Execution</strong> — For each user-journey state, dispatching the appropriate action: enqueuing destination sends, scheduling delays, evaluating conditional splits.
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-number">4</div>
-          <div class="step-content">
-            <strong>Destination Dispatch</strong> — Sending activation payloads to the <code>data-destination</code> service for delivery to channels (email, push, paid media).
-          </div>
-        </div>
+      </section>
+
+      <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+        <div
+          style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">
+          Next Chapter</div>
+        <a href="08-data-activation.html"
+          style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 8 · Data Activation
+          & Destinations →</a>
       </div>
-    </section>
-
-    <!-- Debugging Symphony -->
-    <section id="debugging">
-      <h2>Debugging Symphony</h2>
-      <p>Two primary tools are used for debugging Journey / Symphony issues: <strong>BigQuery</strong> for event-level trace data and <strong>Groundcover</strong> for system-level logs.</p>
-
-      <h3>Debugging Tools</h3>
-      <table>
-        <thead><tr><th>Tool</th><th>Purpose</th><th>How to Use</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><strong>BigQuery</strong><br/><code>journey.journey_traces</code></td>
-            <td>Event-level data: full event payload and execution path for a specific user's journey</td>
-            <td>Filter by <code>workflow_id</code> to isolate a specific journey. Note: querying large datasets incurs BQ costs.</td>
-          </tr>
-          <tr>
-            <td><strong>Groundcover</strong><br/><code>real-time-distributor</code></td>
-            <td>System-level logs: API errors, publish request payloads, runtime exceptions</td>
-            <td>Navigate to GKE DCR Prod EU namespace → search <code>real-time-distributor</code> workload. Filter by <code>workflow_id</code>, <code>org_id</code>, <code>event_id</code>, or <code>user_id</code>.</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>Common Publish Failures</h3>
-
-      <h4>1. Data Type Mismatch (Most Common)</h4>
-      <p>The most frequent cause of workflow publish failures. The UI sends values as one type (e.g., list of integers) but the backend API expects another type (e.g., list of strings).</p>
-      <table>
-        <thead><tr><th>Component</th><th>UI Configuration</th><th>API Request</th><th>Result</th></tr></thead>
-        <tbody>
-          <tr><td>Segment IDs / attribute values</td><td>List of integers</td><td>Expects list of strings</td><td>❌ Publish failure / type mismatch error</td></tr>
-        </tbody>
-      </table>
-      <p><strong>How to debug:</strong> In Groundcover → <code>real-time-distributor</code>, find the publish API request log. Inspect the request payload to identify the mismatched field type.</p>
-
-      <h4>2. RTCA Publishing Failure</h4>
-      <p>Real-Time Calculated Attributes depend on an external service. If that service is down or slow at publish time, the RTCA fails to publish, cascading into a full workflow publish failure. Check RTCA service health first before investigating the workflow itself.</p>
-
-      <h3>Execution Pipeline (Full Trace)</h3>
-      <p>Understanding the full pipeline helps pinpoint exactly where a user's journey broke down:</p>
-      <table>
-        <thead><tr><th>Step</th><th>Stage</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td>1</td><td><strong>Ingestion &amp; Enrichment</strong></td><td>Source-ingestion service maps raw event fields to the Zeotap catalog and adds internal IDs (UCID, org_id)</td></tr>
-          <tr><td>2</td><td><strong>Entry Condition Evaluation</strong></td><td>Enriched event (including any NCE data) is evaluated against all published workflow entry conditions for the org</td></tr>
-          <tr><td>3</td><td><strong>Action / Delay</strong></td><td>If conditions are met, the Executor triggers the next action (destination send) or schedules a delay</td></tr>
-          <tr><td>4</td><td><strong>Re-enrichment</strong></td><td>After a Delay step expires, user data is refreshed before the next node executes</td></tr>
-          <tr><td>5</td><td><strong>Completion</strong></td><td>Workflow finishes. Execution view in Unity Dashboard is updated.</td></tr>
-        </tbody>
-      </table>
-
-      <h3>System Components</h3>
-      <table>
-        <thead><tr><th>Component</th><th>Role</th></tr></thead>
-        <tbody>
-          <tr><td><strong>Symphony Database</strong></td><td>Stores workflow definitions and per-user execution state</td></tr>
-          <tr><td><strong>Executor Master</strong></td><td>Orchestrates workflow execution — assigns users to executors, manages state transitions</td></tr>
-          <tr><td><strong>Workflow Executor-b</strong></td><td>Processes individual workflow steps for each user</td></tr>
-          <tr><td><strong>real-time-distributor</strong></td><td>Handles event ingestion into the journey pipeline; key service to check in Groundcover logs</td></tr>
-        </tbody>
-      </table>
-
-      <div class="callout callout-info">
-        <div><strong>Monitoring Workflow Changes</strong> — Status changes (publish, archive, pause) can affect user entry mid-flight. Search Symphony logs by <code>workflow_id</code> to trace the exact moment a status change occurred and its downstream impact on active users.</div>
-      </div>
-    </section>
-
-    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
-      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
-      <a href="08-data-activation.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 8 · Data Activation & Destinations →</a>
-    </div>
-  </main>
-</div>
+    </main>
+  </div>
   <script src="assets/search-index.js"></script>
   <script src="assets/scripts.js?v=6"></script>
 </body>
+
 </html>

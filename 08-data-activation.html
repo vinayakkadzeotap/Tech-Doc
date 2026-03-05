@@ -1,129 +1,243 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chapter 8: Data Activation & Destinations — Zeotap Technical Documentation</title>
-  <link rel="stylesheet" href="assets/style.css?v=4"/>
+  <link rel="stylesheet" href="assets/style.css?v=4" />
   <link rel="stylesheet" href="assets/dark-system.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'neutral', fontFamily: 'Inter, sans-serif' });</script>
 </head>
+
 <body>
-<div class="layout">
-  <aside class="sidebar">
-    <div class="sidebar-logo"><div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span></div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">PART III — ACTIVATION</div>
-      <a href="07-customer-journeys.html" class="nav-item">Customer Journeys</a>
-      <a href="08-data-activation.html" class="nav-item active">Data Activation</a>
-      <div class="nav-section">ON THIS PAGE</div>
-      <a href="#overview" class="nav-item">Overview</a>
-      <a href="#architecture" class="nav-item">Architecture</a>
-      <a href="#destinations" class="nav-item">Destination Types</a>
-      <a href="#secret-management" class="nav-item">Secret Management</a>
-      <a href="#api" class="nav-item">API Reference</a>
-      <a href="#smartpixel" class="nav-item">SmartPixel</a>
-    </nav>
-  </aside>
-
-  <main class="content">
-    <div class="topbar">
-      <div class="breadcrumb">
-        <a href="index.html">Zeotap Docs</a><span>›</span>
-        <span>Part III — Activation</span><span>›</span>
-        <span>Data Activation & Destinations</span>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark">Z</div><span class="logo-text">Zeotap Docs</span>
       </div>
-    </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">PART III — ACTIVATION</div>
+        <a href="07-customer-journeys.html" class="nav-item">Customer Journeys</a>
+        <a href="08-data-activation.html" class="nav-item active">Data Activation</a>
+        <div class="nav-section">ON THIS PAGE</div>
+        <a href="#overview" class="nav-item">Overview</a>
+        <a href="#architecture" class="nav-item">Architecture</a>
+        <a href="#destinations" class="nav-item">Destination Types</a>
+        <a href="#secret-management" class="nav-item">Secret Management</a>
+        <a href="#api" class="nav-item">API Reference</a>
+        <a href="#smartpixel" class="nav-item">SmartPixel</a>
+      </nav>
+    </aside>
 
-    <div class="page-header">
-      <h1>Data Activation & Destinations</h1>
-      <p class="page-subtitle">Delivering audience segments and customer profiles to 200+ ad platforms, CRMs, and marketing tools through a unified connector framework with OAuth, S3, SFTP, GCP, and Azure integrations.</p>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-value">200+</div><div class="stat-label">Partner Integrations</div></div>
-      <div class="stat-card"><div class="stat-value">6 Auth Types</div><div class="stat-label">S3/SFTP/GCP/OAuth/Azure</div></div>
-      <div class="stat-card"><div class="stat-value">Play/Java</div><div class="stat-label">Service Stack</div></div>
-      <div class="stat-card"><div class="stat-value">Real-Time</div><div class="stat-label">Delivery Mode</div></div>
-    </div>
-
-    <!-- Overview -->
-    <section id="overview">
-      <h2>Overview</h2>
-      <p>The <strong>Data Activation</strong> layer is the Activate pillar of Zeotap's CDP — it takes unified customer profiles and audience segments and delivers them to external marketing and advertising platforms. The core service, <code>data-destination</code> (Play Framework / Java), manages destination configurations, credentials, and the channel catalog.</p>
-
-      <p>Zeotap supports activation to:</p>
-      <ul>
-        <li><strong>Paid Media</strong> — Facebook, Google, The Trade Desk, Amazon DSP, Xandr, etc.</li>
-        <li><strong>Email Platforms</strong> — Salesforce Marketing Cloud, Braze, HubSpot, Mailchimp</li>
-        <li><strong>CRM Systems</strong> — Salesforce CRM, Microsoft Dynamics</li>
-        <li><strong>Cloud Storage</strong> — AWS S3, GCS, Azure Blob, SFTP/SCP</li>
-        <li><strong>Custom Webhooks</strong> — Generic HTTP endpoint push</li>
-      </ul>
-    </section>
-
-    <!-- Architecture -->
-    <section id="architecture">
-      <h2>Activation Architecture</h2>
-
-      <div class="mermaid">
-graph LR
-    subgraph Trigger["Activation Triggers"]
-        AUD["Audience Export<br/>(Scheduled/On-demand)"]
-        JRN["Journey DESTINATION<br/>Node Execution"]
-        RT["Real-Time Event<br/>(SmartPixel)"]
-    end
-
-    subgraph Core["data-destination Service"]
-        CTRL["DestinationController"]
-        IP["IntegrationPartnerController"]
-        OAUTH["OauthController"]
-        SYM["RealTimeSymphonyController"]
-        SEC["Secret Store<br/>(encrypted credentials)"]
-    end
-
-    subgraph Connectors["Connector Layer"]
-        FB["Facebook Connector"]
-        OTR["Off-the-Record<br/>(otr-facebook)"]
-        IPAAS["iPaaS Destination<br/>(Boomi/MuleSoft)"]
-        DORA["Doraemon<br/>(Generic HTTP)"]
-        S3C["S3/GCS/Azure<br/>File Connectors"]
-    end
-
-    subgraph Delivery["Delivery"]
-        AUDIENCE_FILE["Hashed Audience<br/>File (CSV/TSV)"]
-        PIXEL["SmartPixel<br/>(3P pixel fire)"]
-        API_CALL["Partner API Call<br/>(Batch/Streaming)"]
-    end
-
-    AUD --> CTRL
-    JRN --> CTRL
-    RT --> SYM
-    CTRL --> SEC
-    CTRL --> FB
-    CTRL --> OTR
-    CTRL --> IPAAS
-    CTRL --> DORA
-    CTRL --> S3C
-    FB --> API_CALL
-    OTR --> PIXEL
-    S3C --> AUDIENCE_FILE
-    DORA --> API_CALL
-
-    style Core fill:#f0f4ff,stroke:#4361ee
-    style Connectors fill:#fff8f0,stroke:#f77f00
+    <main class="content">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <a href="index.html">Zeotap Docs</a><span>›</span>
+          <span>Part III — Activation</span><span>›</span>
+          <span>Data Activation & Destinations</span>
+        </div>
       </div>
-    </section>
 
-    <!-- Destinations -->
-    <section id="destinations">
-      <h2>Destination Types</h2>
+      <div class="page-header">
+        <h1>Data Activation & Destinations</h1>
+        <p class="page-subtitle">Delivering audience segments and customer profiles to 200+ ad platforms, CRMs, and
+          marketing tools through a unified connector framework with OAuth, S3, SFTP, GCP, and Azure integrations.</p>
+      </div>
 
-      <h3>Supported Secret / Credential Types</h3>
-      <p>Each destination uses one of the following credential types, validated at creation time:</p>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">200+</div>
+          <div class="stat-label">Partner Integrations</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">6 Auth Types</div>
+          <div class="stat-label">S3/SFTP/GCP/OAuth/Azure</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">Play/Java</div>
+          <div class="stat-label">Service Stack</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">Real-Time</div>
+          <div class="stat-label">Delivery Mode</div>
+        </div>
+      </div>
 
-      <pre><code class="language-java">public enum SecretType {
+      <!-- Overview -->
+      <section id="overview">
+        <h2>Overview</h2>
+        <p>The <strong>Data Activation</strong> layer is the Activate pillar of Zeotap's CDP — it takes unified customer
+          profiles and audience segments and delivers them to external marketing and advertising platforms. The core
+          service, <code>data-destination</code> (Play Framework / Java), manages destination configurations,
+          credentials, and the channel catalog.</p>
+
+        <p>Zeotap supports activation to:</p>
+        <ul>
+          <li><strong>Paid Media</strong> — Facebook, Google, The Trade Desk, Amazon DSP, Xandr, etc.</li>
+          <li><strong>Email Platforms</strong> — Salesforce Marketing Cloud, Braze, HubSpot, Mailchimp</li>
+          <li><strong>CRM Systems</strong> — Salesforce CRM, Microsoft Dynamics</li>
+          <li><strong>Cloud Storage</strong> — AWS S3, GCS, Azure Blob, SFTP/SCP</li>
+          <li><strong>Custom Webhooks</strong> — Generic HTTP endpoint push</li>
+        </ul>
+      </section>
+
+      <!-- ── INTERACTIVE MODULE ── -->
+      <div class="try-it-container">
+        <div class="try-it-badge">INTERACTIVE MODULE</div>
+        <div class="try-it-title">🎮 Try It: Destination Export Simulator</div>
+        <p style="margin-bottom: 20px; color: var(--text-secondary); font-size: 14px;">
+          Select a partner and format to see how the Data Activation layer transforms and pushes segments.
+        </p>
+
+        <div class="try-it-content">
+          <div class="try-it-controls">
+            <div
+              style="background:var(--bg-card); padding:16px; border-radius:8px; border:1px solid var(--border-primary); margin-bottom:12px;">
+              <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px">PARTNER TYPE</div>
+              <select id="partner-select" class="try-it-btn" style="width:100%;" onchange="updateFormat()">
+                <option value="facebook">Meta / Facebook (API)</option>
+                <option value="s3">Amazon S3 (CSV)</option>
+                <option value="braze">Braze (JSON Streaming)</option>
+              </select>
+            </div>
+            <button id="export-btn" class="try-it-btn" onclick="runExport()"
+              style="text-align:center; justify-content:center; background:var(--accent-primary); color:#000; font-weight:800;">
+              📡 RUN EXPORT
+            </button>
+          </div>
+          <div class="try-it-output">
+            <div style="font-size:10px; color:rgba(255,255,255,0.3); margin-bottom:8px">// Export Payload Preview</div>
+            <pre id="export-preview" style="font-size:11px; color:#10b981">Ready for export...</pre>
+            <div id="export-status"
+              style="position:absolute; bottom:16px; right:16px; font-size:11px; font-weight:700;"></div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        function updateFormat() {
+          const partner = document.getElementById('partner-select').value;
+          const preview = document.getElementById('export-preview');
+          const btn = document.getElementById('export-btn');
+          btn.textContent = "📡 RUN EXPORT";
+          btn.style.background = "var(--accent-primary)";
+
+          if (partner === 'facebook') {
+            preview.textContent = "POST /v17.0/act_123/users\nContent-Type: application/json\n\n{\n  \"payload\": [\"sha256:e3b0c4...\", ...]\n}";
+          } else if (partner === 's3') {
+            preview.textContent = "ucid,email_sha256,modified_at\n7a3b...,e3b0c4...,2024-11-01\n2f1d...,4a8c3e...,2024-11-01";
+          } else {
+            preview.textContent = "STREAMING: {\"event\":\"user_update\", \"data\": {...}}";
+          }
+        }
+
+        function runExport() {
+          const btn = document.getElementById('export-btn');
+          const status = document.getElementById('export-status');
+          const bar = document.getElementById('export-progress-bar') || createBar();
+
+          btn.disabled = true;
+          btn.textContent = "📦 PACKAGING...";
+
+          setTimeout(() => {
+            btn.textContent = "🚀 SENDING...";
+            status.textContent = "CONNECTED TO PARTNER...";
+            status.style.color = "var(--accent-primary)";
+          }, 1000);
+
+          setTimeout(() => {
+            btn.textContent = "✅ SUCCESS";
+            btn.style.background = "#10b981";
+            status.textContent = "2,450 RECORDS SYNCED";
+            status.style.color = "#10b981";
+            btn.disabled = false;
+          }, 2200);
+        }
+
+        function createBar() {
+          // Simple visual reinforcement
+          const viz = document.querySelector('.try-it-container');
+          const barWrap = document.createElement('div');
+          barWrap.className = 'pipeline-viz';
+          barWrap.style.marginTop = '24px';
+          barWrap.innerHTML = '<div id="export-progress-bar" class="pipeline-progress"></div>';
+          viz.appendChild(barWrap);
+
+          const bar = document.getElementById('export-progress-bar');
+          setTimeout(() => {
+            bar.style.transition = 'width 2s linear';
+            bar.style.width = '100%';
+          }, 50);
+          return bar;
+        }
+
+        // Initialize preview
+        updateFormat();
+      </script>
+
+      <!-- Architecture -->
+      <section id="architecture">
+        <h2>Activation Architecture</h2>
+
+        <div class="mermaid">
+          graph LR
+          subgraph Trigger["Activation Triggers"]
+          AUD["Audience Export<br />(Scheduled/On-demand)"]
+          JRN["Journey DESTINATION<br />Node Execution"]
+          RT["Real-Time Event<br />(SmartPixel)"]
+          end
+
+          subgraph Core["data-destination Service"]
+          CTRL["DestinationController"]
+          IP["IntegrationPartnerController"]
+          OAUTH["OauthController"]
+          SYM["RealTimeSymphonyController"]
+          SEC["Secret Store<br />(encrypted credentials)"]
+          end
+
+          subgraph Connectors["Connector Layer"]
+          FB["Facebook Connector"]
+          OTR["Off-the-Record<br />(otr-facebook)"]
+          IPAAS["iPaaS Destination<br />(Boomi/MuleSoft)"]
+          DORA["Doraemon<br />(Generic HTTP)"]
+          S3C["S3/GCS/Azure<br />File Connectors"]
+          end
+
+          subgraph Delivery["Delivery"]
+          AUDIENCE_FILE["Hashed Audience<br />File (CSV/TSV)"]
+          PIXEL["SmartPixel<br />(3P pixel fire)"]
+          API_CALL["Partner API Call<br />(Batch/Streaming)"]
+          end
+
+          AUD --> CTRL
+          JRN --> CTRL
+          RT --> SYM
+          CTRL --> SEC
+          CTRL --> FB
+          CTRL --> OTR
+          CTRL --> IPAAS
+          CTRL --> DORA
+          CTRL --> S3C
+          FB --> API_CALL
+          OTR --> PIXEL
+          S3C --> AUDIENCE_FILE
+          DORA --> API_CALL
+
+          style Core fill:#f0f4ff,stroke:#4361ee
+          style Connectors fill:#fff8f0,stroke:#f77f00
+        </div>
+      </section>
+
+      <!-- Destinations -->
+      <section id="destinations">
+        <h2>Destination Types</h2>
+
+        <h3>Supported Secret / Credential Types</h3>
+        <p>Each destination uses one of the following credential types, validated at creation time:</p>
+
+        <pre><code class="language-java">public enum SecretType {
     S3,      // accessKey + secretKey (required)
     SFTP,    // password OR pem_file (one required)
     SCP,     // pem_file (required)
@@ -133,56 +247,87 @@ graph LR
     DEFAULT  // no credentials (public endpoints)
 }</code></pre>
 
-      <table>
-        <thead>
-          <tr><th>Type</th><th>Use Case</th><th>Credentials Required</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>S3</td><td>AWS S3 audience file delivery</td><td>Access Key + Secret Key</td></tr>
-          <tr><td>SFTP</td><td>Legacy system file drop</td><td>Password or PEM certificate</td></tr>
-          <tr><td>SCP</td><td>Secure copy to on-premise</td><td>PEM certificate</td></tr>
-          <tr><td>GCP</td><td>GCS bucket delivery</td><td>Service Account JSON</td></tr>
-          <tr><td>AZURE</td><td>Azure Blob Storage</td><td>Connection string key</td></tr>
-          <tr><td>OAUTH</td><td>Facebook, Google Ads, TTD</td><td>Client ID + Secret + token</td></tr>
-        </tbody>
-      </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Use Case</th>
+              <th>Credentials Required</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>S3</td>
+              <td>AWS S3 audience file delivery</td>
+              <td>Access Key + Secret Key</td>
+            </tr>
+            <tr>
+              <td>SFTP</td>
+              <td>Legacy system file drop</td>
+              <td>Password or PEM certificate</td>
+            </tr>
+            <tr>
+              <td>SCP</td>
+              <td>Secure copy to on-premise</td>
+              <td>PEM certificate</td>
+            </tr>
+            <tr>
+              <td>GCP</td>
+              <td>GCS bucket delivery</td>
+              <td>Service Account JSON</td>
+            </tr>
+            <tr>
+              <td>AZURE</td>
+              <td>Azure Blob Storage</td>
+              <td>Connection string key</td>
+            </tr>
+            <tr>
+              <td>OAUTH</td>
+              <td>Facebook, Google Ads, TTD</td>
+              <td>Client ID + Secret + token</td>
+            </tr>
+          </tbody>
+        </table>
 
-      <h3>Integration Partners</h3>
-      <p>Integration Partners are the set of supported platforms that Zeotap can activate to. Each partner has a <em>channel catalogue mapping</em> that defines what data types they accept (hashed emails, device IDs, cookie IDs) and in what format (CSV, API batch, streaming).</p>
+        <h3>Integration Partners</h3>
+        <p>Integration Partners are the set of supported platforms that Zeotap can activate to. Each partner has a
+          <em>channel catalogue mapping</em> that defines what data types they accept (hashed emails, device IDs, cookie
+          IDs) and in what format (CSV, API batch, streaming).</p>
 
-      <div class="mermaid">
-graph LR
-    subgraph Paid["Paid Media"]
-        FB2["Meta / Facebook"]
-        GAD["Google Ads"]
-        TTD["The Trade Desk"]
-        AMZ["Amazon DSP"]
-        XNR["Xandr / AppNexus"]
-    end
-    subgraph Email["Email / CRM"]
-        SFMC["Salesforce MC"]
-        BRZ["Braze"]
-        HUB["HubSpot"]
-        MML["Mailchimp"]
-    end
-    subgraph Cloud["Cloud Storage"]
-        AWS["AWS S3"]
-        GCS2["Google GCS"]
-        AZB["Azure Blob"]
-        SFTP2["SFTP Server"]
-    end
-    DEST_SVC["data-destination"] --> Paid
-    DEST_SVC --> Email
-    DEST_SVC --> Cloud
-      </div>
-    </section>
+        <div class="mermaid">
+          graph LR
+          subgraph Paid["Paid Media"]
+          FB2["Meta / Facebook"]
+          GAD["Google Ads"]
+          TTD["The Trade Desk"]
+          AMZ["Amazon DSP"]
+          XNR["Xandr / AppNexus"]
+          end
+          subgraph Email["Email / CRM"]
+          SFMC["Salesforce MC"]
+          BRZ["Braze"]
+          HUB["HubSpot"]
+          MML["Mailchimp"]
+          end
+          subgraph Cloud["Cloud Storage"]
+          AWS["AWS S3"]
+          GCS2["Google GCS"]
+          AZB["Azure Blob"]
+          SFTP2["SFTP Server"]
+          end
+          DEST_SVC["data-destination"] --> Paid
+          DEST_SVC --> Email
+          DEST_SVC --> Cloud
+        </div>
+      </section>
 
-    <!-- Secret Management -->
-    <section id="secret-management">
-      <h2>Secret Management</h2>
-      <p>Destination credentials are never stored in plaintext. The service uses an encrypted secret vault with per-organisation isolation. OAuth tokens are stored and refreshed automatically:</p>
+      <!-- Secret Management -->
+      <section id="secret-management">
+        <h2>Secret Management</h2>
+        <p>Destination credentials are never stored in plaintext. The service uses an encrypted secret vault with
+          per-organisation isolation. OAuth tokens are stored and refreshed automatically:</p>
 
-      <pre><code class="language-java">// SecretUpsertRequestConstraint validates all credential upserts
+        <pre><code class="language-java">// SecretUpsertRequestConstraint validates all credential upserts
 // OauthController manages OAuth token lifecycle
 
 // Create OAuth token
@@ -203,16 +348,18 @@ POST /channelSettings/api/v1/oauth/token
   "org_id": 4521
 }</code></pre>
 
-      <p>For non-OAuth destinations, credentials are encrypted using AES-256 before storage and decrypted only at activation time within the connector process.</p>
-    </section>
+        <p>For non-OAuth destinations, credentials are encrypted using AES-256 before storage and decrypted only at
+          activation time within the connector process.</p>
+      </section>
 
-    <!-- API Reference -->
-    <section id="api">
-      <h2>API Reference</h2>
+      <!-- API Reference -->
+      <section id="api">
+        <h2>API Reference</h2>
 
-      <h3>List Destinations</h3>
-      <div class="endpoint-block"><span class="method get">GET</span><span class="endpoint-path">/channelSettings/api/v1/destinations</span></div>
-      <pre><code class="language-json">{
+        <h3>List Destinations</h3>
+        <div class="endpoint-block"><span class="method get">GET</span><span
+            class="endpoint-path">/channelSettings/api/v1/destinations</span></div>
+        <pre><code class="language-json">{
   "destinations": [
     {
       "id": 1001,
@@ -227,9 +374,10 @@ POST /channelSettings/api/v1/oauth/token
   ]
 }</code></pre>
 
-      <h3>Create Destination</h3>
-      <div class="endpoint-block"><span class="method post">POST</span><span class="endpoint-path">/channelSettings/api/v1/destinations</span></div>
-      <pre><code class="language-json">// DestinationCreateRequestConstraintNew validated request body
+        <h3>Create Destination</h3>
+        <div class="endpoint-block"><span class="method post">POST</span><span
+            class="endpoint-path">/channelSettings/api/v1/destinations</span></div>
+        <pre><code class="language-json">// DestinationCreateRequestConstraintNew validated request body
 {
   "name": "S3 Audience Drop — EU",
   "integration_partner_id": "amazon_s3",
@@ -251,9 +399,10 @@ POST /channelSettings/api/v1/oauth/token
   }
 }</code></pre>
 
-      <h3>Get Channel Catalogue Mapping</h3>
-      <div class="endpoint-block"><span class="method get">GET</span><span class="endpoint-path">/channelSettings/api/v1/channelCatalogueMapping/details</span></div>
-      <pre><code class="language-json">{
+        <h3>Get Channel Catalogue Mapping</h3>
+        <div class="endpoint-block"><span class="method get">GET</span><span
+            class="endpoint-path">/channelSettings/api/v1/channelCatalogueMapping/details</span></div>
+        <pre><code class="language-json">{
   "mappings": [
     {
       "integration_partner": "facebook",
@@ -264,31 +413,33 @@ POST /channelSettings/api/v1/oauth/token
     }
   ]
 }</code></pre>
-    </section>
+      </section>
 
-    <!-- SmartPixel -->
-    <section id="smartpixel">
-      <h2>SmartPixel — Server-Side 3P Pixel Firing</h2>
-      <p>The <code>SmartPixel-3P</code> module enables server-side firing of third-party tracking pixels (Facebook, Google, etc.) without relying on client-side JavaScript. This bypasses ad blockers and improves measurement accuracy.</p>
+      <!-- SmartPixel -->
+      <section id="smartpixel">
+        <h2>SmartPixel — Server-Side 3P Pixel Firing</h2>
+        <p>The <code>SmartPixel-3P</code> module enables server-side firing of third-party tracking pixels (Facebook,
+          Google, etc.) without relying on client-side JavaScript. This bypasses ad blockers and improves measurement
+          accuracy.</p>
 
-      <div class="mermaid">
-sequenceDiagram
-    participant Browser as User Browser
-    participant Tag as Tag Manager
-    participant SP as SmartPixel (server-side)
-    participant FB as Facebook CAPI
-    participant GA as Google Ads API
+        <div class="mermaid">
+          sequenceDiagram
+          participant Browser as User Browser
+          participant Tag as Tag Manager
+          participant SP as SmartPixel (server-side)
+          participant FB as Facebook CAPI
+          participant GA as Google Ads API
 
-    Browser->>Tag: Page view / conversion event
-    Tag->>SP: Forward event payload
-    SP->>SP: Enrich with UCID + hashed identifiers
-    SP->>FB: POST /events (Facebook Conversions API)
-    SP->>GA: POST /uploadConversionAdjustments
-    FB-->>SP: { event_id, match_rate }
-    GA-->>SP: { status: SUCCESS }
-      </div>
+          Browser->>Tag: Page view / conversion event
+          Tag->>SP: Forward event payload
+          SP->>SP: Enrich with UCID + hashed identifiers
+          SP->>FB: POST /events (Facebook Conversions API)
+          SP->>GA: POST /uploadConversionAdjustments
+          FB-->>SP: { event_id, match_rate }
+          GA-->>SP: { status: SUCCESS }
+        </div>
 
-      <pre><code class="language-json">// SmartPixel event payload (smartPixel.json)
+        <pre><code class="language-json">// SmartPixel event payload (smartPixel.json)
 {
   "event_name": "Purchase",
   "event_time": 1698825600,
@@ -306,15 +457,20 @@ sequenceDiagram
     "content_type": "product"
   }
 }</code></pre>
-    </section>
+      </section>
 
-    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
-      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
-      <a href="04-genai-zoe.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 9 · GenAI & Zoe Assistant →</a>
-    </div>
-  </main>
-</div>
+      <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
+        <div
+          style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">
+          Next Chapter</div>
+        <a href="04-genai-zoe.html"
+          style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 9 · GenAI & Zoe
+          Assistant →</a>
+      </div>
+    </main>
+  </div>
   <script src="assets/search-index.js"></script>
   <script src="assets/scripts.js?v=6"></script>
 </body>
+
 </html>

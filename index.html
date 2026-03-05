@@ -417,6 +417,106 @@
       opacity: 1;
     }
 
+    /* ── GUIDED EXPLORATION CARDS ── */
+    .explore-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .explore-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-primary);
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      text-align: left;
+    }
+
+    .explore-card:hover {
+      border-color: var(--accent-primary);
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+    }
+
+    .explore-card i {
+      font-size: 24px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .explore-card h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .explore-card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Tour Overlay */
+    .tour-overlay {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      width: 320px;
+      background: var(--bg-surface);
+      border: 1px solid var(--accent-primary);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      display: none;
+    }
+
+    .tour-step {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .tour-title {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .tour-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .tour-nav {
+      display: flex;
+      gap: 12px;
+    }
+
+    .tour-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-primary);
+      background: none;
+      color: var(--text-primary);
+    }
+
+    .tour-btn.next {
+      background: var(--accent-primary);
+      color: #000;
+      border: none;
+    }
+
     /* Hero */
     .ds-hero {
       padding: 52px 64px 36px;
@@ -574,7 +674,8 @@
 
     /* Graph section */
     .kg-section {
-      padding: 0 64px 48px;
+      padding: 52px 64px 48px;
+      position: relative;
     }
 
     .kg-shell-wrap {
@@ -2518,48 +2619,69 @@
 
     <!-- Topbar -->
     <header class="ds-topbar">
-      <div style="display:flex;align-items:center;gap:15px;">
+      <div class="ds-topbar-left">
         <button class="menu-toggle" id="mobile-menu-toggle" aria-label="Toggle Menu">☰</button>
-        <div style="font-size:12px;color:var(--text-mute);font-weight:500;" class="mode-engineering">
-          <span style="color:var(--text-secondary);">Zeotap CDP</span>
-          <span style="margin:0 6px;opacity:0.4;">/</span>
-          Platform Intelligence Hub
+        <div class="ds-topbar-breadcrumb">
+          <span class="breadcrumb-item">Architecture Hub</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item active">Platform Explorer</span>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <!-- Feature 5: Debug Mode Toggle -->
-          <button id="debug-toggle" class="debug-toggle-btn" onclick="toggleDebugMode()"
-            title="Highlight failure points and debug paths">
-            <span class="dbg-indicator"></span>
-            Debug Mode
-          </button>
-          <button class="ds-search-trigger" onclick="openSearch()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <span>Search docs…</span>
-            <kbd>⌘K</kbd>
-          </button>
-        </div>
+      </div>
+      <div class="ds-topbar-right">
+        <!-- Feature 5: Debug Mode Toggle -->
+        <button id="debug-toggle" class="debug-toggle-btn" onclick="toggleDebugMode()"
+          title="Highlight failure points and debug paths">
+          <span class="dbg-indicator"></span>
+          Debug Mode
+        </button>
+        <button class="graph-btn" style="margin-right: 12px;" onclick="window.startPlatformTour()">
+          <span style="font-size:14px">✨</span> Start Platform Tour
+        </button>
+        <button class="ds-search-trigger" onclick="openSearch()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <span>Search docs…</span>
+          <kbd>⌘K</kbd>
+        </button>
+      </div>
     </header>
 
     <!-- ── HERO ──────────────────────────────────────────────────────── -->
     <section class="ds-hero">
-      <div class="ds-hero-eyebrow">
-        <span class="ds-hero-eyebrow-dot"></span>
-        18 Chapters · 3 Appendices
-      </div>
-      <h1 class="ds-hero-title">
-        The Zeotap CDP<br>
-        <span class="glow-blue">Architecture Intelligence</span>
-      </h1>
+      <h1 class="ds-hero-title">Interactive CDP Architecture Explorer</h1>
       <p class="ds-hero-sub">
-        A living map of every service, pipeline, and API that powers the Customer Data Platform.
-        Explore the graph, trace data lineage, and navigate by workflow.
+        Understand how Zeotap CDP orchestrates petabyte-scale data through modular,
+        event-driven services. Experiment with real-time flows and dependency traces.
       </p>
-
     </section>
+
+    <div style="padding: 0 64px;">
+      <div
+        style="margin-bottom: 12px; font-size: 14px; font-weight: 700; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em;">
+        How would you like to explore?</div>
+      <div class="explore-grid">
+        <div class="explore-card" onclick="window.startPlatformTour()">
+          <i>🌊</i>
+          <h3>Follow Data Flow</h3>
+          <p>See how a user event travels through the various pipeline stages from collection to activation.</p>
+        </div>
+        <div class="explore-card"
+          onclick="document.getElementById('knowledge-graph').scrollIntoView({behavior:'smooth'});">
+          <i>🔗</i>
+          <h3>Explore Platform Modules</h3>
+          <p>Drill down into specific services like Identity Resolution or Profile Store and see their connections.</p>
+        </div>
+        <div class="explore-card"
+          onclick="document.getElementById('knowledge-graph').scrollIntoView({behavior:'smooth'}); document.getElementById('debug-toggle').click();">
+          <i>🛠️</i>
+          <h3>Investigate System Behavior</h3>
+          <p>Enable Debug Mode to witness common failure points and learn how the system stays resilient.</p>
+        </div>
+      </div>
+    </div>
 
     <!-- ── KNOWLEDGE GRAPH ───────────────────────────────────────────── -->
     <section class="kg-section">
@@ -3671,18 +3793,73 @@
   </div>
 
   <!-- Scripts -->
-  <script src="assets/search-index.js?v=1.1"></script>
-  <script src="assets/knowledge-graph.js?v=1.1"></script>
-  <script src="assets/graph-enhancements.js?v=1.1"></script>
-  <script src="assets/scripts.js?v=1.1"></script>
+  <div id="tour-panel" class="tour-overlay">
+    <div id="tour-step-num" class="tour-step">Step 1 / 8</div>
+    <div id="tour-step-title" class="tour-title">User Event Generated</div>
+    <div id="tour-step-desc" class="tour-desc">A customer interacts with a mobile app or website, triggering a JSON
+      event payload.</div>
+    <div class="tour-nav">
+      <button class="tour-btn" onclick="window.prevTourStep()">Previous</button>
+      <button class="tour-btn next" onclick="window.nextTourStep()">Next</button>
+      <button class="tour-btn" onclick="window.exitTour()" style="margin-left:auto">Exit</button>
+    </div>
+  </div>
 
+  <script src="assets/scripts.js"></script>
+  <script src="assets/knowledge-graph.js"></script>
+  <script src="assets/graph-enhancements.js"></script>
   <script>
-    /* ── Mode switcher ─────────────────────────────────────────────────── */
-    function setMode(mode) {
-      document.documentElement.setAttribute('data-mode', mode);
-      document.querySelectorAll('.ds-mode-btn').forEach(function (btn) {
-        btn.classList.toggle('active', btn.dataset.mode === mode);
-      });
+    /* ── Platform Tour Logic ── */
+    const TOUR_STEPS = [
+      { id: 'collect', title: 'User Event Generated', desc: 'A customer interacts with a mobile app or website, triggering a JSON event payload.' },
+      { id: 'collect', title: 'Event Collected', desc: 'The Zeotap SDK captures the event and sends it to the Cloud Collector for validation.' },
+      { id: 'ingest', title: 'Event Ingested', desc: 'Kafka streams the event through the DAAP pipeline for real-time processing.' },
+      { id: 'identity', title: 'Identity Resolution', desc: 'The Identity Graph matches the event to a Unified Customer ID (UCID).' },
+      { id: 'profiles', title: 'Profile Updated', desc: 'The UCID profile is updated in the Delta Lake with new traits and behaviors.' },
+      { id: 'audiences', title: 'Segment Recomputed', desc: 'The Segment Engine instantly re-evaluates audience membership for the user.' },
+      { id: 'journeys', title: 'Journey Triggered', desc: 'The Journey Orchestrator detects the segment change and triggers a workflow.' },
+      { id: 'activation', title: 'Data Activated', desc: 'The profile is pushed to Facebook, Google, or a CRM for personalized marketing.' }
+    ];
+
+    let currentStepIdx = 0;
+
+    window.startPlatformTour = function () {
+      currentStepIdx = 0;
+      document.getElementById('tour-panel').style.display = 'block';
+      updateTourStep();
+      document.getElementById('knowledge-graph').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.nextTourStep = function () {
+      if (currentStepIdx < TOUR_STEPS.length - 1) {
+        currentStepIdx++;
+        updateTourStep();
+      } else {
+        window.exitTour();
+      }
+    };
+
+    window.prevTourStep = function () {
+      if (currentStepIdx > 0) {
+        currentStepIdx--;
+        updateTourStep();
+      }
+    };
+
+    window.exitTour = function () {
+      document.getElementById('tour-panel').style.display = 'none';
+      if (window.KG) window.KG.reset();
+    };
+
+    function updateTourStep() {
+      const step = TOUR_STEPS[currentStepIdx];
+      document.getElementById('tour-step-num').textContent = `Step ${currentStepIdx + 1} / 8`;
+      document.getElementById('tour-step-title').textContent = step.title;
+      document.getElementById('tour-step-desc').textContent = step.desc;
+
+      if (window.KG) {
+        window.KG.highlight([step.id]);
+      }
     }
 
     /* ── Task buttons → graph highlight ───────────────────────────────── */
