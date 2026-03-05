@@ -27,8 +27,8 @@
 const Theme = {
   init() {
     const saved = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const theme = saved || (prefersDark ? "dark" : "light");
+    // Default to dark for the "Product" identity
+    const theme = saved || "dark";
     document.documentElement.setAttribute("data-theme", theme);
     this.updateToggleIcon();
   },
