@@ -1,0 +1,7 @@
+{
+  "name": "zeotap-cdp-tech-doc",
+  "version": "2.0.0",
+  "description": "Zeotap CDP Platform Architecture Explorer - Interactive Technical Documentation",
+  "private": true,
+  "type": "module"
+}
