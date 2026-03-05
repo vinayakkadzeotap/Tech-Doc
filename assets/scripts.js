@@ -24,12 +24,51 @@
      12. Search ⌘K / / (both templates)
    ============================================================ */
 
+const Theme = {
+  init() {
+    const saved = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const theme = saved || (prefersDark ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+    this.updateToggleIcon();
+  },
+
+  toggle() {
+    const current = document.documentElement.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+    this.updateToggleIcon();
+  },
+
+  updateToggleIcon() {
+    const btn = document.querySelector(".theme-toggle");
+    if (!btn) return;
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    btn.innerHTML = isDark ? '🌙' : '☀️';
+    btn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+  },
+
+  injectToggle(parent) {
+    if (document.querySelector('.theme-toggle')) return;
+    const btn = document.createElement('button');
+    btn.className = 'theme-toggle';
+    btn.style.cssText = 'background:none; border:1px solid var(--border); border-radius:8px; width:36px; height:36px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--text-primary); margin-left:10px; transition:all 0.2s;';
+    btn.setAttribute('aria-label', 'Toggle theme');
+    parent.appendChild(btn);
+    btn.addEventListener('click', () => this.toggle());
+    this.updateToggleIcon();
+  }
+};
+
 (function () {
   'use strict';
 
+  Theme.init();
+
   /* ── detect template ── */
   var isTemplateB = !!document.querySelector('div.layout');
-  var topbar      = document.querySelector('.topbar');
+  var topbar = document.querySelector('.topbar, .ds-topbar');
 
   /* ──────────────────────────────────────────────
      1. AUTO-WRAP TABLES
@@ -163,7 +202,7 @@
     if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
     var so = document.getElementById('search-overlay');
     if (so && so.classList.contains('open')) return;
-    if (e.altKey && e.key === 'ArrowLeft'  && prevLink) prevLink.click();
+    if (e.altKey && e.key === 'ArrowLeft' && prevLink) prevLink.click();
     if (e.altKey && e.key === 'ArrowRight' && nextLink) nextLink.click();
   });
 
@@ -239,7 +278,7 @@
     /* Template A */
     document.querySelectorAll('.sidebar-section').forEach(function (sec) {
       var title = sec.querySelector('.sidebar-section-title');
-      var nav   = sec.querySelector('.sidebar-nav');
+      var nav = sec.querySelector('.sidebar-nav');
       if (!title || !nav) return;
 
       var hdr = document.createElement('div');
@@ -304,8 +343,8 @@
   /* Inject search trigger button into topbar — works for BOTH templates */
   if (topbar) {
     var searchTrigger = document.createElement('button');
-    searchTrigger.className   = 'search-trigger';
-    searchTrigger.id          = 'search-trigger';
+    searchTrigger.className = 'search-trigger';
+    searchTrigger.id = 'search-trigger';
     searchTrigger.setAttribute('aria-label', 'Search documentation');
     searchTrigger.innerHTML =
       '<span class="search-trigger-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>' +
@@ -326,46 +365,52 @@
       actionsWrap.appendChild(searchTrigger);
       topbar.appendChild(actionsWrap);
     }
+
+    /* Inject Theme Toggle */
+    var topbarActions = topbar.querySelector('.topbar-actions, .ds-topbar-right');
+    if (topbarActions) {
+      Theme.injectToggle(topbarActions);
+    }
   }
 
   /* Build search modal */
   var searchModal = document.createElement('div');
   searchModal.className = 'search-overlay';
-  searchModal.id        = 'search-overlay';
+  searchModal.id = 'search-overlay';
   searchModal.innerHTML =
     '<div class="search-modal" id="search-modal">' +
-      '<div class="search-input-row">' +
-        '<span class="search-input-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>' +
-        '<input type="text" id="search-input" placeholder="Search chapters, APIs, concepts…" autocomplete="off" spellcheck="false" />' +
-        '<button class="search-clear" id="search-clear" title="Clear">✕</button>' +
-      '</div>' +
-      '<div class="search-results" id="search-results">' +
-        '<div class="search-hint" id="search-hint">' +
-          '<span class="search-hint-label">Quick jump</span>' +
-          '<span class="search-hint-chip" data-query="API reference">API Reference</span>' +
-          '<span class="search-hint-chip" data-query="identity resolution">Identity</span>' +
-          '<span class="search-hint-chip" data-query="profile store">Profile Store</span>' +
-          '<span class="search-hint-chip" data-query="audience segment">Audiences</span>' +
-          '<span class="search-hint-chip" data-query="GDPR privacy">Privacy</span>' +
-          '<span class="search-hint-chip" data-query="SDK collect">SDK</span>' +
-          '<span class="search-hint-chip" data-query="GenAI Zoe">Zoe AI</span>' +
-          '<span class="search-hint-chip" data-query="CI/CD pipeline">CI/CD</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="search-footer">' +
-        '<span class="search-footer-hint"><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>' +
-        '<span class="search-footer-hint"><kbd>↵</kbd> Open</span>' +
-        '<span class="search-footer-hint"><kbd>ESC</kbd> Close</span>' +
-        '<span class="search-footer-right search-footer-hint"><kbd>/</kbd> or <kbd>⌘K</kbd></span>' +
-      '</div>' +
+    '<div class="search-input-row">' +
+    '<span class="search-input-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>' +
+    '<input type="text" id="search-input" placeholder="Search chapters, APIs, concepts…" autocomplete="off" spellcheck="false" />' +
+    '<button class="search-clear" id="search-clear" title="Clear">✕</button>' +
+    '</div>' +
+    '<div class="search-results" id="search-results">' +
+    '<div class="search-hint" id="search-hint">' +
+    '<span class="search-hint-label">Quick jump</span>' +
+    '<span class="search-hint-chip" data-query="API reference">API Reference</span>' +
+    '<span class="search-hint-chip" data-query="identity resolution">Identity</span>' +
+    '<span class="search-hint-chip" data-query="profile store">Profile Store</span>' +
+    '<span class="search-hint-chip" data-query="audience segment">Audiences</span>' +
+    '<span class="search-hint-chip" data-query="GDPR privacy">Privacy</span>' +
+    '<span class="search-hint-chip" data-query="SDK collect">SDK</span>' +
+    '<span class="search-hint-chip" data-query="GenAI Zoe">Zoe AI</span>' +
+    '<span class="search-hint-chip" data-query="CI/CD pipeline">CI/CD</span>' +
+    '</div>' +
+    '</div>' +
+    '<div class="search-footer">' +
+    '<span class="search-footer-hint"><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>' +
+    '<span class="search-footer-hint"><kbd>↵</kbd> Open</span>' +
+    '<span class="search-footer-hint"><kbd>ESC</kbd> Close</span>' +
+    '<span class="search-footer-right search-footer-hint"><kbd>/</kbd> or <kbd>⌘K</kbd></span>' +
+    '</div>' +
     '</div>';
   document.body.appendChild(searchModal);
 
-  var sInput   = document.getElementById('search-input');
+  var sInput = document.getElementById('search-input');
   var sResults = document.getElementById('search-results');
-  var sHint    = document.getElementById('search-hint');
-  var sClear   = document.getElementById('search-clear');
-  var selIdx   = -1;
+  var sHint = document.getElementById('search-hint');
+  var sClear = document.getElementById('search-clear');
+  var selIdx = -1;
 
   function openSearch(q) {
     searchModal.classList.add('open');
@@ -465,17 +510,17 @@
         a.innerHTML =
           '<span class="search-item-icon">' + item.icon + '</span>' +
           '<span class="search-item-body">' +
-            '<div class="search-item-title">' + highlight(escHtml(item.title), q) + '</div>' +
-            '<div class="search-item-subtitle">' + escHtml(item.sub) + '</div>' +
+          '<div class="search-item-title">' + highlight(escHtml(item.title), q) + '</div>' +
+          '<div class="search-item-subtitle">' + escHtml(item.sub) + '</div>' +
           '</span>' +
           '<span class="search-item-type search-type-' + item.type + '">' +
-            (item.type === 'page' ? 'Page' : 'Section') +
+          (item.type === 'page' ? 'Page' : 'Section') +
           '</span>';
         a.addEventListener('click', closeSearch);
         sResults.appendChild(a);
       });
     }
-    renderGroup('Pages',    res.filter(function (r) { return r.type === 'page'; }));
+    renderGroup('Pages', res.filter(function (r) { return r.type === 'page'; }));
     renderGroup('Sections', res.filter(function (r) { return r.type === 'section'; }));
   }
 
@@ -533,7 +578,7 @@
   });
 
   document.addEventListener('keydown', function (e) {
-    var active  = document.activeElement;
+    var active = document.activeElement;
     var inInput = active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable;
     if (searchModal.classList.contains('open')) return;
     if ((e.key === '/' && !inInput) || ((e.metaKey || e.ctrlKey) && e.key === 'k')) {
