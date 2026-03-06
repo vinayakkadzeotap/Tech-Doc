@@ -28,12 +28,9 @@
   <link rel="stylesheet" href="assets/interaction-polish.css?v=1.0" />
 
   <style>
-    /* ── CSS variable aliases (dark-system.css naming reconciliation) ── */
+    /* ── Extra aliases for sub-pages compatibility ───────────────── */
     :root {
-      --border: var(--border-def);
-      --border-subtle: var(--border-sub);
       --text-mute: var(--text-muted);
-      --cyan: var(--cyan-bright);
     }
 
     /* ── PAGE TRANSITIONS ────────────────────────────────────────── */
@@ -692,7 +689,10 @@
     .stat-num {
       font-size: clamp(26px, 4vw, 36px);
       font-weight: 800;
-      color: #f1f5f9;
+      background: linear-gradient(135deg, #e2e8f0 0%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
       line-height: 1;
@@ -3183,17 +3183,21 @@
 
     <!-- ── HERO ──────────────────────────────────────────────────────── -->
     <section class="ds-hero">
-      <h1 class="ds-hero-title">Zeotap CDP — Platform Intelligence Hub</h1>
+      <div class="ds-hero-eyebrow">
+        <div class="ds-hero-eyebrow-dot"></div>
+        Live Architecture Explorer · 17 Services · Real-time
+      </div>
+      <h1 class="ds-hero-title">Zeotap <span class="glow-blue">CDP</span> — Platform Intelligence Hub</h1>
       <p class="ds-hero-sub">
         A living 3D map of every service, pipeline, and data flow in the Zeotap Customer Data Platform.
-        Click any node to explore. Watch data move in real time.
+        Click any node to explore dependencies. Watch data move in real time.
       </p>
-      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
-        <button class="cin-btn-primary" onclick="if(window.Cinematic) Cinematic.reset()" style="font-size:13px;padding:10px 20px;">
-          Watch Platform Story
+      <div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;">
+        <button class="cin-btn-primary" onclick="if(window.Cinematic) Cinematic.reset()" style="font-size:13px;padding:10px 22px;">
+          ▶ Watch Platform Story
         </button>
-        <button class="cin-btn-sec" onclick="if(window.KG) KG.simulateEventFlow(); document.getElementById('knowledge-graph').scrollIntoView({behavior:'smooth'})" style="font-size:13px;padding:10px 20px;">
-          Simulate Event Flow
+        <button class="cin-btn-sec" onclick="if(window.KG) KG.simulateEventFlow(); document.getElementById('knowledge-graph').scrollIntoView({behavior:'smooth'})" style="font-size:13px;padding:10px 22px;">
+          ⚡ Simulate Data Flow
         </button>
       </div>
     </section>

@@ -414,7 +414,10 @@
     var graph = ForceGraph3D({ controlType: 'orbit', rendererConfig: { antialias: true, alpha: true } })(container)
       .graphData(graphData)
       .backgroundColor('rgba(0,0,0,0)')
-      .nodeLabel(function (n) { return '<div class="kg3d-tip"><b>' + n.label + '</b><br/><span>' + (CATEGORY[n.category] || {}).label + '</span></div>'; })
+      .nodeLabel(function (n) {
+        var cat = CATEGORY[n.category] || {};
+        return '<div class="kg3d-tip"><b>' + n.label + '</b><span>' + cat.label + ' · click to inspect · right-click for docs</span></div>';
+      })
       .nodeColor(nodeColor)
       .nodeVal(nodeVal)
       .nodeRelSize(5)

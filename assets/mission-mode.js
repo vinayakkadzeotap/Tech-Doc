@@ -255,6 +255,14 @@
 
     panel.innerHTML = html;
 
+    // Inject close button
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'mission-close-btn';
+    closeBtn.innerHTML = '✕';
+    closeBtn.title = 'Exit mission';
+    closeBtn.addEventListener('click', function () { global.MissionMode.exitMission(); });
+    panel.appendChild(closeBtn);
+
     // Highlight nodes
     if (hasKG()) {
       global.KG.highlight(step.highlights);
@@ -271,6 +279,8 @@
       currentMission = missionId;
       currentStep = 0;
       renderMissionPanel();
+      var graphEl = document.getElementById('knowledge-graph');
+      if (graphEl) graphEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
 
     nextStep() {

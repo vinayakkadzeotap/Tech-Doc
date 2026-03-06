@@ -1,67 +1,253 @@
 /* ═══════════════════════════════════════════════════════════════════
    ZEOTAP CDP — INTERACTION POLISH & REFINEMENTS
-   Fine-tuning for Professional UX
+   Production-grade micro-interactions for the 3D platform explorer.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Enhanced Node States ──────────────────────────────────────── */
-.kg-node circle.kg-node-circle {
-  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
+/* ── 3D Graph Container ─────────────────────────────────────────── */
+#knowledge-graph {
+  cursor: grab;
+  border-radius: 0 0 12px 12px;
 }
 
-.kg-node:hover circle.kg-node-circle {
-  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.4));
+#knowledge-graph:active {
+  cursor: grabbing;
 }
 
-.kg-node.dimmed circle.kg-node-circle {
-  opacity: 0.2;
-  filter: none;
+#knowledge-graph canvas {
+  border-radius: 0 0 12px 12px;
 }
 
-.kg-node.highlighted circle.kg-node-circle {
-  filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.6));
-  stroke-width: 2.5;
+/* ── 3D Node Tooltip (injected by three-d-graph.js) ────────────── */
+.kg3d-tip {
+  background: rgba(2, 6, 23, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: var(--font, 'Inter', sans-serif);
+  font-size: 12px;
+  color: #e2e8f0;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  max-width: 220px;
+  line-height: 1.5;
 }
 
-/* ── Link Animations ───────────────────────────────────────────– */
-.kg-link {
-  transition: stroke 150ms ease, stroke-width 150ms ease, opacity 150ms ease;
+.kg3d-tip b {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2px;
 }
 
-.kg-link.dimmed {
-  opacity: 0.08;
-  stroke-width: 0.8;
+.kg3d-tip span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
 }
 
-.kg-link.animated-edge {
-  stroke-dasharray: 8, 8;
-  animation: flow-animation 700ms linear infinite;
-  stroke-width: 2;
-  opacity: 1 !important;
-  stroke: #38bdf8 !important;
+/* ── Side Panel ─────────────────────────────────────────────────── */
+.kg-side-panel {
+  position: fixed;
+  right: -400px;
+  top: 0;
+  width: 380px;
+  height: 100vh;
+  background: var(--bg-surface, #111827);
+  border-left: 1px solid var(--border, #1e293b);
+  z-index: 1000;
+  overflow-y: auto;
+  transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
 }
 
-@keyframes flow-animation {
-  0% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -16; }
+.kg-side-panel.open {
+  right: 0;
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.5);
 }
 
-/* ── Label Smooth Transitions ──────────────────────────────────– */
-.kg-labels text {
-  transition: fill 150ms ease, opacity 150ms ease;
+.kg-sp-close {
+  position: sticky;
+  top: 16px;
+  align-self: flex-end;
+  margin: 16px 16px 0;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  z-index: 10;
 }
 
-/* ── Graph Grid Refinement ─────────────────────────────────────– */
-.kg-grid line {
-  stroke: rgba(255, 255, 255, 0.03);
-  transition: stroke 200ms ease;
+.kg-sp-close:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
 }
 
-/* ── Card Elevation & Shadows ──────────────────────────────────– */
+.kg-sp-body {
+  padding: 8px 24px 32px;
+  flex: 1;
+}
+
+.kg-sp-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.kg-sp-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary, #e2e8f0);
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+
+.kg-sp-desc {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text-secondary, #94a3b8);
+  margin-bottom: 20px;
+}
+
+.kg-sp-section {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.05));
+}
+
+.kg-sp-section:last-of-type {
+  border-bottom: none;
+}
+
+.kg-sp-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted, #64748b);
+  margin-bottom: 6px;
+}
+
+.kg-sp-val {
+  font-size: 13px;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.6;
+}
+
+.kg-sp-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.focus-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--mono, monospace);
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+}
+
+.kg-sp-deps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.kg-dep-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.kg-dep-up {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  color: #a855f7;
+}
+
+.kg-dep-down {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #10b981;
+}
+
+.kg-sp-cta {
+  display: block;
+  margin-top: 20px;
+  padding: 12px 18px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 10px;
+  color: #38bdf8;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.kg-sp-cta:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ── Graph Legend ───────────────────────────────────────────────── */
+.kg-legend-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.kg-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+}
+
+.kg-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Card Elevation & Shadows ───────────────────────────────────── */
 .ds-mod-card,
 .ds-task-card,
 .ds-quick-card,
 .fail-card,
-.dbg-card {
+.dbg-card,
+.scenario-card {
   transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -70,18 +256,16 @@
 .ds-quick-card:hover,
 .fail-card:hover,
 .dbg-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
-/* ── Button Interactions ───────────────────────────────────────– */
+/* ── Button Interactions ────────────────────────────────────────── */
 .flow-btn,
 .focus-action-btn,
 .mission-btn,
 .kg-reset-btn {
   transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
 }
 
 .flow-btn:hover,
@@ -91,37 +275,44 @@
   transform: translateY(-2px);
 }
 
-/* ── Glow Effects ──────────────────────────────────────────────– */
-.debug-toggle-btn.active,
-.ds-mode-btn.active,
-.focus-action-btn:hover {
-  box-shadow: 0 0 12px currentColor;
+/* ── Glow Effects ───────────────────────────────────────────────── */
+.debug-toggle-btn.active {
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.35);
 }
 
-/* ── Tooltip Smooth Animation ──────────────────────────────────– */
-#graph-tooltip {
-  transition: opacity 150ms ease, transform 150ms ease;
-  will-change: opacity, transform;
-}
-
-#graph-tooltip.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── Mission Panel Positioning ─────────────────────────────────– */
+/* ── Mission Panel ──────────────────────────────────────────────── */
 .mission-mode-container {
-  animation: slide-left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slide-left-in 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.focus-panel {
-  animation: slide-up 300ms cubic-bezier(0.16, 1, 0.3, 1);
+.mission-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
 }
 
-@keyframes slide-left {
+.mission-close-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+@keyframes slide-left-in {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(24px);
   }
   to {
     opacity: 1;
@@ -132,7 +323,7 @@
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -140,76 +331,35 @@
   }
 }
 
-/* ── Input Focus States ────────────────────────────────────────– */
+/* ── Input Focus States ─────────────────────────────────────────── */
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--accent, #38bdf8);
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-/* ── Nested Focus Mode Dimming ─────────────────────────────────– */
-.focus-mode-active .kg-node:not(.highlighted) {
-  opacity: 0.15;
-}
-
-.focus-mode-active .kg-link:not(.highlighted) {
-  opacity: 0.05;
-}
-
-/* ── Header & Navigation Refinements ───────────────────────────– */
+/* ── Nav Link Refinements ───────────────────────────────────────── */
 .ds-nav-link {
   transition: all 150ms ease;
 }
 
 .ds-nav-link:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-left: 2px solid var(--accent);
-  padding-left: 8px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.ds-nav-link.active {
-  background: rgba(56, 189, 248, 0.12);
-  color: var(--accent);
-  border-left: 2px solid var(--accent);
-}
-
-/* ── Metric Strip Animation ────────────────────────────────────– */
-.ds-metric-val {
-  font-variant-numeric: tabular-nums;
-}
-
-.ds-metric {
-  transition: background 200ms ease;
-}
-
-/* ── Responsive Touch Targets ──────────────────────────────────– */
-@media (max-width: 768px) {
-  button,
-  a,
-  [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* ── Selection Styling ─────────────────────────────────────────– */
+/* ── Selection Styling ──────────────────────────────────────────── */
 ::selection {
-  background: rgba(56, 189, 248, 0.3);
-  color: var(--text-primary);
+  background: rgba(56, 189, 248, 0.25);
+  color: var(--text-primary, #e2e8f0);
 }
 
-::-moz-selection {
-  background: rgba(56, 189, 248, 0.3);
-  color: var(--text-primary);
-}
-
-/* ── Scrollbar Styling ─────────────────────────────────────────– */
+/* ── Scrollbar Styling ──────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -219,57 +369,24 @@ select:focus {
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
-  transition: background 200ms ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
 }
 
-/* ── Focus Visible (Keyboard Navigation) ────────────────────────– */
+/* ── Focus Visible (Keyboard Navigation) ────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent, #38bdf8);
   outline-offset: 2px;
 }
 
-button:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* ── Smooth Scrolling ──────────────────────────────────────────– */
+/* ── Smooth Scrolling ───────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
 }
 
-* {
-  scroll-behavior: smooth;
-}
-
-/* ── Print Styles ──────────────────────────────────────────────– */
-@media print {
-  .focus-panel,
-  .mission-mode-container,
-  #graph-tooltip,
-  .kg-reset-btn,
-  .flow-btn {
-    display: none !important;
-  }
-
-  .kg-node {
-    page-break-inside: avoid;
-  }
-}
-
-/* ── Dark Mode Enhancement ─────────────────────────────────────– */
-@media (prefers-color-scheme: dark) {
-  /* Already handled by design system */
-}
-
-/* Keep explorer in dark surfaces to avoid theme mismatches */
-
-/* ── Reduced Motion ────────────────────────────────────────────– */
+/* ── Reduced Motion ─────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -277,36 +394,36 @@ html {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
 
-/* ── High Contrast Support ─────────────────────────────────────– */
-@media (prefers-contrast: more) {
-  .kg-link {
-    stroke-width: 2;
-  }
-
-  .kg-node text {
-    font-weight: 700;
-  }
-
-  button {
-    border: 1px solid currentColor;
+/* ── Print Styles ───────────────────────────────────────────────── */
+@media print {
+  .mission-mode-container,
+  .kg-side-panel,
+  .flow-btn,
+  .kg-reset-btn,
+  #cin-overlay {
+    display: none !important;
   }
 }
 
-/* ── Forced Colors Mode (Windows High Contrast) ────────────────– */
-@media (forced-colors: active) {
-  .kg-node circle {
-    stroke: CanvasText;
+/* ── Responsive Adjustments ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .kg-side-panel {
+    width: 100vw;
+    right: -100vw;
   }
 
-  .kg-link {
-    stroke: CanvasText;
+  .kg-side-panel.open {
+    right: 0;
   }
 
-  button {
-    border: 2px solid ButtonBorder;
+  .mission-mode-container {
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    top: auto !important;
+    bottom: 80px !important;
   }
 }
