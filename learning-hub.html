@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="engineering" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning Hub — Zeotap CDP</title>
+  <meta name="description" content="Interactive onboarding learning paths, quizzes, and progress tracking for Zeotap CDP" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/dark-system.css?v=1.1" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #050c14; color: #e2e8f0; min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: inherit; border: none; background: none; }
+
+    /* Nav */
+    .lh-nav { position: sticky; top: 0; z-index: 100; background: rgba(5,12,20,0.94); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .lh-nav-logo { font-size: 18px; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .lh-nav-sep { color: #334155; margin: 0 8px; }
+    .lh-nav-title { color: #94a3b8; font-size: 14px; }
+    .lh-nav-back { color: #94a3b8; font-size: 13px; padding: 6px 14px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; transition: all 0.2s; }
+    .lh-nav-back:hover { color: #e2e8f0; border-color: rgba(255,255,255,0.2); }
+    .lh-progress-badge { display: flex; align-items: center; gap: 8px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); border-radius: 20px; padding: 5px 14px; font-size: 13px; color: #93c5fd; }
+
+    /* Hero */
+    .lh-hero { padding: 64px 32px 48px; text-align: center; position: relative; overflow: hidden; }
+    .lh-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 70%); pointer-events: none; }
+    .lh-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); border-radius: 20px; padding: 6px 16px; font-size: 12px; font-weight: 600; color: #93c5fd; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 24px; }
+    .lh-h1 { font-size: clamp(28px,5vw,52px); font-weight: 800; line-height: 1.1; margin-bottom: 16px; }
+    .lh-h1 .grad { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .lh-sub { color: #94a3b8; font-size: 17px; max-width: 580px; margin: 0 auto 0; line-height: 1.7; }
+
+    /* Stats row */
+    .lh-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; max-width: 1100px; margin: 40px auto; padding: 0 32px; }
+    @media(max-width:800px){.lh-stats{grid-template-columns:repeat(2,1fr);}}
+    .lh-stat { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 24px; text-align: center; }
+    .lh-stat-n { font-size: 36px; font-weight: 800; margin-bottom: 6px; }
+    .lh-stat-l { font-size: 13px; color: #64748b; }
+
+    /* Section */
+    .lh-sec { max-width: 1100px; margin: 0 auto; padding: 0 32px 56px; }
+    .lh-sec-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .lh-sec-sub { color: #64748b; font-size: 14px; margin-bottom: 28px; }
+
+    /* Data Flow */
+    .lh-flow-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 32px; margin-bottom: 0; }
+    .lh-flow-track { display: flex; align-items: center; overflow-x: auto; padding-bottom: 16px; scroll-snap-type: x mandatory; gap: 0; }
+    .lh-flow-step { flex-shrink: 0; width: 110px; text-align: center; padding: 12px 8px; background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.08); border-radius: 14px; cursor: pointer; transition: all 0.25s; scroll-snap-align: start; }
+    .lh-flow-step:hover, .lh-flow-step.active { border-color: var(--sc,#3b82f6); background: rgba(var(--sr,59,130,246),0.1); transform: translateY(-3px); }
+    .lh-flow-step-icon { font-size: 1.7rem; margin-bottom: 7px; display: block; }
+    .lh-flow-step-name { font-size: 10px; font-weight: 600; color: #94a3b8; }
+    .lh-flow-arrow { color: #334155; font-size: 16px; padding: 0 3px; flex-shrink: 0; }
+    .lh-flow-detail { margin-top: 24px; background: rgba(0,0,0,0.2); border-radius: 14px; padding: 20px 24px; }
+    .lh-flow-detail-t { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .lh-flow-detail-p { font-size: 14px; color: #94a3b8; line-height: 1.7; }
+    .lh-flow-pills { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .lh-flow-pill { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+    .lh-simulate-btn { margin-top: 20px; padding: 10px 24px; border-radius: 10px; background: linear-gradient(135deg,#3b82f6,#6366f1); color: #fff; font-size: 13px; font-weight: 700; transition: all 0.2s; }
+    .lh-simulate-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+
+    /* Paths */
+    .lh-paths-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 24px; }
+    @media(max-width:720px){.lh-paths-grid{grid-template-columns:1fr;}}
+    .lh-path-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 28px; cursor: pointer; transition: all 0.25s; }
+    .lh-path-card:hover { border-color: rgba(255,255,255,0.14); transform: translateY(-2px); }
+    .lh-path-ph { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+    .lh-path-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .lh-path-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .lh-path-sub { font-size: 13px; color: #64748b; }
+    .lh-path-bar-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+    .lh-path-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+    .lh-path-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s; }
+    .lh-path-pct { font-size: 13px; font-weight: 700; min-width: 36px; text-align: right; }
+    .lh-path-meta { display: flex; gap: 14px; margin-top: 10px; font-size: 12px; color: #64748b; }
+    .lh-path-cta { margin-top: 18px; display: inline-block; padding: 9px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+
+    /* Phase accordion */
+    .lh-phase { margin-bottom: 20px; }
+    .lh-phase-hdr { display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; cursor: pointer; transition: all 0.2s; user-select: none; }
+    .lh-phase-hdr:hover { border-color: rgba(255,255,255,0.12); }
+    .lh-phase-hdr.open { border-radius: 12px 12px 0 0; border-bottom-color: transparent; }
+    .lh-phase-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .lh-phase-name { font-size: 15px; font-weight: 600; flex: 1; }
+    .lh-phase-info { font-size: 12px; color: #64748b; }
+    .lh-phase-chev { color: #475569; font-size: 11px; transition: transform 0.2s; }
+    .lh-phase-hdr.open .lh-phase-chev { transform: rotate(180deg); }
+    .lh-phase-body { display: none; border: 1px solid rgba(255,255,255,0.07); border-top: none; border-radius: 0 0 12px 12px; overflow: hidden; }
+    .lh-phase-body.open { display: block; }
+
+    /* Module row */
+    .lh-mod-row { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+    .lh-mod-row:last-child { border-bottom: none; }
+    .lh-mod-row:hover { background: rgba(255,255,255,0.02); }
+    .lh-mod-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; transition: all 0.2s; }
+    .lh-mod-check.done { background: #10b981; border-color: #10b981; color: #fff; }
+    .lh-mod-icon { font-size: 16px; flex-shrink: 0; }
+    .lh-mod-info { flex: 1; min-width: 0; }
+    .lh-mod-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lh-mod-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .lh-mod-chip { font-size: 10px; padding: 2px 7px; background: rgba(255,255,255,0.06); border-radius: 4px; color: #64748b; }
+    .lh-mod-time { font-size: 12px; color: #475569; flex-shrink: 0; }
+    .lh-mod-btn { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; transition: all 0.2s; flex-shrink: 0; }
+
+    /* Quiz card */
+    .lh-quiz-card { display: flex; align-items: center; gap: 18px; padding: 18px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; margin: 8px 18px 18px; }
+    .lh-quiz-icon { font-size: 2rem; flex-shrink: 0; }
+    .lh-quiz-info { flex: 1; }
+    .lh-quiz-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .lh-quiz-desc { font-size: 13px; color: #64748b; }
+    .lh-quiz-score { font-size: 13px; font-weight: 600; color: #10b981; margin-top: 4px; }
+    .lh-quiz-btn { padding: 9px 22px; border-radius: 10px; font-size: 13px; font-weight: 700; transition: all 0.2s; flex-shrink: 0; }
+
+    /* Quiz Modal */
+    .zt-quiz-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(5,12,20,0.9); backdrop-filter: blur(14px); display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .zt-quiz-modal { background: #0d1929; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; width: 100%; max-width: 660px; max-height: 88vh; overflow-y: auto; padding: 36px; position: relative; box-shadow: 0 32px 80px rgba(0,0,0,0.5); }
+    .zt-quiz-close { position: absolute; top: 18px; right: 18px; width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.07); color: #94a3b8; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .zt-quiz-close:hover { background: rgba(255,255,255,0.14); color: #fff; }
+    .zt-quiz-header { margin-bottom: 24px; }
+    .zt-quiz-title { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+    .zt-quiz-progress-bar { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-bottom: 7px; overflow: hidden; }
+    .zt-quiz-progress-fill { height: 100%; background: linear-gradient(90deg,#3b82f6,#8b5cf6); border-radius: 2px; transition: width 0.4s; }
+    .zt-quiz-counter { font-size: 12px; color: #64748b; }
+    .zt-quiz-question { font-size: 16px; font-weight: 600; line-height: 1.5; margin-bottom: 20px; color: #f0f6ff; }
+    .zt-quiz-options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+    .zt-quiz-option { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border: 1px solid rgba(255,255,255,0.09); border-radius: 11px; background: rgba(255,255,255,0.03); color: #e2e8f0; font-size: 14px; text-align: left; transition: all 0.2s; cursor: pointer; }
+    .zt-quiz-option:hover:not([disabled]) { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.06); }
+    .zt-quiz-option.correct { border-color: #10b981; background: rgba(16,185,129,0.1); color: #6ee7b7; }
+    .zt-quiz-option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.08); color: #fca5a5; }
+    .zt-option-letter { width: 26px; height: 26px; border-radius: 7px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .zt-option-text { flex: 1; }
+    .zt-option-check { color: #10b981; font-weight: 700; margin-left: auto; }
+    .zt-option-x { color: #ef4444; font-weight: 700; margin-left: auto; }
+    .zt-quiz-explanation { background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.18); border-radius: 11px; padding: 13px 15px; font-size: 14px; color: #93c5fd; line-height: 1.6; margin-bottom: 18px; }
+    .zt-quiz-nav { display: flex; justify-content: space-between; align-items: center; }
+    .zt-quiz-nav-btn { padding: 9px 22px; border-radius: 10px; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; transition: all 0.2s; }
+    .zt-quiz-nav-btn:hover { border-color: rgba(255,255,255,0.22); color: #e2e8f0; }
+    .zt-quiz-nav-btn.primary { background: linear-gradient(135deg,#3b82f6,#6366f1); border-color: transparent; color: #fff; }
+    .zt-quiz-nav-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+    .zt-quiz-result { text-align: center; padding: 16px 0; }
+    .zt-result-icon { font-size: 3.5rem; margin-bottom: 14px; }
+    .zt-result-score { font-size: 60px; font-weight: 800; line-height: 1; margin-bottom: 8px; }
+    .pass .zt-result-score { color: #10b981; }
+    .fail .zt-result-score { color: #f59e0b; }
+    .zt-result-label { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .zt-result-detail { font-size: 14px; color: #64748b; margin-bottom: 10px; }
+    .zt-result-msg { font-size: 14px; color: #94a3b8; max-width: 380px; margin: 0 auto 22px; line-height: 1.6; }
+    .zt-result-actions { display: flex; justify-content: center; gap: 10px; margin-bottom: 28px; }
+    .zt-result-breakdown { text-align: left; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 18px; }
+    .zt-breakdown-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #64748b; margin-bottom: 7px; line-height: 1.4; }
+    .zt-breakdown-item.correct span:first-child { color: #10b981; font-weight: 700; }
+    .zt-breakdown-item.wrong span:first-child { color: #ef4444; font-weight: 700; }
+
+    /* Badges */
+    .lh-badges { display: grid; grid-template-columns: repeat(auto-fill,minmax(155px,1fr)); gap: 12px; }
+    .lh-badge-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 18px 12px; text-align: center; transition: all 0.2s; }
+    .lh-badge-card.earned:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.14); }
+    .lh-badge-card.locked { opacity: 0.35; filter: grayscale(1); }
+    .lh-badge-icon { font-size: 2rem; margin-bottom: 9px; display: block; }
+    .lh-badge-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .lh-badge-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
+
+    /* Glossary */
+    .lh-gloss-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(230px,1fr)); gap: 10px; margin-top: 20px; }
+    .lh-term { padding: 11px 14px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); }
+    .lh-term-name { font-size: 12px; font-weight: 700; color: #93c5fd; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+    .lh-term-def { font-size: 12px; color: #64748b; line-height: 1.5; }
+
+    .lh-footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 20px 32px; text-align: center; font-size: 12px; color: #334155; margin-top: auto; }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="lh-nav">
+  <div style="display:flex;align-items:center;">
+    <span class="lh-nav-logo">Zeotap CDP</span>
+    <span class="lh-nav-sep">/</span>
+    <span class="lh-nav-title">Learning Hub</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="lh-progress-badge" id="nav-badge">📚 0% Complete</div>
+    <a href="index.html" class="lh-nav-back">← Platform Map</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="lh-hero">
+  <div class="lh-eyebrow">🎓 Interactive Learning Platform</div>
+  <h1 class="lh-h1">Master Zeotap CDP<br><span class="grad">From Zero to Hero</span></h1>
+  <p class="lh-sub">Structured learning paths, knowledge-check quizzes, and progress tracking — everything you need to understand how Zeotap works end to end.</p>
+</section>
+
+<!-- Stats -->
+<div class="lh-stats">
+  <div class="lh-stat"><div class="lh-stat-n" id="s-done" style="color:#3b82f6">0</div><div class="lh-stat-l">Modules Completed</div></div>
+  <div class="lh-stat"><div class="lh-stat-n" id="s-quiz" style="color:#10b981">0</div><div class="lh-stat-l">Quizzes Passed</div></div>
+  <div class="lh-stat"><div class="lh-stat-n" id="s-badge" style="color:#f59e0b">0</div><div class="lh-stat-l">Badges Earned</div></div>
+  <div class="lh-stat"><div class="lh-stat-n" id="s-total" style="color:#8b5cf6">16</div><div class="lh-stat-l">Total Modules</div></div>
+</div>
+
+<!-- Flow Playground -->
+<div class="lh-sec">
+  <div class="lh-flow-box">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+      <div>
+        <div class="lh-sec-title" style="margin-bottom:4px;">🔄 End-to-End Data Flow Playground</div>
+        <div class="lh-sec-sub" style="margin-bottom:0;">Click any step to explore it. Hit Simulate to watch data travel through the full Zeotap pipeline.</div>
+      </div>
+      <button class="lh-simulate-btn" onclick="Flow.sim()">▶ Simulate Journey</button>
+    </div>
+    <div class="lh-flow-track" id="flow-track"></div>
+    <div class="lh-flow-detail" id="flow-detail">
+      <div class="lh-flow-detail-t">👆 Select a step above to explore it</div>
+      <div class="lh-flow-detail-p">Each node plays a critical role. Click to see what tech powers it and how it connects to the rest of the system.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Learning Paths -->
+<div class="lh-sec">
+  <div class="lh-sec-title">📚 Learning Paths</div>
+  <div class="lh-sec-sub">Choose a structured path and track your progress module by module.</div>
+  <div class="lh-paths-grid" id="paths-overview"></div>
+  <div id="paths-detail" style="margin-top:36px;"></div>
+</div>
+
+<!-- Glossary -->
+<div class="lh-sec">
+  <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:28px;">
+    <div class="lh-sec-title" style="margin-bottom:4px;">📖 Essential Zeotap Glossary</div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:0;">The 20 terms every Zeotap engineer must know</div>
+    <div class="lh-gloss-grid" id="glossary"></div>
+  </div>
+</div>
+
+<!-- Badges -->
+<div class="lh-sec">
+  <div class="lh-sec-title">🏆 Achievements</div>
+  <div class="lh-sec-sub">Earn badges as you complete modules and pass quizzes.</div>
+  <div class="lh-badges" id="badges"></div>
+</div>
+
+<footer class="lh-footer">Zeotap CDP Learning Hub · Progress saved locally in your browser</footer>
+
+<!-- Quiz Modal -->
+<div class="zt-quiz-overlay" id="quiz-overlay" style="display:none;" onclick="if(event.target===this)closeQuiz()">
+  <div class="zt-quiz-modal">
+    <button class="zt-quiz-close" onclick="closeQuiz()">✕</button>
+    <div id="quiz-content"></div>
+  </div>
+</div>
+
+<script src="assets/learning-engine.js"></script>
+<script>
+/* ── Glossary ── */
+const GLOSSARY = [
+  {t:'UCID',d:'Unified Customer ID — the persistent cross-device identifier at the core of Zeotap.'},
+  {t:'CDP',d:'Customer Data Platform — software that builds unified profiles from multiple data sources.'},
+  {t:'Delta Lake',d:'Open-source storage layer on GCS providing ACID transactions for the profile store.'},
+  {t:'CDAP',d:'Cloud Data Application Platform — used to build and orchestrate ingestion pipelines.'},
+  {t:'Kafka',d:'Apache Kafka — the real-time event streaming backbone connecting all ingestion pipelines.'},
+  {t:'Apache Beam',d:'Unified batch/streaming model. Used for data transformation jobs in Zeotap.'},
+  {t:'Identity Graph',d:'Graph database mapping all known IDs (cookies, emails, device IDs) to one UCID.'},
+  {t:'GKE',d:'Google Kubernetes Engine — Zeotap\'s container orchestration platform on GCP.'},
+  {t:'Vertex AI',d:'Google\'s ML platform used for model training, serving, and RAG pipelines.'},
+  {t:'RAG',d:'Retrieval-Augmented Generation — how Zoe AI combines vector search with LLMs.'},
+  {t:'S2S API',d:'Server-to-Server API — the HTTP endpoint receiving events from SDKs and backends.'},
+  {t:'Segment',d:'A dynamic audience defined by rules on profile attributes and behavioral data.'},
+  {t:'Journey Canvas',d:'Zeotap\'s visual multi-step campaign builder that orchestrates messages across channels.'},
+  {t:'ArgoCD',d:'GitOps continuous delivery tool Zeotap uses to deploy services to GKE.'},
+  {t:'Terraform',d:'Infrastructure-as-Code tool for provisioning and managing all GCP cloud resources.'},
+  {t:'Prometheus',d:'Open-source metrics collection system. Zeotap scrapes all services for SLO monitoring.'},
+  {t:'Auth0',d:'Identity provider used for user auth, SSO (SAML/OIDC), and RBAC across Zeotap.'},
+  {t:'GDPR',d:'EU regulation governing personal data — drives consent, erasure, and audit features.'},
+  {t:'Propensity Score',d:'ML-generated 0–1 probability of a user taking an action (e.g. purchase, churn).'},
+  {t:'OpenTelemetry',d:'Vendor-neutral observability standard. Zeotap uses it for traces, metrics, and logs.'},
+];
+
+/* ── Flow Steps ── */
+const FLOW = [
+  {id:'sdk',icon:'📲',name:'SDK',color:'#3b82f6',rgb:'59,130,246',page:'02-data-collection.html',title:'1. Data Collection — SDK / Source Events',text:'Every user interaction starts here. Zeotap\'s Web SDK, Mobile SDK, or S2S API receives events (page views, clicks, purchases) and batches them for transmission. Each event carries a user ID, timestamp, event type, and properties payload.',tech:[{n:'Web SDK',c:'#3b82f6'},{n:'Mobile SDK',c:'#3b82f6'},{n:'S2S HTTP API',c:'#6366f1'},{n:'Batch Import',c:'#8b5cf6'}]},
+  {id:'kafka',icon:'🌊',name:'Kafka',color:'#f59e0b',rgb:'245,158,11',page:'03-data-ingestion.html',title:'2. Streaming Backbone — Apache Kafka',text:'Events flow into Kafka topics immediately on receipt. Kafka is the durable, high-throughput message bus. Multiple consumer groups read the same events: ingestion pipeline, real-time segment evaluation, and audit log — all independently.',tech:[{n:'Apache Kafka',c:'#f59e0b'},{n:'Pub/Sub',c:'#f59e0b'},{n:'Consumer Groups',c:'#f97316'}]},
+  {id:'pipeline',icon:'⚙️',name:'Ingestion',color:'#10b981',rgb:'16,185,129',page:'03-data-ingestion.html',title:'3. Data Processing — Ingestion Pipeline',text:'Apache Beam and Spark jobs consume Kafka events, performing schema validation, PII masking, enrichment, and normalization. CDAP orchestrates multi-step pipeline runs. Processed data lands in GCS (raw → processed zone) and BigQuery for analytics.',tech:[{n:'Apache Beam',c:'#10b981'},{n:'Apache Spark',c:'#10b981'},{n:'CDAP',c:'#06b6d4'},{n:'GCS',c:'#f59e0b'},{n:'BigQuery',c:'#f59e0b'}]},
+  {id:'identity',icon:'🔗',name:'Identity',color:'#8b5cf6',rgb:'139,92,246',page:'03-identity-resolution.html',title:'4. Identity Resolution — Unification',text:'The identity resolution service reads incoming events and resolves all identifiers (cookie, device ID, email, phone) to a single UCID. Using a deterministic graph (exact match on hashed email/phone) and probabilistic model (behavioral signals), it stitches cross-device journeys.',tech:[{n:'Identity Graph',c:'#8b5cf6'},{n:'UCID',c:'#a78bfa'},{n:'Deterministic',c:'#8b5cf6'},{n:'Probabilistic ML',c:'#7c3aed'}]},
+  {id:'profiles',icon:'👤',name:'Profiles',color:'#06b6d4',rgb:'6,182,212',page:'05-profile-store.html',title:'5. Profile Store — Delta Lake',text:'Resolved profiles are written to Delta Lake on GCS. The Profile Store is the single source of truth: behavioral history, computed traits, consent flags, event counts. ACID transactions ensure consistency during concurrent writes. Profile API exposes real-time lookups.',tech:[{n:'Delta Lake',c:'#06b6d4'},{n:'GCS',c:'#f59e0b'},{n:'Profile API',c:'#06b6d4'},{n:'ACID',c:'#0ea5e9'}]},
+  {id:'segments',icon:'🎯',name:'Audiences',color:'#f43f5e',rgb:'244,63,94',page:'06-audience-management.html',title:'6. Audience Management — Real-time Segmentation',text:'The Segment Engine evaluates audience rules in real-time as profile updates arrive. 18,000+ audiences run simultaneously. Zoe AI lets analysts describe segments in plain English. ML-powered lookalike expansion broadens each audience.',tech:[{n:'Segment Builder',c:'#f43f5e'},{n:'Real-time Eval',c:'#f43f5e'},{n:'Zoe AI',c:'#8b5cf6'},{n:'Lookalike ML',c:'#7c3aed'}]},
+  {id:'journeys',icon:'🗺️',name:'Journeys',color:'#f97316',rgb:'249,115,22',page:'07-customer-journeys.html',title:'7. Customer Journeys — Orchestration',text:'When a customer enters or exits a segment, the Journey Engine fires. Journey Canvas lets marketers design multi-step conditional workflows: send email → wait 2 days → if opened, SMS → else push notification. ML propensity scores personalize branching logic.',tech:[{n:'Journey Canvas',c:'#f97316'},{n:'Event Triggers',c:'#f97316'},{n:'A/B Test',c:'#f59e0b'},{n:'ML Propensity',c:'#8b5cf6'}]},
+  {id:'activation',icon:'📤',name:'Activation',color:'#a78bfa',rgb:'167,139,250',page:'08-data-activation.html',title:'8. Data Activation — 100+ Destinations',text:'The final step: audience membership and journey actions sync to 100+ activation destinations — Google Ads, Meta, Trade Desk, Salesforce, webhooks. Privacy checks run at dispatch: consent flags verified, GDPR erasure lists respected. Real-time and batch exports both supported.',tech:[{n:'Google Ads',c:'#a78bfa'},{n:'Meta Ads',c:'#a78bfa'},{n:'Webhooks',c:'#a78bfa'},{n:'SFTP Export',c:'#6366f1'},{n:'Privacy Check',c:'#f43f5e'}]},
+];
+
+/* ── Flow render ── */
+const Flow = {
+  simTimer: null,
+  render() {
+    const t = document.getElementById('flow-track');
+    if(!t) return;
+    t.innerHTML = FLOW.map((s,i) => `
+      <div style="display:flex;align-items:center;">
+        <div class="lh-flow-step" id="fs-${s.id}" style="--sc:${s.color};--sr:${s.rgb};" onclick="Flow.pick('${s.id}')">
+          <span class="lh-flow-step-icon">${s.icon}</span>
+          <div class="lh-flow-step-name">${s.name}</div>
+        </div>
+        ${i<FLOW.length-1?'<span class="lh-flow-arrow">→</span>':''}
+      </div>
+    `).join('');
+  },
+  pick(id) {
+    const s = FLOW.find(x=>x.id===id); if(!s) return;
+    document.querySelectorAll('.lh-flow-step').forEach(el=>el.classList.remove('active'));
+    document.getElementById('fs-'+id)?.classList.add('active');
+    const d = document.getElementById('flow-detail');
+    d.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:1.4rem;">${s.icon}</span>
+        <div class="lh-flow-detail-t" style="color:${s.color};">${s.title}</div>
+        <a href="${s.page}" style="margin-left:auto;font-size:12px;color:${s.color};border:1px solid ${s.color}40;padding:3px 10px;border-radius:6px;">Docs →</a>
+      </div>
+      <div class="lh-flow-detail-p">${s.text}</div>
+      <div class="lh-flow-pills">${s.tech.map(t=>`<span class="lh-flow-pill" style="background:${t.c}18;color:${t.c};border:1px solid ${t.c}28;">${t.n}</span>`).join('')}</div>
+    `;
+  },
+  sim() {
+    let i=0; if(this.simTimer) clearInterval(this.simTimer);
+    document.querySelectorAll('.lh-flow-step').forEach(el=>el.classList.remove('active'));
+    this.simTimer = setInterval(()=>{ if(i>=FLOW.length){clearInterval(this.simTimer);return;} this.pick(FLOW[i].id); i++; }, 800);
+  }
+};
+
+/* ── Paths ── */
+function renderPaths() {
+  const LE = window.ZTLearn; if(!LE) return;
+  const ov = document.getElementById('paths-overview');
+  const dt = document.getElementById('paths-detail');
+  const cmap = {'#3b82f6':'59,130,246','#8b5cf6':'139,92,246'};
+
+  ov.innerHTML = Object.values(LE.PATHS).map(p => {
+    const all = p.phases.flatMap(x=>x.modules);
+    const done = all.filter(m=>LE.Progress.isComplete(m.id)).length;
+    const pct = Math.round(done/all.length*100);
+    const rgb = cmap[p.color]||'59,130,246';
+    return `
+      <div class="lh-path-card" onclick="togglePath('${p.id}')" style="border-color:rgba(${rgb},0.15)">
+        <div class="lh-path-ph">
+          <div class="lh-path-icon" style="background:rgba(${rgb},0.12)">${p.icon}</div>
+          <div><div class="lh-path-title">${p.title}</div><div class="lh-path-sub">${p.subtitle}</div></div>
+        </div>
+        <div class="lh-path-bar-row">
+          <div class="lh-path-bar-bg"><div class="lh-path-bar-fill" style="width:${pct}%;background:${p.color};"></div></div>
+          <div class="lh-path-pct" style="color:${p.color};">${pct}%</div>
+        </div>
+        <div class="lh-path-meta">
+          <span>📚 ${all.length} modules</span><span>✅ ${done} done</span><span>⏱ ~${all.reduce((s,m)=>s+parseInt(m.time),0)} min</span>
+        </div>
+        <span class="lh-path-cta" style="background:rgba(${rgb},0.12);color:${p.color};">${pct===0?'🚀 Start':pct===100?'🎓 Done!':'▶ Continue'} →</span>
+      </div>
+    `;
+  }).join('');
+
+  dt.innerHTML = Object.values(LE.PATHS).map(p => `
+    <div id="pd-${p.id}" style="display:none;margin-bottom:40px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <span style="font-size:1.4rem;">${p.icon}</span>
+        <div><div style="font-size:18px;font-weight:700;">${p.title}</div><div style="font-size:13px;color:#64748b;">${p.subtitle}</div></div>
+      </div>
+      ${p.phases.map(ph=>renderPhase(ph)).join('')}
+    </div>
+  `).join('');
+}
+
+function renderPhase(ph) {
+  const LE = window.ZTLearn;
+  const done = ph.modules.filter(m=>LE.Progress.isComplete(m.id)).length;
+  const allDone = done===ph.modules.length;
+  const quiz = LE.QUIZZES[ph.quiz_id];
+  const qs = quiz ? LE.QuizScores.getBest(ph.quiz_id) : null;
+  return `
+    <div class="lh-phase">
+      <div class="lh-phase-hdr" onclick="togglePhase('${ph.id}')">
+        <div class="lh-phase-dot" style="background:${ph.color};"></div>
+        <div class="lh-phase-name">${ph.title}</div>
+        <div class="lh-phase-info" style="color:${allDone?'#10b981':'#64748b'}">${allDone?'✓ Complete':`${done}/${ph.modules.length}`}</div>
+        ${qs?`<div class="lh-phase-info" style="color:#f59e0b;margin-left:8px;">📝 ${qs.pct}%</div>`:''}
+        <div class="lh-phase-chev">▼</div>
+      </div>
+      <div class="lh-phase-body" id="pb-${ph.id}">
+        ${ph.modules.map(m=>renderMod(m,ph.color)).join('')}
+        ${quiz?renderQuizCard(ph.quiz_id,quiz):''}
+      </div>
+    </div>
+  `;
+}
+
+function renderMod(mod, color) {
+  const LE = window.ZTLearn;
+  const done = LE.Progress.isComplete(mod.id);
+  return `
+    <div class="lh-mod-row">
+      <div class="lh-mod-check ${done?'done':''}">${done?'✓':''}</div>
+      <span class="lh-mod-icon">${mod.icon}</span>
+      <div class="lh-mod-info">
+        <div class="lh-mod-title">${mod.title}</div>
+        <div class="lh-mod-chips">${mod.key_concepts.slice(0,4).map(c=>`<span class="lh-mod-chip">${c}</span>`).join('')}</div>
+      </div>
+      <div class="lh-mod-time">⏱ ${mod.time}</div>
+      <a href="${mod.page}" class="lh-mod-btn" onclick="markMod('${mod.id}')"
+        style="background:rgba(${done?'16,185,129':'59,130,246'},0.1);color:${done?'#10b981':'#3b82f6'};border:1px solid ${done?'rgba(16,185,129,0.3)':'rgba(59,130,246,0.3)'};">
+        ${done?'✓ Done':'📖 Read'}
+      </a>
+    </div>
+  `;
+}
+
+function renderQuizCard(qid, quiz) {
+  const LE = window.ZTLearn;
+  const qs = LE.QuizScores.getBest(qid);
+  const passed = qs && qs.pct >= quiz.pass_score;
+  return `
+    <div class="lh-quiz-card">
+      <div class="lh-quiz-icon">📝</div>
+      <div class="lh-quiz-info">
+        <div class="lh-quiz-title">${quiz.title}</div>
+        <div class="lh-quiz-desc">${quiz.questions.length} questions · Pass: ${quiz.pass_score}%</div>
+        ${qs?`<div class="lh-quiz-score">${passed?'✅':'⚠️'} Best: ${qs.pct}% (${qs.score}/${qs.total})</div>`:''}
+      </div>
+      <button class="lh-quiz-btn" onclick="openQuiz('${qid}')"
+        style="background:${passed?'rgba(16,185,129,0.1)':'linear-gradient(135deg,#3b82f6,#6366f1)'};color:${passed?'#10b981':'#fff'};border:1px solid ${passed?'rgba(16,185,129,0.3)':'transparent'};">
+        ${qs?(passed?'🔁 Retake':'🔁 Retry'):'🚀 Take Quiz'}
+      </button>
+    </div>
+  `;
+}
+
+/* ── Badges ── */
+function renderBadges() {
+  const LE = window.ZTLearn;
+  const earned = LE.BadgeManager.get();
+  document.getElementById('badges').innerHTML = Object.values(LE.BADGES).map(b => {
+    const e = earned.includes(b.id);
+    return `
+      <div class="lh-badge-card ${e?'earned':'locked'}" style="${e?'border-color:'+b.color+'28;':''}">
+        <span class="lh-badge-icon">${b.icon}</span>
+        <div class="lh-badge-title" style="${e?'color:'+b.color+';':''}">${b.title}</div>
+        <div class="lh-badge-desc">${b.desc}</div>
+        <div style="font-size:11px;margin-top:5px;font-weight:600;color:${e?'#10b981':'#334155'}">${e?'✓ Earned':'🔒 Locked'}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ── Stats ── */
+function updateStats() {
+  const LE = window.ZTLearn; if(!LE) return;
+  const p = LE.getOverallProgress();
+  const qs = Object.values(LE.QuizScores.get()).filter(s=>s.pct>=70).length;
+  const bs = LE.BadgeManager.get().length;
+  document.getElementById('s-done').textContent = p.completed;
+  document.getElementById('s-quiz').textContent = qs;
+  document.getElementById('s-badge').textContent = bs;
+  const nb = document.getElementById('nav-badge');
+  if(nb) nb.textContent = '📚 ' + p.pct + '% Complete';
+}
+
+/* ── Toggles ── */
+function togglePath(pid) {
+  const el = document.getElementById('pd-'+pid); if(!el) return;
+  const vis = el.style.display!=='none';
+  document.querySelectorAll('[id^="pd-"]').forEach(d=>d.style.display='none');
+  if(!vis) el.style.display='block';
+}
+function togglePhase(pid) {
+  const hdr = document.querySelector(`#pb-${pid}`)?.previousElementSibling;
+  const body = document.getElementById('pb-'+pid);
+  if(!hdr||!body) return;
+  const open = body.classList.contains('open');
+  hdr.classList.toggle('open',!open);
+  body.classList.toggle('open',!open);
+}
+function markMod(id) {
+  const LE = window.ZTLearn; if(LE) LE.Progress.markComplete(id);
+  setTimeout(()=>{renderPaths();renderBadges();updateStats();},200);
+}
+
+/* ── Quiz Modal ── */
+function openQuiz(qid) {
+  const ov=document.getElementById('quiz-overlay'); if(!ov) return;
+  ov.style.display='flex'; document.body.style.overflow='hidden';
+  window.ZTLearn._closeQuiz = closeQuiz;
+  window.ZTLearn.startQuiz(qid, document.getElementById('quiz-content'));
+}
+function closeQuiz() {
+  const ov=document.getElementById('quiz-overlay'); if(ov){ov.style.display='none'; document.body.style.overflow='';}
+  renderPaths(); renderBadges(); updateStats();
+}
+window.ZTLearnPage = { refresh: ()=>{ renderPaths(); renderBadges(); updateStats(); } };
+
+/* ── Glossary ── */
+function renderGlossary() {
+  document.getElementById('glossary').innerHTML = GLOSSARY.map(g=>
+    `<div class="lh-term"><div class="lh-term-name">${g.t}</div><div class="lh-term-def">${g.d}</div></div>`
+  ).join('');
+}
+
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded', () => {
+  renderGlossary();
+  Flow.render(); Flow.pick('sdk');
+  renderPaths(); renderBadges(); updateStats();
+  setTimeout(()=>togglePath('new_employee'),80);
+  setTimeout(()=>togglePhase('week1'),160);
+});
+</script>
+</body>
+</html>

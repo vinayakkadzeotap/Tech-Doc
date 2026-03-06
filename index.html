@@ -2994,6 +2994,21 @@
       </div>
     </div>
 
+    <!-- Learning Progress Widget -->
+    <div id="sidebar-lw" style="margin:10px 14px 4px;background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(59,130,246,0.18);border-radius:12px;padding:11px 13px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <div style="font-size:11px;font-weight:700;color:#93c5fd;">🎓 Your Progress</div>
+        <a href="learning-hub.html" style="font-size:10px;color:#3b82f6;text-decoration:none;font-weight:600;">Hub →</a>
+      </div>
+      <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:6px;">
+        <div id="slw-bar" style="height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);border-radius:2px;width:0%;transition:width 0.6s ease;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <div style="font-size:10px;color:#64748b;" id="slw-txt">0/16 modules</div>
+        <div style="font-size:10px;color:#f59e0b;" id="slw-bdg">0 badges</div>
+      </div>
+    </div>
+
     <!-- Scrollable area -->
     <div style="flex:1;overflow-y:auto;padding-bottom:8px;">
 
@@ -3171,6 +3186,9 @@
           <span class="dbg-indicator"></span>
           Debug Mode
         </button>
+        <a href="learning-hub.html" class="graph-btn" style="text-decoration:none;" title="Interactive learning paths, quizzes & progress tracking">
+          <span style="font-size:14px">🎓</span> Learning Hub
+        </a>
         <button class="graph-btn" onclick="window.startPlatformTour()">
           <span style="font-size:14px">✨</span> Start Platform Tour
         </button>
@@ -4664,6 +4682,22 @@
         });
       }
     })();
+  </script>
+
+  <!-- Learning Engine + Sidebar Progress Widget -->
+  <script src="assets/learning-engine.js"></script>
+  <script>
+    window.addEventListener('load', function() {
+      var LE = window.ZTLearn; if(!LE) return;
+      var p = LE.getOverallProgress();
+      var bs = LE.BadgeManager.get().length;
+      var bar = document.getElementById('slw-bar');
+      var txt = document.getElementById('slw-txt');
+      var bdg = document.getElementById('slw-bdg');
+      if(bar) bar.style.width = p.pct + '%';
+      if(txt) txt.textContent = p.completed + '/16 modules';
+      if(bdg) bdg.textContent = bs + (bs===1?' badge':' badges');
+    });
   </script>
 
   <!-- Side Panel Overlay Hook (will be managed by graph-enhancements.js) -->
