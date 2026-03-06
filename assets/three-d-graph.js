@@ -417,103 +417,169 @@
     });
   }
 
+  /* ── WEBGL DETECTION ─────────────────────────────────────────── */
+  function isWebGLAvailable() {
+    try {
+      var canvas = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext &&
+        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* ── 2D FALLBACK ─────────────────────────────────────────────── */
+  function render2DFallback(container) {
+    var groups = {};
+    NODES.forEach(function(n) {
+      var cat = n.category || 'platform';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(n);
+    });
+    var color = function(cat) { return (CATEGORY[cat] || {}).color || '#64748b'; };
+
+    container.style.cssText = (container.style.cssText || '') +
+      'overflow-y:auto;display:flex;flex-direction:column;gap:16px;padding:20px 16px;';
+    container.innerHTML =
+      '<div style="font-size:13px;color:#475569;text-align:center;margin-bottom:4px;">📊 2D Architecture Map — WebGL unavailable in this environment</div>' +
+      Object.keys(groups).map(function(cat) {
+        var c = color(cat);
+        return '<div style="border:1px solid ' + c + '30;border-radius:12px;overflow:hidden;">' +
+          '<div style="background:' + c + '18;padding:8px 14px;font-size:11px;font-weight:700;color:' + c + ';text-transform:uppercase;letter-spacing:1px;">' +
+          (CATEGORY[cat] || {}).label || cat + '</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;">' +
+          groups[cat].map(function(n) {
+            return '<a href="' + (n.url||'#') + '" title="' + n.desc + '" style="display:flex;align-items:center;gap:8px;background:' + c + '10;border:1px solid ' + c + '25;border-radius:8px;padding:6px 12px;text-decoration:none;transition:background 0.15s;cursor:pointer;">' +
+              '<span style="width:8px;height:8px;border-radius:50%;background:' + c + ';flex-shrink:0;"></span>' +
+              '<span style="font-size:12px;font-weight:600;color:#e2e8f0;">' + n.label + '</span>' +
+              '<span style="font-size:10px;color:#64748b;font-family:monospace;">' + (n.tech||[]).slice(0,2).join('·') + '</span>' +
+              '</a>';
+          }).join('') +
+          '</div></div>';
+      }).join('');
+
+    /* Still expose window.KG as no-op so graph-enhancements.js is satisfied */
+    var noop = function () {};
+    global.KG = {
+      highlight: noop, reset: noop, reheat: noop,
+      animateFlow: noop, simulateEventFlow: noop,
+      activateEdge: noop, enterFocusMode: noop,
+      _fallback: true
+    };
+    document.dispatchEvent(new CustomEvent('kg:ready'));
+  }
+
   /* ── INIT ────────────────────────────────────────────────────── */
   function init(containerId) {
     var container = document.getElementById(containerId);
     if (!container) return;
 
     if (typeof ForceGraph3D === 'undefined') {
-      console.error('[3D-KG] ForceGraph3D not loaded — check CDN');
+      console.warn('[3D-KG] ForceGraph3D not loaded — showing 2D fallback');
+      render2DFallback(container);
+      return;
+    }
+
+    if (!isWebGLAvailable()) {
+      console.warn('[3D-KG] WebGL unavailable — showing 2D fallback');
+      render2DFallback(container);
       return;
     }
 
     /* height set by CSS on #knowledge-graph */
 
-    /* Seed nodes with layered initial positions */
-    var graphData = {
-      nodes: NODES.map(function (n) {
-        return Object.assign({}, n, {
-          x: (CAT_X[n.category] || 0) + (Math.random() - 0.5) * 60,
-          y: (LAYER_Y[n.layer] || 0) + (Math.random() - 0.5) * 30,
-          z: (Math.random() - 0.5) * 80
-        });
-      }),
-      links: LINKS.map(function (l) { return Object.assign({}, l); })
-    };
+    try {
+      /* Seed nodes with layered initial positions */
+      var graphData = {
+        nodes: NODES.map(function (n) {
+          return Object.assign({}, n, {
+            x: (CAT_X[n.category] || 0) + (Math.random() - 0.5) * 60,
+            y: (LAYER_Y[n.layer] || 0) + (Math.random() - 0.5) * 30,
+            z: (Math.random() - 0.5) * 80
+          });
+        }),
+        links: LINKS.map(function (l) { return Object.assign({}, l); })
+      };
 
-    var graph = ForceGraph3D({
-        controlType: 'orbit',
-        rendererConfig: { antialias: true, alpha: false }
-      })(container)
-      .graphData(graphData)
-      .backgroundColor('#050d1a')
-      .nodeLabel(function (n) {
-        var cat = CATEGORY[n.category] || {};
-        return '<div class="kg3d-tip"><b>' + n.label + '</b><span>' + cat.label + ' · click to explore · right-click for docs</span></div>';
-      })
-      .nodeColor(nodeColor)
-      .nodeVal(nodeVal)
-      .nodeRelSize(6)
-      .nodeResolution(16)
-      .nodeOpacity(0.92)
-      .linkColor(linkColor)
-      .linkWidth(linkWidth)
-      .linkOpacity(0.7)
-      .linkCurvature(0.15)
-      .linkDirectionalArrowLength(6)
-      .linkDirectionalArrowRelPos(1)
-      .linkDirectionalParticles(particleCount)
-      .linkDirectionalParticleColor(particleColor)
-      .linkDirectionalParticleWidth(3)
-      .linkDirectionalParticleSpeed(0.007)
-      .onNodeClick(function (node) {
-        enterFocusMode(node.id);
-      })
-      .onNodeRightClick(function (node) {
-        if (node.url) window.location.href = node.url;
-      })
-      .onBackgroundClick(function () {
-        reset();
-      })
-      .onNodeHover(function (node) {
-        container.style.cursor = node ? 'pointer' : 'grab';
+      var graph = ForceGraph3D({
+          controlType: 'orbit',
+          rendererConfig: { antialias: true, alpha: false }
+        })(container)
+        .graphData(graphData)
+        .backgroundColor('#050d1a')
+        .nodeLabel(function (n) {
+          var cat = CATEGORY[n.category] || {};
+          return '<div class="kg3d-tip"><b>' + n.label + '</b><span>' + cat.label + ' · click to explore · right-click for docs</span></div>';
+        })
+        .nodeColor(nodeColor)
+        .nodeVal(nodeVal)
+        .nodeRelSize(6)
+        .nodeResolution(16)
+        .nodeOpacity(0.92)
+        .linkColor(linkColor)
+        .linkWidth(linkWidth)
+        .linkOpacity(0.7)
+        .linkCurvature(0.15)
+        .linkDirectionalArrowLength(6)
+        .linkDirectionalArrowRelPos(1)
+        .linkDirectionalParticles(particleCount)
+        .linkDirectionalParticleColor(particleColor)
+        .linkDirectionalParticleWidth(3)
+        .linkDirectionalParticleSpeed(0.007)
+        .onNodeClick(function (node) {
+          enterFocusMode(node.id);
+        })
+        .onNodeRightClick(function (node) {
+          if (node.url) window.location.href = node.url;
+        })
+        .onBackgroundClick(function () {
+          reset();
+        })
+        .onNodeHover(function (node) {
+          container.style.cursor = node ? 'pointer' : 'grab';
+        });
+
+      /* Weaker charge so layered structure is preserved */
+      graph.d3Force('charge').strength(-120);
+
+      /* Auto-rotate slowly */
+      graph.controls().autoRotate = true;
+      graph.controls().autoRotateSpeed = 0.3;
+
+      /* Stop rotation on user interaction, resume after 4s */
+      graph.controls().addEventListener('start', function () {
+        graph.controls().autoRotate = false;
+      });
+      graph.controls().addEventListener('end', function () {
+        setTimeout(function () {
+          if (!state.focusedId) graph.controls().autoRotate = true;
+        }, 4000);
       });
 
-    /* Weaker charge so layered structure is preserved */
-    graph.d3Force('charge').strength(-120);
+      state.graph = graph;
+      state.container = container;
 
-    /* Auto-rotate slowly */
-    graph.controls().autoRotate = true;
-    graph.controls().autoRotateSpeed = 0.3;
+      buildLegend('graph-legend');
 
-    /* Stop rotation on user interaction, resume after 4s */
-    graph.controls().addEventListener('start', function () {
-      graph.controls().autoRotate = false;
-    });
-    graph.controls().addEventListener('end', function () {
-      setTimeout(function () {
-        if (!state.focusedId) graph.controls().autoRotate = true;
-      }, 4000);
-    });
+      /* Expose public API */
+      global.KG = {
+        highlight: highlight,
+        reset: reset,
+        reheat: reheat,
+        animateFlow: simulateEventFlow,
+        simulateEventFlow: simulateEventFlow,
+        activateEdge: activateEdge,
+        enterFocusMode: enterFocusMode
+      };
 
-    state.graph = graph;
-    state.container = container;
+      document.dispatchEvent(new CustomEvent('kg:ready'));
+      console.info('[3D-KG] Knowledge graph initialized — 17 nodes / 20 links');
 
-    buildLegend('graph-legend');
-
-    /* Expose public API */
-    global.KG = {
-      highlight: highlight,
-      reset: reset,
-      reheat: reheat,
-      animateFlow: simulateEventFlow,
-      simulateEventFlow: simulateEventFlow,
-      activateEdge: activateEdge,
-      enterFocusMode: enterFocusMode
-    };
-
-    document.dispatchEvent(new CustomEvent('kg:ready'));
-    console.info('[3D-KG] Knowledge graph initialized — 17 nodes / 20 links');
+    } catch (err) {
+      /* WebGL context creation failed at runtime — degrade to 2D */
+      console.warn('[3D-KG] WebGL init failed (' + err.message + ') — showing 2D fallback');
+      render2DFallback(container);
+    }
   }
 
   /* ── BOOT ────────────────────────────────────────────────────── */

@@ -11,11 +11,7 @@
   var flowRunning = false;
 
   function hasKG() {
-    if (!global.KG) {
-      console.warn('[GraphEnhancements] Graph engine not initialized');
-      return false;
-    }
-    return true;
+    return !!global.KG;
   }
 
   function clearFlowTimers() {
@@ -207,7 +203,19 @@
       return;
     }
 
-    if (retries <= 0) return;
+    if (retries <= 0) {
+      /* WebGL or graph engine unavailable — install a silent no-op stub
+         so any subsequent hasKG() calls return true and stop retrying,
+         and any KG.highlight() / KG.reset() calls become silent no-ops. */
+      var noop = function () {};
+      global.KG = {
+        highlight: noop, reset: noop, reheat: noop,
+        animateFlow: noop, simulateEventFlow: noop,
+        activateEdge: noop, enterFocusMode: noop,
+        _fallback: true
+      };
+      return;
+    }
 
     setTimeout(function () {
       waitForKG(retries - 1);
