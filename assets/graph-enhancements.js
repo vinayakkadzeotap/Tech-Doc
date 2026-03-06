@@ -188,16 +188,7 @@
   }
 
   function bindBackgroundReset() {
-    var graphHost = document.getElementById('knowledge-graph');
-    if (!graphHost) return;
-
-    graphHost.addEventListener('click', function (event) {
-      if (!hasKG() || flowRunning) return;
-      var target = event.target;
-      var tag = target.tagName ? target.tagName.toLowerCase() : '';
-      var isBackground = target.id === 'knowledge-graph' || tag === 'svg';
-      if (isBackground) global.KG.reset();
-    });
+    /* 3D graph handles background click internally via onBackgroundClick */
   }
 
   function init() {

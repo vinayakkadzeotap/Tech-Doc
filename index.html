@@ -19,8 +19,8 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet" />
 
-  <!-- D3 v7 -->
-  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <!-- 3D Force Graph (Three.js / WebGL) -->
+  <script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1/dist/3d-force-graph.min.js"></script>
 
   <!-- Design System -->
   <link rel="stylesheet" href="assets/dark-system.css?v=1.1" />
@@ -500,6 +500,489 @@
       line-height: 1.5;
     }
 
+    /* ══════════════════════════════════════════════════════════════
+       CINEMATIC OVERLAY
+    ══════════════════════════════════════════════════════════════ */
+    #cin-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    #cin-overlay.visible { opacity: 1; pointer-events: all; }
+    #cin-overlay.hiding  { opacity: 0; pointer-events: none; }
+
+    .cin-bg {
+      position: absolute;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.96);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .cin-panel {
+      position: relative;
+      z-index: 1;
+      width: min(600px, 92vw);
+      background: rgba(9, 15, 28, 0.92);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 40px 44px 36px;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+
+    .cin-logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #3b82f6;
+      margin-bottom: 28px;
+    }
+
+    .cin-step-track {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+
+    .cin-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .cin-dot.active  { background: #3b82f6; width: 24px; border-radius: 3px; }
+    .cin-dot.passed  { background: rgba(59,130,246,0.4); }
+
+    .cin-headline {
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 800;
+      color: #f1f5f9;
+      line-height: 1.25;
+      min-height: 2.5em;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .cin-sub {
+      font-size: 15px;
+      color: rgba(148,163,184,0.9);
+      line-height: 1.65;
+      min-height: 4.5em;
+      margin-bottom: 28px;
+    }
+
+    .cin-progress-wrap {
+      height: 2px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 2px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .cin-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #06b6d4);
+      border-radius: 2px;
+      transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+      width: 0%;
+    }
+
+    .cin-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cin-skip {
+      background: transparent;
+      border: none;
+      color: rgba(148,163,184,0.5);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
+    .cin-skip:hover { color: rgba(148,163,184,0.9); }
+
+    .cin-nav { display: flex; gap: 10px; }
+
+    .cin-btn-sec {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(148,163,184,0.8);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .cin-btn-sec:hover { background: rgba(255,255,255,0.1); color: #f1f5f9; }
+
+    .cin-btn-primary {
+      background: #3b82f6;
+      border: none;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .cin-btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+
+    /* ── 3D graph tooltip label ── */
+    .kg3d-tip {
+      background: rgba(9,15,28,0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: #f1f5f9;
+      pointer-events: none;
+    }
+    .kg3d-tip b { display: block; font-weight: 700; margin-bottom: 2px; }
+    .kg3d-tip span { font-size: 11px; color: rgba(148,163,184,0.7); }
+
+    /* ══════════════════════════════════════════════════════════════
+       STATS BAR
+    ══════════════════════════════════════════════════════════════ */
+    #stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border, rgba(255,255,255,0.07));
+      border: 1px solid var(--border, rgba(255,255,255,0.07));
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 0 64px 40px;
+    }
+
+    @media (max-width: 860px) {
+      #stats-bar { grid-template-columns: repeat(2, 1fr); margin: 0 20px 32px; }
+    }
+    @media (max-width: 480px) {
+      #stats-bar { grid-template-columns: 1fr 1fr; }
+    }
+
+    .stat-cell {
+      background: rgba(255,255,255,0.018);
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background 0.2s;
+    }
+    .stat-cell:hover { background: rgba(255,255,255,0.035); }
+
+    .stat-num {
+      font-size: clamp(26px, 4vw, 36px);
+      font-weight: 800;
+      color: #f1f5f9;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(148,163,184,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       SCENARIO CARDS
+    ══════════════════════════════════════════════════════════════ */
+    #scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin: 0 64px 40px;
+    }
+
+    @media (max-width: 1100px) { #scenario-grid { grid-template-columns: repeat(3, 1fr); margin: 0 32px 32px; } }
+    @media (max-width: 720px)  { #scenario-grid { grid-template-columns: repeat(2, 1fr); margin: 0 20px 28px; } }
+
+    .scenario-card {
+      background: rgba(255,255,255,0.018);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 20px 18px;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scenario-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top left, color-mix(in srgb, var(--sc-color) 12%, transparent) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      border-radius: 14px;
+    }
+
+    .scenario-card:hover, .scenario-card.active {
+      border-color: color-mix(in srgb, var(--sc-color) 50%, transparent);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+    }
+
+    .scenario-card:hover::before, .scenario-card.active::before { opacity: 1; }
+
+    .scenario-card.active {
+      background: color-mix(in srgb, var(--sc-color) 8%, rgba(9,15,28,0.9));
+    }
+
+    .sc-icon { font-size: 22px; margin-bottom: 10px; }
+
+    .sc-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .sc-desc {
+      font-size: 11.5px;
+      color: rgba(148,163,184,0.65);
+      line-height: 1.55;
+      margin-bottom: 12px;
+    }
+
+    .sc-nodes { display: flex; flex-wrap: wrap; gap: 4px; }
+
+    .sc-node-pill {
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.07);
+      color: rgba(148,163,184,0.6);
+      letter-spacing: 0.02em;
+    }
+
+    /* Narration banner */
+    .sc-narration {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 20px;
+      background: rgba(9,15,28,0.92);
+      border: 1px solid color-mix(in srgb, var(--sc-color) 40%, transparent);
+      border-radius: 12px;
+      margin: 0 64px 16px;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    .sc-narration.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    .sc-narration-text { font-size: 13px; color: rgba(148,163,184,0.9); line-height: 1.5; flex: 1; }
+    .sc-narration-close {
+      background: transparent;
+      border: none;
+      color: rgba(148,163,184,0.4);
+      font-size: 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+    .sc-narration-close:hover { color: rgba(148,163,184,0.9); }
+
+    @media (max-width: 720px) {
+      .sc-narration { margin: 0 20px 12px; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       ENHANCED SIDE PANEL (kg-side-panel)
+    ══════════════════════════════════════════════════════════════ */
+    .kg-side-panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 360px;
+      height: 100vh;
+      background: rgba(6, 12, 24, 0.98);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(255,255,255,0.08);
+      z-index: 2000;
+      overflow-y: auto;
+      transition: right 0.4s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+    }
+    .kg-side-panel.open { right: 0; }
+
+    .kg-sp-close {
+      position: sticky;
+      top: 0;
+      margin-left: auto;
+      display: block;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(148,163,184,0.7);
+      font-size: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 16px 16px 0 auto;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .kg-sp-close:hover { background: rgba(255,255,255,0.12); color: #f1f5f9; }
+
+    .kg-sp-body { padding: 16px 24px 40px; }
+
+    .kg-sp-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .kg-sp-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #f1f5f9;
+      margin-bottom: 10px;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .kg-sp-desc {
+      font-size: 13px;
+      color: rgba(148,163,184,0.8);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .kg-sp-section {
+      margin-bottom: 20px;
+    }
+
+    .kg-sp-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(148,163,184,0.4);
+      margin-bottom: 6px;
+    }
+
+    .kg-sp-val {
+      font-size: 12.5px;
+      color: rgba(148,163,184,0.8);
+      line-height: 1.5;
+    }
+
+    .kg-sp-tech { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .focus-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(59,130,246,0.12);
+      color: #60a5fa;
+      border: 1px solid rgba(59,130,246,0.2);
+    }
+
+    .kg-sp-deps { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .kg-dep-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .kg-dep-up {
+      background: rgba(16,185,129,0.1);
+      color: #34d399;
+      border: 1px solid rgba(16,185,129,0.2);
+    }
+    .kg-dep-down {
+      background: rgba(245,158,11,0.1);
+      color: #fbbf24;
+      border: 1px solid rgba(245,158,11,0.2);
+    }
+
+    .kg-sp-cta {
+      display: block;
+      margin-top: 28px;
+      padding: 13px 20px;
+      background: #3b82f6;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .kg-sp-cta:hover { background: #2563eb; transform: translateY(-1px); }
+
+    @media (max-width: 720px) {
+      .kg-side-panel {
+        width: 100%;
+        right: auto;
+        bottom: -70vh;
+        top: auto;
+        height: 70vh;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px 20px 0 0;
+        transition: bottom 0.4s cubic-bezier(0.4,0,0.2,1);
+      }
+      .kg-side-panel.open { bottom: 0; right: auto; }
+    }
+
+    /* ── Explore section label ── */
+    .explore-section-label {
+      padding: 0 64px;
+      margin-bottom: 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(148,163,184,0.45);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    @media (max-width: 1024px) { .explore-section-label { padding: 0 32px; } }
+    @media (max-width: 720px)  { .explore-section-label { padding: 0 20px; } }
+
     /* Tour Overlay */
     .tour-overlay {
       position: fixed;
@@ -778,7 +1261,7 @@
 
     #knowledge-graph {
       width: 100%;
-      height: 540px;
+      height: 680px;
       display: block;
       cursor: grab;
     }
@@ -787,10 +1270,12 @@
       cursor: grabbing;
     }
 
+    #knowledge-graph canvas {
+      display: block;
+    }
+
     .kg-reset-btn {
-      position: absolute;
-      bottom: 14px;
-      right: 14px;
+      position: static;
       padding: 6px 14px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
@@ -2511,7 +2996,7 @@
       <div class="ds-sidebar-section">
         <div class="ds-sidebar-label">I want to…</div>
 
-        <button class="ds-task-btn" data-highlight="collect,ingest,validate" onclick="handleTaskClick(this)">
+        <button class="ds-task-btn" data-highlight="collect,ingest" onclick="handleTaskClick(this)">
           <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -2528,7 +3013,7 @@
             </svg></span>
           <span>Resolve user identities</span>
         </button>
-        <button class="ds-task-btn" data-highlight="audiences,segmentation,rules" onclick="handleTaskClick(this)">
+        <button class="ds-task-btn" data-highlight="audiences,profiles" onclick="handleTaskClick(this)">
           <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10" />
@@ -2537,7 +3022,7 @@
             </svg></span>
           <span>Build audience segments</span>
         </button>
-        <button class="ds-task-btn" data-highlight="destinations,activation,journeys" onclick="handleTaskClick(this)">
+        <button class="ds-task-btn" data-highlight="activation,journeys,audiences" onclick="handleTaskClick(this)">
           <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="22" y1="2" x2="11" y2="13" />
@@ -2545,7 +3030,7 @@
             </svg></span>
           <span>Activate to destinations</span>
         </button>
-        <button class="ds-task-btn" data-highlight="zoe,calc,segmentation" onclick="handleTaskClick(this)">
+        <button class="ds-task-btn" data-highlight="ai,ml,audiences" onclick="handleTaskClick(this)">
           <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon
@@ -2553,7 +3038,7 @@
             </svg></span>
           <span>Use AI for predictions</span>
         </button>
-        <button class="ds-task-btn" data-highlight="privacy,consent,compliance" onclick="handleTaskClick(this)">
+        <button class="ds-task-btn" data-highlight="privacy,auth,activation" onclick="handleTaskClick(this)">
           <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -2568,7 +3053,7 @@
             </svg></span>
           <span>Understand the data pipeline</span>
         </button>
-        <button class="ds-task-btn" data-highlight="infra,api,security" onclick="handleTaskClick(this)">
+        <button class="ds-task-btn" data-highlight="infra,auth,observe,cicd" onclick="handleTaskClick(this)">
           <span class="task-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3" />
@@ -2698,63 +3183,72 @@
 
     <!-- ── HERO ──────────────────────────────────────────────────────── -->
     <section class="ds-hero">
-      <h1 class="ds-hero-title">Interactive CDP Architecture Explorer</h1>
+      <h1 class="ds-hero-title">Zeotap CDP — Platform Intelligence Hub</h1>
       <p class="ds-hero-sub">
-        Understand how Zeotap CDP orchestrates petabyte-scale data through modular,
-        event-driven services. Experiment with real-time flows and dependency traces.
+        A living 3D map of every service, pipeline, and data flow in the Zeotap Customer Data Platform.
+        Click any node to explore. Watch data move in real time.
       </p>
+      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+        <button class="cin-btn-primary" onclick="if(window.Cinematic) Cinematic.reset()" style="font-size:13px;padding:10px 20px;">
+          Watch Platform Story
+        </button>
+        <button class="cin-btn-sec" onclick="if(window.KG) KG.simulateEventFlow(); document.getElementById('knowledge-graph').scrollIntoView({behavior:'smooth'})" style="font-size:13px;padding:10px 20px;">
+          Simulate Event Flow
+        </button>
+      </div>
     </section>
 
-    <div style="padding: 0 64px;">
-      <div
-        style="margin-bottom: 12px; font-size: 14px; font-weight: 700; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em;">
-        How would you like to explore?</div>
-      <div class="explore-grid">
-        <div class="explore-card" onclick="window.startPlatformTour()">
-          <i>🌊</i>
-          <h3>Follow Data Flow</h3>
-          <p>See how a user event travels through the various pipeline stages from collection to activation.</p>
-        </div>
-        <div class="explore-card"
-          onclick="document.getElementById('knowledge-graph').scrollIntoView({behavior:'smooth'});">
-          <i>🔗</i>
-          <h3>Explore Platform Modules</h3>
-          <p>Drill down into specific services like Identity Resolution or Profile Store and see their connections.</p>
-        </div>
-        <div class="explore-card"
-          onclick="document.getElementById('knowledge-graph').scrollIntoView({behavior:'smooth'}); document.getElementById('debug-toggle').click();">
-          <i>🛠️</i>
-          <h3>Investigate System Behavior</h3>
-          <p>Enable Debug Mode to witness common failure points and learn how the system stays resilient.</p>
-        </div>
+    <!-- ── LIVE STATS ─────────────────────────────────────────────────── -->
+    <div id="stats-bar">
+      <div class="stat-cell">
+        <div class="stat-num" id="stat-profiles">14.2B</div>
+        <div class="stat-label">Unified Profiles</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num" id="stat-events">2.1M/s</div>
+        <div class="stat-label">Events per Second</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num" id="stat-destinations">100+</div>
+        <div class="stat-label">Destinations</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num" id="stat-segments">18K+</div>
+        <div class="stat-label">Active Segments</div>
       </div>
     </div>
 
-    <!-- ── KNOWLEDGE GRAPH ───────────────────────────────────────────── -->
+    <!-- ── SCENARIO EXPLORATION ───────────────────────────────────────── -->
+    <div class="explore-section-label">Explore by Use-Case</div>
+    <div id="scenario-grid"></div>
+
+    <!-- ── 3D KNOWLEDGE GRAPH ─────────────────────────────────────────── -->
     <section class="kg-section">
       <div class="ds-section-header">
         <div>
-          <div class="ds-section-title">System Architecture Graph</div>
-          <div class="ds-section-sub">17 modules · 20 data flows · hover to inspect · click to focus · double-click to navigate</div>
+          <div class="ds-section-title">3D Platform Architecture</div>
+          <div class="ds-section-sub">17 services · 20 data flows · click a node to inspect dependencies · right-click to open docs</div>
         </div>
-        <a href="01-platform-overview.html" class="ds-section-link">Full Architecture →</a>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button id="btn-simulate-flow" class="flow-btn" title="Simulate end-to-end event flow">
+            <span class="flow-btn-play">▶</span> Simulate Flow
+          </button>
+          <a href="01-platform-overview.html" class="ds-section-link">Full Architecture →</a>
+        </div>
       </div>
 
       <div class="kg-shell-wrap">
         <div class="kg-toolbar">
           <div class="kg-toolbar-left">
-            <span class="kg-toolbar-title">CDP MODULE MAP</span>
-            <span class="kg-toolbar-hint">Use sidebar tasks to highlight flows · drag nodes to rearrange · click a node for dependency focus</span>
+            <span class="kg-toolbar-title">CDP 3D MODULE MAP</span>
+            <span class="kg-toolbar-hint">Drag to rotate · Scroll to zoom · Click node for focus · Right-click to open docs</span>
           </div>
-          <div style="display: flex; gap: 12px; align-items: center;">
-            <button id="btn-simulate-flow" class="flow-btn" title="Simulate end-to-end event flow">
-              <span class="flow-btn-play">▶</span> Simulate Event Flow
-            </button>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
             <div id="graph-legend" class="kg-legend-wrap"></div>
+            <button id="btn-reset-graph" type="button" class="kg-reset-btn" style="position:static;margin:0;" onclick="if(window.KG) window.KG.reset()">Reset View</button>
           </div>
         </div>
-        <div id="knowledge-graph" role="img" aria-label="Interactive architecture graph workspace"></div>
-        <button id="btn-reset-graph" type="button" class="kg-reset-btn" onclick="if(window.KG) window.KG.reset()">Reset View</button>
+        <div id="knowledge-graph" role="img" aria-label="Interactive 3D architecture graph"></div>
       </div>
     </section>
 
@@ -3917,13 +4411,17 @@
     </div>
   </div>
 
-  <script src="assets/knowledge-graph.js"></script>
+  <!-- 3D graph engine (replaces knowledge-graph.js) -->
+  <script src="assets/three-d-graph.js"></script>
   <script src="assets/graph-enhancements.js"></script>
   <script src="assets/tooltip-system.js"></script>
   <script src="assets/mission-mode.js"></script>
   <script src="assets/page-transition.js"></script>
   <script src="assets/performance-optimizer.js"></script>
   <script src="assets/scripts.js"></script>
+  <!-- New enhancements -->
+  <script src="assets/scenarios.js"></script>
+  <script src="assets/cinematic.js"></script>
   <script>
     /* ── Platform Tour Logic ── */
     const TOUR_STEPS = [
