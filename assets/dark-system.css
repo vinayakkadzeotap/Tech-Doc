@@ -70,6 +70,19 @@
   --font: 'Inter', -apple-system, sans-serif;
   --mono: 'JetBrains Mono', monospace;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* 8px spacing scale */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-6: 48px;
+  --space-8: 64px;
+
+  /* Consistent content width */
+  --layout-max: 1240px;
+  --layout-gutter: clamp(16px, 3vw, 40px);
 }
 
 /* ── BASE ───────────────────────────────────────────────────── */
@@ -1596,6 +1609,106 @@ body.ds-body::before {
 
 .kg-sim-label.visible {
   display: block;
+}
+
+/* ── STABILITY & LAYOUT NORMALIZATION ───────────────────────── */
+html,
+body,
+.main,
+.layout,
+.content,
+.ds-main {
+  background: var(--bg-primary) !important;
+}
+
+body,
+.ds-main,
+main.content {
+  color: var(--text-primary);
+}
+
+.ds-main > section,
+main.content > section,
+.content > section {
+  width: min(100%, var(--layout-max));
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--layout-gutter) !important;
+  padding-right: var(--layout-gutter) !important;
+}
+
+.ds-hero,
+.kg-section,
+.mod-section,
+.lineage-section,
+.task-section,
+.quick-section,
+.enh-section,
+.fail-section,
+.dbg-section {
+  padding-top: var(--space-8) !important;
+  padding-bottom: var(--space-6) !important;
+}
+
+/* ── GRAPH WORKSPACE ─────────────────────────────────────────── */
+.kg-shell-wrap {
+  position: relative;
+  margin: 0 auto;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(2, 6, 23, 0.95) 100%) !important;
+  border: 1px solid var(--border-primary) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 24px 50px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.kg-shell-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.18;
+}
+
+.kg-toolbar,
+#knowledge-graph,
+.kg-reset-btn {
+  position: relative;
+  z-index: 1;
+}
+
+#knowledge-graph {
+  min-height: 560px;
+  width: 100%;
+  padding: var(--space-2);
+}
+
+/* ── MODULE CARD STANDARDIZATION ─────────────────────────────── */
+.ds-mod-card {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-primary) !important;
+  border-radius: var(--radius) !important;
+  padding: var(--space-3) !important;
+  transition: transform 240ms var(--ease), box-shadow 240ms var(--ease), border-color 240ms var(--ease) !important;
+}
+
+.ds-mod-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ── TOOLTIP HARDENING ───────────────────────────────────────── */
+#graph-tooltip,
+.ds-graph-tooltip {
+  max-width: min(320px, calc(100vw - 20px)) !important;
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border-primary) !important;
+  background: rgba(2, 6, 23, 0.96) !important;
+  box-shadow: var(--shadow-soft) !important;
 }
 
 

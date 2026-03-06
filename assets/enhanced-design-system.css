@@ -13,27 +13,12 @@
    • Page transition effects
    ═══════════════════════════════════════════════════════════════════ */
 
+/* Supplemental tokens layered on top of dark-system.css */
 :root {
-  /* ── CORE DARK TOKENS ────────────────────────────────────────── */
-  --bg-primary: #020617;
-  --bg-secondary: #0f172a;
-  --bg-surface: #111827;
   --bg-elevated: #1a202c;
-  
-  --text-primary: #e2e8f0;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  
-  --accent: #38bdf8;
-  --accent-primary: #38bdf8;
   --accent-hover: #7dd3fc;
-  --danger: #ef4444;
-  
-  --border: #1e293b;
-  --border-primary: #1e293b;
-  --border-subtle: rgba(255, 255, 255, 0.05);
   --border-light: rgba(255, 255, 255, 0.08);
-  
+
   /* ── SEMANTIC COLORS ────────────────────────────────────────── */
   --color-ingestion: #06b6d4;
   --color-ingestion-glow: rgba(6, 182, 212, 0.2);
@@ -54,57 +39,25 @@
   --color-platform: #64748b;
   --color-platform-glow: rgba(100, 116, 139, 0.2);
   
-  /* ── EXTENDED COLOR PALETTE ────────────────────────────────────– */
-  --blue: #38bdf8;
-  --blue-bright: #7dd3fc;
-  --blue-dim: rgba(56, 189, 248, 0.1);
-  --blue-glow: rgba(56, 189, 248, 0.2);
-  
-  --cyan: #06b6d4;
-  --cyan-bright: #67e8f9;
-  --cyan-glow: rgba(6, 182, 212, 0.2);
-  
-  --purple: #a855f7;
-  --purple-bright: #d8b4fe;
-  --purple-dim: rgba(168, 85, 247, 0.1);
-  --purple-glow: rgba(168, 85, 247, 0.2);
-  
-  --green: #10b981;
-  --green-glow: rgba(16, 185, 129, 0.2);
-  
-  --amber: #f59e0b;
-  --amber-glow: rgba(245, 158, 11, 0.2);
-  
-  --red: #ef4444;
-  --red-glow: rgba(239, 68, 68, 0.2);
-  
-  /* ── SPACING & SIZING ──────────────────────────────────────── */
-  --radius: 10px;
   --radius-sm: 8px;
   --radius-lg: 14px;
   --radius-xl: 20px;
   
-  --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 12px 40px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 32px 80px rgba(0, 0, 0, 0.5);
   
   /* ── TRANSITIONS ───────────────────────────────────────────── */
   --duration-fast: 150ms;
-  --duration-base: 200ms;
-  --duration-slow: 300ms;
+  --duration-base: 220ms;
+  --duration-slow: 280ms;
   --duration-flow: 600ms;
   --duration-animation: 800ms;
   
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-mono: 'JetBrains Mono', monospace;
   
-  /* ── TYPOGRAPHY ────────────────────────────────────────────── */
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  
-  /* ── GRID & LAYOUT ─────────────────────────────────────────– */
   --sidebar-width: 264px;
   --topbar-height: 52px;
   --content-max: 1200px;
@@ -461,6 +414,14 @@ textarea {
   animation: flow-animation var(--duration-flow) linear infinite;
 }
 
+.kg-link.flow-active {
+  stroke-dasharray: 8 8;
+  animation: flow-animation 700ms linear infinite;
+  stroke: var(--accent-primary) !important;
+  opacity: 0.95;
+  stroke-width: 2;
+}
+
 .flow-packet {
   radius: 3px;
   fill: var(--accent);
@@ -739,6 +700,33 @@ textarea {
   filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.4));
 }
 
+/* Graph hierarchy states */
+.kg-node {
+  transition: opacity var(--duration-base) var(--ease), transform var(--duration-base) var(--ease);
+}
+
+.kg-node.is-dimmed {
+  opacity: 0.16;
+}
+
+.kg-node.is-hover .kg-node-circle {
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.45));
+}
+
+.kg-node.is-active .kg-node-circle {
+  stroke: var(--accent-primary) !important;
+  stroke-width: 2.6 !important;
+  filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.5));
+}
+
+.kg-node.is-upstream .kg-node-circle {
+  stroke: #22d3ee !important;
+}
+
+.kg-node.is-downstream .kg-node-circle {
+  stroke: #a78bfa !important;
+}
+
 /* ══════════════════════════════════════════════════════════════════
    RESPONSIVE ENHANCEMENTS
    ══════════════════════════════════════════════════════════════════ */
@@ -775,13 +763,161 @@ textarea {
   }
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg-primary: #f8f9fa;
-    --bg-secondary: #f1f3f5;
-    --bg-surface: #e9ecef;
-    --text-primary: #1c1e21;
-    --text-secondary: #495057;
-    --text-muted: #6c757d;
+/* ══════════════════════════════════════════════════════════════════
+   PLATFORM LAYOUT STABILITY + DESIGN TOKENS
+   ══════════════════════════════════════════════════════════════════ */
+:root {
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 48px;
+  --space-6: 64px;
+  --radius-md: 10px;
+  --workspace-max: 1280px;
+}
+
+body,
+.ds-body,
+.ds-main,
+.ds-main-content {
+  background: var(--bg-primary) !important;
+}
+
+.ds-main-content {
+  width: min(100%, var(--workspace-max));
+  margin-inline: auto;
+  padding: var(--space-5) var(--space-4) var(--space-6);
+}
+
+.ds-hero,
+.kg-section,
+.mod-section,
+.lineage-section,
+.story-shell,
+.enh-section,
+.task-section,
+.quick-section,
+.fail-section,
+.dbg-section {
+  width: 100%;
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) !important;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.92) 0%, rgba(15, 23, 42, 0.82) 100%);
+  border: 1px solid var(--border-primary);
+}
+
+.kg-shell-wrap {
+  max-width: 100%;
+  margin-inline: auto;
+  padding: var(--space-3);
+  border-radius: 16px;
+  border: 1px solid var(--border-primary);
+  background:
+    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at top, rgba(56, 189, 248, 0.12), transparent 45%),
+    #0b1220;
+  background-size: 32px 32px, 32px 32px, 100% 100%, 100% 100%;
+}
+
+#knowledge-graph {
+  width: 100%;
+  min-height: 560px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(2, 6, 23, 0.8);
+}
+
+.kg-node,
+.kg-link,
+.kg-node-circle {
+  transition: all 250ms ease;
+}
+
+.kg-node .kg-node-circle {
+  fill: #1e293b;
+  stroke: rgba(148, 163, 184, 0.7);
+  stroke-width: 1.5;
+}
+
+.kg-node.is-active .kg-node-circle,
+.kg-node:hover .kg-node-circle {
+  fill: rgba(56, 189, 248, 0.28) !important;
+  stroke: var(--accent-primary) !important;
+  stroke-width: 2.4;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+}
+
+.kg-node.is-soft-active .kg-node-circle {
+  fill: rgba(56, 189, 248, 0.16) !important;
+  stroke: rgba(56, 189, 248, 0.6) !important;
+}
+
+.kg-link.flow-active {
+  stroke: var(--accent-primary) !important;
+  stroke-width: 2;
+  stroke-dasharray: 8 8;
+  animation: flow-animation 700ms linear infinite;
+}
+
+.graph-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+}
+
+.graph-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.ds-mod-card {
+  padding: var(--space-3) !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-primary) !important;
+  background: var(--bg-surface) !important;
+}
+
+.ds-mod-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+}
+
+#graph-tooltip {
+  max-width: 320px;
+  background: #0b1220;
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+
+.ds-tt-deps {
+  margin-top: var(--space-2);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 960px) {
+  .ds-main-content {
+    padding: var(--space-3) var(--space-2) var(--space-5);
+  }
+
+  .ds-hero,
+  .kg-section,
+  .mod-section,
+  .lineage-section,
+  .story-shell,
+  .enh-section,
+  .task-section,
+  .quick-section,
+  .fail-section,
+  .dbg-section {
+    padding: var(--space-3) !important;
+    margin-bottom: var(--space-4);
   }
 }

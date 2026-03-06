@@ -1,310 +1,235 @@
 /* ═══════════════════════════════════════════════════════════════
-   ZEOTAP CDP — INTERACTIVE ARCHITECTURE EXPLORER
-   Graph Enhancement Engine v2.0
+   ZEOTAP CDP — GRAPH ENHANCEMENTS CONTROLLER
+   Depends on window.KG (canonical graph engine)
    ═══════════════════════════════════════════════════════════════ */
+(function (global) {
+  'use strict';
 
-(function () {
-    'use strict';
+  var TRACE_PATH = ['collect', 'ingest', 'identity', 'profiles', 'audiences', 'journeys', 'activation'];
+  var initialized = false;
+  var flowTimers = [];
+  var flowRunning = false;
 
-    // State Management
-    let isDebugMode = false;
-    let isSimulating = false;
-    let simTimer = null;
-    let currentFocusNode = null;
+  function hasKG() {
+    if (!global.KG) {
+      console.warn('[GraphEnhancements] Graph engine not initialized');
+      return false;
+    }
+    return true;
+  }
 
-    const TRACE_PATH = ['collect', 'ingest', 'identity', 'profiles', 'audiences', 'journeys', 'activation'];
-    const TRACE_LABELS = [
-        'Event Collected',
-        'Data Ingested',
-        'Identity Resolution',
-        'Profile Updated',
-        'Segment Recomputed',
-        'Journey Triggered',
-        'Data Activated'
-    ];
+  function clearFlowTimers() {
+    while (flowTimers.length) {
+      clearTimeout(flowTimers.pop());
+    }
+  }
 
-    const FAILURE_INDICATORS = {
-        'ingest': 'Schema mismatch detected',
-        'identity': 'Identifier collision: unstable graph',
-        'audiences': 'Rule builder: processing timeout',
-        'activation': 'Destination API 500 rejection'
-    };
+  function findEl(ids) {
+    for (var i = 0; i < ids.length; i++) {
+      var el = document.getElementById(ids[i]);
+      if (el) return el;
+    }
+    return null;
+  }
 
-    /**
-     * INIT — Wait for Graph Engine
-     */
-    function init() {
-        if (!window.KG) {
-            setTimeout(init, 100);
-            return;
+  function setFlowButtonState(active) {
+    var btn = findEl(['btn-simulate-flow', 'btn-simulate']);
+    if (!btn) return;
+
+    btn.classList.toggle('active', !!active);
+    btn.setAttribute('aria-busy', active ? 'true' : 'false');
+  }
+
+  function updateIndicator(stepIndex) {
+    var indicator = document.getElementById('sim-indicator');
+    if (!indicator) return;
+
+    if (typeof stepIndex !== 'number') {
+      indicator.style.display = 'none';
+      indicator.textContent = '';
+      return;
+    }
+
+    indicator.style.display = 'block';
+    indicator.textContent = 'Step ' + (stepIndex + 1) + ' / ' + TRACE_PATH.length + ' — ' + TRACE_PATH[stepIndex];
+  }
+
+  function resetGraph() {
+    flowRunning = false;
+    clearFlowTimers();
+    setFlowButtonState(false);
+    updateIndicator();
+
+    if (!hasKG()) return;
+    global.KG.reset();
+  }
+
+  function runFallbackFlowSimulation() {
+    if (!hasKG()) return;
+
+    resetGraph();
+    flowRunning = true;
+    setFlowButtonState(true);
+
+    var visited = [];
+
+    TRACE_PATH.forEach(function (nodeId, idx) {
+      var timer = setTimeout(function () {
+        if (!flowRunning || !hasKG()) return;
+
+        visited.push(nodeId);
+        global.KG.highlight(visited, { softTrail: true, keepFlow: true });
+
+        if (idx > 0 && global.KG.activateEdge) {
+          global.KG.activateEdge(TRACE_PATH[idx - 1], TRACE_PATH[idx], { append: true });
         }
 
-        injectToolbar();
-        bindNodeEvents();
-        console.log('[Explorer] Interactive engine active.');
+        updateIndicator(idx);
+
+        if (idx === TRACE_PATH.length - 1) {
+          var doneTimer = setTimeout(function () {
+            flowRunning = false;
+            setFlowButtonState(false);
+            updateIndicator();
+          }, 900);
+          flowTimers.push(doneTimer);
+        }
+      }, idx * 700);
+
+      flowTimers.push(timer);
+    });
+  }
+
+  function simulateFlow() {
+    if (!hasKG()) return;
+
+    if (flowRunning) {
+      resetGraph();
+      return;
     }
 
-    /**
-     * UI — Inject Single Toolbar Row
-     */
-    function injectToolbar() {
-        const wrap = document.querySelector('.kg-shell-wrap');
-        if (!wrap) return;
+    if (typeof global.KG.simulateEventFlow === 'function') {
+      flowRunning = true;
+      setFlowButtonState(true);
+      updateIndicator(0);
 
-        // Remove any old toolbars
-        const oldToolbar = document.querySelector('.kg-trace-bar') || document.querySelector('.kg-filter-bar');
-        if (oldToolbar) oldToolbar.remove();
+      global.KG.simulateEventFlow();
 
-        // Create main interactive toolbar
-        const toolbar = document.createElement('div');
-        toolbar.className = 'graph-toolbar';
-        toolbar.innerHTML = `
-            <button id="btn-simulate" class="graph-btn">
-                <span style="font-size:14px">▶</span> Simulate Flow
-            </button>
-            <button id="btn-reset" class="graph-btn">
-                <span style="font-size:14px">↺</span> Reset Graph
-            </button>
-            <div style="width:1px; height:16px; background:var(--border-primary); margin:0 4px"></div>
-            <button id="btn-debug" class="graph-btn">
-                <span style="font-size:14px">🐞</span> Debug Mode
-            </button>
-        `;
+      TRACE_PATH.forEach(function (_nodeId, idx) {
+        var timer = setTimeout(function () {
+          if (!flowRunning) return;
+          updateIndicator(idx);
 
-        // Create Step Indicator
-        const indicator = document.createElement('div');
-        indicator.id = 'sim-indicator';
-        indicator.className = 'graph-indicator';
+          if (idx === TRACE_PATH.length - 1) {
+            var doneTimer = setTimeout(function () {
+              flowRunning = false;
+              setFlowButtonState(false);
+              updateIndicator();
+            }, 900);
+            flowTimers.push(doneTimer);
+          }
+        }, idx * 700);
 
-        wrap.appendChild(toolbar);
-        wrap.appendChild(indicator);
+        flowTimers.push(timer);
+      });
 
-        // Bind Events
-        document.getElementById('btn-simulate').onclick = startSimulation;
-        document.getElementById('btn-reset').onclick = resetGraph;
-        document.getElementById('btn-debug').onclick = toggleDebugMode;
+      return;
     }
 
-    /**
-     * FEATURE 1 — Event Flow Simulation
-     */
-    function startSimulation() {
-        if (isSimulating) return;
+    runFallbackFlowSimulation();
+  }
+
+  function bindToolbarActions() {
+    var simBtn = findEl(['btn-simulate-flow', 'btn-simulate']);
+    var resetBtn = findEl(['btn-reset-graph', 'btn-reset']);
+
+    if (simBtn) {
+      simBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        simulateFlow();
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function (event) {
+        event.preventDefault();
         resetGraph();
-        isSimulating = true;
+      });
+    }
+  }
 
-        const btn = document.getElementById('btn-simulate');
-        const indicator = document.getElementById('sim-indicator');
-        btn.classList.add('active');
-        indicator.style.display = 'block';
+  function bindCardGraphSync() {
+    var cards = document.querySelectorAll('.ds-mod-card[data-node]');
+    if (!cards.length) return;
 
-        let visited = [];
+    cards.forEach(function (card) {
+      card.addEventListener('mouseenter', function () {
+        if (!hasKG() || flowRunning) return;
+        var nodeId = card.getAttribute('data-node');
+        if (nodeId) global.KG.highlight([nodeId]);
+      });
 
-        TRACE_PATH.forEach((nodeId, idx) => {
-            setTimeout(() => {
-                if (!isSimulating) return;
+      card.addEventListener('mouseleave', function () {
+        if (!hasKG() || flowRunning) return;
+        global.KG.reset();
+      });
 
-                visited.push(nodeId);
-                window.KG.highlight(visited);
+      card.addEventListener('focus', function () {
+        if (!hasKG() || flowRunning) return;
+        var nodeId = card.getAttribute('data-node');
+        if (nodeId) global.KG.highlight([nodeId]);
+      });
 
-                // Update indicator
-                indicator.textContent = `Step ${idx + 1} / 7 — ${TRACE_LABELS[idx]}`;
+      card.addEventListener('blur', function () {
+        if (!hasKG() || flowRunning) return;
+        global.KG.reset();
+      });
+    });
+  }
 
-                // Final Step Handling
-                if (idx === TRACE_PATH.length - 1) {
-                    setTimeout(() => {
-                        isSimulating = false;
-                        btn.classList.remove('active');
-                    }, 1500);
-                }
-            }, idx * 700);
-        });
+  function bindBackgroundReset() {
+    var graphHost = document.getElementById('knowledge-graph');
+    if (!graphHost) return;
+
+    graphHost.addEventListener('click', function (event) {
+      if (!hasKG() || flowRunning) return;
+      var target = event.target;
+      var tag = target.tagName ? target.tagName.toLowerCase() : '';
+      var isBackground = target.id === 'knowledge-graph' || tag === 'svg';
+      if (isBackground) global.KG.reset();
+    });
+  }
+
+  function init() {
+    if (initialized) return;
+    if (!hasKG()) return;
+
+    initialized = true;
+    bindToolbarActions();
+    bindCardGraphSync();
+    bindBackgroundReset();
+  }
+
+  function waitForKG(retries) {
+    if (hasKG()) {
+      init();
+      return;
     }
 
-    /**
-     * FEATURE 2 — Dependency Trace & Floating Panel
-     */
-    function bindNodeEvents() {
-        const svg = document.getElementById('knowledge-graph');
-        if (!svg) return;
+    if (retries <= 0) return;
 
-        // Custom click handling for nodes
-        svg.addEventListener('click', (e) => {
-            const nodeEl = e.target.closest('g.kg-node');
-            if (!nodeEl) return;
+    setTimeout(function () {
+      waitForKG(retries - 1);
+    }, 100);
+  }
 
-            // Extract Node ID (abbrev mapping)
-            const abbrev = nodeEl.querySelector('text').textContent.toLowerCase();
-            const nodeId = mapAbbrevToId(abbrev);
+  document.addEventListener('kg:ready', init);
 
-            if (nodeId) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleNodeInteraction(nodeId, nodeEl);
-            }
-        }, true);
-
-        // Canvas click to reset
-        svg.addEventListener('click', (e) => {
-            if (e.target.id === 'knowledge-graph' || e.target.tagName === 'svg') {
-                resetFocus();
-            }
-        });
-    }
-
-    function handleNodeInteraction(nodeId, element) {
-        // Single click logic
-        showDependencyTrace(nodeId);
-        showFloatingPanel(nodeId, element);
-    }
-
-    function mapAbbrevToId(abbrev) {
-        const map = {
-            'col': 'collect', 'ing': 'ingest', 'ide': 'identity', 'pro': 'profiles',
-            'aud': 'audiences', 'jou': 'journeys', 'act': 'activation', 'ai/': 'ai',
-            'ml ': 'ml', 'rep': 'reporting', 'uni': 'unity', 'pri': 'privacy',
-            'aut': 'auth', 'inf': 'infra', 'obs': 'observe', 'cic': 'cicd', 'tes': 'testing'
-        };
-        return map[abbrev] || null;
-    }
-
-    function showDependencyTrace(nodeId) {
-        // Need to identify connections. Since KG doesn't expose full graph,
-        // we use a static mapping based on knowledge-graph.js LINKS.
-        const dependencies = {
-            'collect': ['ingest'],
-            'ingest': ['collect', 'identity', 'profiles'],
-            'identity': ['ingest', 'profiles', 'privacy'],
-            'profiles': ['ingest', 'identity', 'audiences', 'ai', 'ml', 'reporting'],
-            'audiences': ['profiles', 'journeys', 'activation', 'reporting', 'ai'],
-            'journeys': ['audiences', 'activation'],
-            'activation': ['audiences', 'journeys', 'privacy'],
-            'ai': ['profiles', 'audiences'],
-            'ml': ['profiles']
-        };
-
-        const related = [nodeId, ...(dependencies[nodeId] || [])];
-        window.KG.highlight(related);
-
-        // Add visual indicator of focus
-        document.querySelectorAll('.kg-node').forEach(el => {
-            const ab = el.querySelector('text').textContent.toLowerCase();
-            const id = mapAbbrevToId(ab);
-            if (id === nodeId) {
-                el.style.filter = 'drop-shadow(0 0 12px var(--accent-primary))';
-            } else {
-                el.style.filter = '';
-            }
-        });
-    }
-
-    function showFloatingPanel(nodeId, element) {
-        let panel = document.getElementById('floating-node-panel');
-        if (!panel) {
-            panel = document.createElement('div');
-            panel.id = 'floating-node-panel';
-            panel.style.cssText = `
-                position: fixed; background: var(--bg-surface); border: 1px solid var(--border-primary);
-                padding: 16px; border-radius: 12px; z-index: 1000; width: 220px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.6); pointer-events: auto;
-            `;
-            document.body.appendChild(panel);
-        }
-
-        const rect = element.getBoundingClientRect();
-        panel.style.left = (rect.right + 20) + 'px';
-        panel.style.top = (rect.top) + 'px';
-        panel.style.display = 'block';
-
-        // Mock data
-        panel.innerHTML = `
-            <div style="font-weight:800; color:var(--accent-primary); margin-bottom:4px; text-transform:uppercase; font-size:11px">${nodeId}</div>
-            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px">Service Architecture Detail</div>
-            
-            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px">Connections</div>
-            <div style="font-size:11px; margin-bottom:12px">
-                Up/Downstream dependencies highlighted in graph.
-            </div>
-
-            <a href="01-platform-overview.html" style="display:block; text-align:center; padding:8px; background:var(--border-primary); border-radius:6px; color:var(--text-primary); font-size:11px; text-decoration:none">View Full Chapter</a>
-        `;
-    }
-
-    /**
-     * FEATURE 3 — Debug Mode
-     */
-    function toggleDebugMode() {
-        isDebugMode = !isDebugMode;
-        const btn = document.getElementById('btn-debug');
-        btn.classList.toggle('active', isDebugMode);
-
-        const svg = document.getElementById('knowledge-graph');
-        if (!svg) return;
-
-        // Visual highlights for nodes with issues
-        document.querySelectorAll('.kg-node').forEach(el => {
-            const ab = el.querySelector('text').textContent.toLowerCase();
-            const id = mapAbbrevToId(ab);
-
-            if (isDebugMode && FAILURE_INDICATORS[id]) {
-                injectFailureBadge(el, id);
-            } else {
-                removeFailureBadge(el);
-            }
-        });
-    }
-
-    function injectFailureBadge(element, nodeId) {
-        if (element.querySelector('.debug-badge')) return;
-        const ns = "http://www.w3.org/2000/svg";
-        const badge = document.createElementNS(ns, 'circle');
-        badge.setAttribute('class', 'debug-badge');
-        badge.setAttribute('cx', '18');
-        badge.setAttribute('cy', '-18');
-        badge.setAttribute('r', '5');
-        badge.setAttribute('fill', 'var(--danger)');
-        badge.style.filter = 'drop-shadow(0 0 4px var(--danger))';
-
-        const title = document.createElementNS(ns, 'title');
-        title.textContent = `CRITICAL: ${FAILURE_INDICATORS[nodeId]}\nTroubleshooting: Check SLO dashboard in Grafana.`;
-        badge.appendChild(title);
-
-        element.appendChild(badge);
-    }
-
-    function removeFailureBadge(el) {
-        const b = el.querySelector('.debug-badge');
-        if (b) b.remove();
-    }
-
-    /**
-     * RESET
-     */
-    function resetGraph() {
-        isSimulating = false;
-        if (simTimer) clearTimeout(simTimer);
-        window.KG.reset();
-        resetFocus();
-
-        const indicator = document.getElementById('sim-indicator');
-        if (indicator) indicator.style.display = 'none';
-
-        const simBtn = document.getElementById('btn-simulate');
-        if (simBtn) simBtn.classList.remove('active');
-    }
-
-    function resetFocus() {
-        const panel = document.getElementById('floating-node-panel');
-        if (panel) panel.style.display = 'none';
-
-        document.querySelectorAll('.kg-node').forEach(el => {
-            el.style.filter = '';
-        });
-
-        if (window.KG) window.KG.reset();
-    }
-
-    // Run
-    document.addEventListener('DOMContentLoaded', init);
-
-})();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      waitForKG(80);
+    });
+  } else {
+    waitForKG(80);
+  }
+})(window);

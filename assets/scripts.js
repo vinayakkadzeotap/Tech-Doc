@@ -339,6 +339,18 @@ const Theme = {
      12. SEARCH SYSTEM
   ────────────────────────────────────────────── */
   var searchIndex = window.ZEOTAP_SEARCH_INDEX || [];
+  if (!searchIndex.length) {
+    var searchIndexScript = document.createElement('script');
+    searchIndexScript.src = 'assets/search-index.js';
+    searchIndexScript.async = true;
+    searchIndexScript.onload = function () {
+      searchIndex = window.ZEOTAP_SEARCH_INDEX || searchIndex;
+    };
+    searchIndexScript.onerror = function () {
+      console.warn('[Search] search-index.js failed to load');
+    };
+    document.head.appendChild(searchIndexScript);
+  }
 
   /* Inject search trigger button into topbar — works for BOTH templates */
   if (topbar) {

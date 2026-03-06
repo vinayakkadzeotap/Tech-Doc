@@ -22,9 +22,6 @@
   <!-- D3 v7 -->
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 
-  <!-- Performance Optimizer (load early) -->
-  <script src="assets/performance-optimizer.js"></script>
-
   <!-- Design System -->
   <link rel="stylesheet" href="assets/dark-system.css?v=1.1" />
   <link rel="stylesheet" href="assets/enhanced-design-system.css?v=2.0" />
@@ -809,6 +806,12 @@
     .kg-reset-btn:hover {
       background: rgba(255, 255, 255, 0.1);
       color: var(--text-primary);
+    }
+
+    html.focus-mode-active .kg-reset-btn {
+      left: 14px;
+      right: auto;
+      z-index: 8;
     }
 
     /* Module cards */
@@ -2678,7 +2681,7 @@
           <span class="dbg-indicator"></span>
           Debug Mode
         </button>
-        <button class="graph-btn" style="margin-right: 12px;" onclick="window.startPlatformTour()">
+        <button class="graph-btn" onclick="window.startPlatformTour()">
           <span style="font-size:14px">✨</span> Start Platform Tour
         </button>
         <button class="ds-search-trigger" onclick="openSearch()">
@@ -2732,7 +2735,7 @@
       <div class="ds-section-header">
         <div>
           <div class="ds-section-title">System Architecture Graph</div>
-          <div class="ds-section-sub">17 modules · 20 data flows · hover to inspect · click to navigate</div>
+          <div class="ds-section-sub">17 modules · 20 data flows · hover to inspect · click to focus · double-click to navigate</div>
         </div>
         <a href="01-platform-overview.html" class="ds-section-link">Full Architecture →</a>
       </div>
@@ -2741,17 +2744,17 @@
         <div class="kg-toolbar">
           <div class="kg-toolbar-left">
             <span class="kg-toolbar-title">CDP MODULE MAP</span>
-            <span class="kg-toolbar-hint">Use sidebar tasks to highlight flows · drag nodes to rearrange · shift+click for focus mode</span>
+            <span class="kg-toolbar-hint">Use sidebar tasks to highlight flows · drag nodes to rearrange · click a node for dependency focus</span>
           </div>
           <div style="display: flex; gap: 12px; align-items: center;">
-            <button class="flow-btn" onclick="if(window.KG) KG.animateFlow()" title="Animate data flow">
-              <span class="flow-btn-play">▶</span> Flow
+            <button id="btn-simulate-flow" class="flow-btn" title="Simulate end-to-end event flow">
+              <span class="flow-btn-play">▶</span> Simulate Event Flow
             </button>
             <div id="graph-legend" class="kg-legend-wrap"></div>
           </div>
         </div>
-        <svg id="knowledge-graph"></svg>
-        <button class="kg-reset-btn" onclick="if(window.KG) KG.reset()">Reset View</button>
+        <div id="knowledge-graph" role="img" aria-label="Interactive architecture graph workspace"></div>
+        <button id="btn-reset-graph" type="button" class="kg-reset-btn" onclick="if(window.KG) window.KG.reset()">Reset View</button>
       </div>
     </section>
 
@@ -3893,11 +3896,12 @@
 
   <!-- Graph tooltip -->
   <div id="graph-tooltip">
-    <div class="kg-tip-title" id="tip-title"></div>
-    <div class="kg-tip-badge" id="tip-badge"></div>
-    <div class="kg-tip-desc" id="tip-desc"></div>
-    <div class="kg-tip-tech" id="tip-tech"></div>
-    <div class="kg-tip-hint">Click to scroll to module card · Dbl-click for chapter →</div>
+    <div class="ds-tt-title">Service</div>
+    <div class="ds-tt-cat">Category</div>
+    <div class="ds-tt-desc">Service description</div>
+    <div class="ds-tt-tech">Tech stack</div>
+    <div class="ds-tt-deps"></div>
+    <div class="kg-tip-hint">Click for dependency focus · Double-click for chapter →</div>
   </div>
 
   <!-- Scripts -->
@@ -3913,13 +3917,13 @@
     </div>
   </div>
 
-  <script src="assets/scripts.js"></script>
   <script src="assets/knowledge-graph.js"></script>
-  <script src="assets/knowledge-graph-enhanced.js"></script>
   <script src="assets/graph-enhancements.js"></script>
+  <script src="assets/tooltip-system.js"></script>
   <script src="assets/mission-mode.js"></script>
   <script src="assets/page-transition.js"></script>
-  <script src="assets/tooltip-system.js"></script>
+  <script src="assets/performance-optimizer.js"></script>
+  <script src="assets/scripts.js"></script>
   <script>
     /* ── Platform Tour Logic ── */
     const TOUR_STEPS = [

@@ -196,6 +196,14 @@
   let currentMission = null;
   let currentStep = 0;
 
+  function hasKG() {
+    if (!global.KG) {
+      console.warn('[MissionMode] Graph engine not initialized');
+      return false;
+    }
+    return true;
+  }
+
   function renderMissionPanel() {
     const mission = MISSIONS[currentMission];
     if (!mission) return;
@@ -248,7 +256,9 @@
     panel.innerHTML = html;
 
     // Highlight nodes
-    KG.highlight(step.highlights);
+    if (hasKG()) {
+      global.KG.highlight(step.highlights);
+    }
   }
 
   global.MissionMode = {
@@ -257,6 +267,7 @@
         console.error('Mission not found:', missionId);
         return;
       }
+      if (!hasKG()) return;
       currentMission = missionId;
       currentStep = 0;
       renderMissionPanel();
@@ -280,7 +291,9 @@
     completeMission() {
       const container = document.getElementById('kg-mission-container');
       if (container) container.remove();
-      KG.reset();
+      if (hasKG()) {
+        global.KG.reset();
+      }
       currentMission = null;
       currentStep = 0;
     },
