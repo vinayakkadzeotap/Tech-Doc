@@ -1206,7 +1206,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
   .sidebar.open { transform: translateX(0); }
   .main { margin-left: 0; }
   main.content { margin-left: 0; }
-  .content { padding: 24px 20px 64px; }
+  .content { padding: 24px 20px 120px; }
   .topbar { padding: 0 16px; }
   .menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
   .cover-hero { padding: 36px 20px; margin: -24px -20px 32px; }
