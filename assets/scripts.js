@@ -53,7 +53,8 @@ const Theme = {
     if (document.querySelector('.theme-toggle')) return;
     const btn = document.createElement('button');
     btn.className = 'theme-toggle';
-    btn.style.cssText = 'background:none; border:1px solid var(--border); border-radius:8px; width:36px; height:36px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--text-primary); margin-left:10px; transition:all 0.2s;';
+    /* Minimal inline styles — visual polish handled by .theme-toggle in style.css */
+    btn.style.cssText = 'background:none; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px;';
     btn.setAttribute('aria-label', 'Toggle theme');
     parent.appendChild(btn);
     btn.addEventListener('click', () => this.toggle());
@@ -379,10 +380,19 @@ const Theme = {
       topbar.appendChild(actionsWrap);
     }
 
-    /* Inject Theme Toggle */
-    var topbarActions = topbar.querySelector('.topbar-actions, .ds-topbar-right');
-    if (topbarActions) {
-      Theme.injectToggle(topbarActions);
+  }
+
+  /* Always inject Theme Toggle — outside search-trigger guard so it runs even if
+     search-trigger was pre-existing (e.g. on index.html) */
+  if (topbar) {
+    var themeParent = topbar.querySelector('.topbar-actions, .ds-topbar-right');
+    if (themeParent && !document.querySelector('.theme-toggle')) {
+      var _ttBtn = document.createElement('button');
+      _ttBtn.className = 'theme-toggle';
+      _ttBtn.setAttribute('aria-label', 'Toggle theme');
+      _ttBtn.innerHTML = document.documentElement.getAttribute('data-theme') === 'dark' ? '🌙' : '☀️';
+      themeParent.appendChild(_ttBtn);
+      _ttBtn.addEventListener('click', function() { Theme.toggle(); });
     }
   }
 
