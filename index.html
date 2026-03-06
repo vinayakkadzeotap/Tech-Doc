@@ -983,18 +983,18 @@
     @media (max-width: 1024px) { .explore-section-label { padding: 0 32px; } }
     @media (max-width: 720px)  { .explore-section-label { padding: 0 20px; } }
 
-    /* Tour Overlay */
+    /* Tour Overlay — bottom-left, clear of the right-side panel */
     .tour-overlay {
       position: fixed;
-      bottom: 40px;
-      right: 40px;
+      bottom: 32px;
+      left: 280px;      /* clear of fixed sidebar */
       width: 320px;
       background: var(--bg-surface);
       border: 1px solid var(--accent-primary);
       border-radius: 16px;
       padding: 24px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-      z-index: 2000;
+      z-index: 1100;    /* below search (99999) and cinematic (9999), above graph */
       display: none;
     }
 
@@ -1203,11 +1203,14 @@
     }
 
     .kg-shell-wrap {
-      background: rgba(255, 255, 255, 0.018);
-      border: 1px solid var(--border);
+      background: #050d1a;
+      border: 1px solid rgba(56, 189, 248, 0.15);
       border-radius: 18px;
       overflow: hidden;
       position: relative;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.06),
+                  0 24px 80px rgba(0, 0, 0, 0.5),
+                  inset 0 0 80px rgba(59, 130, 246, 0.04);
     }
 
     .kg-toolbar {
@@ -1261,7 +1264,7 @@
 
     #knowledge-graph {
       width: 100%;
-      height: 680px;
+      height: 720px;
       display: block;
       cursor: grab;
     }

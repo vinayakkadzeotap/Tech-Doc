@@ -434,16 +434,22 @@ textarea {
 
 .mission-mode-container {
   position: fixed;
-  right: 32px;
-  top: 120px;
-  width: 380px;
+  /* Left side, clear of the fixed sidebar (264px) */
+  left: 280px;
+  right: auto;
+  top: 72px;
+  width: 360px;
   background: var(--bg-surface);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   padding: 24px;
+  padding-top: 20px;
   box-shadow: var(--shadow-lg);
-  z-index: 900;
+  z-index: 1100;
   animation: slide-left var(--duration-slow) var(--ease-smooth);
+  /* Prevent overlap with side panel (right side) */
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
 }
 
 .mission-header {
@@ -732,20 +738,21 @@ textarea {
    ══════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
-  .focus-panel,
   .mission-mode-container {
-    width: 320px;
-    padding: 20px;
+    left: 16px;
+    width: 300px;
+    padding: 18px;
   }
 }
 
 @media (max-width: 768px) {
-  .focus-panel,
   .mission-mode-container {
-    position: static;
-    width: 100%;
-    margin: 20px;
-    box-shadow: var(--shadow-md);
+    left: 8px;
+    right: 8px;
+    width: auto;
+    top: auto;
+    bottom: 16px;
+    max-height: 50vh;
   }
 }
 

@@ -148,6 +148,30 @@
 
   var FLOW_PATH = ['collect', 'ingest', 'identity', 'profiles', 'audiences', 'journeys', 'activation'];
 
+  /* ── LAYERED POSITIONS (y = vertical, z = depth) ─────────────── */
+  var LAYER_Y = {
+    collection: 160,
+    ingestion:  100,
+    identity:    40,
+    profile:    -20,
+    processing: -80,
+    activation: -140,
+    analytics:  -190,
+    compliance:  200
+  };
+
+  var CAT_X = {
+    ingestion:    -200,
+    core:          -60,
+    storage:        60,
+    activation:    180,
+    intelligence:  320,
+    analytics:     400,
+    compliance:    -80,
+    security:       60,
+    platform:      200
+  };
+
   /* ── STATE ───────────────────────────────────────────────────── */
   var state = {
     graph: null,
@@ -198,9 +222,9 @@
   }
 
   function nodeVal(node) {
-    if (!state.focusedId) return 8;
-    if (node.id === state.focusedId) return 16;
-    return state.visibleSet.has(node.id) ? 10 : 4;
+    if (!state.focusedId) return 12;
+    if (node.id === state.focusedId) return 24;
+    return state.visibleSet.has(node.id) ? 14 : 4;
   }
 
   function linkColor(link) {
@@ -225,8 +249,8 @@
 
   function particleCount(link) {
     var s = resolveId(link.source), t = resolveId(link.target);
-    if (!state.focusedId) return 2;
-    return (state.visibleSet.has(s) && state.visibleSet.has(t)) ? 4 : 0;
+    if (!state.focusedId) return 3;
+    return (state.visibleSet.has(s) && state.visibleSet.has(t)) ? 5 : 0;
   }
 
   function refresh() {
@@ -403,35 +427,45 @@
       return;
     }
 
-    /* height */
-    container.style.height = '680px';
+    /* height set by CSS on #knowledge-graph */
 
+    /* Seed nodes with layered initial positions */
     var graphData = {
-      nodes: NODES.map(function (n) { return Object.assign({}, n); }),
+      nodes: NODES.map(function (n) {
+        return Object.assign({}, n, {
+          x: (CAT_X[n.category] || 0) + (Math.random() - 0.5) * 60,
+          y: (LAYER_Y[n.layer] || 0) + (Math.random() - 0.5) * 30,
+          z: (Math.random() - 0.5) * 80
+        });
+      }),
       links: LINKS.map(function (l) { return Object.assign({}, l); })
     };
 
-    var graph = ForceGraph3D({ controlType: 'orbit', rendererConfig: { antialias: true, alpha: true } })(container)
+    var graph = ForceGraph3D({
+        controlType: 'orbit',
+        rendererConfig: { antialias: true, alpha: false }
+      })(container)
       .graphData(graphData)
-      .backgroundColor('rgba(0,0,0,0)')
+      .backgroundColor('#050d1a')
       .nodeLabel(function (n) {
         var cat = CATEGORY[n.category] || {};
-        return '<div class="kg3d-tip"><b>' + n.label + '</b><span>' + cat.label + ' · click to inspect · right-click for docs</span></div>';
+        return '<div class="kg3d-tip"><b>' + n.label + '</b><span>' + cat.label + ' · click to explore · right-click for docs</span></div>';
       })
       .nodeColor(nodeColor)
       .nodeVal(nodeVal)
-      .nodeRelSize(5)
-      .nodeOpacity(0.95)
+      .nodeRelSize(6)
+      .nodeResolution(16)
+      .nodeOpacity(0.92)
       .linkColor(linkColor)
       .linkWidth(linkWidth)
-      .linkOpacity(0.6)
-      .linkCurvature(0.12)
-      .linkDirectionalArrowLength(5)
+      .linkOpacity(0.7)
+      .linkCurvature(0.15)
+      .linkDirectionalArrowLength(6)
       .linkDirectionalArrowRelPos(1)
       .linkDirectionalParticles(particleCount)
       .linkDirectionalParticleColor(particleColor)
-      .linkDirectionalParticleWidth(2.5)
-      .linkDirectionalParticleSpeed(0.005)
+      .linkDirectionalParticleWidth(3)
+      .linkDirectionalParticleSpeed(0.007)
       .onNodeClick(function (node) {
         enterFocusMode(node.id);
       })
@@ -445,9 +479,12 @@
         container.style.cursor = node ? 'pointer' : 'grab';
       });
 
-    /* Auto-rotate */
+    /* Weaker charge so layered structure is preserved */
+    graph.d3Force('charge').strength(-120);
+
+    /* Auto-rotate slowly */
     graph.controls().autoRotate = true;
-    graph.controls().autoRotateSpeed = 0.4;
+    graph.controls().autoRotateSpeed = 0.3;
 
     /* Stop rotation on user interaction, resume after 4s */
     graph.controls().addEventListener('start', function () {

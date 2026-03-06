@@ -345,10 +345,7 @@ select:focus {
 .ds-nav-link {
   transition: all 150ms ease;
 }
-
-.ds-nav-link:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
+/* Note: hover state handled by dark-system.css (blue-dim background) */
 
 /* ── Selection Styling ──────────────────────────────────────────── */
 ::selection {
