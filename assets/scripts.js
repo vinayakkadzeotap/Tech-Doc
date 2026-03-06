@@ -353,7 +353,8 @@ const Theme = {
   }
 
   /* Inject search trigger button into topbar — works for BOTH templates */
-  if (topbar) {
+  /* Skip if a search trigger already exists (e.g. ds-search-trigger on index page) */
+  if (topbar && !topbar.querySelector('.ds-search-trigger') && !document.getElementById('search-trigger')) {
     var searchTrigger = document.createElement('button');
     searchTrigger.className = 'search-trigger';
     searchTrigger.id = 'search-trigger';
