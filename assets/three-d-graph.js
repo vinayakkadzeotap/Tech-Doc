@@ -121,8 +121,8 @@
 
   /* Vertical layer height */
   var LAYER_H = {
-    collection: -170, ingestion: -110, identity: -55,
-    profile: -5, processing: 45, activation: 95, analytics: 140, compliance: 165
+    collection: -238, ingestion: -154, identity: -77,
+    profile: -7, processing: 63, activation: 133, analytics: 196, compliance: 248
   };
 
   var FLOW_PATH = ['collect', 'ingest', 'identity', 'profiles', 'audiences', 'journeys', 'activation'];
@@ -138,7 +138,7 @@
   /* Camera */
   var rotY = 0;          /* Y-axis rotation angle */
   var rotX = -0.18;      /* X-axis tilt (slight top-down view) */
-  var zoom = 1;
+  var zoom = 0.82;
   var panX = 0, panY = 0;
   var autoRotate = true;
   var autoRotateSpd = 0.0035;
@@ -211,7 +211,7 @@
 
   /* ── PHYSICS ─────────────────────────────────────────────── */
   function initSim() {
-    var R = 195;
+    var R = 280;
     SN = NODES.map(function (n) {
       var a = ((CAT_ANGLE[n.category] || 0) + (Math.random() - 0.5) * 20) * Math.PI / 180;
       return {
@@ -240,7 +240,7 @@
 
   function tickPhysics(alpha) {
     alpha = (alpha === undefined) ? 0.3 : alpha;
-    var REP = 11000, SLEN = 130, SK2 = 0.05, DAMP = 0.86, CK = 0.01;
+    var REP = 22000, SLEN = 200, SK2 = 0.04, DAMP = 0.86, CK = 0.004;
 
     /* Center attraction */
     SN.forEach(function (n) {
@@ -321,7 +321,7 @@
   function nodeR(nd, depth) {
     var base = focusedId
       ? (nd.id === focusedId ? 19 : visibleSet.has(nd.id) ? 14 : 7)
-      : 13;
+      : 11;
     return base * depth;
   }
 
@@ -527,9 +527,10 @@
       ctx.restore();
 
       /* Label */
+      var depthShow = Math.max(0, Math.min(1, (p.depth - 0.80) / 0.28));
       var lblAlpha = focusedId
         ? (nd.id === focusedId || visibleSet.has(nd.id) ? (isHov ? 1 : 0.9) : 0.1)
-        : (isHov ? 1 : 0.78);
+        : (isHov ? 1 : depthShow * 0.80);
       lblAlpha *= fog * fadeIn;
       if (lblAlpha < 0.04) return;
 
