@@ -598,7 +598,7 @@
       var r = nodeR(p.n.nd, p.depth) + 10;
       if (d < r && d < bestD) { bestD = d; best = p; }
     });
-    return best ? best.n : null;
+    return best || null;
   }
 
   /* Unproject 2D drag delta → 3D space delta (approximate) */
@@ -653,9 +653,9 @@
 
     var hit = hitTest(pos.x, pos.y);
     if (hit) {
-      hoveredNode = hit.nd;
+      hoveredNode = hit.n.nd;
       canvas.style.cursor = 'pointer';
-      showTooltip(hit.nd, pos.x, pos.y);
+      showTooltip(hit.n.nd, pos.x, pos.y);
     } else {
       hoveredNode = null;
       canvas.style.cursor = 'grab';
@@ -697,7 +697,7 @@
 
     var hit = hitTest(pos.x, pos.y);
     if (hit) {
-      enterFocusMode(hit.nd.id);
+      enterFocusMode(hit.n.nd.id);
     } else {
       reset();
     }
@@ -706,9 +706,9 @@
   function onRightClick(e) {
     var pos = getCanvasPos(e);
     var hit = hitTest(pos.x, pos.y);
-    if (hit && hit.nd.url) {
+    if (hit && hit.n.nd.url) {
       e.preventDefault();
-      window.location.href = hit.nd.url;
+      window.location.href = hit.n.nd.url;
     }
   }
 
