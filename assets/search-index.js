@@ -1,6 +1,6 @@
 /* ============================================================
    ZEOTAP DOCS — SEARCH INDEX
-   Full-text search data for all 22 documentation pages.
+   Full-text search data for all 26 documentation pages.
    Consumed by scripts.js search engine.
    ============================================================ */
 window.ZEOTAP_SEARCH_INDEX = [
@@ -344,6 +344,62 @@ window.ZEOTAP_SEARCH_INDEX = [
       { id: "glossary-a", title: "A–F Terms", keywords: "activation audience CDP consent" },
       { id: "glossary-g", title: "G–M Terms", keywords: "GDPR identity matching profile" },
       { id: "glossary-n", title: "N–Z Terms", keywords: "segment UCID unify webhook" }
+    ]
+  },
+  {
+    url: "appendix-d-poc-directory.html",
+    title: "Appendix D — PoC Directory",
+    subtitle: "Appendix · Proof of Concept Tracker",
+    icon: "",
+    chapter: "Appendix D",
+    tags: ["PoC", "proof of concept", "demos", "integrations", "experiments", "sandbox", "pilot"],
+    sections: [
+      { id: "poc-overview", title: "PoC Directory Overview", keywords: "proof of concept pilots experiments" },
+      { id: "active-pocs", title: "Active PoCs", keywords: "current running live pilots" },
+      { id: "completed-pocs", title: "Completed PoCs", keywords: "finished shipped graduated" }
+    ]
+  },
+  {
+    url: "appendix-e-product-docs.html",
+    title: "Appendix E — Product Documentation",
+    subtitle: "Appendix · Official Product Docs",
+    icon: "",
+    chapter: "Appendix E",
+    tags: ["product docs", "official", "external", "links", "Confluence", "knowledge base", "reference"],
+    sections: [
+      { id: "product-docs-overview", title: "Product Docs Overview", keywords: "official documentation links" },
+      { id: "external-links", title: "External Links", keywords: "Confluence wiki product" }
+    ]
+  },
+  {
+    url: "pipeline-sim.html",
+    title: "Pipeline Simulator — Journey of a Click",
+    subtitle: "Interactive · End-to-End Event Trace",
+    icon: "",
+    chapter: "Interactive",
+    tags: ["pipeline", "simulator", "event", "click", "trace", "journey", "SDK", "Kafka", "ingestion", "identity", "profile", "audience", "activation"],
+    sections: [
+      { id: "sdk-capture", title: "SDK Event Capture", keywords: "javascript SDK browser event" },
+      { id: "api-gateway", title: "API Gateway", keywords: "ingestion gateway auth rate-limit" },
+      { id: "kafka-publish", title: "Kafka Publish", keywords: "Kafka topic streaming publish" },
+      { id: "schema-validate", title: "Schema Validation", keywords: "Avro schema registry validate" },
+      { id: "identity-stitch", title: "Identity Stitching", keywords: "UCID match stitch resolve" },
+      { id: "profile-write", title: "Profile Write", keywords: "Delta Lake profile update merge" },
+      { id: "audience-eval", title: "Audience Evaluation", keywords: "segment match trigger activation" }
+    ]
+  },
+  {
+    url: "learning-hub.html",
+    title: "Learning Hub",
+    subtitle: "Onboarding · Paths, Quizzes & Badges",
+    icon: "",
+    chapter: "Learning",
+    tags: ["learning", "onboarding", "quiz", "badge", "module", "path", "new employee", "training", "certification"],
+    sections: [
+      { id: "learning-paths", title: "Learning Paths", keywords: "onboarding paths beginner intermediate" },
+      { id: "quizzes", title: "Quizzes", keywords: "quiz test knowledge check" },
+      { id: "badges", title: "Achievement Badges", keywords: "badge unlock achievement reward" },
+      { id: "progress", title: "Progress Tracking", keywords: "progress completion modules" }
     ]
   }
 ];
