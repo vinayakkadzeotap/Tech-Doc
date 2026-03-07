@@ -6,6 +6,7 @@
   <title>GenAI / Zoe — Zeotap CDP Docs</title>
   <link rel="stylesheet" href="assets/style.css?v=4">
   <link rel="stylesheet" href="assets/dark-system.css">
+  <link rel="stylesheet" href="assets/shared.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#7C3AED', primaryTextColor: '#fff', primaryBorderColor: '#5B21B6', lineColor: '#6B7280', secondaryColor: '#EDE9FE', tertiaryColor: '#f9fafb' } });</script>
   <style>
@@ -665,12 +666,22 @@ npx @modelcontextprotocol/inspector uv run main.py</code></pre>
         </tbody>
       </table>
     </div>
-
-    <hr>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">
-      <a href="03-identity-resolution.html" style="font-size:14px;font-weight:600">← Identity Resolution</a>
-      <a href="index.html" style="font-size:14px;font-weight:600;background:var(--brand-primary);color:white;padding:10px 20px;border-radius:8px;text-decoration:none">← Back to Table of Contents</a>
-    </div>
+      <nav class="chapter-nav">
+        <a href="03-identity-resolution.html" class="chapter-nav-card">
+          <span class="chapter-nav-arrow">←</span>
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Previous</div>
+            <div class="chapter-nav-title">Identity Resolution</div>
+          </div>
+        </a>
+        <a href="05-profile-store.html" class="chapter-nav-card next">
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Next</div>
+            <div class="chapter-nav-title">Profile Store</div>
+          </div>
+          <span class="chapter-nav-arrow">→</span>
+        </a>
+      </nav>
   </div>
 </div>
 
@@ -685,5 +696,8 @@ function switchTab(btn, id) {
   <script src="assets/search-index.js"></script>
   <script src="assets/scripts.js?v=7"></script>
 <script src="assets/progress-widget.js"></script>
+
+  <script src="assets/shared.js"></script>
+  <script>Shared.init({ feedbackKey: '04-genai-zoe' });</script>
 </body>
 </html>

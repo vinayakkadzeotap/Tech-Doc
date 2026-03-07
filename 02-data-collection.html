@@ -7,6 +7,7 @@
   <title>Data Collection & SDKs — Zeotap CDP Docs</title>
   <link rel="stylesheet" href="assets/style.css?v=4">
   <link rel="stylesheet" href="assets/dark-system.css">
+  <link rel="stylesheet" href="assets/shared.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#0057FF', primaryTextColor: '#fff', primaryBorderColor: '#003EC8', lineColor: '#6B7280', secondaryColor: '#E8EFFF', tertiaryColor: '#f9fafb' } });</script>
   <style>
@@ -686,14 +687,22 @@ zeotap<span class="tok-punctuation">.</span><span class="tok-function">init</spa
           </tbody>
         </table>
       </div>
-
-      <hr>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">
-        <a href="01-platform-overview.html" style="font-size:14px;font-weight:600">← Platform Overview</a>
-        <a href="03-identity-resolution.html"
-          style="font-size:14px;font-weight:600;background:var(--brand-primary);color:white;padding:10px 20px;border-radius:8px;text-decoration:none">Chapter
-          4: Identity Resolution →</a>
-      </div>
+      <nav class="chapter-nav">
+        <a href="01-platform-overview.html" class="chapter-nav-card">
+          <span class="chapter-nav-arrow">←</span>
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Previous</div>
+            <div class="chapter-nav-title">Platform Overview</div>
+          </div>
+        </a>
+        <a href="03-data-ingestion.html" class="chapter-nav-card next">
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Next</div>
+            <div class="chapter-nav-title">Data Ingestion</div>
+          </div>
+          <span class="chapter-nav-arrow">→</span>
+        </a>
+      </nav>
     </div>
   </div>
 
@@ -708,6 +717,9 @@ zeotap<span class="tok-punctuation">.</span><span class="tok-function">init</spa
   <script src="assets/search-index.js"></script>
   <script src="assets/scripts.js?v=7"></script>
 <script src="assets/progress-widget.js"></script>
+
+  <script src="assets/shared.js"></script>
+  <script>Shared.init({ feedbackKey: '02-data-collection' });</script>
 </body>
 
 </html>

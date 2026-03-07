@@ -7,6 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="assets/style.css?v=4">
   <link rel="stylesheet" href="assets/dark-system.css">
+  <link rel="stylesheet" href="assets/shared.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#0057FF', primaryTextColor: '#fff', primaryBorderColor: '#003EC8', lineColor: '#6B7280', secondaryColor: '#E8EFFF', tertiaryColor: '#f9fafb' } });</script>
 </head>
@@ -467,18 +468,23 @@ zeotap-privacy          Active   <span class="tok-comment"># GDPR + Consent mana
         <p class="callout-text">Access to QA and Production environments requires an active VPN connection. Internal IP ranges <code>10.184.16.x</code> (QA) and <code>10.127.0.x</code> (Prod) are only reachable over VPN.</p>
       </div>
     </div>
-
-    <hr>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">
-      <a href="index.html" style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px">← Table of Contents</a>
-      <a href="02-data-collection.html" style="font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;background:var(--brand-primary);color:white;padding:10px 20px;border-radius:8px;text-decoration:none">Chapter 2: Data Collection & SDKs →</a>
-    </div>
+      <nav class="chapter-nav">
+        <a href="02-data-collection.html" class="chapter-nav-card next">
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Next</div>
+            <div class="chapter-nav-title">Data Collection & SDKs</div>
+          </div>
+          <span class="chapter-nav-arrow">→</span>
+        </a>
+      </nav>
   </div>
 </div>
 
   <script src="assets/search-index.js"></script>
   <script src="assets/scripts.js?v=7"></script>
 <script src="assets/progress-widget.js"></script>
+
+  <script src="assets/shared.js"></script>
+  <script>Shared.init({ feedbackKey: '01-platform-overview' });</script>
 </body>
 </html>

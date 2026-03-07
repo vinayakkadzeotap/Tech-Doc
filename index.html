@@ -3014,6 +3014,67 @@
         font-size: 32px !important;
       }
     }
+
+    /* ── Pathway Modals ──────────────────────────────────────────────── */
+    #pathway-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      z-index: 1100; opacity: 0; transition: opacity 0.25s; pointer-events: none;
+    }
+    #pathway-backdrop.open { opacity: 1; pointer-events: auto; }
+    #pathway-modal {
+      position: fixed; bottom: 0; left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: min(560px, 96vw); max-height: 80vh; overflow-y: auto;
+      background: var(--bg-surface, #111827);
+      border: 1px solid var(--border, #1e293b);
+      border-radius: 18px 18px 0 0; z-index: 1101; padding: 24px 24px 32px;
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    #pathway-modal.open { transform: translateX(-50%) translateY(0); }
+    .pathway-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .pathway-title { font-size: 15px; font-weight: 700; color: var(--text-primary, #e2e8f0); letter-spacing: -0.01em; }
+    .pathway-close {
+      width: 28px; height: 28px; border: 1px solid var(--border, #1e293b); border-radius: 50%;
+      background: transparent; color: var(--text-muted, #64748b); cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s;
+    }
+    .pathway-close:hover { background: rgba(255,255,255,0.07); color: var(--text-primary, #e2e8f0); }
+    .pathway-steps-list { display: flex; flex-direction: column; gap: 10px; }
+    .pathway-step {
+      display: flex; gap: 12px; padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; background: rgba(255,255,255,0.02);
+    }
+    .pathway-step-num {
+      font-size: 10px; font-weight: 700; color: var(--accent, #38bdf8);
+      background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 6px; padding: 3px 7px; flex-shrink: 0; height: fit-content; letter-spacing: 0.05em;
+    }
+    .pathway-step-name { font-size: 13px; font-weight: 600; color: var(--text-primary, #e2e8f0); margin-bottom: 3px; }
+    .pathway-step-desc { font-size: 12px; color: var(--text-muted, #64748b); line-height: 1.5; }
+    .pathway-step-link {
+      display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 600;
+      color: var(--accent, #38bdf8); text-decoration: none;
+    }
+    .pathway-step-link:hover { text-decoration: underline; }
+
+    /* ── EVF Log Ticker ──────────────────────────────────────────────── */
+    .evf-log-ticker {
+      margin-top: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px; padding: 8px 12px; max-height: 120px; overflow-y: auto;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10.5px;
+      line-height: 1.6; color: #64748b; scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.06) transparent;
+    }
+    .evf-log-ticker:empty::before { content: '// event log — click ▶ Auto-play to start'; color: #334155; }
+    .evf-log-line { opacity: 0; animation: logFadeIn 0.35s ease forwards; }
+    @keyframes logFadeIn {
+      from { opacity: 0; transform: translateX(-4px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .evf-log-line .log-ts  { color: #475569; }
+    .evf-log-line .log-svc { color: #38bdf8; }
+    .evf-log-line .log-msg { color: #94a3b8; }
+    .evf-log-line .log-ok  { color: #22c55e; }
   </style>
 </head>
 
@@ -3283,19 +3344,19 @@
     <!-- ── LIVE STATS ─────────────────────────────────────────────────── -->
     <div id="stats-bar">
       <div class="stat-cell">
-        <div class="stat-num" id="stat-profiles">14.2B</div>
+        <div class="stat-num" id="stat-profiles" data-target="14.2B">14.2B</div>
         <div class="stat-label">Unified Profiles</div>
       </div>
       <div class="stat-cell">
-        <div class="stat-num" id="stat-events">2.1M/s</div>
+        <div class="stat-num" id="stat-events" data-target="2.1M/s">2.1M/s</div>
         <div class="stat-label">Events per Second</div>
       </div>
       <div class="stat-cell">
-        <div class="stat-num" id="stat-destinations">100+</div>
+        <div class="stat-num" id="stat-destinations" data-target="100+">100+</div>
         <div class="stat-label">Destinations</div>
       </div>
       <div class="stat-cell">
-        <div class="stat-num" id="stat-segments">18K+</div>
+        <div class="stat-num" id="stat-segments" data-target="18K+">18K+</div>
         <div class="stat-label">Active Segments</div>
       </div>
     </div>
@@ -4305,6 +4366,10 @@
         </div>
 
       </div>
+
+      <!-- EVF System Log Ticker -->
+      <div id="evf-log-ticker" class="evf-log-ticker"></div>
+
     </section>
 
     <div class="ds-divider"></div>
@@ -4595,7 +4660,7 @@
       }
     }
 
-    /* ── Task buttons → graph highlight ───────────────────────────────── */
+    /* ── Task buttons → graph highlight + guided pathway modal ────────── */
     function handleTaskClick(btn) {
       var wasActive = btn.classList.contains('active');
       document.querySelectorAll('.ds-task-btn').forEach(function (b) { b.classList.remove('active'); });
@@ -4607,10 +4672,19 @@
       btn.classList.add('active');
 
       var ids = (btn.dataset.highlight || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      var highlightKey = ids.join(',');
+
       if (window.KG && ids.length) {
         KG.highlight(ids);
         var graphEl = document.querySelector('.kg-section');
         if (graphEl) graphEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      /* Open guided pathway modal after scroll settles */
+      if (window._openPathway && highlightKey) {
+        var spans = btn.querySelectorAll('span');
+        var taskTitle = spans.length ? spans[spans.length - 1].textContent.trim() : '';
+        setTimeout(function () { window._openPathway(highlightKey, taskTitle); }, 350);
       }
     }
 
@@ -4627,6 +4701,149 @@
     document.addEventListener('keydown', function (e) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
     });
+
+    /* ── Stats counter IntersectionObserver ───────────────────────────── */
+    (function () {
+      var statsBar = document.getElementById('stats-bar');
+      if (!statsBar) return;
+
+      function parseTarget(str) {
+        /* Returns { num: Number, suffix: String } e.g. "14.2B" → { num: 14.2, suffix: 'B' } */
+        var m = str.match(/^([\d.]+)(.*)$/);
+        if (!m) return null;
+        return { num: parseFloat(m[1]), suffix: m[2] };
+      }
+
+      function easeOutExpo(t) {
+        return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      }
+
+      function animateStat(el, target) {
+        var startTime = null;
+        var duration = 1400;
+        var parsed = parseTarget(target);
+        if (!parsed) return;
+
+        function step(ts) {
+          if (!startTime) startTime = ts;
+          var progress = Math.min((ts - startTime) / duration, 1);
+          var eased = easeOutExpo(progress);
+          var current = eased * parsed.num;
+          /* Format: keep one decimal if original had one */
+          var formatted = parsed.num % 1 !== 0
+            ? current.toFixed(1)
+            : Math.round(current).toString();
+          el.textContent = formatted + parsed.suffix;
+          if (progress < 1) requestAnimationFrame(step);
+        }
+
+        requestAnimationFrame(step);
+      }
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          observer.disconnect(); /* fire once only */
+          statsBar.querySelectorAll('.stat-num[data-target]').forEach(function (el) {
+            el.textContent = '0'; /* start from 0 */
+            animateStat(el, el.dataset.target);
+          });
+        });
+      }, { threshold: 0.4 });
+
+      observer.observe(statsBar);
+    })();
+
+    /* ── Guided Pathway Modals ─────────────────────────────────────────── */
+    (function () {
+      var PATHWAY_STEPS = {
+        'collect,ingest': { title: 'Ingest events from my app', steps: [
+          { name: 'Install the SDK', desc: 'Add the Zeotap JS/iOS/Android SDK snippet to your app. Configure your write key and initialise event tracking.', link: '02-data-collection.html', lt: '→ Data Collection' },
+          { name: 'Define your event schema', desc: 'Declare event types (purchase, page_view, etc.) in the Schema Registry so the ingestion layer can validate payloads.', link: '03-data-ingestion.html', lt: '→ Data Ingestion' },
+          { name: 'Monitor your pipeline', desc: 'Watch events flow through the EVF grid and check Observability for schema violations or unexpected drops.', link: '16-observability.html', lt: '→ Observability' }
+        ]},
+        'identity,profiles,privacy': { title: 'Resolve user identities', steps: [
+          { name: 'Collect identity signals', desc: 'Ensure your SDK sends at least one identifier (email hash, phone, cookie ID) with each event so the ID graph has material to stitch.', link: '02-data-collection.html', lt: '→ Data Collection' },
+          { name: 'Enable Identity Resolution', desc: 'Configure the ID graph to stitch cross-device and cross-channel signals into a single unified profile.', link: '03-identity-resolution.html', lt: '→ Identity Resolution' },
+          { name: 'Review unified profiles', desc: 'Inspect merged profiles in the Profile Store to verify stitching quality and attribute completeness.', link: '05-profile-store.html', lt: '→ Profile Store' }
+        ]},
+        'audiences,profiles': { title: 'Build audience segments', steps: [
+          { name: 'Verify profile attributes', desc: 'Check the Profile Store to ensure the behavioural and demographic attributes you want to segment on are populated and fresh.', link: '05-profile-store.html', lt: '→ Profile Store' },
+          { name: 'Build a segment rule', desc: 'Use the Audience Management rule builder to combine event history, profile traits, and real-time signals into a precise audience.', link: '06-audience-management.html', lt: '→ Audience Management' },
+          { name: 'Estimate reach & publish', desc: 'Review the reach estimate, apply frequency caps if needed, then publish so the segment becomes available for activation.', link: '06-audience-management.html', lt: '→ Audience Management' }
+        ]},
+        'activation,journeys,audiences': { title: 'Activate to destinations', steps: [
+          { name: 'Build your audience', desc: 'Create or select the audience segment you want to activate in Audience Management.', link: '06-audience-management.html', lt: '→ Audience Management' },
+          { name: 'Configure a destination', desc: 'Add and authenticate your ad platform, CRM, or data warehouse in the Destinations catalog inside Data Activation.', link: '08-data-activation.html', lt: '→ Data Activation' },
+          { name: 'Launch a Journey', desc: 'Wrap activation in a Customer Journey to control timing, entry conditions, frequency caps, and suppression lists.', link: '07-customer-journeys.html', lt: '→ Customer Journeys' }
+        ]},
+        'ai,ml,audiences': { title: 'Use AI for predictions', steps: [
+          { name: 'Select a model type', desc: 'Choose from propensity, lifetime value, or churn prediction models in the ML Platform module.', link: '10-ml-platform.html', lt: '→ ML Platform' },
+          { name: 'Map training features', desc: 'Select the profile attributes and event sequences the model should learn from, then trigger a training run.', link: '10-ml-platform.html', lt: '→ ML Platform' },
+          { name: 'Publish scores as segments', desc: 'Output prediction scores back to Audience Management as a scored attribute for targeting.', link: '10-ml-platform.html', lt: '→ ML Platform' }
+        ]},
+        'privacy,auth,activation': { title: 'Manage consent & privacy', steps: [
+          { name: 'Configure consent topics', desc: 'Define your consent taxonomy (marketing, analytics, personalisation) in Privacy & GDPR to mirror what users see in your consent banner.', link: '13-privacy-gdpr.html', lt: '→ Privacy & GDPR' },
+          { name: 'Block non-consented flows', desc: 'Set up Data Governance policies to prevent un-consented data reaching activation destinations automatically.', link: '13-privacy-gdpr.html', lt: '→ Privacy & GDPR' },
+          { name: 'Audit access controls', desc: 'Review IAM roles in Auth & IAM to ensure only authorised teams can access sensitive profile data and segments.', link: '14-auth-iam.html', lt: '→ Auth & IAM' }
+        ]},
+        'collect,identity,profiles,audiences': { title: 'Understand the data pipeline', steps: [
+          { name: 'Trace an event end-to-end', desc: 'Open the Pipeline Simulator to follow a single purchase event from SDK capture through every CDP service to destination delivery.', link: 'pipeline-sim.html', lt: '→ Pipeline Simulator' },
+          { name: 'Read the EVF stages', desc: 'Step through the Event Flow grid on this page to see what each microservice does to the payload at every transformation layer.', link: null, lt: null },
+          { name: 'Explore the architecture map', desc: 'Rotate the 3D Knowledge Graph to see how all 16 CDP components interconnect and where each stage sits in the system.', link: null, lt: null }
+        ]},
+        'infra,auth,observe,cicd': { title: 'Operate infrastructure', steps: [
+          { name: 'Review the infrastructure overview', desc: 'Understand how Kubernetes namespaces, Kafka topics, and Delta Lake underpin every CDP service at production scale.', link: '15-infrastructure.html', lt: '→ Infrastructure' },
+          { name: 'Set up observability', desc: 'Configure Grafana dashboards and SLO alert policies in the Observability module to catch regressions before they impact users.', link: '16-observability.html', lt: '→ Observability' },
+          { name: 'Implement CI/CD pipelines', desc: 'Learn how Zeotap deploys microservices safely via trunk-based development, feature flags, and canary rollouts.', link: '17-cicd.html', lt: '→ CI/CD' }
+        ]}
+      };
+
+      function openPathway(key, taskTitle) {
+        var data = PATHWAY_STEPS[key];
+        var modal = document.getElementById('pathway-modal');
+        var backdrop = document.getElementById('pathway-backdrop');
+        if (!data || !modal || !backdrop) return;
+
+        var titleEl = modal.querySelector('.pathway-title');
+        if (titleEl) titleEl.textContent = taskTitle || data.title;
+
+        var listEl = modal.querySelector('.pathway-steps-list');
+        if (listEl) {
+          listEl.innerHTML = '';
+          data.steps.forEach(function (step, i) {
+            var el = document.createElement('div');
+            el.className = 'pathway-step';
+            var lnk = step.link ? '<a href="' + step.link + '" class="pathway-step-link">' + step.lt + '</a>' : '';
+            el.innerHTML = '<div class="pathway-step-num">0' + (i + 1) + '</div>' +
+              '<div class="pathway-step-body"><div class="pathway-step-name">' + step.name + '</div>' +
+              '<div class="pathway-step-desc">' + step.desc + '</div>' + lnk + '</div>';
+            listEl.appendChild(el);
+          });
+        }
+        backdrop.classList.add('open');
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closePathway() {
+        var modal = document.getElementById('pathway-modal');
+        var backdrop = document.getElementById('pathway-backdrop');
+        if (modal)    modal.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        var closeBtn  = document.getElementById('pathway-close-btn');
+        var backdrop  = document.getElementById('pathway-backdrop');
+        if (closeBtn)  closeBtn.addEventListener('click', closePathway);
+        if (backdrop)  backdrop.addEventListener('click', closePathway);
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePathway(); });
+      });
+
+      window._openPathway = openPathway;
+    })();
 
     /* ── Back-to-top: listen on .ds-main (the actual scroll container on this page) ── */
     (function () {
@@ -4793,6 +5010,17 @@
   </script>
 
   <!-- Side Panel Overlay Hook (will be managed by graph-enhancements.js) -->
+
+  <!-- ── Guided Pathway Modal ──────────────────────────────────────────── -->
+  <div id="pathway-backdrop"></div>
+  <div id="pathway-modal" role="dialog" aria-modal="true" aria-labelledby="pathway-modal-title">
+    <div class="pathway-header">
+      <div class="pathway-title" id="pathway-modal-title">How to get started</div>
+      <button class="pathway-close" id="pathway-close-btn" aria-label="Close pathway guide">✕</button>
+    </div>
+    <div class="pathway-steps-list"></div>
+  </div>
+
 </body>
 
 </html>

@@ -6,6 +6,7 @@
   <title>Chapter 5: Profile Store — Zeotap Technical Documentation</title>
   <link rel="stylesheet" href="assets/style.css?v=4"/>
   <link rel="stylesheet" href="assets/dark-system.css">
+  <link rel="stylesheet" href="assets/shared.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
 </head>
@@ -785,12 +786,23 @@ apikey: &lt;api_key_associated_with_org_id&gt;</code></pre>
     </section><!-- /profile-api-external -->
 
     <!-- Next Chapter -->
-    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
-      <div>
-        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
-        <a href="06-audience-management.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 6 · Audience Management →</a>
-      </div>
-    </div>
+
+      <nav class="chapter-nav">
+        <a href="04-genai-zoe.html" class="chapter-nav-card">
+          <span class="chapter-nav-arrow">←</span>
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Previous</div>
+            <div class="chapter-nav-title">Gen AI & Zoe</div>
+          </div>
+        </a>
+        <a href="06-audience-management.html" class="chapter-nav-card next">
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Next</div>
+            <div class="chapter-nav-title">Audience Management</div>
+          </div>
+          <span class="chapter-nav-arrow">→</span>
+        </a>
+      </nav>
   </main>
 </div>
 
@@ -805,5 +817,8 @@ function switchTab(btn, id) {
   <script src="assets/search-index.js"></script>
   <script src="assets/scripts.js?v=7"></script>
 <script src="assets/progress-widget.js"></script>
+
+  <script src="assets/shared.js"></script>
+  <script>Shared.init({ feedbackKey: '05-profile-store' });</script>
 </body>
 </html>

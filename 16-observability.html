@@ -6,6 +6,7 @@
   <title>Chapter 16: Observability & Monitoring — Zeotap Technical Documentation</title>
   <link rel="stylesheet" href="assets/style.css?v=4"/>
   <link rel="stylesheet" href="assets/dark-system.css">
+  <link rel="stylesheet" href="assets/shared.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
 </head>
@@ -331,14 +332,29 @@ metrics:
       <p>Monitors the health of Prometheus itself — checks that key scrape jobs are returning data and that alerting rules are evaluating correctly. Sends Slack alerts if Prometheus appears unhealthy.</p>
     </section>
 
-    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
-      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
-      <a href="17-cicd.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 17 · CI/CD & Deployment Pipelines →</a>
-    </div>
+      <nav class="chapter-nav">
+        <a href="15-infrastructure.html" class="chapter-nav-card">
+          <span class="chapter-nav-arrow">←</span>
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Previous</div>
+            <div class="chapter-nav-title">Infrastructure</div>
+          </div>
+        </a>
+        <a href="17-cicd.html" class="chapter-nav-card next">
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Next</div>
+            <div class="chapter-nav-title">CI/CD</div>
+          </div>
+          <span class="chapter-nav-arrow">→</span>
+        </a>
+      </nav>
   </main>
 </div>
   <script src="assets/search-index.js"></script>
   <script src="assets/scripts.js?v=7"></script>
 <script src="assets/progress-widget.js"></script>
+
+  <script src="assets/shared.js"></script>
+  <script>Shared.init({ feedbackKey: '16-observability' });</script>
 </body>
 </html>

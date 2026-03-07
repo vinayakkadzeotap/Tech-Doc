@@ -6,6 +6,7 @@
   <title>Chapter 12: Unity Angular Dashboard — Zeotap Technical Documentation</title>
   <link rel="stylesheet" href="assets/style.css?v=4"/>
   <link rel="stylesheet" href="assets/dark-system.css">
+  <link rel="stylesheet" href="assets/shared.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad:true, theme:'neutral', fontFamily:'Inter, sans-serif'});</script>
 </head>
@@ -352,10 +353,22 @@ export class AuthGuard implements CanActivateChild {
 &lt;/zui-rule-builder&gt;</code></pre>
     </section>
 
-    <div style="margin-top:3rem;padding:2rem;background:var(--bg-subtle);border-radius:12px;">
-      <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Chapter</div>
-      <a href="13-privacy-gdpr.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Chapter 13 · Privacy & GDPR Compliance →</a>
-    </div>
+      <nav class="chapter-nav">
+        <a href="11-reporting-bi.html" class="chapter-nav-card">
+          <span class="chapter-nav-arrow">←</span>
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Previous</div>
+            <div class="chapter-nav-title">Reporting & BI</div>
+          </div>
+        </a>
+        <a href="13-privacy-gdpr.html" class="chapter-nav-card next">
+          <div class="chapter-nav-body">
+            <div class="chapter-nav-label">Next</div>
+            <div class="chapter-nav-title">Privacy & GDPR</div>
+          </div>
+          <span class="chapter-nav-arrow">→</span>
+        </a>
+      </nav>
   </main>
 </div>
 
@@ -370,5 +383,8 @@ function switchTab(btn, id) {
   <script src="assets/search-index.js"></script>
   <script src="assets/scripts.js?v=7"></script>
 <script src="assets/progress-widget.js"></script>
+
+  <script src="assets/shared.js"></script>
+  <script>Shared.init({ feedbackKey: '12-unity-dashboard' });</script>
 </body>
 </html>

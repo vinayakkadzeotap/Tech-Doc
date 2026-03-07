@@ -68,6 +68,45 @@
     steps: []
   };
 
+  /* ── Log ticker data & helpers ───────────────────────────────────── */
+  var EVF_LOG_LINES = [
+    { svc: 'sdk.js      ', msg: '→ queued purchase event to IndexedDB buffer', ok: false },
+    { svc: 'collection  ', msg: '→ validated schema v2.4 — api_ts stamped', ok: true },
+    { svc: 'kafka-msk   ', msg: '→ published to cdp.events.raw (partition 7, offset 10482947)', ok: true },
+    { svc: 'flink-rt    ', msg: '→ geo-enriched (DE/Berlin) + consent OK → routed downstream', ok: true },
+    { svc: 'id-graph    ', msg: '→ deterministic match → ucid u_4f8a2c91 (cache hit, 3ms)', ok: true },
+    { svc: 'scylla      ', msg: '→ profile upsert done — lifetime_value now 412.88 (p99 6ms)', ok: true },
+    { svc: 'segment-eng ', msg: '→ entered seg_high_value_eu (18,432 segment trees evaluated)', ok: true },
+    { svc: 'journey-eng ', msg: '→ step enqueued in Redis DAG: jrn_highvalue_eu_reeng_v3', ok: true },
+    { svc: 'connector   ', msg: '→ Braze consent OK, mapped ucid → external_id, queued', ok: true },
+    { svc: 'destinations', msg: '→ Meta CAPI ✓  Google DV360 ✓  (delivery_ts +2.1s)', ok: true }
+  ];
+
+  function appendLog(idx) {
+    var ticker = document.getElementById('evf-log-ticker');
+    if (!ticker) return;
+    var entry = EVF_LOG_LINES[idx];
+    if (!entry) return;
+
+    /* Generate a fake but plausible timestamp */
+    var now = new Date();
+    var ts = [
+      String(now.getHours()).padStart(2, '0'),
+      String(now.getMinutes()).padStart(2, '0'),
+      String(now.getSeconds()).padStart(2, '0') + '.' + String(now.getMilliseconds()).padStart(3, '0').slice(0, 3)
+    ].join(':');
+
+    var line = document.createElement('div');
+    line.className = 'evf-log-line';
+    line.innerHTML =
+      '<span class="log-ts">[' + ts + ']</span> ' +
+      '<span class="log-svc">' + entry.svc + '</span> ' +
+      '<span class="' + (entry.ok ? 'log-ok' : 'log-msg') + '">' + entry.msg + '</span>';
+    ticker.appendChild(line);
+    /* Auto-scroll to bottom */
+    ticker.scrollTop = ticker.scrollHeight;
+  }
+
   /* ── Helpers ─────────────────────────────────────────────────────── */
   function hasKG() {
     return !!(global.KG && typeof global.KG.highlight === 'function');
@@ -202,8 +241,13 @@
     state.autoplayRunning = true;
     updateAutoplayBtn(true);
 
+    /* Clear the log ticker for a fresh run */
+    var ticker = document.getElementById('evf-log-ticker');
+    if (ticker) ticker.innerHTML = '';
+
     var idx = 0;
     activateStep(idx);
+    appendLog(idx);
 
     state.autoplayTimer = setInterval(function () {
       idx++;
@@ -214,6 +258,7 @@
         return;
       }
       activateStep(idx);
+      appendLog(idx);
     }, 1200);
   }
 
