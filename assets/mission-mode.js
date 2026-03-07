@@ -82,38 +82,38 @@
     },
     build_segment: {
       id: 'build_segment',
-      title: 'Build a Segment',
+      title: 'Build a High-Value Segment',
       icon: '🎯',
       steps: [
         {
-          title: 'Create SQL Rule',
-          description: 'Use BigQuery to write rules: "customers who spent >$1000 in 30 days".',
+          title: 'Step 1: Explore Profile Attributes',
+          description: 'Open the Attribute Explorer in Unity Dashboard. Every trait on a customer profile — lifetime_value, purchase_count, last_seen_ts, predicted_churn_score — is sourced from Delta Lake on GCS and fully queryable via BigQuery.',
+          highlights: ['profiles', 'unity'],
+          instruction: 'The "Profile Store" node is the source of truth. All segment rules pull attributes from here in real time.',
+        },
+        {
+          title: 'Step 2: Define a Boolean Rule',
+          description: 'Add the first condition: lifetime_value > 400 AND purchase_count >= 5. The visual rule builder compiles this to a BigQuery SQL expression. The Rust segment engine then evaluates it against every incoming profile-change event.',
           highlights: ['profiles', 'audiences'],
-          instruction: 'All customer data is queryable in BigQuery.',
+          instruction: 'The "Audiences" node runs the Rust engine. It evaluates this condition at < 100ms per profile update — even across 18,000+ active segments simultaneously.',
         },
         {
-          title: 'Real-time Evaluation',
-          description: 'Pub/Sub streams profile updates. Segment engine evaluates <100ms latency.',
+          title: 'Step 3: Combine with OR Logic',
+          description: 'Add a second branch with OR: top_category = "electronics". The builder serializes this to a DAG of conditions. Nested AND/OR groups are supported up to 10 levels deep. All 18,000+ active segments run concurrently with no query contention.',
           highlights: ['audiences'],
-          instruction: 'Segments update in real-time as new data arrives.',
+          instruction: 'Complex Boolean logic is native to the Rust engine. Even deeply nested trees evaluate in under 100ms at billion-profile scale.',
         },
         {
-          title: 'Scale to 18K+ Segments',
-          description: 'Presto and Druid handle 18,000 active segments across billions of profiles.',
+          title: 'Step 4: Preview Audience Size',
+          description: 'Click "Preview" — the engine runs a BigQuery batch scan and returns an estimated count within 30 seconds. For the LTV + electronics rule, expect ~47K qualifying profiles. This is a non-binding estimate from a point-in-time snapshot.',
           highlights: ['audiences', 'reporting'],
-          instruction: 'Performance stays fast even at massive scale.',
+          instruction: 'The "Reporting" node powers this preview query. Real-time streaming membership may differ slightly from the preview count.',
         },
         {
-          title: 'Activation Trigger',
-          description: 'Segments feed into journeys. When customers enter a segment, journeys fire.',
-          highlights: ['audiences', 'journeys'],
-          instruction: 'Segments are the fuel for journey orchestration.',
-        },
-        {
-          title: 'Analytics Dashboard',
-          description: 'See real-time segment size, composition, and trend in Unity Dashboard.',
-          highlights: ['reporting', 'unity'],
-          instruction: 'Full transparency on your audience data.',
+          title: 'Step 5: Save — Go Streaming',
+          description: 'Saving registers the segment in the segment registry. Every subsequent profile write event triggers incremental evaluation via Pub/Sub. Membership updates propagate in < 200ms. The segment is immediately available in Journeys and Activation.',
+          highlights: ['audiences', 'journeys', 'activation'],
+          instruction: 'Watch "Audiences" connect to both "Journeys" and "Activation" — a saved, live segment is the fuel for both orchestration and direct activation paths.',
         },
       ],
     },
@@ -123,34 +123,34 @@
       icon: '🚀',
       steps: [
         {
-          title: 'Journey Trigger',
-          description: 'Event-driven: "Customer enters high-value segment" or time-based: "1 week after signup".',
+          title: 'Step 1: Define the Entry Event',
+          description: 'In Journey Builder (Unity Dashboard), set the trigger: "Customer enters seg_high_value_eu." The journey-executor (Java + Kafka) consumes segment changelog events from a Pub/Sub topic. The first matching profile fires the journey in < 50ms of segment entry.',
+          highlights: ['audiences', 'journeys'],
+          instruction: 'The "Audiences" → "Journeys" edge is this trigger path. Every segment membership change emits a Pub/Sub changelog message consumed by the journey executor.',
+        },
+        {
+          title: 'Step 2: Configure the Step Sequence',
+          description: 'Add: Step 1 — personalised email via Braze connector. Step 2 — Wait node (3 days). Step 3 — Conditional branch: if email_opened then SMS, else push notification. The full sequence serializes to a DAG persisted atomically in Redis.',
           highlights: ['journeys'],
-          instruction: 'Journeys start from segment entry or explicit events.',
+          instruction: 'Journey state lives in Redis keyed by ucid + journey_id. Each step enqueue is atomic — no lost state if a worker crashes mid-execution.',
         },
         {
-          title: 'Multi-step Orchestration',
-          description: 'Send email → wait 3 days → A/B test SMS → 5% frequency cap → conditional branching.',
+          title: 'Step 3: Set Wait Conditions',
+          description: 'Wait nodes accept ISO 8601 durations (PT72H for 3 days) or calendar windows (NEXT_MONDAY_9AM in the customer\'s own timezone). Airflow checks Redis for ready-to-advance journey states every 30 seconds.',
           highlights: ['journeys'],
-          instruction: 'Complex logic with no-code builder.',
+          instruction: 'Redis stores the wait_until timestamp per customer. Airflow polls and enqueues the next step when the condition passes — accurate to within 30 seconds.',
         },
         {
-          title: 'State Persistence',
-          description: 'Redis stores journey state. Customers resume exactly where they left off.',
-          highlights: ['journeys'],
-          instruction: 'Resilient. No lost progress.',
+          title: 'Step 4: Assign Channels + Enforce Consent',
+          description: 'Map email step → Braze (ucid → external_id). SMS step → Twilio. Push → Firebase FCM. At every dispatch, the Privacy Engine retrieves consent status. A revoked consent silently skips that step without breaking the journey for that customer.',
+          highlights: ['journeys', 'activation', 'privacy'],
+          instruction: 'The "Privacy" node intercepts every dispatch. Consent is checked at activation time, not journey creation — so late revocations are always honoured in real time.',
         },
         {
-          title: 'Consent Enforcement',
-          description: 'Privacy engine checks consent before every step. GDPR-compliant by design.',
-          highlights: ['journeys', 'privacy'],
-          instruction: 'Consent is checked at dispatch.',
-        },
-        {
-          title: 'Data Activation',
-          description: 'Journey triggers data to 100+ destinations: email, SMS, push, DSPs, webhooks.',
-          highlights: ['activation'],
-          instruction: 'Your message reaches customers wherever they are.',
+          title: 'Step 5: Activate the Journey',
+          description: 'Click "Activate." The journey moves from DRAFT to LIVE in the journey registry. connector-hub begins listening on the activation-tasks Kafka topic. The first qualifying customer starts their journey within < 50ms. Monitoring metrics appear immediately.',
+          highlights: ['journeys', 'activation'],
+          instruction: 'Watch the "Journeys" → "Activation" edge light up — this is the live execution path from orchestration logic to real destination delivery.',
         },
       ],
     },
@@ -160,34 +160,34 @@
       icon: '📤',
       steps: [
         {
-          title: 'Audience Ready',
-          description: 'You have a segment. 500K high-value customers. Now activate them.',
+          title: 'Step 1: Select Your Segment',
+          description: 'In the Destinations UI, choose "seg_high_value_eu" (~47K profiles). This segment is streaming-live — any new profile that enters will sync to the destination automatically within 2 seconds of membership change via the Pub/Sub segment changelog.',
           highlights: ['audiences'],
-          instruction: 'Start with a well-defined audience.',
+          instruction: 'The "Audiences" node holds the live membership list. Segment size updates continuously as profiles qualify or dis-qualify from the rule conditions.',
         },
         {
-          title: 'Choose Destination',
-          description: 'Google Ads, Meta, Klaviyo, Salesforce, Segment — 100+ integrations.',
+          title: 'Step 2: Choose a Destination',
+          description: 'Select "Meta CAPI" from the 100+ connector catalogue. connector-hub (Scala) manages the Meta Conversions API v16 protocol, OAuth 2.0 token refresh, and rate-limit management (up to 2,000 events/s per pixel ID).',
           highlights: ['activation'],
-          instruction: 'Pick where your audience goes.',
+          instruction: 'The "Activation" node is connector-hub. Each of the 100+ connectors has protocol-specific retry logic, exponential backoff, and SLA monitoring built in.',
         },
         {
-          title: 'Map Fields',
-          description: 'Customer ID → Hashed Email. Profile attributes → Audience tags.',
-          highlights: ['activation'],
-          instruction: 'Field mapping is flexible. Supports any schema.',
+          title: 'Step 3: Configure Field Mapping',
+          description: 'Map: ucid → em (SHA-256 hashed email, Privacy Engine applies the hash). mobile_ad_id → madid (raw GAID). Add enrichment from the profile: geo.country, top_category. Mapping specs apply at export time using live profile values — not a snapshot.',
+          highlights: ['activation', 'profiles'],
+          instruction: 'Field mapping pulls from the live "Profile Store" at export time. Activations always use the freshest data, not a stale cache.',
         },
         {
-          title: 'Real-time Sync',
-          description: 'As customers enter/exit segments, destinations are updated instantly.',
-          highlights: ['audiences', 'activation'],
-          instruction: 'Streaming mode keeps data in sync.',
+          title: 'Step 4: Set Sync Frequency',
+          description: 'Choose "Real-time streaming" — as profiles enter or exit the segment, connector-hub pushes incremental updates to Meta CAPI within 2 seconds. Or "Daily batch" stages a GCS file export to gs://zeotap-exports-eu/batch/meta/ at 02:00 UTC.',
+          highlights: ['activation', 'audiences'],
+          instruction: 'Real-time mode is powered by the Pub/Sub segment changelog. Batch mode uses a Cloud Scheduler trigger to Dataflow export job — both paths maintain full consent enforcement.',
         },
         {
-          title: 'Batch Export',
-          description: 'Or export daily snapshots to SFTP, S3, Google Drive for analytics teams.',
-          highlights: ['activation'],
-          instruction: 'Flexible delivery: real-time streaming OR batch.',
+          title: 'Step 5: Push and Monitor',
+          description: 'Click "Save and Push." connector-hub dispatches the initial ~47K batch using 3 parallel workers. Every delivery receipt logs a Cloud Trace span. The Observability dashboard shows match rates, p99 delivery latency, and error rates per destination in real time.',
+          highlights: ['activation', 'observe'],
+          instruction: 'Watch the "Observability" node — every delivery receipt is a trace span. SLO alerts fire automatically if p99 delivery exceeds 5 seconds, triggering PagerDuty escalation.',
         },
       ],
     },
@@ -197,11 +197,7 @@
   let currentStep = 0;
 
   function hasKG() {
-    if (!global.KG) {
-      console.warn('[MissionMode] Graph engine not initialized');
-      return false;
-    }
-    return true;
+    return !!global.KG;
   }
 
   function renderMissionPanel() {

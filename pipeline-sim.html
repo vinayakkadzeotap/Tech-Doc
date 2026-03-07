@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journey of a Click — Zeotap CDP Pipeline Simulator</title>
+  <meta name="description"
+    content="Follow a single purchase event through every stage of the Zeotap CDP — from SDK capture to destination delivery." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <!-- Design System (shared with main hub) -->
+  <link rel="stylesheet" href="assets/dark-system.css?v=1.3" />
+  <link rel="stylesheet" href="assets/enhanced-design-system.css?v=2.1" />
+
+  <!-- Pipeline Simulator styles -->
+  <link rel="stylesheet" href="assets/pipeline-sim.css?v=1.0" />
+
+  <style>
+    /* ── Extra aliases ──────────────────────────────── */
+    :root { --text-mute: var(--text-muted); }
+
+    /* ── Page reset ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden; /* outer scroll disabled — stepper panel scrolls internally */
+      background: var(--bg-primary, #060a12);
+    }
+
+    /* ── Graph canvas fills its container ───────────── */
+    #knowledge-graph {
+      width: 100%;
+      height: calc(100vh - 52px - 36px); /* viewport - topbar - graph label */
+    }
+
+    /* Mobile: allow body scroll */
+    @media (max-width: 900px) {
+      html, body { overflow: auto; }
+      #knowledge-graph { height: 280px; }
+    }
+  </style>
+</head>
+
+<body class="psim-page">
+
+  <!-- ── TOP NAV BAR ──────────────────────────────────────────────────── -->
+  <nav class="psim-topbar">
+    <a href="index.html" class="psim-topbar-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Hub
+    </a>
+    <div style="width:1px;height:16px;background:rgba(255,255,255,0.08);"></div>
+    <div class="psim-topbar-title">Journey of a Click</div>
+    <div class="psim-topbar-sub">— pipeline simulator</div>
+    <div class="psim-topbar-badge">INTERACTIVE</div>
+  </nav>
+
+  <!-- ── TWO-COLUMN LAYOUT ────────────────────────────────────────────── -->
+  <div class="psim-layout">
+
+    <!-- ── LEFT: 3D GRAPH (sticky) ──────────────────────────────────── -->
+    <div class="psim-graph-panel">
+      <div class="psim-graph-label">CDP ARCHITECTURE MAP — highlighted node = active stage</div>
+      <!-- CRITICAL: #knowledge-graph must exist with explicit height BEFORE three-d-graph.js loads -->
+      <div id="knowledge-graph" role="img" aria-label="Interactive CDP architecture graph — highlighted node shows active pipeline stage"></div>
+    </div>
+
+    <!-- ── RIGHT: STEPPER (scrollable) ──────────────────────────────── -->
+    <div class="psim-stepper-panel">
+
+      <!-- Intro heading -->
+      <div class="psim-intro">
+        <div class="psim-intro-label">Pipeline Simulator</div>
+        <div class="psim-intro-title">Journey of a Click</div>
+        <div class="psim-intro-desc">
+          Follow a single <strong>purchase</strong> event — from the moment a user clicks "Buy Now" on a website —
+          through every stage of the Zeotap CDP until it reaches ad destinations. Step through each stage to see the
+          actual JSON payload transforming at every layer.
+        </div>
+        <div class="psim-intro-payload">// Starting payload
+{ "event_type": "purchase", "value": 89.99, "currency": "EUR" }</div>
+      </div>
+
+      <!-- Dot navigation -->
+      <div id="psim-dots" class="psim-dots-nav" role="navigation" aria-label="Pipeline stage navigation"></div>
+
+      <!-- Stage card (dynamically rendered by pipeline-sim.js) -->
+      <div id="psim-stage-card" class="psim-stage-card">
+        <div style="color:var(--text-muted,#64748b);font-size:13px;padding:20px 0;">Loading pipeline stages…</div>
+      </div>
+
+      <!-- Controls -->
+      <div class="psim-controls">
+        <button id="psim-prev-btn" class="psim-btn" disabled>← Previous</button>
+        <button id="psim-next-btn" class="psim-btn">Next →</button>
+        <button id="psim-play-btn" class="psim-btn primary">▶ Auto-play</button>
+        <span id="psim-progress-text" class="psim-progress-text">1 / 7</span>
+      </div>
+
+      <!-- Footer note -->
+      <div style="margin-top:32px;padding:14px 16px;background:rgba(59,130,246,0.04);border:1px solid rgba(59,130,246,0.1);border-radius:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#475569;margin-bottom:5px;">💡 How to use</div>
+        <div style="font-size:12px;color:#64748b;line-height:1.6;">
+          Click the dots or use <strong style="color:#93c5fd;">Next / Previous</strong> to step through each pipeline stage.
+          The 3D graph on the left highlights the active CDP node.
+          Hit <strong style="color:#93c5fd;">Auto-play</strong> to watch the full journey in real-time (3s per stage).
+          <br><br>
+          Each stage shows the exact JSON payload entering and leaving that service — the same structure used in production.
+        </div>
+      </div>
+
+    </div><!-- /.psim-stepper-panel -->
+  </div><!-- /.psim-layout -->
+
+  <!-- ── GRAPH ENGINE ──────────────────────────────────────────────────── -->
+  <!-- Canvas 2D physics engine — no WebGL required -->
+  <script src="assets/three-d-graph.js?v=3.0"></script>
+
+  <!-- Pipeline simulator controller -->
+  <script src="assets/pipeline-sim.js?v=1.0"></script>
+
+</body>
+</html>

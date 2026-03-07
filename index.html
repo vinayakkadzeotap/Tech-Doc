@@ -2382,6 +2382,52 @@
       background: #10b981;
     }
 
+    /* ── EVF Interactive States ────────────────────────────────────── */
+    .evf-step { transition: opacity 0.25s ease, background 0.2s ease, filter 0.25s ease; cursor: pointer; }
+    .evf-step.evf-active { background: rgba(255,255,255,0.055); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.11); }
+    .evf-step.evf-dimmed { opacity: 0.32; filter: grayscale(0.45); }
+    @keyframes evf-arrow-pulse {
+      0%,100% { color: var(--text-mute,#475569); background: transparent; }
+      50% { color: #60a5fa; background: rgba(59,130,246,.14); box-shadow: 0 0 7px rgba(59,130,246,.35); }
+    }
+    .evf-arrow-pulse { animation: evf-arrow-pulse 1s ease-in-out infinite; border-radius: 4px; }
+    .evf-controls-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+    #evf-autoplay-btn {
+      font-size: 12px; font-weight: 700; padding: 6px 18px;
+      background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.28);
+      border-radius: 8px; color: #60a5fa; cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    #evf-autoplay-btn:hover { background: rgba(59,130,246,.2); }
+    .evf-snapshot-panel {
+      margin-top: 14px; background: rgba(255,255,255,.022);
+      border: 1px solid rgba(255,255,255,.09); border-radius: 14px;
+      padding: 18px 22px; display: none; animation: slide-up .22s ease both;
+    }
+    .evf-snapshot-panel.evf-snapshot-visible { display: block; }
+    .evf-snap-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .evf-snap-title { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+    .evf-snap-close {
+      background: transparent; border: none; color: #64748b;
+      cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; font-family: inherit;
+    }
+    .evf-snap-close:hover { color: #94a3b8; }
+    .evf-snap-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 600px) { .evf-snap-cols { grid-template-columns: 1fr; } }
+    .evf-snap-label {
+      font-size: 9px; font-weight: 800; letter-spacing: .12em;
+      text-transform: uppercase; color: #64748b; margin-bottom: 6px;
+    }
+    .evf-snap-json {
+      background: #080c12; border: 1px solid rgba(255,255,255,.07);
+      border-radius: 8px; padding: 11px 13px; font-size: 10.5px;
+      font-family: 'JetBrains Mono','Fira Code',monospace; color: #94a3b8;
+      line-height: 1.55; overflow-x: auto; white-space: pre; margin: 0;
+    }
+    .evf-snap-note {
+      margin-top: 11px; font-size: 11px; color: #64748b; font-style: italic;
+      border-top: 1px solid rgba(255,255,255,.06); padding-top: 9px;
+    }
+
     /* ─────────────────────────────────────────────────────────────────
        FEATURE 2 — Common Failure Points
     ───────────────────────────────────────────────────────────────── */
@@ -3139,6 +3185,16 @@
         </a>
         <a href="15-infrastructure.html" class="ds-nav-link">
           <div class="nav-dot"></div>Infrastructure &amp; SRE
+        </a>
+      </div>
+
+      <!-- Interactive Tools -->
+      <div class="ds-sidebar-section" style="margin-top:8px;">
+        <div class="ds-sidebar-label">Interactive Tools</div>
+        <a href="pipeline-sim.html" class="ds-nav-link" style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:8px;margin-bottom:4px;">
+          <div class="nav-dot" style="background:#3b82f6;box-shadow:0 0 6px #3b82f6;"></div>
+          <span>Journey of a Click</span>
+          <span style="font-size:9px;font-weight:700;color:#3b82f6;margin-left:auto;letter-spacing:0.05em;">NEW</span>
         </a>
       </div>
 
@@ -4124,9 +4180,12 @@
           <div class="ds-section-sub">The 10 architectural stages every platform event passes through</div>
         </div>
       </div>
+      <div class="evf-controls-bar">
+        <button id="evf-autoplay-btn">▶ Auto-play Flow</button>
+      </div>
       <div class="evf-grid">
 
-        <div class="evf-step clr-cyan" style="border-bottom:none;">
+        <div class="evf-step clr-cyan" data-node="collect" data-stage-idx="0" style="border-bottom:none;">
           <div class="evf-step-num">Stage 01</div>
           <div class="evf-step-name">Event Source</div>
           <div class="evf-step-desc">User action emitted from web, mobile, server, or batch file. The SDK queues and
@@ -4138,7 +4197,7 @@
           <div class="evf-arrow">→</div>
         </div>
 
-        <div class="evf-step clr-cyan" style="border-bottom:none;">
+        <div class="evf-step clr-cyan" data-node="collect" data-stage-idx="1" style="border-bottom:none;">
           <div class="evf-step-num">Stage 02</div>
           <div class="evf-step-name">Data Collection</div>
           <div class="evf-step-desc">The Collection API receives, authenticates, and validates the raw event payload
@@ -4150,7 +4209,7 @@
           <div class="evf-arrow">→</div>
         </div>
 
-        <div class="evf-step clr-cyan" style="border-bottom:none;">
+        <div class="evf-step clr-cyan" data-node="ingest" data-stage-idx="2" style="border-bottom:none;">
           <div class="evf-step-num">Stage 03</div>
           <div class="evf-step-name">Streaming Layer</div>
           <div class="evf-step-desc">Valid events are published to Kafka MSK topics. Partition strategy ensures ordering
@@ -4162,7 +4221,7 @@
           <div class="evf-arrow">→</div>
         </div>
 
-        <div class="evf-step clr-cyan" style="border-bottom:none;">
+        <div class="evf-step clr-cyan" data-node="ingest" data-stage-idx="3" style="border-bottom:none;">
           <div class="evf-step-num">Stage 04</div>
           <div class="evf-step-name">Ingestion Validation</div>
           <div class="evf-step-desc">Flink 1.18 jobs consume Kafka. Events pass through consent gates, field enrichment,
@@ -4174,7 +4233,7 @@
           <div class="evf-arrow">→</div>
         </div>
 
-        <div class="evf-step clr-blue" style="border-bottom:none;">
+        <div class="evf-step clr-blue" data-node="identity" data-stage-idx="4" style="border-bottom:none;">
           <div class="evf-step-num">Stage 05</div>
           <div class="evf-step-name">Identity Resolution</div>
           <div class="evf-step-desc">id-graph-lib-v2 resolves the UCID. Deterministic match on known IDs, probabilistic
@@ -4186,7 +4245,7 @@
           <div class="evf-arrow">→</div>
         </div>
 
-        <div class="evf-step clr-purple">
+        <div class="evf-step clr-purple" data-node="profiles" data-stage-idx="5">
           <div class="evf-step-num">Stage 06</div>
           <div class="evf-step-name">Profile Store</div>
           <div class="evf-step-desc">Enriched event is merged into the unified profile. Scylla handles hot writes
@@ -4198,7 +4257,7 @@
           <div class="evf-arrow">→</div>
         </div>
 
-        <div class="evf-step clr-purple">
+        <div class="evf-step clr-purple" data-node="audiences" data-stage-idx="6">
           <div class="evf-step-num">Stage 07</div>
           <div class="evf-step-name">Segmentation Engine</div>
           <div class="evf-step-desc">Profile change triggers rule re-evaluation. Rust engine evaluates 800+ conditions.
@@ -4210,7 +4269,7 @@
           <div class="evf-arrow">→</div>
         </div>
 
-        <div class="evf-step clr-amber">
+        <div class="evf-step clr-amber" data-node="journeys" data-stage-idx="7">
           <div class="evf-step-num">Stage 08</div>
           <div class="evf-step-name">Journey Trigger</div>
           <div class="evf-step-desc">Journey executor checks if segment entry matches any trigger. If yes, the next
@@ -4222,7 +4281,7 @@
           <div class="evf-arrow">→</div>
         </div>
 
-        <div class="evf-step clr-amber">
+        <div class="evf-step clr-amber" data-node="activation" data-stage-idx="8">
           <div class="evf-step-num">Stage 09</div>
           <div class="evf-step-name">Activation</div>
           <div class="evf-step-desc">connector-hub picks up the export job, maps profile fields to the destination
@@ -4234,7 +4293,7 @@
           <div class="evf-arrow">→</div>
         </div>
 
-        <div class="evf-step clr-green">
+        <div class="evf-step clr-green" data-node="activation" data-stage-idx="9">
           <div class="evf-step-num">Stage 10</div>
           <div class="evf-step-name">Destination</div>
           <div class="evf-step-desc">Data arrives at the partner platform — Google Ads, Meta, Braze, Snowflake, or any
@@ -4246,6 +4305,39 @@
         </div>
 
       </div>
+    </section>
+
+    <div class="ds-divider"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+       PIPELINE SIMULATOR TEASER — Journey of a Click
+  ══════════════════════════════════════════════════════════════════ -->
+    <section class="enh-section" style="padding:0;">
+      <a href="pipeline-sim.html" style="display:block;text-decoration:none;" aria-label="Open Journey of a Click simulator">
+        <div style="background:linear-gradient(135deg,rgba(59,130,246,0.07) 0%,rgba(139,92,246,0.07) 100%);border:1px solid rgba(59,130,246,0.18);border-radius:16px;padding:28px 32px;display:flex;align-items:center;gap:28px;transition:border-color 0.2s,background 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.38)';this.style.background='linear-gradient(135deg,rgba(59,130,246,0.12) 0%,rgba(139,92,246,0.12) 100%)'" onmouseout="this.style.borderColor='rgba(59,130,246,0.18)';this.style.background='linear-gradient(135deg,rgba(59,130,246,0.07) 0%,rgba(139,92,246,0.07) 100%)'">
+
+          <!-- Icon -->
+          <div style="width:52px;height:52px;border-radius:14px;background:rgba(59,130,246,0.14);border:1px solid rgba(59,130,246,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+          </div>
+
+          <!-- Text -->
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+              <div style="font-size:16px;font-weight:800;color:#e2e8f0;letter-spacing:-0.02em;">Journey of a Click</div>
+              <span style="font-size:9px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#3b82f6;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);padding:2px 7px;border-radius:4px;">NEW</span>
+            </div>
+            <div style="font-size:13px;color:#64748b;line-height:1.5;">
+              Follow a single <code style="font-family:monospace;font-size:11px;color:#93c5fd;background:rgba(59,130,246,0.08);padding:1px 5px;border-radius:3px;">purchase</code> event from SDK capture all the way to Meta CAPI delivery — 7 stages, real JSON payloads, live graph highlights.
+            </div>
+          </div>
+
+          <!-- Arrow -->
+          <div style="font-size:18px;color:#3b82f6;flex-shrink:0;">→</div>
+        </div>
+      </a>
     </section>
 
     <div class="ds-divider"></div>
@@ -4442,6 +4534,7 @@
   <script src="assets/graph-enhancements.js?v=2.1"></script>
   <script src="assets/tooltip-system.js"></script>
   <script src="assets/mission-mode.js"></script>
+  <script src="assets/evf-controller.js"></script>
   <script src="assets/page-transition.js"></script>
   <script src="assets/performance-optimizer.js"></script>
   <script src="assets/scripts.js"></script>

@@ -1,0 +1,427 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ZEOTAP CDP — Journey of a Click Pipeline Simulator
+   Standalone page styles for pipeline-sim.html
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Root tokens (supplement dark-system.css) ──────────────────────── */
+.psim-page {
+  min-height: 100vh;
+  background: var(--bg-primary, #060a12);
+  color: var(--text-primary, #e2e8f0);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ── Top nav bar ────────────────────────────────────────────────────── */
+.psim-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 52px;
+  background: rgba(6, 10, 18, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 14px;
+}
+
+.psim-topbar-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.psim-topbar-back:hover {
+  color: var(--text-primary, #e2e8f0);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.psim-topbar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #e2e8f0);
+  letter-spacing: -0.01em;
+}
+
+.psim-topbar-sub {
+  font-size: 11px;
+  color: var(--text-muted, #64748b);
+  margin-left: 4px;
+}
+
+.psim-topbar-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+/* ── Two-column layout ──────────────────────────────────────────────── */
+.psim-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+  padding-top: 52px; /* topbar height */
+  box-sizing: border-box;
+}
+
+/* ── Graph panel (left — sticky) ────────────────────────────────────── */
+.psim-graph-panel {
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
+  background: var(--bg-secondary, #0a0f1a);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.psim-graph-panel #knowledge-graph {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.psim-graph-label {
+  padding: 10px 16px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted, #475569);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+}
+
+/* ── Stepper panel (right — scrollable) ─────────────────────────────── */
+.psim-stepper-panel {
+  overflow-y: auto;
+  padding: 28px 32px 64px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+.psim-stepper-panel::-webkit-scrollbar { width: 4px; }
+.psim-stepper-panel::-webkit-scrollbar-track { background: transparent; }
+.psim-stepper-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+/* ── Intro heading ──────────────────────────────────────────────────── */
+.psim-intro {
+  margin-bottom: 28px;
+}
+
+.psim-intro-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3b82f6;
+  margin-bottom: 6px;
+}
+
+.psim-intro-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary, #e2e8f0);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.psim-intro-desc {
+  font-size: 13px;
+  color: var(--text-muted, #64748b);
+  line-height: 1.6;
+}
+
+.psim-intro-payload {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  color: #93c5fd;
+  white-space: pre;
+}
+
+/* ── Step dots nav ──────────────────────────────────────────────────── */
+.psim-dots-nav {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.psim-dot {
+  width: 28px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: background 0.2s, width 0.2s;
+  border: none;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.psim-dot:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.psim-dot.active {
+  width: 40px;
+  background: #3b82f6;
+}
+
+.psim-dot.completed {
+  background: rgba(59, 130, 246, 0.35);
+}
+
+/* ── Stage card ─────────────────────────────────────────────────────── */
+.psim-stage-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 22px 22px 20px;
+  margin-bottom: 16px;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.psim-stage-card.psim-fading {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* ── Stage header ───────────────────────────────────────────────────── */
+.psim-stage-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.psim-stage-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted, #475569);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+
+.psim-stage-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.psim-stage-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary, #e2e8f0);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.psim-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.psim-badge-service {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  color: #c4b5fd;
+}
+
+.psim-badge-sla {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+}
+
+/* ── What happens section ───────────────────────────────────────────── */
+.psim-what-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted, #475569);
+  margin-bottom: 6px;
+}
+
+.psim-what-text {
+  font-size: 13px;
+  color: var(--text-secondary, #94a3b8);
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+/* ── JSON payload panels ────────────────────────────────────────────── */
+.psim-payloads {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.psim-payload-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.psim-payload-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.psim-payload-label.in  { color: #60a5fa; }
+.psim-payload-label.out { color: #34d399; }
+
+.psim-payload-pre {
+  background: #060b14;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 10.5px;
+  line-height: 1.7;
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.06) transparent;
+}
+.psim-payload-pre::-webkit-scrollbar { height: 3px; }
+.psim-payload-pre::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+/* JSON syntax colouring */
+.psim-payload-pre .jk { color: #93c5fd; }   /* key */
+.psim-payload-pre .js { color: #86efac; }   /* string value */
+.psim-payload-pre .jn { color: #fb923c; }   /* number */
+.psim-payload-pre .jb { color: #a78bfa; }   /* boolean / null */
+
+/* ── Bottom controls ────────────────────────────────────────────────── */
+.psim-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 20px;
+  flex-wrap: wrap;
+}
+
+.psim-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.psim-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary, #e2e8f0);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.psim-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.psim-btn.primary {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.28);
+  color: #93c5fd;
+}
+.psim-btn.primary:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #bfdbfe;
+}
+
+.psim-btn.autoplay-active {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.28);
+  color: #fca5a5;
+}
+.psim-btn.autoplay-active:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.psim-progress-text {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted, #475569);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .psim-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .psim-graph-panel {
+    position: relative;
+    top: auto;
+    height: 320px;
+  }
+
+  .psim-stepper-panel {
+    padding: 20px 18px 80px;
+  }
+
+  .psim-payloads {
+    grid-template-columns: 1fr;
+  }
+
+  .psim-intro-payload {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .psim-topbar-sub { display: none; }
+  .psim-intro-title { font-size: 18px; }
+  .psim-stage-name  { font-size: 15px; }
+  .psim-payload-pre { font-size: 9.5px; }
+}
