@@ -370,7 +370,74 @@
       <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.25rem;">Next Appendix</div>
       <a href="appendix-b-data-dictionary.html" style="font-size:1.1rem;font-weight:600;color:var(--brand);text-decoration:none;">Data Dictionary →</a>
     </div>
-  </main>
+  
+    <!-- API PLAYGROUND -->
+    <section id="api-playground" style="margin-top:2.5rem;">
+      <h2 style="display:flex;align-items:center;gap:10px;">API Playground <span style="font-size:0.65rem;background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);padding:3px 10px;border-radius:20px;font-weight:700;">MOCK</span></h2>
+      <p>Try the key Zeotap APIs. All responses are mock — no real data is sent.</p>
+      <div id="api-pg-container"></div>
+    </section>
+    <script>
+    (function() {
+      var ENDPOINTS = [
+        { id:'track', method:'POST', path:'/collect/v1/track', label:'Track Event', desc:'Send a user behaviour event.',
+          body:'{
+  "writeKey": "wk_test_abc123",
+  "userId": "user_42",
+  "event": "purchase",
+  "properties": { "product_id": "PROD-001", "revenue": 29.99 }
+}',
+          mock:{ success:true, eventId:"evt_x7a2b3", received:true } },
+        { id:'identify', method:'POST', path:'/collect/v1/identify', label:'Identify User', desc:'Associate a user with traits.',
+          body:'{
+  "writeKey": "wk_test_abc123",
+  "userId": "user_42",
+  "traits": { "email": "jane@example.com", "plan": "enterprise" }
+}',
+          mock:{ success:true, ucid:"uc_7f3a9b2d", identitiesLinked:3 } },
+        { id:'profile', method:'POST', path:'/cdp/v1/users/_search', label:'Read Profile', desc:'Fetch unified customer profile.',
+          body:'{
+  "apikey": "sk_test_xyz789",
+  "identities": [{ "type": "email", "value": "jane@example.com" }]
+}',
+          mock:{ ucid:"uc_7f3a9b2d", traits:{ name:"Jane Doe", plan:"enterprise" }, segments:["seg_high_value_eu"] } },
+        { id:'erasure', method:'POST', path:'/gdpr/v1/erasure', label:'GDPR Erasure', desc:'Submit a Data Subject Request.',
+          body:'{
+  "apikey": "sk_test_xyz789",
+  "identities": [{ "type": "email", "value": "jane@example.com" }],
+  "reason": "user_request"
+}',
+          mock:{ status:"accepted", estimatedCompletion:"within 72 hours", affectedSystems:["profile_store","identity_graph","audiences"] } }
+      ];
+      var el = document.getElementById('api-pg-container');
+      if (!el) return;
+      var css = '<style>.apg{border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:14px;overflow:hidden}.apg-h{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;background:rgba(255,255,255,0.02);transition:background .15s}.apg-h:hover{background:rgba(255,255,255,0.05)}.apg-m{font-size:11px;font-weight:800;padding:2px 7px;border-radius:4px;font-family:JetBrains Mono,monospace;background:rgba(34,197,94,0.15);color:#4ade80}.apg-p{font-family:JetBrains Mono,monospace;font-size:12px;color:#93c5fd}.apg-l{font-size:13px;font-weight:600;color:#e2e8f0;margin-left:auto}.apg-b{display:none;padding:14px;border-top:1px solid rgba(255,255,255,0.06)}.apg-b.open{display:block}.apg-ta{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;font-family:JetBrains Mono,monospace;font-size:11px;color:#e2e8f0;resize:vertical;min-height:100px;outline:none;box-sizing:border-box}.apg-run{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border:none;border-radius:7px;padding:7px 16px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px;font-family:Inter,sans-serif}.apg-curl{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:7px 14px;color:#94a3b8;font-size:11px;cursor:pointer;margin:10px 0 0 8px;font-family:Inter,sans-serif}.apg-res{display:none;margin-top:10px}.apg-res.show{display:block}.apg-json{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;font-family:JetBrains Mono,monospace;font-size:11px;color:#86efac;overflow-x:auto}</style>';
+      document.head.insertAdjacentHTML('beforeend', css);
+      ENDPOINTS.forEach(function(ep) {
+        var div = document.createElement('div'); div.className='apg';
+        div.innerHTML = '<div class="apg-h"><span class="apg-m">'+ep.method+'</span><code class="apg-p">'+ep.path+'</code><span class="apg-l">'+ep.label+'</span><span style="color:rgba(255,255,255,0.3);font-size:12px;margin-left:8px;">▶</span></div>'
+          +'<div class="apg-b"><p style="font-size:12px;color:#94a3b8;margin:0 0 10px;font-family:Inter,sans-serif;">'+ep.desc+'</p>'
+          +'<textarea class="apg-ta">'+ep.body+'</textarea>'
+          +'<div><button class="apg-run">▶ Try it (mock)</button><button class="apg-curl">📋 Copy cURL</button></div>'
+          +'<div class="apg-res"><pre class="apg-json"></pre></div></div>';
+        el.appendChild(div);
+        var hdr=div.querySelector('.apg-h'), body=div.querySelector('.apg-b'), run=div.querySelector('.apg-run'), curl=div.querySelector('.apg-curl'), res=div.querySelector('.apg-res'), json=div.querySelector('.apg-json');
+        hdr.addEventListener('click', function(){ body.classList.toggle('open'); });
+        run.addEventListener('click', function(){
+          run.textContent='⏳...'; run.disabled=true;
+          setTimeout(function(){ json.textContent=JSON.stringify(ep.mock,null,2); res.classList.add('show'); run.textContent='▶ Try it (mock)'; run.disabled=false; }, 500+Math.random()*400);
+        });
+        curl.addEventListener('click', function(){
+          var ta=div.querySelector('.apg-ta'); var cmd='curl -X '+ep.method+' "https://api.zeotap.com'+ep.path+'" \\
+  -H "Content-Type: application/json" -H "apikey: YOUR_KEY"'+(ta?' \\
+  -d ''+ta.value.replace(/
+/g,' ')+''':'');
+          if(navigator.clipboard) navigator.clipboard.writeText(cmd).then(function(){ curl.textContent='✓ Copied!'; setTimeout(function(){ curl.textContent='📋 Copy cURL'; },2000); });
+        });
+      });
+    })();
+    </script>
+</main>
 </div>
   <script src="assets/search-index.js"></script>
   <script src="assets/scripts.js?v=7"></script>
@@ -378,5 +445,7 @@
 
   <script src="assets/shared.js"></script>
   <script>Shared.init({ feedbackKey: 'appendix-a-api-reference' });</script>
+  <script src="assets/zoe-widget.js"></script>
+  <script src="assets/all-fixes.js"></script>
 </body>
 </html>

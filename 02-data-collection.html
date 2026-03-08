@@ -272,6 +272,50 @@
       </script>
 
       <!-- ── SDK ARCHITECTURE ── -->
+
+      <!-- ── SDK VERSION SWITCHER ── -->
+      <div id="sdk-version-bar" style="display:flex;align-items:center;gap:12px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.18);border-radius:12px;padding:12px 16px;margin-bottom:20px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:700;color:#93c5fd;font-family:Inter,sans-serif;white-space:nowrap;">SDK VERSION</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="sdk-ver-btn active" data-version="4.4.5" style="background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);color:#60a5fa;border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;transition:all 0.15s;">v4.4.5 <span style="font-size:10px;background:#10b981;color:#fff;border-radius:10px;padding:1px 6px;margin-left:4px;">LATEST</span></button>
+          <button class="sdk-ver-btn" data-version="4.3.2" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.45);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;transition:all 0.15s;">v4.3.2</button>
+          <button class="sdk-ver-btn" data-version="4.2.0" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.45);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;transition:all 0.15s;">v4.2.0</button>
+          <button class="sdk-ver-btn" data-version="3.x" style="background:transparent;border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.5);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;transition:all 0.15s;">v3.x <span style="font-size:10px;background:rgba(239,68,68,0.15);color:#f87171;border-radius:10px;padding:1px 6px;margin-left:4px;">EOL</span></button>
+        </div>
+        <div id="sdk-ver-note" style="font-size:12px;color:#94a3b8;font-family:Inter,sans-serif;flex:1;min-width:200px;"></div>
+      </div>
+      <div id="sdk-deprecation-banner" style="display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#f87171;font-family:Inter,sans-serif;">
+        ⚠️ <strong>v3.x is End of Life.</strong> Security patches ended December 2024. Migrate to v4.x immediately.
+      </div>
+      <script>
+      (function() {
+        var VERSIONS = {
+          '4.4.5': { note: 'Stable release — Real-time consent sync, enhanced ID Graph v3 support, Kotlin/Swift async.', deprecation: false },
+          '4.3.2': { note: 'Previous stable — GDPR TCF 2.2 support, batch event compression. Upgrade recommended.', deprecation: false },
+          '4.2.0': { note: 'Legacy — Limited audience segment support. Missing delta sync. Upgrade recommended.', deprecation: false },
+          '3.x':   { note: 'End of Life — No longer supported. Security patches ended December 2024.', deprecation: true }
+        };
+        function setVersion(v) {
+          try { localStorage.setItem('zdp_sdk_version', v); } catch(e) {}
+          document.querySelectorAll('.sdk-ver-btn').forEach(function(btn) {
+            var isActive = btn.getAttribute('data-version') === v;
+            btn.style.background = isActive ? 'rgba(59,130,246,0.2)' : 'transparent';
+            btn.style.borderColor = isActive ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.12)';
+            btn.style.color = isActive ? '#60a5fa' : 'rgba(255,255,255,0.45)';
+          });
+          var info = VERSIONS[v] || {};
+          var noteEl = document.getElementById('sdk-ver-note');
+          if (noteEl) noteEl.textContent = info.note || '';
+          var banner = document.getElementById('sdk-deprecation-banner');
+          if (banner) banner.style.display = info.deprecation ? 'block' : 'none';
+        }
+        document.querySelectorAll('.sdk-ver-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() { setVersion(btn.getAttribute('data-version')); });
+        });
+        setVersion(localStorage.getItem('zdp_sdk_version') || '4.4.5');
+      })();
+      </script>
+
       <h2 id="sdk-architecture">SDK Architecture</h2>
 
       <div class="diagram-wrapper">
@@ -721,6 +765,8 @@ zeotap<span class="tok-punctuation">.</span><span class="tok-function">init</spa
 
   <script src="assets/shared.js"></script>
   <script>Shared.init({ feedbackKey: '02-data-collection' });</script>
+  <script src="assets/zoe-widget.js"></script>
+  <script src="assets/all-fixes.js"></script>
 </body>
 
 </html>

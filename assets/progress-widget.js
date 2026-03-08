@@ -73,7 +73,9 @@
 
     var w = document.createElement('div');
     w.id = 'zt-pw';
-    w.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9100;background:rgba(10,18,30,0.96);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:40px;padding:10px 18px;display:flex;align-items:center;gap:12px;font-family:Inter,sans-serif;box-shadow:0 8px 32px rgba(0,0,0,0.4);';
+    var baseDelay = (pct === 0 && !done) ? 'opacity:0;animation:zt-pw-fadein 0.4s 3s forwards;' : '';
+    document.head.insertAdjacentHTML('beforeend','<style>@keyframes zt-pw-fadein{to{opacity:1}}</style>');
+    w.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9100;background:rgba(10,18,30,0.96);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:40px;padding:10px 18px;display:flex;align-items:center;gap:12px;font-family:Inter,sans-serif;box-shadow:0 8px 32px rgba(0,0,0,0.4);'+baseDelay;
     w.innerHTML=
       '<a href="learning-hub.html" title="Open Learning Hub" style="text-decoration:none;display:flex;align-items:center;gap:6px;">'
         +'<span style="font-size:1rem;">🎓</span>'

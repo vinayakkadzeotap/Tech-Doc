@@ -987,8 +987,9 @@
     .tour-overlay {
       position: fixed;
       bottom: 32px;
-      left: 280px;      /* clear of fixed sidebar */
-      width: 320px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(380px, calc(100vw - 40px));
       background: var(--bg-surface);
       border: 1px solid var(--accent-primary);
       border-radius: 16px;
@@ -1256,13 +1257,26 @@
       align-items: center;
       gap: 6px;
       font-size: 11px;
-      color: #7d8fa4;
-      font-weight: 500;
-      transition: color 0.15s;
+      color: #94a3b8;
+      font-weight: 600;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 4px 10px 4px 6px;
+      transition: all 0.15s;
+      user-select: none;
+      cursor: pointer;
     }
-
     .kg-legend-item:hover {
-      color: #c8d8ea;
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(255,255,255,0.18);
+      color: #e2e8f0;
+      transform: translateY(-1px);
+    }
+    .kg-legend-item.active {
+      background: rgba(59,130,246,0.15);
+      border-color: rgba(59,130,246,0.4);
+      color: #93c5fd;
     }
 
     .kg-legend-dot {
@@ -3118,7 +3132,7 @@
     <div id="sidebar-lw" style="margin:10px 14px 4px;background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(59,130,246,0.18);border-radius:12px;padding:11px 13px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
         <div style="font-size:11px;font-weight:700;color:#93c5fd;">🎓 Your Progress</div>
-        <a href="learning-hub.html" style="font-size:10px;color:#3b82f6;text-decoration:none;font-weight:600;">Hub →</a>
+        <a href="index.html" style="font-size:10px;color:#3b82f6;text-decoration:none;font-weight:600;">Hub →</a>
       </div>
       <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:6px;">
         <div id="slw-bar" style="height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);border-radius:2px;width:0%;transition:width 0.6s ease;"></div>
@@ -3241,13 +3255,13 @@
           <div class="nav-dot"></div>Data Ingestion
         </a>
         <a href="10-ml-platform.html" class="ds-nav-link cat-intelligence">
-          <div class="nav-dot"></div>Calculated Attributes
+          <div class="nav-dot"></div>ML Platform
         </a>
         <a href="12-unity-dashboard.html" class="ds-nav-link">
-          <div class="nav-dot"></div>Data Catalog
+          <div class="nav-dot"></div>Unity Dashboard
         </a>
-        <a href="03-data-ingestion.html" class="ds-nav-link cat-ingestion">
-          <div class="nav-dot"></div>Real-Time Streaming
+        <a href="16-observability.html" class="ds-nav-link">
+          <div class="nav-dot"></div>Observability
         </a>
         <a href="11-reporting-bi.html" class="ds-nav-link">
           <div class="nav-dot" style="background:#f43f5e;"></div>Analytics &amp; Insights
@@ -3280,10 +3294,10 @@
           <div class="nav-dot" style="background:var(--amber);"></div>API Reference
         </a>
         <a href="appendix-b-data-dictionary.html" class="ds-nav-link">
-          <div class="nav-dot"></div>Glossary
+          <div class="nav-dot"></div>Data Dictionary
         </a>
         <a href="appendix-c-glossary.html" class="ds-nav-link">
-          <div class="nav-dot"></div>Runbooks
+          <div class="nav-dot"></div>Glossary
         </a>
         <a href="appendix-d-poc-directory.html" class="ds-nav-link">
           <div class="nav-dot" style="background:var(--emerald,#10b981);"></div>POC Directory
@@ -5035,6 +5049,8 @@
     <div class="pathway-steps-list"></div>
   </div>
 
+  <script src="assets/zoe-widget.js"></script>
+  <script src="assets/all-fixes.js"></script>
 </body>
 
 </html>

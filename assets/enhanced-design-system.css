@@ -434,11 +434,10 @@ textarea {
 
 .mission-mode-container {
   position: fixed;
-  /* Left side, clear of the fixed sidebar (264px) */
-  left: 280px;
-  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
   top: 72px;
-  width: 360px;
+  width: min(380px, calc(100vw - 40px));
   background: var(--bg-surface);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
@@ -447,7 +446,6 @@ textarea {
   box-shadow: var(--shadow-lg);
   z-index: 1100;
   animation: slide-left var(--duration-slow) var(--ease-smooth);
-  /* Prevent overlap with side panel (right side) */
   max-height: calc(100vh - 100px);
   overflow-y: auto;
 }

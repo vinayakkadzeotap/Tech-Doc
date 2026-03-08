@@ -1107,17 +1107,30 @@
     var el = document.getElementById(id);
     if (!el) return;
     el.innerHTML = '';
+    var activeFilter = null;
     Object.keys(CATEGORY).forEach(function (cat) {
       var item = document.createElement('div');
       item.className = 'kg-legend-item';
+      item.setAttribute('data-category', cat);
       item.innerHTML =
         '<div class="kg-legend-dot" style="background:' + CATEGORY[cat].color +
-        ';box-shadow:0 0 8px ' + CATEGORY[cat].color + 'aa,0 0 2px ' + CATEGORY[cat].color + '"></div>' +
+        ';box-shadow:0 0 8px ' + CATEGORY[cat].color + 'aa,0 0 2px ' + CATEGORY[cat].color +
+        ';width:10px;height:10px;border-radius:50%;flex-shrink:0;"></div>' +
         CATEGORY[cat].label;
+      item.title = 'Filter: ' + CATEGORY[cat].label;
       item.style.cursor = 'pointer';
       item.addEventListener('click', function () {
-        var catNodes = NODES.filter(function (n) { return n.category === cat; }).map(function (n) { return n.id; });
-        highlight(catNodes);
+        if (activeFilter === cat) {
+          activeFilter = null;
+          el.querySelectorAll('.kg-legend-item').forEach(function(i) { i.classList.remove('active'); });
+          reset();
+        } else {
+          activeFilter = cat;
+          el.querySelectorAll('.kg-legend-item').forEach(function(i) { i.classList.remove('active'); });
+          item.classList.add('active');
+          var catNodes = NODES.filter(function (n) { return n.category === cat; }).map(function (n) { return n.id; });
+          highlight(catNodes);
+        }
       });
       el.appendChild(item);
     });
