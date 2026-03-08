@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   ZEOTAP CDP — KNOWLEDGE GRAPH  v4.0  (Canvas 2D + Physics)
+   ZEOTAP CDP — KNOWLEDGE GRAPH  v5.0  (Canvas 2D + Physics)
    Revamped 3D force-directed graph — cinematic dark theme.
    Star field · Orbit rings · Particle trails · Depth grid.
    ═══════════════════════════════════════════════════════════════ */
@@ -175,8 +175,21 @@
   var STARS = [];
   var NUM_STARS = 280;
 
+  /* Render-frame caches */
+  var cachedProj = null;   /* last-frame projections for hitTest reuse */
+  var sortBuf = [];        /* reusable sort buffer to avoid per-frame alloc */
+
+  /* Offscreen canvas for static background (gradient + nebula) */
+  var bgCanvas = null, bgCtx = null;
+  var bgDirty = true;      /* re-render when pan/resize changes */
+  var bgPanX = NaN, bgPanY = NaN, bgW = 0, bgH = 0;
+
+  /* O(1) node lookup maps — built once during initSim */
+  var NODE_MAP = {};       /* id → NODES entry */
+  var NODE_IDX = {};       /* id → index into NODES/SN */
+
   /* ── HELPERS ──────────────────────────────────────────────── */
-  function nodeById(id) { return NODES.find(function (n) { return n.id === id; }); }
+  function nodeById(id) { return NODE_MAP[id]; }
 
   function getDeps(id) {
     var up = new Set(), dn = new Set();
@@ -217,14 +230,6 @@
       Math.min(255, Math.round(c.b + (255 - c.b) * amt)) + ')';
   }
 
-  function lerpColor(hex1, hex2, t) {
-    var a = hexToRgb(hex1), b = hexToRgb(hex2);
-    return 'rgb(' +
-      Math.round(a.r + (b.r - a.r) * t) + ',' +
-      Math.round(a.g + (b.g - a.g) * t) + ',' +
-      Math.round(a.b + (b.b - a.b) * t) + ')';
-  }
-
   /* lightenColor + alpha in one step — avoids passing rgb() into colorAlpha() */
   function colorAlphaLighten(hex, amt, a) {
     var c = hexToRgb(hex);
@@ -252,6 +257,10 @@
   /* ── PHYSICS ─────────────────────────────────────────────── */
   function initSim() {
     var R = 340;   /* wider layout radius */
+
+    /* Build O(1) lookup maps */
+    NODES.forEach(function (n, i) { NODE_MAP[n.id] = n; NODE_IDX[n.id] = i; });
+
     SN = NODES.map(function (n) {
       var a = ((CAT_ANGLE[n.category] || 0) + (Math.random() - 0.5) * 22) * Math.PI / 180;
       return {
@@ -264,9 +273,8 @@
     });
 
     SL = LINKS.map(function (l) {
-      var si = NODES.findIndex(function (n) { return n.id === l.source; });
-      var ti = NODES.findIndex(function (n) { return n.id === l.target; });
-      return { si: si, ti: ti, label: l.label };
+      var si = NODE_IDX[l.source], ti = NODE_IDX[l.target];
+      return { si: si !== undefined ? si : -1, ti: ti !== undefined ? ti : -1, label: l.label };
     }).filter(function (l) { return l.si >= 0 && l.ti >= 0; });
 
     SL.forEach(function (l, li) {
@@ -386,6 +394,10 @@
     else if (simTick % 4 === 0) tickPhysics(0.15);
     simTick++;
 
+    /* Build projections ONCE per frame — reused by particles, edges, nodes, hitTest */
+    var proj = buildProjected();
+    cachedProj = proj;  /* expose to hitTest between frames */
+
     /* Advance particles & capture trail */
     ptcl.forEach(function (p) {
       var l = SL[p.li];
@@ -393,44 +405,46 @@
       var active = !focusedId || (visibleSet.has(SN[l.si].id) && visibleSet.has(SN[l.ti].id));
       if (!active) { p.trail = []; return; }
 
-      var ap = buildBezierPoint(p.li, p.t);
+      var ap = buildBezierPoint(p.li, p.t, proj);
       p.trail.push({ x: ap.x, y: ap.y });
       if (p.trail.length > 12) p.trail.shift();
 
       p.t = (p.t + p.spd) % 1;
     });
 
-    /* ── DRAW BACKGROUND ──── */
-    ctx.clearRect(0, 0, W, H);
-
-    /* Deep space base */
-    var bg = ctx.createRadialGradient(CX, CY * 0.85, 0, CX, CY, Math.max(W, H) * 0.75);
-    bg.addColorStop(0, '#0c1829');
-    bg.addColorStop(0.45, '#07101f');
-    bg.addColorStop(1, '#020a14');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-
-    /* Nebula glow — large soft corona behind node cluster */
-    ctx.save();
-    var nebR = Math.min(W, H) * 0.42;
-    var neb = ctx.createRadialGradient(CX + panX, CY + panY - 20, 0, CX + panX, CY + panY - 20, nebR);
-    neb.addColorStop(0, 'rgba(56,130,246,0.055)');
-    neb.addColorStop(0.4, 'rgba(56,100,200,0.03)');
-    neb.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = neb;
-    ctx.beginPath();
-    ctx.arc(CX + panX, CY + panY - 20, nebR, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.restore();
+    /* ── DRAW BACKGROUND (offscreen-cached) ──── */
+    if (panX !== bgPanX || panY !== bgPanY || W !== bgW || H !== bgH) bgDirty = true;
+    if (bgDirty) {
+      if (!bgCanvas) { bgCanvas = document.createElement('canvas'); bgCtx = bgCanvas.getContext('2d'); }
+      bgCanvas.width = W; bgCanvas.height = H;
+      /* Deep space base */
+      var bg = bgCtx.createRadialGradient(CX, CY * 0.85, 0, CX, CY, Math.max(W, H) * 0.75);
+      bg.addColorStop(0, '#0c1829');
+      bg.addColorStop(0.45, '#07101f');
+      bg.addColorStop(1, '#020a14');
+      bgCtx.fillStyle = bg;
+      bgCtx.fillRect(0, 0, W, H);
+      /* Nebula glow */
+      var nebR = Math.min(W, H) * 0.42;
+      var neb = bgCtx.createRadialGradient(CX + panX, CY + panY - 20, 0, CX + panX, CY + panY - 20, nebR);
+      neb.addColorStop(0, 'rgba(56,130,246,0.055)');
+      neb.addColorStop(0.4, 'rgba(56,100,200,0.03)');
+      neb.addColorStop(1, 'rgba(0,0,0,0)');
+      bgCtx.fillStyle = neb;
+      bgCtx.beginPath();
+      bgCtx.arc(CX + panX, CY + panY - 20, nebR, 0, 2 * Math.PI);
+      bgCtx.fill();
+      bgPanX = panX; bgPanY = panY; bgW = W; bgH = H;
+      bgDirty = false;
+    }
+    ctx.drawImage(bgCanvas, 0, 0);
 
     /* Star field */
     ctx.save();
+    ctx.fillStyle = '#e8f0ff';
     STARS.forEach(function (s) {
       var twinkle = 0.5 + 0.5 * Math.sin(clock * s.twinkleSpd + s.twinkleOff);
-      var alpha = s.a * twinkle * fadeIn;
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = '#e8f0ff';
+      ctx.globalAlpha = s.a * twinkle * fadeIn;
       ctx.beginPath();
       ctx.arc(s.x * W, s.y * H, s.r, 0, 2 * Math.PI);
       ctx.fill();
@@ -439,8 +453,11 @@
 
     ctx.globalAlpha = fadeIn;
 
-    var proj = buildProjected();
-    var sorted = proj.slice().sort(function (a, b) { return b.rz - a.rz; });
+    /* Sort back-to-front — reuse sortBuf to avoid per-frame allocation */
+    for (var si2 = 0; si2 < proj.length; si2++) sortBuf[si2] = proj[si2];
+    sortBuf.length = proj.length;
+    sortBuf.sort(function (a, b) { return b.rz - a.rz; });
+    var sorted = sortBuf;
 
     /* ── DRAW DEPTH GRID ──── */
     drawDepthGrid();
@@ -514,6 +531,10 @@
     });
 
     /* ── DRAW PARTICLE TRAILS ──── */
+    /* Trail bodies — no shadowBlur (saves ~1900 GPU shadow ops/frame) */
+    ctx.save();
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
     ptcl.forEach(function (p) {
       var l = SL[p.li];
       if (!l || !p.trail || p.trail.length < 2) return;
@@ -524,39 +545,50 @@
       var ap2 = proj[l.si], bp2 = proj[l.ti];
       var depth = (ap2.depth + bp2.depth) / 2;
       var pr = Math.max(2.5, 4.5 * depth);
+      var fillC = colorAlpha(color, 0.7);
 
-      ctx.save();
-      /* Draw trail */
+      /* Draw trail segments — shadow-free for performance */
+      ctx.fillStyle = fillC;
       for (var i = 0; i < p.trail.length - 1; i++) {
-        var trailAlpha = (i / p.trail.length) * a * 0.6 * fadeIn;
-        var trailR = pr * (i / p.trail.length) * 0.8;
-        ctx.globalAlpha = trailAlpha;
-        ctx.fillStyle = colorAlpha(color, 0.7);
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 6;
+        ctx.globalAlpha = (i / p.trail.length) * a * 0.6 * fadeIn;
         ctx.beginPath();
-        ctx.arc(p.trail[i].x, p.trail[i].y, Math.max(0.8, trailR), 0, 2 * Math.PI);
+        ctx.arc(p.trail[i].x, p.trail[i].y, Math.max(0.8, pr * (i / p.trail.length) * 0.8), 0, 2 * Math.PI);
         ctx.fill();
       }
-      /* Head particle */
+    });
+    ctx.restore();
+
+    /* Particle heads — shadow only on head (1 shadow per particle, not 12) */
+    ctx.save();
+    ptcl.forEach(function (p) {
+      var l = SL[p.li];
+      if (!l || !p.trail || p.trail.length < 2) return;
+      var a = linkAlpha(l.si, l.ti);
+      if (a < 0.08) return;
+
+      var color = (CATEGORY[SN[l.si].nd.category] || { color: '#60a5fa' }).color;
+      var ap2 = proj[l.si], bp2 = proj[l.ti];
+      var depth = (ap2.depth + bp2.depth) / 2;
+      var pr = Math.max(2.5, 4.5 * depth);
       var head = p.trail[p.trail.length - 1];
+
       ctx.globalAlpha = a * 0.98 * fadeIn;
       ctx.shadowColor = color;
-      ctx.shadowBlur = 18;
+      ctx.shadowBlur = 14;
       ctx.fillStyle = lightenColor(color, 0.5);
       ctx.beginPath();
       ctx.arc(head.x, head.y, pr, 0, 2 * Math.PI);
       ctx.fill();
-      /* Bright core */
+
+      /* Bright core — no shadow needed */
+      ctx.shadowBlur = 0;
       ctx.globalAlpha = a * fadeIn;
-      ctx.shadowBlur = 6;
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.arc(head.x, head.y, pr * 0.38, 0, 2 * Math.PI);
       ctx.fill();
-
-      ctx.restore();
     });
+    ctx.restore();
 
     /* ── DRAW NODES (back to front) ──── */
     sorted.forEach(function (p) {
@@ -679,14 +711,10 @@
   }
 
   /* ── BEZIER POINT HELPER (for particle trails) ────────────── */
-  function buildBezierPoint(li, t) {
+  function buildBezierPoint(li, t, cachedProj) {
     var l = SL[li];
     if (!l) return { x: 0, y: 0 };
-    var proj = SN.map(function (n) {
-      var p = project(n.x, n.y, n.z);
-      return { sx: p.sx, sy: p.sy };
-    });
-    var ap = proj[l.si], bp = proj[l.ti];
+    var ap = cachedProj[l.si], bp = cachedProj[l.ti];
     var mx = (ap.sx + bp.sx) / 2;
     var my = (ap.sy + bp.sy) / 2;
     var edx = bp.sx - ap.sx, edy = bp.sy - ap.sy;
@@ -841,17 +869,16 @@
   }
 
   function hitTest(mx, my) {
-    var proj = SN.map(function (n) {
-      var p = project(n.x, n.y, n.z);
-      return { n: n, sx: p.sx, sy: p.sy, depth: p.depth };
-    });
+    /* Reuse last-frame projections — avoids re-projecting all nodes per mousemove */
+    var cp = cachedProj || buildProjected();
     var best = null, bestD = Infinity;
-    proj.forEach(function (p) {
+    for (var i = 0; i < cp.length; i++) {
+      var p = cp[i];
       var dx = mx - p.sx, dy = my - p.sy;
-      var d = Math.sqrt(dx * dx + dy * dy);
+      var d2 = dx * dx + dy * dy;
       var r = nodeR(p.n.nd, p.depth) + 12;
-      if (d < r && d < bestD) { bestD = d; best = p; }
-    });
+      if (d2 < r * r && d2 < bestD) { bestD = d2; best = p; }
+    }
     return best || null;
   }
 
@@ -1172,7 +1199,7 @@
     };
 
     document.dispatchEvent(new CustomEvent('kg:ready'));
-    console.info('[KG] Canvas 3D knowledge graph v4.0 — ' + NODES.length + ' nodes / ' + LINKS.length + ' links');
+    console.info('[KG] Canvas 3D knowledge graph v5.0 — ' + NODES.length + ' nodes / ' + LINKS.length + ' links');
 
     if (rafId) cancelAnimationFrame(rafId);
     render();
