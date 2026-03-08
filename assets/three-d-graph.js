@@ -225,6 +225,15 @@
       Math.round(a.b + (b.b - a.b) * t) + ')';
   }
 
+  /* lightenColor + alpha in one step — avoids passing rgb() into colorAlpha() */
+  function colorAlphaLighten(hex, amt, a) {
+    var c = hexToRgb(hex);
+    var r = Math.min(255, Math.round(c.r + (255 - c.r) * amt));
+    var g = Math.min(255, Math.round(c.g + (255 - c.g) * amt));
+    var b = Math.min(255, Math.round(c.b + (255 - c.b) * amt));
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+
   /* ── STAR FIELD INIT ──────────────────────────────────────── */
   function initStars() {
     STARS = [];
@@ -632,7 +641,7 @@
         p.sx + r * 0.4, p.sy + r * 0.38, 0,
         p.sx + r * 0.4, p.sy + r * 0.38, r * 0.46
       );
-      rimGrd.addColorStop(0, colorAlpha(lightenColor(color, 0.7), 0.3));
+      rimGrd.addColorStop(0, colorAlphaLighten(color, 0.7, 0.3));
       rimGrd.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = rimGrd;
       ctx.beginPath();
