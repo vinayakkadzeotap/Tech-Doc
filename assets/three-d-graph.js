@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
-   ZEOTAP CDP — KNOWLEDGE GRAPH  v3.0  (Canvas 2D + Physics)
-   Pseudo-3D force-directed graph — no WebGL dependency.
-   Works in all environments including sandboxed deployments.
+   ZEOTAP CDP — KNOWLEDGE GRAPH  v4.0  (Canvas 2D + Physics)
+   Revamped 3D force-directed graph — cinematic dark theme.
+   Star field · Orbit rings · Particle trails · Depth grid.
    ═══════════════════════════════════════════════════════════════ */
 (function (global) {
   'use strict';
@@ -113,6 +113,9 @@
     platform:    { color: '#64748b', label: 'Platform'     }
   };
 
+  /* Nodes that get a decorative orbit ring (high-importance) */
+  var ORBIT_NODES = new Set(['profiles', 'identity', 'audiences', 'collect', 'activation', 'ai']);
+
   /* Category angle on the sphere (degrees around Y axis) */
   var CAT_ANGLE = {
     ingestion: 0, core: 35, storage: 75, activation: 125,
@@ -121,8 +124,8 @@
 
   /* Vertical layer height */
   var LAYER_H = {
-    collection: -238, ingestion: -154, identity: -77,
-    profile: -7, processing: 63, activation: 133, analytics: 196, compliance: 248
+    collection: -260, ingestion: -170, identity: -88,
+    profile: -8, processing: 72, activation: 148, analytics: 218, compliance: 275
   };
 
   var FLOW_PATH = ['collect', 'ingest', 'identity', 'profiles', 'audiences', 'journeys', 'activation'];
@@ -132,16 +135,17 @@
   var W = 0, H = 0, CX = 0, CY = 0;
   var rafId = null;
   var simTick = 0;
-  var WARM = 220;        /* physics warm-up ticks before render */
-  var fadeIn = 0;        /* 0→1 alpha for initial fade-in */
+  var WARM = 220;
+  var fadeIn = 0;
+  var clock = 0;         /* global frame counter for animations */
 
   /* Camera */
-  var rotY = 0;          /* Y-axis rotation angle */
-  var rotX = -0.18;      /* X-axis tilt (slight top-down view) */
-  var zoom = 0.82;
+  var rotY = 0;
+  var rotX = -0.22;      /* more dramatic top-down tilt */
+  var zoom = 0.88;
   var panX = 0, panY = 0;
   var autoRotate = true;
-  var autoRotateSpd = 0.0035;
+  var autoRotateSpd = 0.0028;   /* slower = more majestic */
   var autoTimer = null;
 
   /* Focus / highlight */
@@ -160,12 +164,16 @@
   var tooltip = null;
 
   /* Physics nodes & links */
-  var SN = [];   /* sim nodes: {id, nd, x, y, z, vx, vy, vz, pinned} */
-  var SL = [];   /* sim links: {si, ti, label} */
+  var SN = [];
+  var SL = [];
 
   /* Particles */
-  var PTCL_PER_LINK = 4;
-  var ptcl = [];  /* {li, t, spd} */
+  var PTCL_PER_LINK = 8;
+  var ptcl = [];   /* {li, t, spd, trailLen} */
+
+  /* Star field */
+  var STARS = [];
+  var NUM_STARS = 280;
 
   /* ── HELPERS ──────────────────────────────────────────────── */
   function nodeById(id) { return NODES.find(function (n) { return n.id === id; }); }
@@ -209,16 +217,39 @@
       Math.min(255, Math.round(c.b + (255 - c.b) * amt)) + ')';
   }
 
+  function lerpColor(hex1, hex2, t) {
+    var a = hexToRgb(hex1), b = hexToRgb(hex2);
+    return 'rgb(' +
+      Math.round(a.r + (b.r - a.r) * t) + ',' +
+      Math.round(a.g + (b.g - a.g) * t) + ',' +
+      Math.round(a.b + (b.b - a.b) * t) + ')';
+  }
+
+  /* ── STAR FIELD INIT ──────────────────────────────────────── */
+  function initStars() {
+    STARS = [];
+    for (var i = 0; i < NUM_STARS; i++) {
+      STARS.push({
+        x: Math.random(),         /* 0-1 normalized */
+        y: Math.random(),
+        r: Math.random() * 1.2 + 0.2,
+        a: Math.random() * 0.6 + 0.1,
+        twinkleSpd: Math.random() * 0.02 + 0.005,
+        twinkleOff: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
   /* ── PHYSICS ─────────────────────────────────────────────── */
   function initSim() {
-    var R = 280;
+    var R = 340;   /* wider layout radius */
     SN = NODES.map(function (n) {
-      var a = ((CAT_ANGLE[n.category] || 0) + (Math.random() - 0.5) * 20) * Math.PI / 180;
+      var a = ((CAT_ANGLE[n.category] || 0) + (Math.random() - 0.5) * 22) * Math.PI / 180;
       return {
         id: n.id, nd: n,
-        x: R * Math.sin(a) + (Math.random() - 0.5) * 30,
-        y: (LAYER_H[n.layer] || 0) + (Math.random() - 0.5) * 25,
-        z: R * Math.cos(a) + (Math.random() - 0.5) * 30,
+        x: R * Math.sin(a) + (Math.random() - 0.5) * 32,
+        y: (LAYER_H[n.layer] || 0) + (Math.random() - 0.5) * 28,
+        z: R * Math.cos(a) + (Math.random() - 0.5) * 32,
         vx: 0, vy: 0, vz: 0, pinned: false
       };
     });
@@ -231,7 +262,12 @@
 
     SL.forEach(function (l, li) {
       for (var p = 0; p < PTCL_PER_LINK; p++) {
-        ptcl.push({ li: li, t: p / PTCL_PER_LINK, spd: 0.0035 + Math.random() * 0.003 });
+        ptcl.push({
+          li: li,
+          t: p / PTCL_PER_LINK,
+          spd: 0.003 + Math.random() * 0.0025,
+          trail: []   /* trail history [{x,y}] */
+        });
       }
     });
 
@@ -240,9 +276,8 @@
 
   function tickPhysics(alpha) {
     alpha = (alpha === undefined) ? 0.3 : alpha;
-    var REP = 22000, SLEN = 200, SK2 = 0.04, DAMP = 0.86, CK = 0.004;
+    var REP = 26000, SLEN = 220, SK2 = 0.04, DAMP = 0.86, CK = 0.004;
 
-    /* Center attraction */
     SN.forEach(function (n) {
       if (n.pinned) return;
       n.vx -= n.x * CK * alpha;
@@ -250,7 +285,6 @@
       n.vz -= n.z * CK * alpha;
     });
 
-    /* Charge repulsion O(N²) — fine for 17 nodes */
     for (var i = 0; i < SN.length; i++) {
       for (var j = i + 1; j < SN.length; j++) {
         var a = SN[i], b = SN[j];
@@ -264,7 +298,6 @@
       }
     }
 
-    /* Spring forces */
     SL.forEach(function (l) {
       var a = SN[l.si], b = SN[l.ti];
       if (!a || !b) return;
@@ -276,7 +309,6 @@
       if (!b.pinned) { b.vx -= fx; b.vy -= fy; b.vz -= fz; }
     });
 
-    /* Integrate */
     SN.forEach(function (n) {
       if (n.pinned) return;
       n.vx *= DAMP; n.vy *= DAMP; n.vz *= DAMP;
@@ -286,19 +318,16 @@
 
   /* ── PROJECTION ──────────────────────────────────────────── */
   function project(x, y, z) {
-    /* Y-axis rotation */
     var cosY = Math.cos(rotY), sinY = Math.sin(rotY);
     var rx = x * cosY - z * sinY;
     var ry1 = y;
     var rz = x * sinY + z * cosY;
 
-    /* X-axis tilt */
     var cosX = Math.cos(rotX), sinX = Math.sin(rotX);
     var ry = ry1 * cosX - rz * sinX;
     var rz2 = ry1 * sinX + rz * cosX;
 
-    /* Perspective */
-    var FOCAL = 480;
+    var FOCAL = 520;
     var d = FOCAL / (FOCAL + rz2 + 60);
 
     return {
@@ -309,7 +338,6 @@
     };
   }
 
-  /* Project all nodes, return array sorted back-to-front */
   function buildProjected() {
     return SN.map(function (n, i) {
       var p = project(n.x, n.y, n.z);
@@ -320,8 +348,10 @@
   /* ── NODE VISUAL PROPERTIES ──────────────────────────────── */
   function nodeR(nd, depth) {
     var base = focusedId
-      ? (nd.id === focusedId ? 19 : visibleSet.has(nd.id) ? 14 : 7)
-      : 11;
+      ? (nd.id === focusedId ? 26 : visibleSet.has(nd.id) ? 18 : 9)
+      : 16;
+    /* Orbit nodes get a slight size bonus */
+    if (!focusedId && ORBIT_NODES.has(nd.id)) base += 4;
     return base * depth;
   }
 
@@ -332,43 +362,79 @@
   }
 
   function linkAlpha(si, ti) {
-    if (!focusedId) return 0.38;
-    return (visibleSet.has(SN[si].id) && visibleSet.has(SN[ti].id)) ? 0.88 : 0.04;
+    if (!focusedId) return 0.55;
+    return (visibleSet.has(SN[si].id) && visibleSet.has(SN[ti].id)) ? 0.95 : 0.04;
   }
 
   /* ── RENDER ──────────────────────────────────────────────── */
   function render() {
     if (autoRotate) rotY += autoRotateSpd;
+    clock++;
 
-    /* Fade in */
-    fadeIn = Math.min(1, fadeIn + 0.025);
+    fadeIn = Math.min(1, fadeIn + 0.018);
 
-    /* Continue gentle physics */
     if (simTick < WARM + 400 || dragNode) tickPhysics(simTick < WARM + 100 ? 0.8 : 0.25);
     else if (simTick % 4 === 0) tickPhysics(0.15);
     simTick++;
 
-    /* Advance particles */
+    /* Advance particles & capture trail */
     ptcl.forEach(function (p) {
       var l = SL[p.li];
       if (!l) return;
       var active = !focusedId || (visibleSet.has(SN[l.si].id) && visibleSet.has(SN[l.ti].id));
-      if (active) p.t = (p.t + p.spd) % 1;
+      if (!active) { p.trail = []; return; }
+
+      var ap = buildBezierPoint(p.li, p.t);
+      p.trail.push({ x: ap.x, y: ap.y });
+      if (p.trail.length > 12) p.trail.shift();
+
+      p.t = (p.t + p.spd) % 1;
     });
 
+    /* ── DRAW BACKGROUND ──── */
     ctx.clearRect(0, 0, W, H);
 
-    /* Background */
-    var bg = ctx.createRadialGradient(CX, CY, 0, CX, CY, Math.max(W, H) * 0.7);
-    bg.addColorStop(0, '#0a1628');
-    bg.addColorStop(1, '#050d1a');
+    /* Deep space base */
+    var bg = ctx.createRadialGradient(CX, CY * 0.85, 0, CX, CY, Math.max(W, H) * 0.75);
+    bg.addColorStop(0, '#0c1829');
+    bg.addColorStop(0.45, '#07101f');
+    bg.addColorStop(1, '#020a14');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
+
+    /* Nebula glow — large soft corona behind node cluster */
+    ctx.save();
+    var nebR = Math.min(W, H) * 0.42;
+    var neb = ctx.createRadialGradient(CX + panX, CY + panY - 20, 0, CX + panX, CY + panY - 20, nebR);
+    neb.addColorStop(0, 'rgba(56,130,246,0.055)');
+    neb.addColorStop(0.4, 'rgba(56,100,200,0.03)');
+    neb.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = neb;
+    ctx.beginPath();
+    ctx.arc(CX + panX, CY + panY - 20, nebR, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.restore();
+
+    /* Star field */
+    ctx.save();
+    STARS.forEach(function (s) {
+      var twinkle = 0.5 + 0.5 * Math.sin(clock * s.twinkleSpd + s.twinkleOff);
+      var alpha = s.a * twinkle * fadeIn;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#e8f0ff';
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+    ctx.restore();
 
     ctx.globalAlpha = fadeIn;
 
     var proj = buildProjected();
     var sorted = proj.slice().sort(function (a, b) { return b.rz - a.rz; });
+
+    /* ── DRAW DEPTH GRID ──── */
+    drawDepthGrid();
 
     /* ── DRAW EDGES ──── */
     SL.forEach(function (l, li) {
@@ -377,42 +443,56 @@
       if (a < 0.02) return;
 
       var srcCat = CATEGORY[SN[l.si].nd.category] || { color: '#64748b' };
-      var color = srcCat.color;
+      var tgtCat = CATEGORY[SN[l.ti].nd.category] || { color: '#64748b' };
+      var srcColor = srcCat.color;
+      var tgtColor = tgtCat.color;
 
-      /* Quadratic bezier control point (subtle curve) */
       var mx = (ap.sx + bp.sx) / 2;
       var my = (ap.sy + bp.sy) / 2;
       var edx = bp.sx - ap.sx, edy = bp.sy - ap.sy;
-      var cpx = mx - edy * 0.18, cpy = my + edx * 0.18;
+      var cpx = mx - edy * 0.16, cpy = my + edx * 0.16;
 
       ctx.save();
       ctx.globalAlpha = a * fadeIn;
 
-      /* Glow on active links */
-      if (a > 0.5) {
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 8;
+      /* Glow layer — wide, soft */
+      if (a > 0.35) {
+        ctx.strokeStyle = colorAlpha(srcColor, a * 0.35);
+        ctx.lineWidth = a > 0.7 ? 7 : 4;
+        ctx.shadowColor = srcColor;
+        ctx.shadowBlur = a > 0.7 ? 22 : 10;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(ap.sx, ap.sy);
+        ctx.quadraticCurveTo(cpx, cpy, bp.sx, bp.sy);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
       }
 
-      ctx.strokeStyle = colorAlpha(color, a);
-      ctx.lineWidth = a > 0.5 ? 1.8 : 1.0;
+      /* Core line — gradient from src to tgt color */
+      var lineGrd = ctx.createLinearGradient(ap.sx, ap.sy, bp.sx, bp.sy);
+      lineGrd.addColorStop(0, colorAlpha(srcColor, a));
+      lineGrd.addColorStop(1, colorAlpha(tgtColor, a * 0.85));
+      ctx.strokeStyle = lineGrd;
+      ctx.lineWidth = a > 0.7 ? 2.2 : 1.4;
+      ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.moveTo(ap.sx, ap.sy);
       ctx.quadraticCurveTo(cpx, cpy, bp.sx, bp.sy);
       ctx.stroke();
 
       /* Arrowhead at target */
-      if (a > 0.25) {
+      if (a > 0.2) {
         var t2 = 0.93;
-        var ax = (1-t2)*(1-t2)*ap.sx + 2*(1-t2)*t2*cpx + t2*t2*bp.sx;
-        var ay = (1-t2)*(1-t2)*ap.sy + 2*(1-t2)*t2*cpy + t2*t2*bp.sy;
-        var tdx = ax - bp.sx, tdy = ay - bp.sy;
+        var ax2 = (1-t2)*(1-t2)*ap.sx + 2*(1-t2)*t2*cpx + t2*t2*bp.sx;
+        var ay2 = (1-t2)*(1-t2)*ap.sy + 2*(1-t2)*t2*cpy + t2*t2*bp.sy;
+        var tdx = ax2 - bp.sx, tdy = ay2 - bp.sy;
         var tl = Math.sqrt(tdx*tdx + tdy*tdy) || 1;
         tdx /= tl; tdy /= tl;
-        var as = 7;
-        ctx.fillStyle = colorAlpha(color, a * 0.9);
-        ctx.shadowColor = color;
-        ctx.shadowBlur = a > 0.5 ? 6 : 0;
+        var as = a > 0.7 ? 9 : 6;
+        ctx.fillStyle = colorAlpha(tgtColor, a * 0.95);
+        ctx.shadowColor = tgtColor;
+        ctx.shadowBlur = a > 0.5 ? 10 : 2;
         ctx.beginPath();
         ctx.moveTo(bp.sx, bp.sy);
         ctx.lineTo(bp.sx + tdx*as - tdy*as*0.45, bp.sy + tdy*as + tdx*as*0.45);
@@ -424,34 +504,48 @@
       ctx.restore();
     });
 
-    /* ── DRAW PARTICLES ──── */
+    /* ── DRAW PARTICLE TRAILS ──── */
     ptcl.forEach(function (p) {
       var l = SL[p.li];
-      if (!l) return;
+      if (!l || !p.trail || p.trail.length < 2) return;
       var a = linkAlpha(l.si, l.ti);
       if (a < 0.08) return;
 
-      var ap = proj[l.si], bp = proj[l.ti];
-      var mx = (ap.sx + bp.sx) / 2;
-      var my = (ap.sy + bp.sy) / 2;
-      var edx = bp.sx - ap.sx, edy = bp.sy - ap.sy;
-      var cpx = mx - edy * 0.18, cpy = my + edx * 0.18;
-
-      var t2 = p.t;
-      var px = (1-t2)*(1-t2)*ap.sx + 2*(1-t2)*t2*cpx + t2*t2*bp.sx;
-      var py = (1-t2)*(1-t2)*ap.sy + 2*(1-t2)*t2*cpy + t2*t2*bp.sy;
-
       var color = (CATEGORY[SN[l.si].nd.category] || { color: '#60a5fa' }).color;
-      var pr = Math.max(1.5, 3.0 * (ap.depth + bp.depth) / 2);
+      var ap2 = proj[l.si], bp2 = proj[l.ti];
+      var depth = (ap2.depth + bp2.depth) / 2;
+      var pr = Math.max(2.5, 4.5 * depth);
 
       ctx.save();
-      ctx.globalAlpha = a * 0.92 * fadeIn;
+      /* Draw trail */
+      for (var i = 0; i < p.trail.length - 1; i++) {
+        var trailAlpha = (i / p.trail.length) * a * 0.6 * fadeIn;
+        var trailR = pr * (i / p.trail.length) * 0.8;
+        ctx.globalAlpha = trailAlpha;
+        ctx.fillStyle = colorAlpha(color, 0.7);
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(p.trail[i].x, p.trail[i].y, Math.max(0.8, trailR), 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      /* Head particle */
+      var head = p.trail[p.trail.length - 1];
+      ctx.globalAlpha = a * 0.98 * fadeIn;
       ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = color;
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = lightenColor(color, 0.5);
       ctx.beginPath();
-      ctx.arc(px, py, pr, 0, 2 * Math.PI);
+      ctx.arc(head.x, head.y, pr, 0, 2 * Math.PI);
       ctx.fill();
+      /* Bright core */
+      ctx.globalAlpha = a * fadeIn;
+      ctx.shadowBlur = 6;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(head.x, head.y, pr * 0.38, 0, 2 * Math.PI);
+      ctx.fill();
+
       ctx.restore();
     });
 
@@ -464,48 +558,68 @@
       var r = nodeR(nd, p.depth);
       var isHov = hoveredNode && hoveredNode.id === nd.id;
       var isFoc = focusedId === nd.id;
+      var pulse = 1 + 0.06 * Math.sin(clock * 0.035 + nd.id.length * 1.3);
 
-      /* Depth fog: nodes at back are slightly dimmer */
-      var fog = 0.6 + 0.4 * p.depth;
+      var fog = 0.55 + 0.45 * p.depth;
       var finalAlpha = alpha * fog * fadeIn;
       if (finalAlpha < 0.01) return;
 
       ctx.save();
       ctx.globalAlpha = finalAlpha;
 
-      /* Outer glow ring */
-      var glowR = r * (isHov || isFoc ? 2.2 : 1.6);
-      var glowGrd = ctx.createRadialGradient(p.sx, p.sy, r * 0.5, p.sx, p.sy, glowR);
-      glowGrd.addColorStop(0, colorAlpha(color, isHov || isFoc ? 0.35 : 0.15));
-      glowGrd.addColorStop(1, colorAlpha(color, 0));
-      ctx.fillStyle = glowGrd;
+      /* Orbit ring for important nodes */
+      if (ORBIT_NODES.has(nd.id) && !focusedId || isFoc) {
+        var orbitR = r * 2.0 * pulse;
+        ctx.save();
+        ctx.globalAlpha = finalAlpha * (isFoc ? 0.55 : 0.28);
+        ctx.strokeStyle = colorAlpha(color, 0.7);
+        ctx.lineWidth = isFoc ? 1.8 : 1.0;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = isFoc ? 18 : 8;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        ctx.arc(p.sx, p.sy, orbitR, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+
+      /* Outer halo corona */
+      var coronaR = r * (isHov || isFoc ? 3.2 : 2.2) * (isFoc ? pulse : 1);
+      var coronaGrd = ctx.createRadialGradient(p.sx, p.sy, r * 0.6, p.sx, p.sy, coronaR);
+      coronaGrd.addColorStop(0, colorAlpha(color, isHov || isFoc ? 0.28 : 0.12));
+      coronaGrd.addColorStop(0.5, colorAlpha(color, isHov || isFoc ? 0.08 : 0.03));
+      coronaGrd.addColorStop(1, colorAlpha(color, 0));
+      ctx.fillStyle = coronaGrd;
       ctx.beginPath();
-      ctx.arc(p.sx, p.sy, glowR, 0, 2 * Math.PI);
+      ctx.arc(p.sx, p.sy, coronaR, 0, 2 * Math.PI);
       ctx.fill();
 
-      /* Shadow/glow for canvas shadow */
+      /* Canvas shadow glow */
       ctx.shadowColor = color;
-      ctx.shadowBlur = isHov || isFoc ? 30 : (focusedId ? 8 : 16);
+      ctx.shadowBlur = isHov || isFoc ? 38 : (focusedId ? 10 : 22);
 
-      /* Sphere with radial gradient (shiny 3D look) */
+      /* Main sphere — radial gradient for 3D shiny look */
       var grd = ctx.createRadialGradient(
-        p.sx - r * 0.35, p.sy - r * 0.35, r * 0.05,
+        p.sx - r * 0.38, p.sy - r * 0.38, r * 0.04,
         p.sx, p.sy, r
       );
-      grd.addColorStop(0, lightenColor(color, 0.55));
-      grd.addColorStop(0.45, color);
-      grd.addColorStop(1, colorAlpha(color, 0.6));
+      grd.addColorStop(0, lightenColor(color, 0.65));
+      grd.addColorStop(0.38, color);
+      grd.addColorStop(0.72, colorAlpha(color, 0.82));
+      grd.addColorStop(1, colorAlpha(color, 0.45));
       ctx.fillStyle = grd;
       ctx.beginPath();
-      ctx.arc(p.sx, p.sy, r, 0, 2 * Math.PI);
+      ctx.arc(p.sx, p.sy, r * (isFoc ? pulse : 1), 0, 2 * Math.PI);
       ctx.fill();
 
-      /* Specular highlight */
+      /* Primary specular highlight — top-left */
       var specGrd = ctx.createRadialGradient(
-        p.sx - r * 0.3, p.sy - r * 0.3, 0,
-        p.sx - r * 0.3, p.sy - r * 0.3, r * 0.45
+        p.sx - r * 0.32, p.sy - r * 0.32, 0,
+        p.sx - r * 0.32, p.sy - r * 0.32, r * 0.52
       );
-      specGrd.addColorStop(0, 'rgba(255,255,255,0.45)');
+      specGrd.addColorStop(0, 'rgba(255,255,255,0.58)');
+      specGrd.addColorStop(0.6, 'rgba(255,255,255,0.12)');
       specGrd.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.shadowBlur = 0;
       ctx.fillStyle = specGrd;
@@ -513,62 +627,192 @@
       ctx.arc(p.sx, p.sy, r, 0, 2 * Math.PI);
       ctx.fill();
 
+      /* Secondary specular — bottom-right rim light */
+      var rimGrd = ctx.createRadialGradient(
+        p.sx + r * 0.4, p.sy + r * 0.38, 0,
+        p.sx + r * 0.4, p.sy + r * 0.38, r * 0.46
+      );
+      rimGrd.addColorStop(0, colorAlpha(lightenColor(color, 0.7), 0.3));
+      rimGrd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = rimGrd;
+      ctx.beginPath();
+      ctx.arc(p.sx, p.sy, r, 0, 2 * Math.PI);
+      ctx.fill();
+
       /* Hover / focus ring */
       if (isHov || isFoc) {
         ctx.shadowColor = color;
-        ctx.shadowBlur = 20;
-        ctx.strokeStyle = lightenColor(color, 0.4);
-        ctx.lineWidth = 2.5;
+        ctx.shadowBlur = 28;
+        ctx.strokeStyle = lightenColor(color, 0.45);
+        ctx.lineWidth = isFoc ? 2.5 : 2.0;
         ctx.beginPath();
-        ctx.arc(p.sx, p.sy, r + 5, 0, 2 * Math.PI);
+        ctx.arc(p.sx, p.sy, r + 4, 0, 2 * Math.PI);
         ctx.stroke();
+        /* Second outer ring for focused */
+        if (isFoc) {
+          ctx.globalAlpha = finalAlpha * 0.4;
+          ctx.strokeStyle = colorAlpha(color, 0.6);
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(p.sx, p.sy, r + 10, 0, 2 * Math.PI);
+          ctx.stroke();
+        }
       }
 
       ctx.restore();
 
-      /* Label */
-      var depthShow = Math.max(0, Math.min(1, (p.depth - 0.80) / 0.28));
-      var lblAlpha = focusedId
-        ? (nd.id === focusedId || visibleSet.has(nd.id) ? (isHov ? 1 : 0.9) : 0.1)
-        : (isHov ? 1 : depthShow * 0.80);
-      lblAlpha *= fog * fadeIn;
-      if (lblAlpha < 0.04) return;
-
-      var fontSize = Math.max(8, Math.min(13, 11 * p.depth));
-      ctx.save();
-      ctx.globalAlpha = lblAlpha;
-      ctx.font = (isFoc || isHov ? '700 ' : '500 ') + fontSize + 'px Inter,sans-serif';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = '#000';
-      ctx.shadowBlur = 6;
-      ctx.fillStyle = isFoc || isHov ? '#fff' : '#94a3b8';
-      ctx.fillText(nd.label, p.sx, p.sy + r + fontSize + 3);
-      ctx.restore();
+      /* ── LABEL ──── */
+      drawNodeLabel(nd, p, r, isHov, isFoc, fog);
     });
 
     ctx.globalAlpha = 1;
     rafId = requestAnimationFrame(render);
   }
 
+  /* ── BEZIER POINT HELPER (for particle trails) ────────────── */
+  function buildBezierPoint(li, t) {
+    var l = SL[li];
+    if (!l) return { x: 0, y: 0 };
+    var proj = SN.map(function (n) {
+      var p = project(n.x, n.y, n.z);
+      return { sx: p.sx, sy: p.sy };
+    });
+    var ap = proj[l.si], bp = proj[l.ti];
+    var mx = (ap.sx + bp.sx) / 2;
+    var my = (ap.sy + bp.sy) / 2;
+    var edx = bp.sx - ap.sx, edy = bp.sy - ap.sy;
+    var cpx = mx - edy * 0.16, cpy = my + edx * 0.16;
+    return {
+      x: (1-t)*(1-t)*ap.sx + 2*(1-t)*t*cpx + t*t*bp.sx,
+      y: (1-t)*(1-t)*ap.sy + 2*(1-t)*t*cpy + t*t*bp.sy
+    };
+  }
+
+  /* ── DEPTH GRID ───────────────────────────────────────────── */
+  function drawDepthGrid() {
+    /* Subtle perspective reference plane slightly below node cluster */
+    ctx.save();
+    ctx.globalAlpha = 0.06 * fadeIn;
+
+    var gridY = CY + panY + 140 * zoom;
+    var gridW = W * 0.8;
+    var gridH = H * 0.25;
+    var cols = 10, rows = 5;
+
+    /* Perspective vanishing point */
+    var vpX = CX + panX;
+    var vpY = CY + panY - 40;
+
+    ctx.strokeStyle = 'rgba(56,130,246,0.6)';
+    ctx.lineWidth = 0.7;
+
+    for (var c = 0; c <= cols; c++) {
+      var rx = (CX + panX - gridW / 2) + (c / cols) * gridW;
+      ctx.beginPath();
+      ctx.moveTo(vpX + (rx - vpX) * 0.15, vpY + (gridY - vpY) * 0.15);
+      ctx.lineTo(rx, gridY + gridH * 0.8);
+      ctx.stroke();
+    }
+    for (var r2 = 0; r2 <= rows; r2++) {
+      var ry = gridY + (r2 / rows) * gridH * 0.8;
+      var spread = 0.15 + (r2 / rows) * 0.85;
+      var x1 = vpX - (gridW / 2) * spread;
+      var x2 = vpX + (gridW / 2) * spread;
+      ctx.beginPath();
+      ctx.moveTo(x1, ry);
+      ctx.lineTo(x2, ry);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  /* ── NODE LABEL ──────────────────────────────────────────── */
+  function drawNodeLabel(nd, p, r, isHov, isFoc, fog) {
+    var cat = CATEGORY[nd.category] || { color: '#64748b' };
+    var color = cat.color;
+
+    /* Alpha: always visible, brighter when focused/hovered */
+    var lblAlpha;
+    if (!focusedId) {
+      /* Depth-based but never hidden — min 0.5 */
+      var depthFactor = Math.max(0.5, Math.min(1, (p.depth - 0.70) / 0.35));
+      lblAlpha = isHov ? 1.0 : depthFactor * 0.88;
+    } else {
+      lblAlpha = nd.id === focusedId ? 1.0
+        : visibleSet.has(nd.id) ? (isHov ? 1.0 : 0.9)
+        : 0.12;
+    }
+    lblAlpha *= fog * fadeIn;
+    if (lblAlpha < 0.03) return;
+
+    var fontSize = Math.max(10, Math.min(14, 12 * p.depth));
+    var labelY = p.sy + r + fontSize + 5;
+    var text = nd.label;
+
+    ctx.save();
+    ctx.globalAlpha = lblAlpha;
+    ctx.font = (isFoc || isHov ? '700 ' : '600 ') + fontSize + 'px Inter,sans-serif';
+    ctx.textAlign = 'center';
+
+    /* Pill background */
+    var tw = ctx.measureText(text).width;
+    var pillW = tw + 14, pillH = fontSize + 8;
+    var pillX = p.sx - pillW / 2, pillY = labelY - fontSize - 2;
+
+    ctx.fillStyle = 'rgba(5,12,25,0.72)';
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(pillX, pillY, pillW, pillH, 4);
+    } else {
+      ctx.rect(pillX, pillY, pillW, pillH);
+    }
+    ctx.fill();
+
+    /* Category dot */
+    if (isFoc || isHov) {
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(p.sx - tw / 2 - 3, labelY - fontSize / 2 + 1, 2.5, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    /* Label text */
+    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+    ctx.shadowBlur = 4;
+    ctx.fillStyle = isFoc || isHov ? '#ffffff' : (focusedId && !visibleSet.has(nd.id) ? '#475569' : '#c8d6e8');
+    ctx.fillText(text, p.sx, labelY);
+
+    ctx.restore();
+  }
+
   /* ── TOOLTIP ─────────────────────────────────────────────── */
   function showTooltip(nd, x, y) {
     if (!tooltip) {
       tooltip = document.createElement('div');
-      tooltip.style.cssText = 'position:fixed;z-index:99999;pointer-events:none;background:rgba(10,18,30,0.97);' +
-        'border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;font-family:Inter,sans-serif;' +
-        'font-size:12px;color:#e2e8f0;max-width:220px;box-shadow:0 8px 32px rgba(0,0,0,0.5);line-height:1.4;' +
-        'transition:opacity 0.15s;';
+      tooltip.style.cssText =
+        'position:fixed;z-index:99999;pointer-events:none;' +
+        'background:rgba(7,14,28,0.97);' +
+        'border:1px solid rgba(255,255,255,0.12);' +
+        'border-radius:12px;padding:12px 16px;font-family:Inter,sans-serif;' +
+        'font-size:12px;color:#e2e8f0;max-width:240px;' +
+        'box-shadow:0 8px 40px rgba(0,0,0,0.65),0 0 0 1px rgba(255,255,255,0.04);' +
+        'line-height:1.45;transition:opacity 0.15s;backdrop-filter:blur(12px);';
       document.body.appendChild(tooltip);
     }
     var cat = CATEGORY[nd.category] || { color: '#64748b', label: '' };
-    tooltip.innerHTML = '<div style="font-weight:700;font-size:13px;color:#fff;margin-bottom:4px">' + nd.label + '</div>' +
-      '<div style="font-size:10px;color:' + cat.color + ';margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">' + cat.label + '</div>' +
-      '<div style="color:#94a3b8;font-size:11px;">' + (nd.tech || []).slice(0, 3).join(' · ') + '</div>' +
-      '<div style="margin-top:6px;font-size:10px;color:#475569;">Click to explore · Right-click for docs</div>';
+    tooltip.innerHTML =
+      '<div style="font-weight:800;font-size:14px;color:#fff;margin-bottom:5px;letter-spacing:-0.01em">' + nd.label + '</div>' +
+      '<div style="font-size:10px;color:' + cat.color + ';margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;font-weight:700">' + cat.label + '</div>' +
+      '<div style="color:#7d90a8;font-size:11.5px;font-weight:500">' + (nd.tech || []).slice(0, 3).join('  ·  ') + '</div>' +
+      '<div style="margin-top:8px;font-size:10px;color:#3d5066;border-top:1px solid rgba(255,255,255,0.06);padding-top:7px">Click to explore  ·  Right-click for docs</div>';
     var rect = container.getBoundingClientRect();
-    var tx = rect.left + x + 16;
-    var ty = rect.top + y - 20;
-    if (tx + 230 > window.innerWidth) tx = rect.left + x - 240;
+    var tx = rect.left + x + 18;
+    var ty = rect.top + y - 24;
+    if (tx + 250 > window.innerWidth) tx = rect.left + x - 258;
     tooltip.style.left = tx + 'px';
     tooltip.style.top = ty + 'px';
     tooltip.style.opacity = '1';
@@ -596,18 +840,10 @@
     proj.forEach(function (p) {
       var dx = mx - p.sx, dy = my - p.sy;
       var d = Math.sqrt(dx * dx + dy * dy);
-      var r = nodeR(p.n.nd, p.depth) + 10;
+      var r = nodeR(p.n.nd, p.depth) + 12;
       if (d < r && d < bestD) { bestD = d; best = p; }
     });
     return best || null;
-  }
-
-  /* Unproject 2D drag delta → 3D space delta (approximate) */
-  function unprojectDelta(mx, my, depth) {
-    return {
-      dx: mx / (zoom * depth),
-      dy: my / (zoom * depth)
-    };
   }
 
   function stopAutoRotate() {
@@ -630,13 +866,10 @@
       var dx = pos.x - dragBase.x;
       var dy = pos.y - dragBase.y;
       dragBase = pos;
-
-      /* Rotate mouse delta to account for current rotation */
       var cosY2 = Math.cos(-rotY), sinY2 = Math.sin(-rotY);
       var worldDX = dx / (zoom * dragNode.depth);
-      var worldDZ = -worldDX * sinY2;  /* approximate inverse projection */
+      var worldDZ = -worldDX * sinY2;
       worldDX = worldDX * cosY2;
-
       dragNode.n.x += worldDX;
       dragNode.n.y += dy / (zoom * dragNode.depth);
       dragNode.n.z += worldDZ;
@@ -668,7 +901,6 @@
     e.preventDefault();
     var pos = getCanvasPos(e);
     stopAutoRotate();
-
     var hit = hitTest(pos.x, pos.y);
     if (hit) {
       dragNode = hit;
@@ -691,11 +923,9 @@
   }
 
   function onClick(e) {
-    /* Distinguish click from drag */
     var pos = getCanvasPos(e);
     var moved = Math.abs(pos.x - lastMouse.x) + Math.abs(pos.y - lastMouse.y);
     if (moved > 5) return;
-
     var hit = hitTest(pos.x, pos.y);
     if (hit) {
       enterFocusMode(hit.n.nd.id);
@@ -795,7 +1025,6 @@
     renderPanel(nodeId, deps);
     stopAutoRotate();
 
-    /* Swing camera toward clicked node */
     var sn = SN.find(function (n) { return n.id === nodeId; });
     if (sn) {
       var targetAngle = Math.atan2(sn.x, sn.z);
@@ -803,11 +1032,12 @@
       while (diff > Math.PI) diff -= 2 * Math.PI;
       while (diff < -Math.PI) diff += 2 * Math.PI;
       var startAngle = rotY;
-      var steps = 40;
+      var steps = 45;
       var step = 0;
       function animateCamera() {
         step++;
-        rotY = startAngle + diff * (step / steps) * (2 - step / steps);
+        var ease = 1 - Math.pow(1 - step / steps, 3);
+        rotY = startAngle + diff * ease;
         if (step < steps) requestAnimationFrame(animateCamera);
       }
       animateCamera();
@@ -836,15 +1066,19 @@
         focusedId = '_flow_';
         visibleSet = new Set(visited);
 
-        /* Swing camera to node */
         var sn = SN.find(function (n) { return n.id === id; });
         if (sn) {
           var target = Math.atan2(sn.x, sn.z);
           var d2 = target - rotY;
           while (d2 > Math.PI) d2 -= 2 * Math.PI;
           while (d2 < -Math.PI) d2 += 2 * Math.PI;
-          var start2 = rotY, s2 = 0, steps2 = 30;
-          function animCam() { s2++; rotY = start2 + d2 * (s2/steps2); if (s2 < steps2) requestAnimationFrame(animCam); }
+          var start2 = rotY, s2 = 0, steps2 = 32;
+          function animCam() {
+            s2++;
+            var ease = 1 - Math.pow(1 - s2 / steps2, 3);
+            rotY = start2 + d2 * ease;
+            if (s2 < steps2) requestAnimationFrame(animCam);
+          }
           animCam();
         }
       }, idx * 900);
@@ -867,7 +1101,10 @@
     Object.keys(CATEGORY).forEach(function (cat) {
       var item = document.createElement('div');
       item.className = 'kg-legend-item';
-      item.innerHTML = '<div class="kg-legend-dot" style="background:' + CATEGORY[cat].color + ';box-shadow:0 0 6px ' + CATEGORY[cat].color + '88"></div>' + CATEGORY[cat].label;
+      item.innerHTML =
+        '<div class="kg-legend-dot" style="background:' + CATEGORY[cat].color +
+        ';box-shadow:0 0 8px ' + CATEGORY[cat].color + 'aa,0 0 2px ' + CATEGORY[cat].color + '"></div>' +
+        CATEGORY[cat].label;
       item.style.cursor = 'pointer';
       item.addEventListener('click', function () {
         var catNodes = NODES.filter(function (n) { return n.category === cat; }).map(function (n) { return n.id; });
@@ -882,7 +1119,6 @@
     container = document.getElementById(containerId);
     if (!container) return;
 
-    /* Remove any old canvas / content */
     container.innerHTML = '';
 
     canvas = document.createElement('canvas');
@@ -890,7 +1126,7 @@
     container.appendChild(canvas);
 
     W = container.clientWidth;
-    H = container.clientHeight || 720;
+    H = container.clientHeight || 820;
     canvas.width = W;
     canvas.height = H;
     CX = W / 2;
@@ -902,9 +1138,9 @@
       return;
     }
 
+    initStars();
     initSim();
 
-    /* Event listeners */
     canvas.addEventListener('mousemove', onMouseMove, { passive: true });
     canvas.addEventListener('mousedown', onMouseDown);
     canvas.addEventListener('mouseup', onMouseUp);
@@ -916,7 +1152,6 @@
 
     buildLegend('graph-legend');
 
-    /* Expose public API */
     global.KG = {
       highlight: highlight,
       reset: reset,
@@ -928,7 +1163,7 @@
     };
 
     document.dispatchEvent(new CustomEvent('kg:ready'));
-    console.info('[KG] Canvas 3D knowledge graph initialized — ' + NODES.length + ' nodes / ' + LINKS.length + ' links');
+    console.info('[KG] Canvas 3D knowledge graph v4.0 — ' + NODES.length + ' nodes / ' + LINKS.length + ' links');
 
     if (rafId) cancelAnimationFrame(rafId);
     render();

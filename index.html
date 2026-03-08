@@ -1203,23 +1203,26 @@
     }
 
     .kg-shell-wrap {
-      background: #050d1a;
-      border: 1px solid rgba(56, 189, 248, 0.15);
+      background: #020a14;
+      border: 1px solid rgba(56, 189, 248, 0.22);
       border-radius: 18px;
       overflow: hidden;
       position: relative;
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.06),
-                  0 24px 80px rgba(0, 0, 0, 0.5),
-                  inset 0 0 80px rgba(59, 130, 246, 0.04);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08),
+                  0 0 60px rgba(56, 130, 246, 0.12),
+                  0 28px 90px rgba(0, 0, 0, 0.65),
+                  inset 0 0 120px rgba(20, 60, 140, 0.07);
     }
 
     .kg-toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 18px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.025);
+      padding: 13px 22px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+      background: rgba(4, 14, 32, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
     .kg-toolbar-left {
@@ -1231,13 +1234,14 @@
     .kg-toolbar-title {
       font-size: 12px;
       font-weight: 700;
-      color: var(--text-secondary);
-      letter-spacing: 0.05em;
+      color: #7dd3fc;
+      letter-spacing: 0.09em;
+      text-shadow: 0 0 16px rgba(56, 189, 248, 0.45);
     }
 
     .kg-toolbar-hint {
       font-size: 11px;
-      color: var(--text-mute);
+      color: #3d5368;
     }
 
     .kg-legend-wrap {
@@ -1250,21 +1254,27 @@
     .kg-legend-item {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       font-size: 11px;
-      color: var(--text-mute);
+      color: #7d8fa4;
       font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .kg-legend-item:hover {
+      color: #c8d8ea;
     }
 
     .kg-legend-dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
+      flex-shrink: 0;
     }
 
     #knowledge-graph {
       width: 100%;
-      height: 720px;
+      height: 820px;
       display: block;
       cursor: grab;
     }
@@ -1280,20 +1290,23 @@
     .kg-reset-btn {
       position: static;
       padding: 6px 14px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.2);
       border-radius: 8px;
-      color: var(--text-mute);
+      color: #7dd3fc;
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.18s;
       font-family: var(--font);
+      letter-spacing: 0.03em;
     }
 
     .kg-reset-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
+      background: rgba(56, 189, 248, 0.16);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #e0f2fe;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
     }
 
     html.focus-mode-active .kg-reset-btn {
