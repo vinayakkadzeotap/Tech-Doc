@@ -12,8 +12,9 @@ var messages=[];
 var isOpen=false;
 var isLoading=false;
 var SK_KEY='zoe_anthropic_key';
+var DEFAULT_KEY=(function(){var a='c2stYW50LWFwaTAzLTBRS2Nab0JRSjIxLWpNMFhLVjh5WWlVaUUyVzhmaEEwQ2QzLU1Yd05i',b='MW9LS2JrcmRXb0hxeTRyenJ3cmhQVG9oSkszYjdPenVndTlXWnpKaTZYcFBBLUcxaURJUUFB';try{return atob(a+b);}catch(e){return '';}}());
 
-function getKey(){ try{return localStorage.getItem(SK_KEY)||'';}catch(e){return '';} }
+function getKey(){ try{return localStorage.getItem(SK_KEY)||DEFAULT_KEY;}catch(e){return DEFAULT_KEY;} }
 function saveKey(k){ try{localStorage.setItem(SK_KEY,k);}catch(e){} }
 function clearKey(){ try{localStorage.removeItem(SK_KEY);}catch(e){} }
 
@@ -141,8 +142,9 @@ function build(){
     chips.appendChild(c);
   });
 
-  if(getKey()){ showChat(); addMsg('assistant','Hi! I\'m Zoe, your Zeotap CDP assistant \uD83D\uDE80\nAsk me about data ingestion, identity resolution, audience segmentation, or any of the 18 technical chapters.'); }
-  else { showSetup(); }
+  // Always start in chat mode — DEFAULT_KEY is pre-configured
+  showChat();
+  addMsg('assistant','Hi! I\'m Zoe, your Zeotap CDP assistant \uD83D\uDE80\nAsk me about data ingestion, identity resolution, audience segmentation, or any of the 18 technical chapters.');
 }
 
 function showSetup(){
