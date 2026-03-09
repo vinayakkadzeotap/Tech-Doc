@@ -11,6 +11,7 @@ interface Props {
 export default function ScrollTracker({ trackId, moduleId }: Props) {
   const startTime = useRef(Date.now());
   const maxScroll = useRef(0);
+  const saved = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,37 +25,34 @@ export default function ScrollTracker({ trackId, moduleId }: Props) {
     };
 
     const saveProgress = async () => {
+      if (saved.current) return;
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
+      if (timeSpent < 3 && maxScroll.current < 5) return; // skip trivial visits
 
-      await supabase.from('progress').upsert({
+      await supabase.from('analytics_events').insert({
         user_id: user.id,
-        track_id: trackId,
-        module_id: moduleId,
-        scroll_pct: maxScroll.current,
-        time_spent_seconds: timeSpent,
-        status: maxScroll.current >= 90 ? 'in_progress' : 'not_started',
-      }, { onConflict: 'user_id,track_id,module_id' });
+        event_type: 'module_reading',
+        event_data: {
+          track_id: trackId,
+          module_id: moduleId,
+          scroll_pct: maxScroll.current,
+          time_spent_seconds: timeSpent,
+        },
+      });
+
+      saved.current = true;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-
-    // Save on unmount (page leave)
-    const handleBeforeUnload = () => {
-      saveProgress();
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Save periodically every 30s
-    const interval = setInterval(saveProgress, 30000);
+    window.addEventListener('beforeunload', saveProgress);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      clearInterval(interval);
+      window.removeEventListener('beforeunload', saveProgress);
       saveProgress();
     };
   }, [trackId, moduleId]);
