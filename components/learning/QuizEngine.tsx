@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
+import { trackEvent } from '@/lib/utils/analytics';
 
 export interface QuizQuestion {
   id: string;
@@ -72,6 +73,8 @@ export default function QuizEngine({ quiz, onClose }: Props) {
         show({ message: 'Achievement Unlocked: Quiz Ace!', icon: '🎯', color: '#f59e0b' });
       }
     }
+
+    trackEvent('quiz_completed', { quizId: quiz.id, percentage, passed, score: correct });
 
     setSaving(false);
     setShowResults(true);

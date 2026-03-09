@@ -3,6 +3,8 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { TRACKS } from '@/lib/utils/roles';
 import MarkCompleteBar from '@/components/learning/MarkCompleteBar';
+import ModuleToolbar from '@/components/learning/ModuleToolbar';
+import ScrollTracker from '@/components/learning/ScrollTracker';
 import Badge from '@/components/ui/Badge';
 import { getModuleContent } from '@/lib/mdx';
 import { serialize } from 'next-mdx-remote/serialize';
@@ -36,7 +38,7 @@ export default async function ModulePage({ params }: Props) {
     .eq('user_id', user.id)
     .eq('track_id', trackId)
     .eq('module_id', moduleId)
-    .single();
+    .maybeSingle();
 
   const isComplete = progress?.status === 'completed';
 
@@ -44,7 +46,11 @@ export default async function ModulePage({ params }: Props) {
   const moduleContent = getModuleContent(trackId, moduleId);
   let mdxSource = null;
   if (moduleContent) {
-    mdxSource = await serialize(moduleContent.content);
+    try {
+      mdxSource = await serialize(moduleContent.content);
+    } catch {
+      // MDX parse error - leave mdxSource as null to show fallback UI
+    }
   }
 
   const contentTypeColors: Record<string, string> = {
@@ -86,6 +92,12 @@ export default async function ModulePage({ params }: Props) {
         </h1>
         <p className="text-text-secondary">{module.description}</p>
       </div>
+
+      {/* Module toolbar: bookmark, notes, feedback */}
+      <ModuleToolbar trackId={trackId} moduleId={moduleId} />
+
+      {/* Scroll & time tracker */}
+      <ScrollTracker trackId={trackId} moduleId={moduleId} />
 
       {/* Content area */}
       <article className="mb-12 pb-16">

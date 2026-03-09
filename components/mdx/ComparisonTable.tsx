@@ -1,10 +1,12 @@
 interface ComparisonTableProps {
-  headers: string[];
-  rows: string[][];
+  headers?: string[];
+  rows?: string[][];
   highlightColumn?: number;
 }
 
 export default function ComparisonTable({ headers, rows, highlightColumn = 0 }: ComparisonTableProps) {
+  if (!headers || !Array.isArray(headers) || !rows || !Array.isArray(rows)) return null;
+
   return (
     <div className="my-6 overflow-x-auto">
       <table className="w-full text-sm border-collapse">

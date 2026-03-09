@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { awardBadgesAfterCompletion } from '@/lib/utils/award-badges';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -16,22 +17,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  const { data, error } = await supabase.from('progress').upsert(
-    {
-      user_id: user.id,
-      track_id,
-      module_id,
-      status,
-      completed_at: status === 'completed' ? new Date().toISOString() : null,
-    },
-    { onConflict: 'user_id,track_id,module_id' }
-  );
+  const { data, error } = await supabase.from('progress').upsert({
+    user_id: user.id,
+    track_id,
+    module_id,
+    status,
+    completed_at: status === 'completed' ? new Date().toISOString() : null,
+  }, { onConflict: 'user_id,track_id,module_id' }).select();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, data });
+  // Award badges after marking complete
+  let newBadges: string[] = [];
+  if (status === 'completed') {
+    newBadges = await awardBadgesAfterCompletion(supabase, user.id, track_id);
+  }
+
+  return NextResponse.json({ success: true, data, newBadges });
 }
 
 export async function GET() {

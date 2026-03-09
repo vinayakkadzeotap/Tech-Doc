@@ -1,8 +1,10 @@
 interface StatCardProps {
-  stats: { value: string; label: string; color?: string }[];
+  stats?: { value: string; label: string; color?: string }[];
 }
 
 export default function StatCard({ stats }: StatCardProps) {
+  if (!stats || !Array.isArray(stats)) return null;
+
   return (
     <div className="my-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
       {stats.map((stat) => (

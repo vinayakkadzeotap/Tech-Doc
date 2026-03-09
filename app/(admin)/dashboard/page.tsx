@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import ProgressBar from '@/components/ui/ProgressBar';
 
@@ -50,6 +51,20 @@ export default async function AdminDashboardPage() {
           <h1 className="text-2xl font-extrabold">Admin Dashboard</h1>
         </div>
         <p className="text-text-secondary text-sm">Organization-wide learning analytics</p>
+        <div className="flex gap-3 mt-3">
+          <Link
+            href="/admin/users"
+            className="text-sm text-brand-blue hover:underline font-medium"
+          >
+            Manage Users
+          </Link>
+          <Link
+            href="/admin/assignments"
+            className="text-sm text-brand-purple hover:underline font-medium"
+          >
+            Manage Assignments
+          </Link>
+        </div>
       </div>
 
       {/* Top stats */}
