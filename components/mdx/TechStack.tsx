@@ -6,10 +6,12 @@ interface TechItem {
 
 interface TechStackProps {
   title?: string;
-  items: TechItem[];
+  items?: TechItem[];
 }
 
 export default function TechStack({ title = 'Tech Stack', items }: TechStackProps) {
+  if (!items || !Array.isArray(items)) return null;
+
   return (
     <div className="my-6 bg-bg-surface/50 border border-border rounded-2xl p-5">
       <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">{title}</h4>

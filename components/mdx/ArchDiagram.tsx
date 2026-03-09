@@ -1,10 +1,12 @@
 interface ArchDiagramProps {
-  title: string;
-  steps: { label: string; detail: string; icon?: string }[];
+  title?: string;
+  steps?: { label: string; detail: string; icon?: string }[];
   direction?: 'horizontal' | 'vertical';
 }
 
 export default function ArchDiagram({ title, steps, direction = 'horizontal' }: ArchDiagramProps) {
+  if (!steps || !Array.isArray(steps)) return null;
+
   return (
     <div className="my-6 bg-bg-surface/50 border border-border rounded-2xl p-5 overflow-x-auto">
       <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-4">{title}</h4>

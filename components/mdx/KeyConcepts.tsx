@@ -1,8 +1,10 @@
 interface KeyConceptsProps {
-  concepts: string[];
+  concepts?: string[];
 }
 
 export default function KeyConcepts({ concepts }: KeyConceptsProps) {
+  if (!concepts || !Array.isArray(concepts)) return null;
+
   return (
     <div className="my-6 bg-bg-surface/50 border border-border rounded-2xl p-5">
       <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">
