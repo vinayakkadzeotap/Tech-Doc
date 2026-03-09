@@ -5,7 +5,12 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Zeotap Learning Platform',
   description: 'Interactive learning platform for the entire Zeotap organization — technical and non-technical roles',
-  icons: { icon: '/favicon.svg' },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default function RootLayout({
