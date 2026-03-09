@@ -16,11 +16,30 @@ export default async function DashboardLayout({
   }
 
   // Fetch profile — use maybeSingle() to avoid 406 when no row exists
-  const { data: profile } = await supabase
+  let { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .maybeSingle();
+
+  // Auto-create profile row if it doesn't exist (handles cases where
+  // the on_auth_user_created trigger didn't fire or wasn't set up)
+  if (!profile) {
+    const fullName = user.user_metadata?.full_name || '';
+    await supabase.from('profiles').upsert({
+      id: user.id,
+      email: user.email || '',
+      full_name: typeof fullName === 'string' ? fullName : '',
+      role: 'engineering',
+    });
+    // Re-fetch to get the complete row with defaults
+    const { data: created } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+    profile = created;
+  }
 
   const navUser = profile
     ? {
