@@ -16,6 +16,7 @@ import {
   Trophy,
   GraduationCap,
   Zap,
+  Globe,
   type LucideIcon,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -64,6 +65,7 @@ export default function Navbar({ user }: NavbarProps) {
 
   const navItems: NavItem[] = [
     { href: '/home', label: 'Dashboard', icon: Home },
+    { href: '/universe', label: 'Universe', icon: Globe },
     { href: '/learn', label: 'Learn', icon: BookOpen },
     { href: '/explore', label: 'Simulators', icon: Microscope },
     { href: '/assess', label: 'Assess', icon: ClipboardCheck },

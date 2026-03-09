@@ -8,6 +8,7 @@ import {
   Trophy,
   BookMarked,
   Microscope,
+  Globe,
   User,
   type LucideIcon,
 } from 'lucide-react';
@@ -37,9 +38,10 @@ export default function Sidebar({ overallProgress, role }: SidebarProps) {
       ],
     },
     {
-      title: 'Simulators',
+      title: 'Explore',
       items: [
-        { href: '/explore', label: 'Interactive Explorer', icon: Microscope },
+        { href: '/universe', label: 'Zeotap Universe', icon: Globe },
+        { href: '/explore', label: 'Interactive Simulators', icon: Microscope },
       ],
     },
     {
