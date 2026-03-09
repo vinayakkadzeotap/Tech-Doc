@@ -138,11 +138,12 @@ export default async function HomePage() {
       {/* Quick actions */}
       <div>
         <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
             { href: '/explore', icon: '🗺️', label: 'Architecture Map', desc: 'Interactive CDP graph' },
             { href: '/assess', icon: '📝', label: 'Take a Quiz', desc: 'Test your knowledge' },
             { href: '/achievements', icon: '🏆', label: 'Achievements', desc: `${earnedBadges} badges earned` },
+            { href: '/certifications', icon: '🎓', label: 'Certifications', desc: 'Earn credentials' },
             { href: '/glossary', icon: '📖', label: 'Glossary', desc: 'Key terms & concepts' },
           ].map((action) => (
             <Link key={action.href} href={action.href}>

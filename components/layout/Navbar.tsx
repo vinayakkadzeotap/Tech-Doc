@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Search, Menu, X, User, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import SearchModal from '@/components/layout/SearchModal';
 
 interface NavbarProps {
   user: {
@@ -20,6 +21,7 @@ export default function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -33,6 +35,7 @@ export default function Navbar({ user }: NavbarProps) {
     { href: '/explore', label: 'Explore', icon: '🗺️' },
     { href: '/assess', label: 'Assess', icon: '📝' },
     { href: '/achievements', label: 'Achievements', icon: '🏆' },
+    { href: '/certifications', label: 'Certs', icon: '🎓' },
   ];
 
   return (
@@ -83,6 +86,7 @@ export default function Navbar({ user }: NavbarProps) {
           {/* Right side */}
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setSearchOpen(true)}
               className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors focus-ring"
               aria-label="Search"
             >
@@ -153,6 +157,8 @@ export default function Navbar({ user }: NavbarProps) {
           </div>
         </div>
       )}
+      {/* Search modal */}
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </nav>
   );
 }
