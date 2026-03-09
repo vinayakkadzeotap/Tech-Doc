@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { TRACKS } from '@/lib/utils/roles';
 import MarkCompleteBar from '@/components/learning/MarkCompleteBar';
 import Badge from '@/components/ui/Badge';
+import { getModuleContent } from '@/lib/mdx';
+import { serialize } from 'next-mdx-remote/serialize';
+import MDXRenderer from '@/components/mdx/MDXRenderer';
 
 interface Props {
   params: Promise<{ trackId: string; moduleId: string }>;
@@ -36,6 +39,13 @@ export default async function ModulePage({ params }: Props) {
     .single();
 
   const isComplete = progress?.status === 'completed';
+
+  // Load MDX content if available
+  const moduleContent = getModuleContent(trackId, moduleId);
+  let mdxSource = null;
+  if (moduleContent) {
+    mdxSource = await serialize(moduleContent.content);
+  }
 
   const contentTypeColors: Record<string, string> = {
     concept: '#3b82f6',
@@ -77,19 +87,23 @@ export default async function ModulePage({ params }: Props) {
         <p className="text-text-secondary">{module.description}</p>
       </div>
 
-      {/* Content area — placeholder for MDX content */}
-      <article className="prose prose-invert max-w-none mb-12">
-        <div className="bg-bg-surface/50 border border-border rounded-2xl p-8 text-center space-y-4">
-          <div className="text-5xl">{module.icon}</div>
-          <h2 className="text-xl font-bold">Content Coming Soon</h2>
-          <p className="text-text-secondary max-w-md mx-auto">
-            This module&apos;s content is being prepared. The full interactive content with diagrams,
-            code examples, and exercises will be available here.
-          </p>
-          <p className="text-xs text-text-muted">
-            Track: {track.title} &middot; Module {moduleIdx + 1} of {track.totalModules}
-          </p>
-        </div>
+      {/* Content area */}
+      <article className="mb-12 pb-16">
+        {mdxSource ? (
+          <MDXRenderer source={mdxSource} />
+        ) : (
+          <div className="bg-bg-surface/50 border border-border rounded-2xl p-8 text-center space-y-4">
+            <div className="text-5xl">{module.icon}</div>
+            <h2 className="text-xl font-bold">Content Coming Soon</h2>
+            <p className="text-text-secondary max-w-md mx-auto">
+              This module&apos;s content is being prepared. The full interactive content with diagrams,
+              code examples, and exercises will be available here.
+            </p>
+            <p className="text-xs text-text-muted">
+              Track: {track.title} &middot; Module {moduleIdx + 1} of {track.totalModules}
+            </p>
+          </div>
+        )}
       </article>
 
       {/* Navigation */}

@@ -1,0 +1,275 @@
+---
+title: Reports and Analytics Dashboards
+description: Navigate analytics dashboards, explore audience insights, track journey performance, and export data for stakeholders
+icon: 📊
+estimatedMinutes: 30
+contentType: tutorial
+trackId: product-mastery
+order: 6
+---
+
+## 📊 Reports and Analytics Dashboards
+
+The Reports section of the Unity Dashboard gives you visibility into everything happening in your CDP — from high-level profile growth trends to granular journey step performance. This tutorial walks you through every report type, how to read the data, and how to export insights for stakeholders.
+
+<Callout type="info" title="Prerequisites">
+You need at least **Viewer** role access to see reports. Some report customization and export features require **Analyst** or higher.
+</Callout>
+
+### Reports Overview
+
+When you navigate to **Reports** in the left nav, you see a dashboard hub organized into four main sections.
+
+<ArchDiagram
+  title="Reports Hub Structure"
+  steps={[
+    { label: "Platform Overview", detail: "High-level CDP health: profiles, events, syncs", icon: "🏠" },
+    { label: "Audience Insights", detail: "Segment sizes, growth trends, composition analysis", icon: "👥" },
+    { label: "Journey Performance", detail: "Conversion rates, drop-off points, A/B results", icon: "🗺️" },
+    { label: "Activation Reports", detail: "Destination sync health, delivery rates, errors", icon: "🚀" }
+  ]}
+/>
+
+### Platform Overview Dashboard
+
+The Platform Overview is your executive-level summary. It answers the question: "Is my CDP healthy?"
+
+<StatCard stats={[
+  { value: "Profiles", label: "Total Unified Profiles", color: "#3b82f6" },
+  { value: "Events/day", label: "Daily Event Volume", color: "#10b981" },
+  { value: "Audiences", label: "Active Audiences", color: "#a855f7" },
+  { value: "Destinations", label: "Active Syncs", color: "#f59e0b" }
+]} />
+
+#### Key Metrics on the Overview
+
+| Metric | What It Tells You | What to Watch For |
+|---|---|---|
+| **Total Profiles** | Number of unified customer identities (UCIDs) | Steady growth indicates healthy data collection |
+| **Profile Growth Rate** | Week-over-week change in profile count | Sudden spikes or drops may indicate SDK issues |
+| **Event Volume** | Total events ingested per day | Compare to baseline — drops may mean tracking failures |
+| **Identity Match Rate** | Percentage of events linked to a known UCID | Low rates suggest identity resolution gaps |
+| **Active Data Sources** | Sources currently sending data | All sources should show green status |
+| **Sync Success Rate** | Percentage of destination syncs completing without errors | Target 99%+ for production workflows |
+
+#### Date Range and Filters
+
+- Use the **date picker** in the top right to change the reporting window (last 7 days, 30 days, 90 days, or custom range).
+- Apply **filters** by data source, region, or team to narrow the view.
+- Toggle between **absolute numbers** and **percentage change** views.
+
+<Callout type="tip" title="Set Up a Weekly Review Ritual">
+Block 15 minutes every Monday morning to review the Platform Overview. Look for anomalies — unexpected drops in event volume, declining match rates, or rising error counts. Catching issues early prevents downstream problems.
+</Callout>
+
+### Audience Insights
+
+Navigate to **Reports > Audience Insights** for deep analysis of your segments.
+
+#### Audience Size Tracking
+
+For any saved audience, you can view:
+
+- **Current size** — how many profiles are in the audience right now
+- **Size over time** — a line chart showing how the audience has grown or shrunk
+- **Daily net change** — how many profiles entered vs. exited each day
+
+This is essential for understanding segment dynamics. A "High Value Customers" audience that's shrinking week-over-week tells a very different story than one that's growing.
+
+#### Audience Composition
+
+Select an audience to see a breakdown of its members by key attributes:
+
+- **Demographics** — age, gender, country, city distribution
+- **Behavioral** — most common events, average session frequency, recency
+- **Transactional** — average order value, purchase frequency, lifetime value
+- **Source distribution** — which data sources contributed the most profiles
+
+<Expandable title="How do I compare two audiences side by side?" defaultOpen={false}>
+From the Audience Insights page:
+
+1. Click **Compare** in the top toolbar.
+2. Select two audiences from the dropdowns.
+3. The page shows a side-by-side comparison of composition metrics, a Venn diagram of overlap, and a delta table showing where the audiences differ most.
+
+This is especially useful for understanding the difference between a high-performing campaign audience and an underperforming one.
+</Expandable>
+
+#### Audience Quality Score
+
+Zeotap assigns a **quality score** (1-100) to each audience based on:
+
+- **Completeness** — what percentage of profiles have key fields populated
+- **Freshness** — how recently profiles were active
+- **Reachability** — how many profiles have identifiers matchable by destinations (e.g., hashed emails for ad platforms)
+
+<Callout type="important" title="Watch the Reachability Score">
+A large audience with a low reachability score means many profiles can't be matched by your destination platforms. This happens when profiles lack the identifiers those platforms need (e.g., no email for Google Customer Match). Consider enriching profiles or using alternative destinations.
+</Callout>
+
+### Journey Performance Reports
+
+Navigate to **Reports > Journey Performance** to analyze your automated journeys.
+
+#### Journey-Level Metrics
+
+For each journey, the report shows:
+
+| Metric | Description |
+|---|---|
+| **Entries** | Total users who entered the journey |
+| **In Progress** | Users currently active in the journey |
+| **Completed** | Users who reached the final step |
+| **Exited Early** | Users who triggered exit criteria before completion |
+| **Conversion Rate** | Percentage of entrants who achieved the journey's goal |
+| **Average Duration** | Average time from entry to completion or exit |
+
+#### Step-by-Step Funnel View
+
+Click into any journey to see a **funnel visualization** that shows:
+
+- How many users reached each step
+- The **drop-off rate** between consecutive steps
+- The **average time** spent at each step (especially useful for wait steps)
+
+<Callout type="tip" title="Find Your Bottleneck">
+Look for the step with the highest drop-off rate — that's your bottleneck. If 60% of users drop off after a specific email, the email content or timing may need improvement. If users drop off during a wait step, the wait might be too long.
+</Callout>
+
+#### A/B Test Results
+
+For journeys with A/B splits, the performance report shows:
+
+- **Variant performance** — conversion rate, engagement rate, and revenue for each variant
+- **Statistical significance** — whether the difference between variants is meaningful or could be due to chance
+- **Recommended winner** — Zeotap highlights the best-performing variant when significance is reached
+
+<ComparisonTable
+  headers={["Metric", "Variant A", "Variant B", "Control"]}
+  rows={[
+    ["Sample Size", "4,520", "4,480", "1,000"],
+    ["Conversion Rate", "12.3%", "9.8%", "3.2%"],
+    ["Revenue per User", "$18.50", "$14.20", "$5.10"],
+    ["Statistical Significance", "95%", "87%", "Baseline"]
+  ]}
+/>
+
+<Expandable title="How long should I wait before declaring an A/B test winner?" defaultOpen={false}>
+Wait until at least one variant reaches **95% statistical significance** before declaring a winner. For most journeys, this takes 1-2 weeks depending on volume. Avoid "peeking" at results daily and making early calls — statistical significance protects you from making decisions based on random noise.
+
+The report will display a green "Significant" badge when a variant reaches the threshold.
+</Expandable>
+
+### Activation Reports
+
+Navigate to **Reports > Activation** to monitor your destination syncs.
+
+#### Sync Health Dashboard
+
+A summary table of all active destinations with:
+
+- **Last sync status** — success, partial success, or failure
+- **Records delivered** — profiles successfully sent in the most recent sync
+- **Error rate** — percentage of records that failed
+- **Trend** — is the error rate improving or worsening?
+
+#### Delivery Metrics by Destination
+
+Click into a destination for detailed delivery analytics:
+
+- **Delivery over time** — chart of successful records synced per day
+- **Error breakdown** — categorized errors (auth failure, rate limiting, invalid data, etc.)
+- **Latency** — time between audience recalculation and destination delivery
+- **Coverage** — what percentage of the audience was successfully delivered
+
+<Callout type="warning" title="Monitor Coverage Closely">
+If your audience has 100,000 profiles but only 70,000 are delivered to the destination, you have a 70% coverage rate. The 30% gap is usually due to missing identifiers, failed matches, or destination-side rejections. Investigate the error breakdown to understand why.
+</Callout>
+
+### Building Custom Reports
+
+For metrics that don't fit the standard reports, Zeotap offers a custom report builder.
+
+1. Go to **Reports > Custom** and click **+ New Report**.
+2. Select your **data source**: profiles, events, audiences, journeys, or syncs.
+3. Choose **dimensions** (what to group by): date, audience, source, destination, country, etc.
+4. Choose **metrics** (what to measure): count, sum, average, min, max, unique count.
+5. Apply **filters** to narrow the data.
+6. Select a **visualization**: table, line chart, bar chart, pie chart, or number card.
+7. Click **Run** to preview, then **Save** to add it to your reports.
+
+<Callout type="tip" title="Pin to Home Dashboard">
+Save your most important custom reports and pin them to the Home dashboard by clicking the pin icon. This lets you see critical metrics the moment you log in without navigating to the Reports section.
+</Callout>
+
+### Exporting Data
+
+Every report in Zeotap can be exported for sharing with stakeholders.
+
+#### Export Formats
+
+| Format | Best For |
+|---|---|
+| **CSV** | Spreadsheet analysis in Excel or Google Sheets |
+| **PDF** | Formatted reports for executive presentations |
+| **PNG/SVG** | Individual charts for slides or documents |
+| **API** | Programmatic access to report data |
+
+#### How to Export
+
+1. Open any report or dashboard.
+2. Click the **Export** button (download icon) in the top right.
+3. Select your format.
+4. For CSV, choose which columns to include.
+5. For PDF, choose layout (portrait/landscape) and which sections to include.
+
+#### Scheduled Exports
+
+For recurring needs, set up automatic exports:
+
+1. Open the report and click **Schedule Export**.
+2. Choose the frequency: daily, weekly, or monthly.
+3. Select the format and recipients (email addresses).
+4. Add an optional message to include in the email.
+5. Reports are generated and emailed at the scheduled time.
+
+<Expandable title="Can I share a live dashboard link with stakeholders?" defaultOpen={false}>
+Yes. From any report or custom dashboard, click **Share** and choose **Public Link**. This generates a read-only URL that anyone with the link can view — they don't need a Zeotap login. You can set an expiration date and revoke the link at any time. Note: only Admins can enable public sharing for the organization.
+</Expandable>
+
+### Reading Reports Effectively
+
+<Expandable title="Tips for non-technical users" defaultOpen={true}>
+
+- **Start with the summary cards** at the top of each report — they show the most important numbers
+- **Look for trends, not absolute numbers** — a small audience growing 20% weekly is more interesting than a large stagnant one
+- **Compare time periods** — use the "vs. previous period" toggle to spot improvements or regressions
+- **Export for stakeholders** — PDF exports include charts that are presentation-ready
+- **Schedule reports** — set up weekly email digests so you never miss a change
+
+</Expandable>
+
+<Expandable title="Tips for data-savvy users" defaultOpen={false}>
+
+- **Use the Reporting API** — all report data is available programmatically for custom BI dashboards
+- **BigQuery access** — raw event data can be queried in your connected data warehouse for advanced analysis
+- **Custom dimensions** — create computed metrics using the formula builder in custom reports
+- **Cross-reference** — combine audience insights with journey analytics to understand full-funnel performance
+
+</Expandable>
+
+### Dashboard Best Practices
+
+1. **Create role-specific dashboards** — build a custom dashboard for each team: marketing sees campaign metrics, product sees engagement, leadership sees growth and revenue.
+2. **Set up scheduled exports for executives** — automate weekly PDF reports so leadership gets a consistent update without having to log in.
+3. **Use date comparisons** — always compare to a prior period (last week, last month) to spot trends rather than looking at absolute numbers.
+4. **Document your custom reports** — add descriptions explaining what the report measures and why, so others can understand them.
+5. **Clean up unused reports** — archive custom reports that are no longer needed to keep the Reports section manageable.
+
+### Key Terminology
+
+<KeyConcepts concepts={["Platform Overview", "Audience Insights", "Journey Performance", "Activation Reports", "Quality Score", "Reachability", "Statistical Significance", "Coverage Rate", "Custom Reports", "Scheduled Exports"]} />
+
+---
+
+**Congratulations!** You've completed the Product Mastery track. You now know how to navigate the Unity Dashboard, collect data, build audiences, create journeys, activate data to destinations, and analyze performance with reports.

@@ -1,0 +1,120 @@
+---
+title: Auth & IAM
+description: OAuth 2.0, SAML, RBAC via Auth0
+icon: 🛡️
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 14
+---
+
+## 🛡️ Auth & IAM
+
+Authentication and authorization protect the platform and its data. This module covers the identity provider integration, token flow, RBAC model, and multi-tenancy isolation.
+
+### Authentication Architecture
+
+<ArchDiagram
+  title="Auth Flow"
+  steps={[
+    { label: "Login", detail: "User authenticates via Auth0", icon: "🔑" },
+    { label: "Token", detail: "JWT access + refresh tokens issued", icon: "🎫" },
+    { label: "Request", detail: "JWT sent with every API call", icon: "📨" },
+    { label: "Validation", detail: "API Gateway validates token", icon: "✅" },
+    { label: "Authorization", detail: "RBAC check per endpoint", icon: "🛡️" }
+  ]}
+/>
+
+### Auth0 Integration
+
+<TechStack
+  title="Auth Stack"
+  items={[
+    { name: "Auth0", role: "Identity provider and SSO" },
+    { name: "JWT", role: "Stateless access tokens" },
+    { name: "OAuth 2.0", role: "Authorization framework" },
+    { name: "SAML 2.0", role: "Enterprise SSO" },
+    { name: "OIDC", role: "Identity layer on OAuth" }
+  ]}
+/>
+
+**Supported Auth Methods:**
+- Email + password (default)
+- SSO via SAML 2.0 (enterprise customers)
+- SSO via OIDC (Google, Azure AD, Okta)
+- MFA via TOTP (Google Authenticator, Authy)
+
+### JWT Token Flow
+
+1. User logs in via Auth0 Universal Login page
+2. Auth0 returns `access_token` (JWT, 1-hour TTL) and `refresh_token` (7-day TTL)
+3. Frontend stores tokens securely (httpOnly cookies)
+4. Every API request includes `Authorization: Bearer {access_token}`
+5. API Gateway validates JWT signature, expiration, and claims
+6. On token expiry, frontend uses refresh token to get new access token
+7. Refresh token rotation prevents token theft replay
+
+**JWT Claims:**
+```json
+{
+  "sub": "auth0|user123",
+  "org_id": "org_abc",
+  "roles": ["admin", "analyst"],
+  "permissions": ["audiences:read", "audiences:write", "destinations:read"],
+  "exp": 1705334400
+}
+```
+
+### RBAC Model
+
+<ComparisonTable
+  headers={["Role", "Description", "Key Permissions"]}
+  rows={[
+    ["Admin", "Full platform access", "All permissions + user management"],
+    ["Analyst", "Data and audience management", "Audiences, reports, profiles (read/write)"],
+    ["Viewer", "Read-only access", "View dashboards, audiences, reports"],
+    ["Developer", "Technical integration", "Sources, destinations, APIs"],
+    ["Custom", "Customer-defined roles", "Configurable per org"]
+  ]}
+  highlightColumn={0}
+/>
+
+**Permission Granularity:**
+- Resource-level: `audiences`, `destinations`, `profiles`, `reports`, `settings`
+- Action-level: `read`, `write`, `delete`, `admin`
+- Combined: `audiences:write`, `destinations:delete`, `settings:admin`
+
+### Multi-Tenancy Isolation
+
+Every request is scoped to an organization:
+
+- `org_id` embedded in JWT claims
+- API Gateway extracts `org_id` and passes to all downstream services
+- Every database query filtered by `org_id`
+- No cross-org data access possible at the application layer
+- Network-level isolation for enterprise customers (dedicated namespaces)
+
+### API Authentication
+
+For server-to-server integrations:
+
+- **API Keys** — Long-lived keys for SDK and S2S API authentication
+- **Service Accounts** — Machine-to-machine OAuth client credentials flow
+- **Scoped Tokens** — Limited-permission tokens for specific integrations
+
+### Session Management
+
+- Sessions stored server-side with Auth0
+- Inactive sessions expire after 30 minutes (configurable per org)
+- Maximum concurrent sessions: 5 per user (configurable)
+- Force logout capability for admins (revoke all sessions)
+
+<Callout type="warning" title="Security Best Practices">
+Never store JWTs in localStorage — use httpOnly, secure, SameSite cookies. Always validate tokens server-side. Implement token rotation for refresh tokens. Log all authentication events for audit.
+</Callout>
+
+<KeyConcepts concepts={["Auth0", "JWT", "OAuth 2.0", "SAML", "RBAC", "Multi-Tenancy", "Token Rotation", "API Keys", "Service Accounts"]} />
+
+---
+
+**Next up:** Infrastructure — GKE, Terraform, multi-region →

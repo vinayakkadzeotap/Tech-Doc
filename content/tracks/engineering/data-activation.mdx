@@ -1,0 +1,107 @@
+---
+title: Data Activation
+description: 100+ destination connectors
+icon: 🚀
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 8
+---
+
+## 🚀 Data Activation
+
+Data Activation is the final mile — delivering audiences, events, and profile data to 100+ external platforms. This module covers the connector architecture, data transformation, delivery guarantees, and SmartPixel.
+
+### Connector Architecture
+
+<ArchDiagram
+  title="Activation Pipeline"
+  steps={[
+    { label: "Audience Change", detail: "Enter/exit event from Audience Engine", icon: "🎯" },
+    { label: "Transformation", detail: "Map fields, format data", icon: "🔄" },
+    { label: "Delivery", detail: "Push to destination API", icon: "📤" },
+    { label: "Confirmation", detail: "Track delivery status", icon: "✅" }
+  ]}
+/>
+
+**Plugin Model:**
+Each destination is a self-contained plugin implementing a standard interface:
+
+- `authenticate()` — OAuth flow, API key validation
+- `mapFields(profile) → destinationPayload` — Transform Zeotap data to destination format
+- `deliver(payload)` — Send data to destination API
+- `checkHealth()` — Verify connection is alive
+- `getCapabilities()` — Declare supported features (batch, streaming, field types)
+
+### Destination Categories
+
+<ComparisonTable
+  headers={["Category", "Sync Mode", "Examples", "Typical Latency"]}
+  rows={[
+    ["Advertising", "Batch (audience lists)", "Google Ads, Meta, The Trade Desk, DV360", "Minutes to hours"],
+    ["Email/Marketing", "Real-time + batch", "Braze, Salesforce MC, HubSpot", "Seconds to minutes"],
+    ["CRM", "Batch", "Salesforce CRM, Microsoft Dynamics", "Minutes"],
+    ["Analytics", "Real-time", "GA4, Amplitude, Mixpanel", "Seconds"],
+    ["Cloud Storage", "Batch", "GCS, S3, SFTP", "Scheduled"],
+    ["Custom", "Real-time", "Webhook", "Seconds"]
+  ]}
+  highlightColumn={1}
+/>
+
+### Data Transformation
+
+The transformation layer handles format differences between Zeotap and destinations:
+
+- **Field mapping** — Map Zeotap attribute names to destination field names
+- **Value transformation** — Convert data types (e.g., ISO date to epoch timestamp)
+- **Hashing** — SHA-256 hash PII fields required by ad platforms
+- **Filtering** — Only send consented data, only send changed fields
+- **Batching** — Group records for bulk API calls
+
+### Delivery Guarantees
+
+**At-least-once delivery:**
+- Every record is tracked with a delivery ID
+- Failed deliveries retried with exponential backoff (1s, 2s, 4s, 8s, max 5 retries)
+- Permanently failed records routed to DLQ with error details
+- Delivery status tracked per record, per sync, per destination
+
+**Rate Limiting:**
+- Per-destination rate limits respected (e.g., Google Ads: 10 requests/second)
+- Token bucket algorithm for smooth rate limiting
+- Burst allowance for catching up after downtime
+
+### SmartPixel
+
+SmartPixel enables **real-time web personalization** without round-trip to the server:
+
+1. SmartPixel JavaScript loaded on customer's website
+2. On page load, fetches user's segment membership from edge cache
+3. Executes personalization rules client-side (show/hide elements, swap content)
+4. Latency: <50ms for personalization decision
+
+**Use Cases:**
+- Show personalized banner to "High Value" segment
+- Hide promotion for users who already purchased
+- Display loyalty tier-specific content
+
+<TechStack
+  title="Activation Stack"
+  items={[
+    { name: "Kafka", role: "Audience change stream" },
+    { name: "Go Workers", role: "High-throughput delivery" },
+    { name: "Redis", role: "Rate limiting and dedup" },
+    { name: "BigQuery", role: "Delivery analytics" },
+    { name: "Cloud CDN", role: "SmartPixel edge cache" }
+  ]}
+/>
+
+<Callout type="info" title="Building New Connectors">
+New destination connectors are built using the Destination SDK. The SDK provides the plugin interface, authentication helpers, retry logic, and monitoring. A new connector can be built and deployed in 1-2 days.
+</Callout>
+
+<KeyConcepts concepts={["Connector Plugin", "Field Mapping", "At-Least-Once Delivery", "Rate Limiting", "SmartPixel", "DLQ", "Token Bucket", "Edge Cache"]} />
+
+---
+
+**Next up:** GenAI & Zoe Assistant →

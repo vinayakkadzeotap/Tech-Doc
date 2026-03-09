@@ -1,0 +1,206 @@
+---
+title: Renewal & Expansion
+description: Growing accounts and preventing churn
+icon: 📈
+estimatedMinutes: 30
+contentType: concept
+trackId: cs-playbook
+order: 5
+---
+
+## 📈 Renewal & Expansion
+
+Customer Success isn't just about solving problems — it's about growing accounts. This module covers the renewal playbook, expansion strategies, churn prevention, and QBR best practices.
+
+### The CS Revenue Impact
+
+<StatCard stats={[
+  { value: "120%+", label: "Target NDR", color: "#10b981" },
+  { value: "90%+", label: "Target Renewal Rate", color: "#3b82f6" },
+  { value: "5x", label: "Cheaper Than New Biz", color: "#a855f7" },
+  { value: "6 months", label: "Avg Expansion Cycle", color: "#f59e0b" }
+]} />
+
+<Callout type="important" title="Net Dollar Retention (NDR)">
+NDR measures revenue retention + expansion from existing customers. NDR >100% means your existing customer base is growing even without new logos. World-class SaaS companies target 120%+ NDR. CS drives this metric.
+</Callout>
+
+### Renewal Playbook
+
+#### Renewal Timeline
+
+<ArchDiagram
+  title="Renewal Process"
+  steps={[
+    { label: "6 Months Out", detail: "Health check, usage review, risk assessment", icon: "🔍" },
+    { label: "4 Months Out", detail: "Renewal kickoff, value summary, roadmap preview", icon: "📋" },
+    { label: "2 Months Out", detail: "Pricing discussion, commercial negotiation", icon: "💰" },
+    { label: "1 Month Out", detail: "Contract finalization, signature", icon: "✍️" },
+    { label: "Post-Renewal", detail: "Success plan refresh, expansion planning", icon: "🚀" }
+  ]}
+/>
+
+#### 6 Months Out: Health Assessment
+
+Run a comprehensive health check:
+- **Usage metrics** — Are they using the platform actively? Which features?
+- **Value delivered** — Can you quantify ROI? (e.g., "32% ROAS improvement")
+- **Stakeholder engagement** — Are key sponsors still in place? New decision makers?
+- **Open issues** — Any unresolved support tickets or complaints?
+- **Competitive threats** — Are they evaluating alternatives?
+
+#### 4 Months Out: Value Summary
+
+Prepare a renewal deck that includes:
+- Summary of value delivered since implementation
+- Usage statistics and growth trends
+- Testimonials from their team (quotes from QBR conversations)
+- Product roadmap items relevant to their use cases
+- Proposed renewal terms
+
+#### Handling Renewal Objections
+
+<Expandable title="\"We're not sure we're getting enough value\"" defaultOpen={true}>
+
+**Response:**
+1. Ask specifically what "enough value" means to them — what were their original goals?
+2. Present concrete metrics: profiles unified, audiences activated, campaign improvements
+3. If value is genuinely low, diagnose why — is it an adoption problem, a data problem, or a use case problem?
+4. Propose a 90-day success plan with specific milestones before the renewal decision
+
+</Expandable>
+
+<Expandable title="\"We got a lower price from a competitor\"">
+
+**Response:**
+1. Don't panic or immediately discount
+2. Ask what competitor and what capabilities are included at that price
+3. Calculate total cost of migration (implementation, ramp time, data loss risk)
+4. Highlight switching costs: "What happens to your identity graph? Your audience history?"
+5. If needed, work with sales to offer multi-year discount or volume tier upgrade
+
+</Expandable>
+
+<Expandable title="\"Our champion left the company\"">
+
+**Response:**
+1. Immediately identify the new stakeholder/decision maker
+2. Request an introduction from your existing contacts
+3. Prepare a "State of the CDP" presentation for the new person
+4. Re-establish value narrative — the new person may not know what Zeotap does for them
+5. Treat this as a mini-sale — you need to win the new champion
+
+</Expandable>
+
+### Expansion Strategies
+
+#### Expansion Signals
+
+Watch for these indicators that an account is ready to expand:
+
+<ComparisonTable
+  headers={["Signal", "Indicator", "Expansion Play"]}
+  rows={[
+    ["Usage Growth", "Event volume up >50% QoQ", "Volume tier upgrade"],
+    ["New Use Cases", "Customer asks about features they don't use", "Feature upsell"],
+    ["New Teams", "Other departments want access", "Seat expansion"],
+    ["New Markets", "Expanding to new regions", "Multi-region deployment"],
+    ["Positive Sentiment", "NPS 9-10, enthusiastic in QBRs", "Case study + referral + expansion"]
+  ]}
+  highlightColumn={2}
+/>
+
+#### Top Expansion Plays
+
+<Expandable title="Play 1: Volume Tier Upgrade">
+
+**Trigger:** Customer approaching or exceeding their contracted event/profile volume.
+
+**Approach:**
+1. Show them their usage trend and projected overage
+2. Propose a higher tier with better per-unit economics
+3. Position as cost optimization: "Upgrading your tier actually reduces your cost per profile by 30%"
+4. Include a multi-year commitment for additional discount
+
+</Expandable>
+
+<Expandable title="Play 2: Feature Upsell (Journeys, Zoe AI)">
+
+**Trigger:** Customer using audiences and destinations but not journeys or AI features.
+
+**Approach:**
+1. Demo the feature in context of their specific use case
+2. Show how similar customers in their vertical use it
+3. Quantify the value: "Customers using Journeys see 25% higher conversion rates"
+4. Offer a 30-day trial of the feature
+
+</Expandable>
+
+<Expandable title="Play 3: New Team Onboarding">
+
+**Trigger:** Another department (analytics, product, CRM team) wants CDP access.
+
+**Approach:**
+1. Offer a workshop for the new team to understand the platform
+2. Build use cases specific to their department
+3. Show how shared audiences and data models benefit all teams
+4. Propose additional seats or department-specific permissions
+
+</Expandable>
+
+### Churn Prevention
+
+#### Early Warning Signs
+
+<ComparisonTable
+  headers={["Warning Sign", "Risk Level", "Immediate Action"]}
+  rows={[
+    ["Login frequency dropping", "Medium", "Reach out to check in"],
+    ["Support tickets increasing", "Medium", "Proactive troubleshooting session"],
+    ["Champion leaves company", "High", "Identify new champion ASAP"],
+    ["Competitive evaluation", "Critical", "Executive sponsor engagement"],
+    ["Usage declining >30%", "High", "Value realization workshop"],
+    ["Invoice payment delayed", "Medium", "Coordinate with finance and CS"]
+  ]}
+  highlightColumn={1}
+/>
+
+#### Save Plays
+
+When churn risk is identified:
+
+1. **Executive Engagement** — Bring in your VP/Director for a strategic conversation
+2. **Value Workshop** — Facilitate a session to re-establish ROI and identify new use cases
+3. **Roadmap Preview** — Share upcoming features that address their pain points
+4. **Concessions** — Last resort: offer pricing adjustment, extended commitment, or professional services
+
+<Callout type="warning" title="Don't Discount First">
+Discounting should be the last lever, not the first. Usually churn risk is about value perception, not price. Address the value gap first. If you discount too easily, you train customers to threaten churn for better pricing.
+</Callout>
+
+### QBR Best Practices
+
+Quarterly Business Reviews are your most important touchpoint for renewals and expansion.
+
+**QBR Structure (60 minutes):**
+
+| Section | Time | Content |
+|---------|------|---------|
+| **Recap** | 10 min | Review goals from last QBR, progress against KPIs |
+| **Value Delivered** | 15 min | Metrics, achievements, ROI evidence |
+| **Usage Review** | 10 min | Platform adoption, feature utilization, recommendations |
+| **Roadmap** | 10 min | Upcoming features relevant to their use cases |
+| **Next Quarter Goals** | 10 min | Agree on priorities and success metrics |
+| **Open Discussion** | 5 min | Questions, concerns, feedback |
+
+**QBR Tips:**
+- Send the agenda 1 week in advance
+- Include their metrics/data in the deck (not generic slides)
+- Always have a clear ask (expansion, case study, referral, or next steps)
+- Send a written summary with action items within 24 hours
+
+<KeyConcepts concepts={["NDR", "Renewal Rate", "Expansion Play", "Churn Prevention", "QBR", "Health Score", "Champion Loss", "Save Play", "Volume Tier", "Feature Upsell"]} />
+
+---
+
+**Next up:** Step-by-step integration guides for top destinations →

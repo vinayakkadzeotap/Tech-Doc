@@ -1,0 +1,227 @@
+---
+title: Activating Data to Destinations
+description: Set up destinations, configure field mapping, choose sync options, and monitor activation health
+icon: 🚀
+estimatedMinutes: 35
+contentType: tutorial
+trackId: product-mastery
+order: 5
+---
+
+## 🚀 Activating Data to Destinations
+
+Data activation is where the value of your CDP becomes tangible. After collecting data and building audiences, you need to push those audiences and profiles to the platforms where your teams actually work — ad networks, email tools, CRMs, analytics platforms, and more. This tutorial walks you through setting up destinations, mapping fields, configuring syncs, and monitoring everything.
+
+<Callout type="info" title="Prerequisites">
+You need **Editor** or **Admin** role access. You should have at least one audience created before setting up a destination, though you can configure the destination first and connect audiences later.
+</Callout>
+
+### What Is a Destination?
+
+A destination is any external platform that receives data from Zeotap. Think of it as the "output" side of your CDP.
+
+<StatCard stats={[
+  { value: "100+", label: "Available Destinations", color: "#3b82f6" },
+  { value: "6", label: "Destination Categories", color: "#10b981" },
+  { value: "OAuth + API", label: "Auth Methods", color: "#a855f7" },
+  { value: "Real-time & Batch", label: "Sync Modes", color: "#f59e0b" }
+]} />
+
+#### Destination Categories
+
+<ComparisonTable
+  headers={["Category", "Examples", "Typical Use Case"]}
+  rows={[
+    ["Advertising", "Google Ads, Meta Ads, DV360, The Trade Desk", "Targeting audiences with paid media campaigns"],
+    ["Email & Messaging", "Braze, Salesforce Marketing Cloud, Mailchimp", "Sending personalized emails, SMS, push notifications"],
+    ["CRM & Sales", "Salesforce CRM, HubSpot, Microsoft Dynamics", "Enriching contact records, triggering sales workflows"],
+    ["Analytics", "Google Analytics, Amplitude, Mixpanel", "Enriching analytics with CDP-level audience data"],
+    ["Data Warehouses", "Snowflake, BigQuery, Redshift, Databricks", "Syncing unified profiles back for BI and data science"],
+    ["Custom", "Webhooks, SFTP, S3 buckets", "Any system with an API or file-based integration"]
+  ]}
+/>
+
+### Setting Up a New Destination
+
+#### Step 1: Browse the Destination Catalog
+
+1. Navigate to **Destinations** in the left nav.
+2. Click **+ Add Destination**.
+3. Browse the catalog by category or use the search bar.
+4. Click on a destination tile to see its overview: description, supported features, required permissions, and setup time.
+
+#### Step 2: Authenticate
+
+Each destination has its own authentication method. The most common patterns:
+
+- **OAuth** (Google Ads, Meta, Salesforce) — Click "Connect" and log in with your platform credentials. Zeotap requests only the permissions it needs.
+- **API Key** (Braze, Mailchimp, many others) — Paste an API key generated from the destination platform's settings.
+- **Service Account** (BigQuery, Snowflake) — Upload a credentials file or enter connection details (host, database, schema, user, password).
+
+<Callout type="warning" title="Use a Service Account, Not Personal Credentials">
+For OAuth-based destinations, use a shared service account or team admin account — not your personal login. If the person who authenticated leaves the company, the connection breaks. A service account ensures continuity.
+</Callout>
+
+#### Step 3: Configure the Destination
+
+After authentication, configure destination-specific settings:
+
+- **Account/Property selection** — for platforms with multiple accounts (e.g., Google Ads account ID, Meta Ad Account)
+- **Default sync behavior** — how to handle new vs. existing records
+- **Rate limiting** — some destinations have API rate limits; Zeotap auto-throttles, but you can configure custom limits
+- **Data residency** — for destinations with regional endpoints (EU vs. US)
+
+### Field Mapping
+
+Field mapping is how you tell Zeotap which profile attributes to send and how they should be named in the destination.
+
+<ArchDiagram
+  title="Field Mapping Flow"
+  steps={[
+    { label: "Zeotap Field", detail: "Attributes from your unified profiles", icon: "📋" },
+    { label: "Mapping", detail: "Connect source fields to destination fields", icon: "🔗" },
+    { label: "Transform", detail: "Optional: format, hash, concatenate", icon: "🔧" },
+    { label: "Destination Field", detail: "The field name expected by the destination", icon: "🎯" }
+  ]}
+/>
+
+#### How to Map Fields
+
+1. On the destination setup page, navigate to the **Field Mapping** tab.
+2. The left column shows **Zeotap fields** (your profile attributes).
+3. The right column shows **Destination fields** (what the platform expects).
+4. Click **+ Add Mapping** to create a new connection.
+5. Select the Zeotap field from the dropdown.
+6. Select the destination field — for well-known destinations, these are pre-populated.
+7. Repeat for each field you want to sync.
+
+<Callout type="tip" title="Auto-Mapping">
+For popular destinations, Zeotap offers **auto-mapping** that automatically connects common fields (email, phone, first name, last name, etc.) based on naming conventions. Click "Auto-Map" to let the system do the initial mapping, then review and adjust.
+</Callout>
+
+#### Transformations
+
+Some destinations require data in specific formats. Zeotap supports inline transformations:
+
+| Transformation | Use Case | Example |
+|---|---|---|
+| **SHA-256 Hash** | Ad platforms require hashed emails/phones | `user@email.com` becomes `b4c9a289...` |
+| **Lowercase** | Normalize before hashing | `User@Email.COM` becomes `user@email.com` |
+| **Date format** | Convert between date formats | `2025-12-31` becomes `12/31/2025` |
+| **Concatenate** | Combine fields | `first_name` + `last_name` becomes `full_name` |
+| **Default value** | Fill in when field is empty | Empty `country` becomes `"Unknown"` |
+
+<Expandable title="Do I need to hash emails for Google and Meta?" defaultOpen={false}>
+Yes, both Google Ads Customer Match and Meta Custom Audiences require email addresses and phone numbers to be SHA-256 hashed before upload. Zeotap handles this automatically when you select the hash transformation, or when you use the pre-built mappings for these destinations. You do not need to pre-hash your data.
+</Expandable>
+
+### Connecting Audiences to Destinations
+
+Once a destination is configured, you need to connect audiences to it.
+
+#### From the Destination Page
+
+1. Open the destination and go to the **Audiences** tab.
+2. Click **+ Connect Audience**.
+3. Search for and select the audience(s) you want to sync.
+4. For each audience, configure:
+   - **Sync frequency** — real-time, hourly, daily, or weekly
+   - **Sync type** — full refresh (replace all data) or incremental (add/remove changes only)
+
+#### From the Audience Page
+
+1. Open the audience and click **Activate**.
+2. Select one or more destinations.
+3. Configure sync options (same as above).
+
+<Callout type="tip" title="Start with Daily Syncs">
+For new setups, start with **daily** sync frequency and **incremental** sync type. This gives you a chance to verify the data looks correct in the destination before moving to more frequent real-time syncs.
+</Callout>
+
+### Sync Options Explained
+
+<ComparisonTable
+  headers={["Option", "Full Refresh", "Incremental"]}
+  rows={[
+    ["What it does", "Replaces the entire audience in the destination", "Sends only additions and removals since last sync"],
+    ["Data volume", "High — sends all profiles every time", "Low — sends only changes"],
+    ["Best for", "Small audiences, destinations that require full lists", "Large audiences, frequent syncs, cost-sensitive platforms"],
+    ["Risk", "Brief gap during replacement", "Can drift if a sync fails; full refresh fixes this"],
+    ["Speed", "Slower for large audiences", "Fast, even for millions of profiles"]
+  ]}
+/>
+
+#### Sync Frequency Options
+
+- **Real-time** — changes are pushed within minutes of audience recalculation. Available for select destinations.
+- **Hourly** — syncs run every hour on the hour.
+- **Daily** — syncs run once per day at a configurable time.
+- **Weekly** — syncs run once per week on a configurable day and time.
+- **Manual** — sync only when you click "Sync Now."
+
+### Monitoring Activation Health
+
+After syncs are running, you need to monitor them to ensure data is flowing correctly.
+
+#### The Destinations Overview Page
+
+The main **Destinations** page shows all configured destinations with:
+
+- **Status indicator** — green (healthy), yellow (warning), red (error)
+- **Last sync time** — when the most recent sync completed
+- **Records synced** — total profiles sent in the last sync
+- **Error count** — number of records that failed to sync
+
+#### Destination Detail Page
+
+Click into a destination for detailed monitoring:
+
+- **Sync history** — a log of every sync with timestamps, record counts, and status
+- **Error log** — detailed breakdown of what went wrong for failed records
+- **Throughput graph** — visual chart of records synced over time
+
+<Callout type="warning" title="Common Sync Errors">
+The most frequent errors are:
+
+- **Authentication expired** — re-authenticate with the destination
+- **Rate limited** — reduce sync frequency or contact the destination's support for higher limits
+- **Invalid records** — some profiles have data the destination rejects (e.g., malformed emails). Check the error log for specifics.
+- **Destination quota exceeded** — you've hit the destination's audience or record limit
+</Callout>
+
+#### Setting Up Sync Alerts
+
+1. Go to **Destinations > [Your Destination] > Alerts**.
+2. Configure alert rules:
+   - **Sync failure** — alert when any sync fails
+   - **High error rate** — alert when more than X% of records fail
+   - **Stale data** — alert when no sync has run in longer than expected
+3. Choose notification channels: email, Slack, or webhook.
+
+<Expandable title="How do I troubleshoot a failed sync?" defaultOpen={false}>
+Follow this checklist:
+
+1. **Check the error log** — the destination detail page shows specific error messages for each failed record.
+2. **Verify authentication** — go to the destination settings and confirm the connection is still authorized. Re-authenticate if needed.
+3. **Check the destination platform** — some issues are on the destination side (outage, quota, changed API).
+4. **Review field mapping** — if the destination changed its schema, your mappings may need updating.
+5. **Try a manual sync** — click "Sync Now" to trigger a fresh attempt.
+6. **Contact support** — if none of the above resolves it, file a ticket with your Customer Success Manager.
+</Expandable>
+
+### Destination Best Practices
+
+1. **Use descriptive names** — name destinations clearly, e.g., "Google Ads - EMEA Account" not just "Google."
+2. **Document your mappings** — add notes explaining why specific fields are mapped the way they are.
+3. **Test with a small audience first** — create a small test audience (e.g., just your team) and sync it to verify everything works before connecting your production audiences.
+4. **Review error logs weekly** — don't wait for alerts. Proactively review error logs to catch trends.
+5. **Rotate credentials on a schedule** — for API key-based destinations, rotate keys quarterly.
+6. **Archive unused destinations** — if you stop using a platform, disconnect audiences and archive the destination.
+
+### Key Terminology
+
+<KeyConcepts concepts={["Destination", "Activation", "Field Mapping", "Sync Frequency", "Full Refresh", "Incremental Sync", "Transformation", "Hashing", "Auto-Mapping", "Sync Alerts"]} />
+
+---
+
+**Next up:** Learn how to use analytics dashboards, audience insights, and journey performance reports.

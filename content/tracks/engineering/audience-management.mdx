@@ -1,0 +1,108 @@
+---
+title: Audience Management
+description: Real-time segmentation engine
+icon: 🎯
+estimatedMinutes: 25
+contentType: deep-dive
+trackId: engineering
+order: 6
+---
+
+## 🎯 Audience Management
+
+The Audience Engine evaluates segment membership in real-time as profiles change. This module covers the rule DSL, evaluation engine, storage model, and performance optimizations.
+
+### Architecture Overview
+
+<ArchDiagram
+  title="Audience Engine Flow"
+  steps={[
+    { label: "Rule Definition", detail: "UI/API creates segment rules", icon: "📝" },
+    { label: "Rule Compilation", detail: "DSL compiled to evaluation plan", icon: "⚙️" },
+    { label: "Event Trigger", detail: "Profile change triggers re-evaluation", icon: "⚡" },
+    { label: "Membership Update", detail: "Enter/exit segment, notify downstream", icon: "📤" }
+  ]}
+/>
+
+### Segment Rule DSL
+
+Segment rules are defined in a JSON-based DSL:
+
+```json
+{
+  "operator": "AND",
+  "conditions": [
+    { "field": "attributes.country", "op": "eq", "value": "DE" },
+    { "field": "behaviors.total_purchases", "op": "gte", "value": 5 },
+    { "field": "events.cart_abandon", "op": "occurred_within", "value": "7d" }
+  ]
+}
+```
+
+**Supported Operators:**
+- Comparison: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`
+- String: `contains`, `starts_with`, `ends_with`, `matches` (regex)
+- Set: `in`, `not_in`
+- Temporal: `occurred_within`, `not_occurred_within`, `between_dates`
+- Existence: `exists`, `not_exists`
+- Logical: `AND`, `OR`, `NOT` with unlimited nesting
+
+### Evaluation Engine
+
+**Real-Time Evaluation:**
+1. Profile change event arrives (new attribute, new event, identity merge)
+2. Engine identifies which segments reference the changed fields
+3. Only affected segments are re-evaluated (not all segments)
+4. Membership changes (enter/exit) published to `audience.changes.{orgId}` topic
+
+**Batch Evaluation:**
+- Scheduled full recomputation for complex segments (ML-based, time-decay)
+- Runs on Spark for parallelism across millions of profiles
+- Reconciles any drift between real-time and batch
+
+### Audience Size Estimation
+
+Before saving a segment, users see an estimated count:
+
+- Uses **HyperLogLog** for cardinality estimation (~2% error margin)
+- Pre-computed attribute distribution indexes enable sub-second estimates
+- Combination estimates use set intersection approximation
+- Result: instant feedback in the UI while building segments
+
+### Membership Storage
+
+<ComparisonTable
+  headers={["Storage", "Purpose", "Access Pattern"]}
+  rows={[
+    ["BigTable", "Real-time membership lookup", "Is UCID X in segment Y?"],
+    ["BigQuery", "Analytics and overlap analysis", "How many in segment Y by country?"],
+    ["Bloom Filters", "Fast negative lookup", "Quickly exclude non-members"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Audience Overlap Analysis
+
+To compare two audiences:
+1. Both membership sets loaded from BigQuery
+2. Set intersection computed (exact for <10M, HyperLogLog for larger)
+3. Overlap percentage, unique to each, and shared profiles returned
+4. Results cached for 1 hour
+
+### Audience Export
+
+Audiences can be exported in multiple formats:
+- **Real-time stream** — Kafka topic with enter/exit events
+- **Batch file** — CSV/JSON to GCS on schedule
+- **API** — Query membership via REST API
+- **Destination push** — Automatic sync to activated destinations
+
+<Callout type="info" title="Performance Target">
+Real-time segment re-evaluation completes within 200ms of a profile change. For an org with 1000 active segments, the engine evaluates only the ~50 segments affected by a given profile change.
+</Callout>
+
+<KeyConcepts concepts={["Segment DSL", "Real-Time Evaluation", "Batch Recomputation", "HyperLogLog", "Bloom Filter", "Membership Storage", "Audience Overlap", "Incremental Evaluation"]} />
+
+---
+
+**Next up:** Customer Journeys — orchestration engine →

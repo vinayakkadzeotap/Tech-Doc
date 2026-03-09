@@ -1,0 +1,251 @@
+---
+title: Demo Playbook
+description: Pre-demo checklist, demo flow, key screens, and how to handle live questions during your Zeotap demonstration
+icon: 🖥️
+estimatedMinutes: 35
+contentType: tutorial
+trackId: sales-enablement
+order: 3
+---
+
+## 🖥️ Demo Playbook
+
+A great demo does not show every feature — it tells a story that maps to the prospect's pain points. This playbook gives you a repeatable framework for delivering demos that convert.
+
+<KeyConcepts concepts={["Demo Flow", "Storytelling Framework", "Pre-Demo Prep", "Live Q&A Handling", "Key Screens", "Call-to-Action"]} />
+
+---
+
+## Pre-Demo Checklist
+
+<Callout type="warning" title="Never Wing a Demo">
+Every lost demo can be traced back to poor preparation. Complete this checklist at least 24 hours before every demo.
+</Callout>
+
+### Research Checklist
+
+- [ ] Review discovery notes — what are their top 3 pain points?
+- [ ] Identify all attendees — titles, roles, what they care about
+- [ ] Research their current tech stack (check their website source code, job postings, LinkedIn)
+- [ ] Review their industry vertical for relevant use cases
+- [ ] Check if they are a known prospect of a competitor (Segment, mParticle, etc.)
+- [ ] Prepare 2-3 customer stories from their industry
+
+### Technical Checklist
+
+- [ ] Confirm demo environment is up and running
+- [ ] Load demo data that matches their vertical (retail, finance, telco, media)
+- [ ] Pre-build 2-3 segments relevant to their use cases
+- [ ] Verify destination connectors they care about are visible
+- [ ] Test screen sharing, audio, and backup plan
+- [ ] Have the platform open in a separate browser tab (no loading screens during demo)
+
+### Logistics Checklist
+
+- [ ] Send calendar invite with agenda and attendee names
+- [ ] Confirm champion will attend and has briefed other attendees
+- [ ] Prepare a backup deck in case of technical issues
+- [ ] Plan for 45 minutes: 5 min intro, 25 min demo, 15 min Q&A
+- [ ] Have pricing framework ready (do not present unless asked)
+
+---
+
+## The Demo Flow
+
+<ArchDiagram
+  title="Demo Flow (45 Minutes)"
+  steps={[
+    { label: "Set the Stage", detail: "5 min — Recap discovery, confirm pain points, set agenda", icon: "🎬" },
+    { label: "Data Ingestion", detail: "5 min — Show how data flows in from their relevant sources", icon: "📥" },
+    { label: "Identity Resolution", detail: "7 min — The UCID in action, profile unification, match rates", icon: "🔗" },
+    { label: "Unified Profile", detail: "5 min — The 360-degree customer view they've been wanting", icon: "👤" },
+    { label: "Segmentation & Zoe", detail: "5 min — Build a segment live, show AI-powered recommendations", icon: "🧠" },
+    { label: "Activation", detail: "3 min — Push to relevant destinations in real time", icon: "🚀" },
+    { label: "Q&A and Next Steps", detail: "15 min — Handle questions, propose POC or next meeting", icon: "💬" }
+  ]}
+/>
+
+---
+
+## Step-by-Step Demo Script
+
+### Step 1: Set the Stage (5 minutes)
+
+<Callout type="tip" title="Do Not Skip This Step">
+Recapping discovery findings shows you listened and immediately makes the demo feel tailored, not generic.
+</Callout>
+
+**Script:**
+> "Before I jump into the platform, let me quickly confirm what I heard in our last conversation. You mentioned three main challenges: [pain 1], [pain 2], and [pain 3]. I have structured today's demo to show exactly how Zeotap addresses each of those. Does that sound right, or has anything changed since we last spoke?"
+
+**Then set expectations:**
+> "I will walk through the platform end-to-end — from how data comes in, to how we unify identities, to how you would build and activate segments. I have loaded data that looks similar to yours so this feels realistic. And please, interrupt me at any point with questions — this is a conversation, not a presentation."
+
+### Step 2: Data Ingestion (5 minutes)
+
+**Key screen: Sources & Connectors page**
+
+**What to show:**
+- The connector catalog — highlight the connectors relevant to their stack
+- A live data source showing events flowing in (the real-time counter is impressive)
+- Schema mapping — how fields are automatically detected and mapped
+- Data quality indicators — validation rules, error rates
+
+**Script:**
+> "This is where your data journey starts. You can see we have pre-built connectors for [their specific tools — e.g., Salesforce, Google Analytics, Shopify]. When you connect a source, Zeotap automatically detects the schema and maps fields to our unified data model. Let me show you this live data source — you can see events flowing in at [X] events per second. Every event is validated against your schema rules in real time."
+
+**Anticipated question:** "How long does it take to set up a new source?"
+> "For pre-built connectors, it is typically 15-30 minutes of configuration. For custom sources via our API, your engineering team can start sending data within a day using our SDKs."
+
+### Step 3: Identity Resolution — The UCID (7 minutes)
+
+<Callout type="important" title="This Is Your Wow Moment">
+Identity resolution is Zeotap's biggest differentiator. Spend the most time here. Show the before and after — fragmented identifiers becoming one unified profile.
+</Callout>
+
+**Key screen: Identity Graph visualization**
+
+**What to show:**
+- Select a sample customer profile
+- Show the identity graph — all the identifiers connected to one person
+- Highlight the different ID types: email, phone, device IDs, CRM IDs
+- Show the match confidence scores
+- Demonstrate deterministic vs. probabilistic matching
+
+**Script:**
+> "This is where the magic happens. Let me show you a real example. This customer — let's call her Sarah — exists in your CRM as email address sarah@example.com. She also browsed your website on two different devices, used your mobile app, and called your support center. Without identity resolution, that is five separate records. With Zeotap's UCID, it is one unified profile."
+
+> "You can see the identity graph here — every identifier is connected with a confidence score. The email-to-CRM match is deterministic — we know it is the same person. The device IDs are matched through our probabilistic model with a 94% confidence score. All of this happens in real time — as soon as Sarah logs in on a new device, her profile updates."
+
+**Power move:** If the prospect mentioned a low match rate in discovery, say:
+> "You mentioned your current match rate is around [X]%. Our customers in [their vertical] typically see match rates of [higher number]% within the first 90 days because of our multi-identifier approach."
+
+### Step 4: Unified Customer Profile (5 minutes)
+
+**Key screen: 360-degree profile view**
+
+**What to show:**
+- Full profile with demographics, behaviors, transactions, preferences
+- Event timeline showing cross-channel interactions
+- Consent status and privacy controls
+- Computed attributes (lifetime value, engagement score, churn risk)
+
+**Script:**
+> "This is what your marketing, analytics, and service teams have been asking for — the complete picture of each customer. You can see Sarah's entire journey: she browsed running shoes on your website, opened three emails, made two purchases in-store, and submitted a support ticket about sizing. Every team sees the same data, the same profile, the same truth."
+
+> "Notice the consent section here — we track consent at the granular level. Sarah has opted in to email marketing but opted out of third-party advertising. When we activate her profile, those preferences are automatically respected across every destination."
+
+### Step 5: Segmentation and Zoe AI (5 minutes)
+
+**Key screen: Segment Builder**
+
+**What to show:**
+- Build a segment live using drag-and-drop
+- Show the real-time audience count updating as you add criteria
+- Introduce Zoe — AI-powered segment recommendations
+- Show a lookalike model or predictive segment
+
+**Live segment to build (tailor to their vertical):**
+
+<ComparisonTable
+  headers={["Vertical", "Segment to Build Live"]}
+  rows={[
+    ["Retail", "High-value customers who browsed in last 7 days but did not purchase, with email consent"],
+    ["Finance", "Customers with savings accounts who viewed investment products 3+ times in 30 days"],
+    ["Telco", "Prepaid users with declining recharge frequency and high data usage (churn risk)"],
+    ["Media", "Subscribers who watched 10+ hours last month but have not opened the app in 14 days"]
+  ]}
+/>
+
+**Script:**
+> "Let me build a segment right now based on one of the use cases you mentioned. I am going to find [describe segment]. Watch the audience count on the right — it updates in real time as I add criteria. We are at 45,000 profiles... now I add the purchase exclusion... down to 12,000. These are 12,000 high-intent customers your team could activate today."
+
+> "Now let me show you Zoe, our AI engine. Zoe has analyzed your customer base and automatically identified segments you might not think to build manually. For example, here is a segment Zoe discovered: customers who exhibit a specific browsing pattern that correlates with a 3x higher conversion rate. Your team did not have to build this — Zoe found it."
+
+### Step 6: Activation (3 minutes)
+
+**Key screen: Destinations and activation flow**
+
+**What to show:**
+- The destination catalog (100+ connectors)
+- Push the segment you just built to a relevant destination
+- Show the real-time sync status
+- Highlight suppression and frequency capping options
+
+**Script:**
+> "Now the best part — getting this segment into the tools your team actually uses. I can see you use [their specific tools]. Let me push this segment to [destination] right now. One click... and it is syncing. For most destinations, the audience is available within minutes, not hours or days."
+
+> "Notice you can also set suppression rules — if Sarah converts after receiving the email, she is automatically removed from the paid media audience. No wasted spend, no annoying your best customers."
+
+### Step 7: Q&A and Next Steps (15 minutes)
+
+<Callout type="tip" title="Control the Close">
+The Q&A is not passive — use it to advance the deal. Address questions directly, then pivot to next steps.
+</Callout>
+
+**Transition script:**
+> "That is the end of the walkthrough. Let me pause and ask — based on what you have seen, which of the three pain points we discussed does this address most directly? And is there anything you would want to see deeper before making a decision?"
+
+**Closing script:**
+> "Based on today's conversation, I think the best next step is [choose one]:
+> - **POC proposal:** We could run a 4-week proof of concept with your actual data, focused on [specific use case]. I will send over a POC proposal with defined success criteria by [date].
+> - **Technical deep dive:** Let's schedule a session with your data engineering team and our solutions architects to go deeper on integration and architecture.
+> - **Business case:** I will put together an ROI analysis based on the numbers you shared today, and we can review it with [economic buyer] next week."
+
+---
+
+## Handling Live Questions During Demo
+
+<Expandable title="Technical Questions" defaultOpen={true}>
+
+| Question | Response |
+|----------|----------|
+| "What about data latency?" | "Our pipeline processes events in real time — sub-second for streaming sources. Batch sources are processed on your configured schedule, typically every 15 minutes to 1 hour." |
+| "Where is the data stored?" | "We offer EU and US data residency. Your data stays in the region you choose. We run on major cloud infrastructure with SOC 2 and ISO 27001 certifications." |
+| "Can we use our own data warehouse?" | "Absolutely. We integrate with Snowflake, BigQuery, Redshift, and Databricks as both sources and destinations. Many customers use us as the activation layer on top of their warehouse." |
+| "What about real-time use cases?" | "Our event streaming architecture supports real-time segment evaluation and activation. When a customer triggers an event, they can be added to or removed from a segment within seconds." |
+
+</Expandable>
+
+<Expandable title="Business Questions" defaultOpen={false}>
+
+| Question | Response |
+|----------|----------|
+| "How long is implementation?" | "Typical enterprise implementation is 6-10 weeks to first value. We follow a phased approach — start with your highest-priority use case and expand from there." |
+| "What does your support model look like?" | "Every enterprise customer gets a dedicated Customer Success Manager and access to our technical support team. We also offer professional services for custom implementations." |
+| "Who else in our industry uses this?" | "I can share specific references after we sign an NDA, but we work with several major [their vertical] brands across Europe. Let me set up a reference call with a customer whose use case is similar to yours." |
+
+</Expandable>
+
+<Expandable title="Questions You Should Defer" defaultOpen={false}>
+
+Not every question needs an immediate answer. It is better to say "let me get you the right answer" than to guess.
+
+- **Highly specific pricing questions** — "I want to give you accurate numbers based on your volume. Let me come back with a tailored proposal."
+- **Niche integration questions** — "Let me confirm with our integrations team and get back to you by end of day."
+- **Legal/compliance specifics** — "That is an important detail. Let me connect you with our privacy team who can walk through our DPA and compliance documentation."
+- **Product roadmap questions** — "I can share our general direction, but let me get you a more detailed answer from our product team under NDA."
+
+</Expandable>
+
+---
+
+## Common Demo Mistakes to Avoid
+
+<ComparisonTable
+  headers={["Mistake", "What to Do Instead"]}
+  rows={[
+    ["Showing every feature", "Show only what maps to their pain points — less is more"],
+    ["Using generic demo data", "Load data that matches their vertical and use cases"],
+    ["Talking at them for 40 minutes", "Pause every 5 minutes, ask questions, make it a conversation"],
+    ["Ignoring the quiet person in the room", "Directly ask them: 'What is your perspective on this?'"],
+    ["Rushing through identity resolution", "This is your differentiator — slow down and let it land"],
+    ["Forgetting to confirm next steps", "Always end with a specific next action, date, and owner"],
+    ["Not having a backup plan", "If the demo environment goes down, have a recorded walkthrough ready"],
+    ["Demoing to one persona only", "Rotate between business value and technical depth based on who is in the room"]
+  ]}
+/>
+
+<Callout type="success" title="The Best Demo Feels Like a Conversation">
+If you are the only one talking, you are doing it wrong. The best demos have the prospect leaning in, asking questions, and saying "can it also do X?" That is how you know you have them.
+</Callout>

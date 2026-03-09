@@ -1,0 +1,146 @@
+---
+title: How Zeotap Works
+description: Product walkthrough from the UI perspective
+icon: 🖥️
+estimatedMinutes: 30
+contentType: tutorial
+trackId: business-essentials
+order: 4
+---
+
+## 🖥️ How Zeotap Works — A Product Walkthrough
+
+This module walks through Zeotap's product from the **user interface perspective** — no code required. Whether you're in sales, CS, product, or engineering, understanding how the product looks and feels is essential.
+
+### The Unity Dashboard
+
+The **Unity Dashboard** is Zeotap's web interface — the single pane of glass where users manage their entire CDP. It's a modern React-based application accessible from any browser.
+
+When you log in, you'll see:
+
+- **Navigation sidebar** — Access to all platform sections
+- **Overview dashboard** — Key metrics at a glance (profiles, events, active audiences)
+- **Quick actions** — Create audience, set up source, view reports
+
+### Step 1: Setting Up Data Sources
+
+Before you can do anything useful, data needs to flow into the platform. Zeotap supports multiple ingestion methods:
+
+<ArchDiagram
+  title="Data Ingestion Methods"
+  steps={[
+    { label: "Web SDK", detail: "JavaScript snippet on your website", icon: "🌐" },
+    { label: "Mobile SDK", detail: "iOS and Android libraries", icon: "📱" },
+    { label: "S2S API", detail: "Server-to-server event streaming", icon: "🔌" },
+    { label: "File Upload", detail: "CSV/JSON batch imports", icon: "📄" }
+  ]}
+/>
+
+**In the UI, setting up a source looks like this:**
+1. Go to **Data Sources** in the sidebar
+2. Click **Add Source**
+3. Choose the type (Web, Mobile, Server, File)
+4. Follow the setup wizard (it generates the SDK code or API credentials)
+5. Verify data is flowing by checking the **Live Events** panel
+
+<Callout type="tip" title="For Non-Technical Users">
+You don't need to install the SDK yourself! The setup wizard generates code that your engineering team can copy-paste. Your role is to request the data sources you need and verify they're working.
+</Callout>
+
+### Step 2: Identity Resolution in Action
+
+Once data flows in, Zeotap's identity resolution engine works automatically. Here's what happens behind the scenes:
+
+1. A user visits your website → Web SDK captures `cookie_id_123`
+2. Same user logs into your app → Mobile SDK captures `device_id_456` + `email@customer.com`
+3. Same user makes a purchase → CRM sends `crm_id_789` + `email@customer.com`
+
+**Zeotap automatically links all these identifiers** to create a single **UCID** (Unified Customer Identity). In the Unity Dashboard, you can see the identity graph for any profile — all the linked identifiers and when they were connected.
+
+### Step 3: Exploring Customer Profiles
+
+The **Profile Explorer** lets you search for any customer and see their complete unified view:
+
+- **Identity tab** — All linked identifiers (email, phone, device IDs, cookie IDs)
+- **Attributes tab** — Demographic and behavioral data (age, location, preferences)
+- **Events timeline** — Every interaction: page views, purchases, app opens, support tickets
+- **Audiences tab** — Which segments this customer belongs to
+- **Consent tab** — What data processing this customer has consented to
+
+### Step 4: Building Audiences
+
+The **Audience Builder** is where Zeotap gets powerful. You can create customer segments using:
+
+**Visual Rule Builder:**
+- Drag-and-drop conditions: "Users who purchased in the last 30 days AND live in Germany"
+- Combine AND/OR logic
+- Nest conditions for complex segments
+- See real-time count estimates as you build
+
+**Natural Language (Zoe AI):**
+- Type: "Find users who abandoned cart in the last 7 days and have spent more than $100 total"
+- Zoe translates this into segment rules automatically
+- Review and edit the generated rules before saving
+
+<Callout type="success" title="This Is Our Differentiator">
+Natural language segmentation via Zoe is a key selling point. Non-technical marketers can build sophisticated segments without knowing SQL or rule syntax.
+</Callout>
+
+### Step 5: Creating Customer Journeys
+
+The **Journey Canvas** is a visual drag-and-drop tool for building automated, multi-step customer campaigns:
+
+**Components you can use:**
+- **Triggers** — What starts the journey (segment entry, event, schedule)
+- **Actions** — What happens (send email, push notification, webhook, update profile)
+- **Conditions** — Branch logic (if/else based on attributes or behavior)
+- **Waits** — Time delays between steps
+- **A/B Splits** — Test different paths with different groups
+
+**Example Journey: Cart Abandonment Recovery**
+1. **Trigger:** User enters "Cart Abandoners" segment
+2. **Wait:** 1 hour
+3. **Action:** Send reminder email
+4. **Condition:** Did they purchase?
+5. **If no → Wait:** 24 hours → Send push notification with 10% discount
+6. **If yes → End** journey
+
+### Step 6: Activating Data to Destinations
+
+The **Destinations** section lets you push your audiences and events to 100+ platforms:
+
+- **Advertising:** Google Ads, Meta Ads, The Trade Desk, DV360
+- **Email/Marketing:** Braze, Salesforce Marketing Cloud, HubSpot
+- **CRM:** Salesforce CRM, Microsoft Dynamics
+- **Analytics:** Google Analytics 4, Amplitude, Mixpanel
+- **Custom:** Webhook, SFTP, Cloud Storage
+
+**Setting up a destination:**
+1. Go to **Destinations** → **Add Destination**
+2. Choose the platform
+3. Authenticate (OAuth, API key, etc.)
+4. Map your Zeotap fields to the destination's fields
+5. Choose sync frequency (real-time, hourly, daily)
+6. Activate
+
+### Step 7: Reports and Analytics
+
+The **Reports** section provides visibility into:
+
+- **Audience insights** — Size trends, overlap analysis, demographic breakdowns
+- **Journey performance** — Conversion rates, drop-off points, A/B test results
+- **Destination health** — Sync status, error rates, latency
+- **Platform usage** — Events processed, API calls, storage used
+
+<StatCard stats={[
+  { value: "4", label: "Data Sources", color: "#3b82f6" },
+  { value: "∞", label: "Audiences", color: "#10b981" },
+  { value: "100+", label: "Destinations", color: "#a855f7" },
+  { value: "Real-time", label: "Processing", color: "#f59e0b" }
+]} />
+
+<KeyConcepts concepts={["Unity Dashboard", "Data Source", "Profile Explorer", "Audience Builder", "Journey Canvas", "Destination", "Zoe AI", "UCID"]} />
+
+---
+
+**Next up:** Understand the competitive landscape →

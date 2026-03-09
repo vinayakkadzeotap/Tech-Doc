@@ -1,0 +1,93 @@
+---
+title: Reporting & BI
+description: BigQuery, Druid, Redshift analytics
+icon: 📊
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 11
+---
+
+## 📊 Reporting & BI
+
+Zeotap's analytics layer serves dashboards, reports, and ad-hoc queries. This module covers the analytics architecture, query engines, and the data pipeline from raw events to visualized insights.
+
+### Analytics Architecture
+
+<ArchDiagram
+  title="Analytics Pipeline"
+  steps={[
+    { label: "Raw Events", detail: "Kafka streams", icon: "📨" },
+    { label: "Aggregation", detail: "Spark/Beam transforms", icon: "⚙️" },
+    { label: "Storage", detail: "BigQuery, Druid, materialized views", icon: "🗄️" },
+    { label: "Query API", detail: "REST API serving dashboards", icon: "🔌" },
+    { label: "Dashboard UI", detail: "Unity Dashboard visualizations", icon: "📊" }
+  ]}
+/>
+
+### Query Engines
+
+<ComparisonTable
+  headers={["Engine", "Use Case", "Latency", "Data Freshness"]}
+  rows={[
+    ["BigQuery", "Ad-hoc queries, complex analytics", "1-10 seconds", "Near real-time (streaming inserts)"],
+    ["Apache Druid", "Pre-aggregated real-time OLAP", "<500ms", "Real-time (Kafka ingestion)"],
+    ["Redis", "Cached dashboard metrics", "<10ms", "15-minute cache TTL"],
+    ["Pre-computed Views", "Common report patterns", "<100ms", "Hourly refresh"]
+  ]}
+  highlightColumn={1}
+/>
+
+**BigQuery** serves complex analytical queries:
+- Full SQL support with JOIN, GROUP BY, window functions
+- Columnar storage optimized for aggregation queries
+- Partitioned by date and clustered by orgId for cost optimization
+- Powers audience insights, overlap analysis, and custom reports
+
+**Apache Druid** serves real-time OLAP queries:
+- Sub-second queries on pre-aggregated data
+- Real-time ingestion from Kafka (seconds of freshness)
+- Powers the Platform Overview dashboard and live event counters
+- Rollup aggregation reduces storage while maintaining query speed
+
+### Data Pipeline
+
+**Event to Report Flow:**
+1. Events published to Kafka
+2. Beam/Dataflow jobs aggregate events into metrics (counts, sums, averages by dimensions)
+3. Aggregated metrics written to BigQuery tables and Druid datasources
+4. Materialized views pre-compute common report patterns (hourly)
+5. Query API reads from the appropriate engine based on query type
+6. Dashboard UI renders visualizations
+
+### Report Types
+
+<ComparisonTable
+  headers={["Report", "Source Engine", "Refresh Rate"]}
+  rows={[
+    ["Platform Overview", "Druid + Redis cache", "Real-time"],
+    ["Audience Insights", "BigQuery", "Near real-time"],
+    ["Journey Performance", "BigQuery", "Hourly aggregation"],
+    ["Destination Health", "BigQuery + Druid", "Real-time for status, hourly for trends"],
+    ["Custom Reports", "BigQuery", "On-demand query"]
+  ]}
+  highlightColumn={1}
+/>
+
+### Query Optimization
+
+- **Partition pruning** — Queries scoped to date range only scan relevant partitions
+- **Clustering** — BigQuery tables clustered by orgId for fast filtering
+- **Query caching** — Identical queries within 1 hour served from cache
+- **Materialized views** — Common aggregations pre-computed on schedule
+- **Query quotas** — Per-org query limits prevent runaway costs
+
+<Callout type="info" title="Cost Management">
+BigQuery is billed per bytes scanned. Partition pruning and clustering reduce costs by 80-90%. The analytics team monitors per-org query costs and optimizes expensive patterns.
+</Callout>
+
+<KeyConcepts concepts={["BigQuery", "Apache Druid", "OLAP", "Materialized Views", "Partition Pruning", "Streaming Inserts", "Pre-Aggregation", "Query Optimization"]} />
+
+---
+
+**Next up:** Unity Dashboard technical architecture →

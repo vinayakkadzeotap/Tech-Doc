@@ -1,0 +1,204 @@
+---
+title: Navigating the Unity Dashboard
+description: Learn how to navigate the Unity Dashboard, configure settings, and manage users and permissions
+icon: 🖥️
+estimatedMinutes: 30
+contentType: tutorial
+trackId: product-mastery
+order: 1
+---
+
+## 🖥️ Navigating the Unity Dashboard
+
+The Unity Dashboard is Zeotap's central command center — a React-based single-page application where you manage every aspect of your customer data platform. This tutorial walks you through the interface, key settings, and user management so you can work confidently from day one.
+
+<Callout type="info" title="Before You Start">
+You'll need an active Zeotap account with at least **Viewer** access. If you don't have login credentials yet, contact your organization's Zeotap admin or reach out to your Customer Success Manager.
+</Callout>
+
+### Logging In and First-Time Setup
+
+1. Navigate to **unity.zeotap.com** in your browser (Chrome or Firefox recommended).
+2. Enter your email and password, or use **SSO** if your organization has configured it.
+3. On first login, you'll be prompted to select your **default organization** if you belong to more than one.
+4. Complete the brief onboarding checklist that appears — this helps tailor your dashboard view.
+
+<Callout type="tip" title="Bookmark It">
+Bookmark the dashboard URL and pin it to your browser bar. As a CDP user, you'll visit it daily.
+</Callout>
+
+### Understanding the Main Navigation
+
+The Unity Dashboard uses a left-side navigation panel that organizes every feature into logical sections.
+
+<ArchDiagram
+  title="Unity Dashboard Navigation Structure"
+  steps={[
+    { label: "Home", detail: "Overview cards, recent activity, quick stats", icon: "🏠" },
+    { label: "Data Sources", detail: "SDK setup, file imports, API connections", icon: "📡" },
+    { label: "Audiences", detail: "Segment builder, saved audiences, Zoe AI", icon: "👥" },
+    { label: "Journeys", detail: "Canvas editor, automation workflows", icon: "🗺️" },
+    { label: "Destinations", detail: "Activation connectors, sync status", icon: "🚀" },
+    { label: "Reports", detail: "Analytics, insights, exports", icon: "📊" }
+  ]}
+/>
+
+Each section in the left nav expands to reveal sub-pages. The top bar contains:
+
+- **Organization switcher** — toggle between orgs if you have multi-org access
+- **Search bar** — global search across audiences, journeys, destinations, and data sources
+- **Notifications bell** — alerts for sync failures, journey completions, and system updates
+- **Profile menu** — account settings, API keys, and logout
+
+### The Home Dashboard
+
+When you log in, the Home page gives you an at-a-glance summary of your CDP's health.
+
+<StatCard stats={[
+  { value: "Profiles", label: "Total unified customer profiles", color: "#3b82f6" },
+  { value: "Events", label: "Events ingested (last 24h)", color: "#10b981" },
+  { value: "Audiences", label: "Active audience segments", color: "#a855f7" },
+  { value: "Syncs", label: "Destination syncs (last 24h)", color: "#f59e0b" }
+]} />
+
+The Home page includes:
+
+- **Health cards** showing profile counts, event volume, and active syncs
+- **Recent activity feed** listing changes made by your team
+- **Quick-action buttons** to create a new audience, set up a data source, or start a journey
+- **System alerts** for any failures or warnings that need attention
+
+<Callout type="warning" title="Watch the Alerts">
+If you see a red alert banner at the top of the Home page, address it immediately. Common alerts include expired API credentials, destination sync failures, and SDK version deprecation warnings.
+</Callout>
+
+### Configuring Organization Settings
+
+Navigate to **Settings** (gear icon at the bottom of the left nav) to configure your organization.
+
+#### General Settings
+
+- **Organization name** and **display logo** — shown across the dashboard and in shared reports
+- **Default timezone** — used for journey scheduling, report generation, and event timestamps
+- **Data retention period** — how long raw event data is stored (default: 365 days)
+- **Currency** — used in revenue-related reports and audience filters
+
+#### Privacy and Consent
+
+- **Consent mode** — choose between Opt-In (EU/GDPR default) or Opt-Out models
+- **Cookie banner integration** — connect your CMP (e.g., OneTrust, Cookiebot)
+- **Data deletion requests** — configure automated processing of DSAR requests
+- **Encryption settings** — manage PII encryption keys
+
+<Callout type="important" title="Privacy Configuration">
+Always coordinate with your legal and compliance team before changing privacy settings. Incorrect consent configuration can lead to regulatory violations.
+</Callout>
+
+#### Notification Preferences
+
+Under **Settings > Notifications**, configure where alerts go:
+
+| Notification Type | Options |
+|---|---|
+| Sync failures | Email, Slack, in-app |
+| Journey completions | Email, in-app |
+| Profile threshold alerts | Email, Slack, webhook |
+| SDK errors | Email, Slack, PagerDuty |
+| Weekly digest | Email |
+
+### User Management
+
+Navigate to **Settings > Users & Permissions** to manage your team.
+
+#### Adding a New User
+
+1. Click **Invite User** in the top right corner.
+2. Enter the user's email address.
+3. Select a **role** from the dropdown (see role comparison below).
+4. Optionally assign them to specific **teams** for scoped access.
+5. Click **Send Invitation** — they'll receive an email with a setup link.
+
+#### Roles and Permissions
+
+<ComparisonTable
+  headers={["Permission", "Viewer", "Analyst", "Editor", "Admin"]}
+  rows={[
+    ["View dashboards & reports", "Yes", "Yes", "Yes", "Yes"],
+    ["Create & edit audiences", "No", "Yes", "Yes", "Yes"],
+    ["Build & launch journeys", "No", "No", "Yes", "Yes"],
+    ["Manage data sources", "No", "No", "Yes", "Yes"],
+    ["Configure destinations", "No", "No", "Yes", "Yes"],
+    ["Manage users & roles", "No", "No", "No", "Yes"],
+    ["Change org settings", "No", "No", "No", "Yes"],
+    ["Access API keys", "No", "No", "No", "Yes"]
+  ]}
+/>
+
+<Callout type="tip" title="Principle of Least Privilege">
+Start users with the most restrictive role that still lets them do their job. You can always upgrade permissions later. Most PMs and marketers work well with the **Analyst** role; campaign managers typically need **Editor**.
+</Callout>
+
+#### Teams and Scoped Access
+
+For larger organizations, you can create **teams** to scope access:
+
+1. Go to **Settings > Teams** and click **Create Team**.
+2. Name the team (e.g., "EMEA Marketing", "US Sales Ops").
+3. Assign data source visibility — teams can be restricted to see only specific data sources.
+4. Assign destination access — limit which activation channels a team can use.
+5. Add users to the team.
+
+<Expandable title="What happens when a user belongs to multiple teams?" defaultOpen={false}>
+When a user is assigned to multiple teams, they receive the **union** of all permissions. For example, if Team A can access Google Ads and Team B can access Meta, the user sees both destinations. Role-level permissions (Viewer, Analyst, etc.) still apply on top of team scoping.
+</Expandable>
+
+### Working with the Global Search
+
+The search bar at the top of the dashboard (shortcut: **Cmd+K** or **Ctrl+K**) is one of the most powerful navigation tools.
+
+You can search for:
+
+- **Audiences** by name or description
+- **Journeys** by name
+- **Data sources** by name or type
+- **Destinations** by name or platform
+- **Users** by name or email
+- **Events** by event name
+
+<Callout type="tip" title="Power User Shortcut">
+Type a prefix to filter search results: `a:` for audiences, `j:` for journeys, `d:` for destinations, `s:` for data sources. For example, `a:high value` searches only audiences containing "high value."
+</Callout>
+
+### Keyboard Shortcuts
+
+Speed up your workflow with these shortcuts:
+
+| Shortcut | Action |
+|---|---|
+| `Cmd/Ctrl + K` | Open global search |
+| `Cmd/Ctrl + N` | Create new (audience, journey, etc.) |
+| `Cmd/Ctrl + S` | Save current work |
+| `Cmd/Ctrl + Z` | Undo last action (in editors) |
+| `?` | Show all keyboard shortcuts |
+
+### Troubleshooting Common Issues
+
+<Expandable title="Dashboard loads slowly or shows blank screens" defaultOpen={false}>
+Clear your browser cache and cookies for unity.zeotap.com. Disable browser extensions (especially ad blockers) that may interfere with the SPA. Ensure you're using a supported browser: Chrome 90+, Firefox 88+, or Edge 90+.
+</Expandable>
+
+<Expandable title="I can't see a feature that my colleague can see" defaultOpen={false}>
+Check your role under **Profile > My Account**. Different roles have different feature visibility. Ask your Admin to upgrade your role or add you to the appropriate team.
+</Expandable>
+
+<Expandable title="Notifications aren't arriving" defaultOpen={false}>
+Verify your notification preferences under **Settings > Notifications**. Check that your email isn't filtering Zeotap messages to spam. For Slack notifications, ensure the Zeotap Slack app is still authorized in your workspace.
+</Expandable>
+
+### Key Terminology
+
+<KeyConcepts concepts={["Unity Dashboard", "Organization", "Roles & Permissions", "Teams", "SSO", "Global Search", "Data Retention", "Consent Mode"]} />
+
+---
+
+**Next up:** Learn how to set up data sources and start collecting customer data through the UI.

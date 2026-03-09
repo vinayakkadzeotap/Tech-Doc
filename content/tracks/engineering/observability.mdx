@@ -1,0 +1,122 @@
+---
+title: Observability
+description: Prometheus, Grafana, OpenTelemetry
+icon: 📊
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 16
+---
+
+## 📊 Observability
+
+Observability is how we understand what's happening inside the platform. This module covers the three pillars: metrics, logs, and traces — plus alerting and incident response.
+
+### Three Pillars
+
+<ArchDiagram
+  title="Observability Stack"
+  steps={[
+    { label: "Metrics", detail: "Prometheus + Grafana", icon: "📈" },
+    { label: "Logs", detail: "Cloud Logging + structured JSON", icon: "📝" },
+    { label: "Traces", detail: "OpenTelemetry + Cloud Trace", icon: "🔍" },
+    { label: "Alerts", detail: "Alertmanager + PagerDuty", icon: "🚨" }
+  ]}
+/>
+
+### Metrics (Prometheus + Grafana)
+
+<TechStack
+  title="Metrics Stack"
+  items={[
+    { name: "Prometheus", role: "Metrics collection and storage" },
+    { name: "Grafana", role: "Dashboards and visualization" },
+    { name: "Alertmanager", role: "Alert routing and dedup" },
+    { name: "kube-state-metrics", role: "K8s resource metrics" },
+    { name: "node-exporter", role: "Node-level metrics" }
+  ]}
+/>
+
+**Key Metrics per Service:**
+
+<ComparisonTable
+  headers={["Metric Type", "Examples", "Alert Threshold"]}
+  rows={[
+    ["RED (Rate)", "Requests/sec, events/sec", "Sudden drop >50%"],
+    ["RED (Errors)", "Error rate, 5xx percentage", ">1% error rate"],
+    ["RED (Duration)", "P50, P95, P99 latency", "P99 > 2x baseline"],
+    ["Saturation", "CPU, memory, disk usage", ">80% sustained"],
+    ["Business", "Profiles resolved/sec, syncs completed", "Varies by SLA"]
+  ]}
+  highlightColumn={2}
+/>
+
+### Logs (Structured Logging)
+
+- **Format:** JSON structured logs with standardized fields
+- **Fields:** `timestamp`, `level`, `service`, `traceId`, `orgId`, `message`, `error`
+- **Storage:** GCP Cloud Logging with 30-day retention
+- **Long-term:** Exported to BigQuery for analysis beyond 30 days
+- **PII:** Never log PII — use hashed identifiers only
+
+### Traces (OpenTelemetry)
+
+Distributed tracing tracks requests across microservices:
+
+- **OpenTelemetry SDK** instrumented in every service
+- **Trace context** propagated via HTTP headers (W3C Trace Context)
+- **Spans** record timing for each operation (DB query, API call, Kafka publish)
+- **Sampling:** Head-based sampling at 1% for production, 100% for staging
+- **Visualization:** Cloud Trace for trace viewing and analysis
+
+**Example Trace:**
+```
+Browser → API Gateway (5ms) → Collect Service (12ms) → Kafka Publish (3ms)
+                                                     → Schema Validation (8ms)
+```
+
+### SLOs and SLIs
+
+<ComparisonTable
+  headers={["Service", "SLI", "SLO", "Error Budget"]}
+  rows={[
+    ["API Gateway", "Availability (non-5xx responses)", "99.95%", "21.6 min/month"],
+    ["Collect Service", "Event ingestion success rate", "99.99%", "4.3 min/month"],
+    ["Identity Resolution", "Resolution latency P99", "<50ms", "Measured monthly"],
+    ["Audience Engine", "Evaluation latency P99", "<200ms", "Measured monthly"],
+    ["Destination Sync", "Sync success rate", "99.9%", "43.2 min/month"]
+  ]}
+  highlightColumn={2}
+/>
+
+### Alerting
+
+**Alert Routing:**
+1. Prometheus Alertmanager evaluates alert rules
+2. Critical alerts → PagerDuty → on-call engineer (immediate)
+3. Warning alerts → Slack #alerts channel → team review
+4. Info alerts → Grafana dashboard annotation
+
+**On-Call Rotation:**
+- Weekly rotation per team (Collect, Identity, Activation, Platform)
+- Primary + secondary on-call for coverage
+- Runbooks linked in every alert for fast resolution
+- Post-incident review for every P1/P2 alert
+
+### Key Dashboards
+
+Every team maintains these Grafana dashboards:
+- **Service Overview** — RED metrics, error breakdown, latency distribution
+- **Infrastructure** — Pod count, CPU/memory, node health
+- **Business Metrics** — Events ingested, profiles resolved, syncs completed
+- **SLO Tracker** — Error budget consumption over time
+
+<Callout type="tip" title="Dashboard Hygiene">
+A dashboard with 50 panels is useless in an incident. Keep dashboards focused: 6-8 panels per dashboard, clear titles, and consistent time ranges. Create separate dashboards for investigation vs. monitoring.
+</Callout>
+
+<KeyConcepts concepts={["Prometheus", "Grafana", "OpenTelemetry", "SLO", "SLI", "Error Budget", "PagerDuty", "Structured Logging", "Distributed Tracing", "RED Metrics"]} />
+
+---
+
+**Next up:** CI/CD Pipelines — build, test, deploy →

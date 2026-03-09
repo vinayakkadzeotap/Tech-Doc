@@ -1,0 +1,94 @@
+---
+title: What is a CDP?
+description: CDPs explained simply — no jargon, no code
+icon: 📊
+estimatedMinutes: 25
+contentType: concept
+trackId: business-essentials
+order: 2
+---
+
+## 📊 What is a Customer Data Platform?
+
+A **Customer Data Platform (CDP)** is software that creates a **persistent, unified customer database** that is accessible to other systems. Think of it as the "single source of truth" for everything you know about each customer.
+
+<Callout type="tip" title="The Simple Explanation">
+Imagine you could merge your CRM, website analytics, mobile app data, email data, and purchase history into **one complete profile** per customer — that's what a CDP does.
+</Callout>
+
+### Why Do Companies Need a CDP?
+
+Before CDPs, companies faced this reality:
+
+- **Marketing team** uses one set of tools (email platform, ad platforms)
+- **Sales team** uses a CRM with different customer data
+- **Support team** has ticket data in a helpdesk tool
+- **Product team** has analytics from the app
+- **Finance team** has transaction data in a billing system
+
+**Nobody has the complete picture.** A customer might get a promotional email for a product they already bought, or a support agent might not know the customer's recent website activity.
+
+A CDP solves this by:
+1. **Ingesting data** from all these sources
+2. **Resolving identity** — figuring out that `user123@gmail.com`, `device_xyz`, and `CRM_lead_456` are all the same person
+3. **Building a unified profile** with all their data in one place
+4. **Making it actionable** — pushing this unified view to every team's tools
+
+### CDP vs. Everything Else
+
+<ComparisonTable
+  headers={["Feature", "CDP", "CRM", "DMP", "Data Warehouse"]}
+  rows={[
+    ["Primary Data", "First-party (all sources)", "Sales interactions", "Third-party cookies", "All (raw/structured)"],
+    ["Identity Resolution", "✅ Core feature", "❌ Limited", "❌ Cookie-based", "❌ Manual"],
+    ["Real-Time", "✅ Yes", "⚠️ Near real-time", "✅ Yes", "❌ Batch"],
+    ["Audience Building", "✅ Built-in", "❌ Limited", "✅ Built-in", "❌ Requires SQL"],
+    ["Activation", "✅ 100+ destinations", "⚠️ Limited", "✅ Ad platforms", "❌ Manual"],
+    ["Privacy/Consent", "✅ Embedded", "⚠️ Basic", "❌ Weak", "⚠️ Manual"],
+    ["Persistence", "✅ Permanent profiles", "✅ Permanent records", "❌ Temporary (cookie life)", "✅ Permanent"],
+    ["Best For", "Marketing + Analytics", "Sales pipeline", "Ad targeting (dying)", "Engineering/BI"],
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="important" title="DMPs Are Dying">
+Data Management Platforms (DMPs) relied on third-party cookies, which browsers are deprecating. CDPs use first-party data — the data you collect directly from your customers — making them future-proof.
+</Callout>
+
+### The "Golden Record" Concept
+
+The core idea behind a CDP is the **Golden Record** — the single, most accurate, most complete representation of each customer. When data conflicts exist (e.g., two different phone numbers), the CDP uses rules to determine which is the "golden" value.
+
+At Zeotap, the Golden Record is built around the **UCID (Unified Customer Identity)**:
+
+<ArchDiagram
+  title="Building the Golden Record"
+  steps={[
+    { label: "Raw Events", detail: "Clicks, purchases, logins from all sources", icon: "📥" },
+    { label: "Identity Resolution", detail: "Match and merge across devices and channels", icon: "🔗" },
+    { label: "Golden Record", detail: "One complete profile with all attributes", icon: "👤" },
+    { label: "Activation", detail: "Use the profile everywhere: ads, email, analytics", icon: "🚀" }
+  ]}
+/>
+
+### The CDP Market
+
+The CDP market is growing rapidly:
+
+- **$5B+ market** projected by 2027
+- **Key players**: Zeotap, Segment (Twilio), mParticle, Tealium, Treasure Data, Adobe CDP, Salesforce CDP
+- **Why it's growing**: Cookie deprecation, privacy regulations, demand for personalization, and the shift to first-party data strategies
+
+### What Makes Zeotap's CDP Different?
+
+1. **Identity-first**: Identity resolution isn't an add-on — it's the foundation of the platform
+2. **EU-born**: Built with GDPR compliance from the architecture level, not retrofitted
+3. **AI-powered**: Zoe AI assistant lets non-technical users build segments using natural language
+4. **Real-time**: Events are processed in milliseconds, enabling real-time personalization
+5. **Enterprise-grade**: Handles billions of profiles across multiple regions
+
+<KeyConcepts concepts={["CDP", "Golden Record", "First-Party Data", "Third-Party Cookies", "DMP", "CRM", "Identity Resolution", "UCID"]} />
+
+---
+
+**Next up:** Learn about Zeotap's customers and the verticals we serve →

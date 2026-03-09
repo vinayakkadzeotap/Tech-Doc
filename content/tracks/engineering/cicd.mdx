@@ -1,0 +1,128 @@
+---
+title: CI/CD Pipelines
+description: CloudBuild, ArgoCD, GitOps
+icon: 🔄
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 17
+---
+
+## 🔄 CI/CD Pipelines
+
+Zeotap follows a GitOps workflow where infrastructure and application state is managed in Git. This module covers the CI/CD pipeline from commit to production deployment.
+
+### GitOps Workflow
+
+<ArchDiagram
+  title="CI/CD Pipeline"
+  steps={[
+    { label: "Commit", detail: "Push to feature branch", icon: "📝" },
+    { label: "CI", detail: "Build, test, lint, scan", icon: "🔧" },
+    { label: "Image", detail: "Container image to registry", icon: "📦" },
+    { label: "GitOps", detail: "Update manifests in config repo", icon: "📋" },
+    { label: "CD", detail: "ArgoCD syncs to cluster", icon: "🚀" }
+  ]}
+/>
+
+### Continuous Integration (Cloud Build)
+
+**Pipeline Stages:**
+
+<ComparisonTable
+  headers={["Stage", "What It Does", "Failure Action"]}
+  rows={[
+    ["Lint", "Code style, formatting checks", "Block merge"],
+    ["Unit Tests", "Run test suite with coverage", "Block merge (<80% coverage)"],
+    ["Integration Tests", "Test against real dependencies", "Block merge"],
+    ["Security Scan", "SAST, dependency vulnerability check", "Block on critical CVEs"],
+    ["Build", "Compile, create Docker image", "Block merge"],
+    ["Push Image", "Push to Google Artifact Registry", "Block deploy"],
+    ["Update Manifests", "Update Helm values with new image tag", "Block deploy"]
+  ]}
+  highlightColumn={2}
+/>
+
+**Cloud Build Configuration:**
+- Triggered on PR creation/update and merge to main
+- Parallel execution of independent stages
+- Build cache for faster subsequent builds
+- Artifacts stored in Google Artifact Registry
+- Build notifications to Slack
+
+### Continuous Deployment (ArgoCD)
+
+**ArgoCD** monitors a GitOps config repository:
+
+1. CI pipeline updates image tag in Helm values file
+2. ArgoCD detects change in config repo
+3. ArgoCD compares desired state (Git) with actual state (cluster)
+4. ArgoCD applies the diff to the cluster
+5. Health checks verify the deployment succeeded
+
+**Key ArgoCD Features:**
+- **Auto-sync** — Automatically deploy when config changes (staging)
+- **Manual sync** — Require approval for production deployments
+- **Rollback** — One-click rollback to any previous Git commit
+- **Diff view** — See exactly what will change before deploying
+- **Health monitoring** — Track deployment health and pod status
+
+### Helm Charts
+
+Each service is packaged as a Helm chart:
+
+```
+service-chart/
+├── Chart.yaml          # Chart metadata, version
+├── values.yaml         # Default configuration
+├── values-dev.yaml     # Dev overrides
+├── values-staging.yaml # Staging overrides
+├── values-prod.yaml    # Production overrides
+└── templates/
+    ├── deployment.yaml
+    ├── service.yaml
+    ├── hpa.yaml
+    ├── configmap.yaml
+    └── ingress.yaml
+```
+
+### Deployment Strategies
+
+<ComparisonTable
+  headers={["Strategy", "How It Works", "When to Use"]}
+  rows={[
+    ["Rolling Update", "Gradually replace old pods with new", "Default for most services"],
+    ["Canary", "Route 5% traffic to new version, monitor, scale up", "High-risk changes"],
+    ["Blue-Green", "Deploy new version alongside old, switch traffic", "Database migration"],
+    ["Feature Flag", "Deploy code, enable via flag", "Experimental features"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Environment Promotion
+
+```
+Feature Branch → Dev → Staging → Production
+```
+
+- **Dev:** Auto-deploy on every merge to main
+- **Staging:** Auto-deploy, runs full integration test suite
+- **Production:** Manual approval required, deployed during low-traffic windows
+- **Hotfix:** Can bypass staging with VP Engineering approval
+
+### Rollback Procedures
+
+1. **Automatic:** If health checks fail after deploy, ArgoCD auto-rollbacks
+2. **Manual:** Run `argocd app rollback {app} {revision}` or click in UI
+3. **Git revert:** Revert the config repo commit, ArgoCD syncs
+4. **Emergency:** Scale to 0 and redeploy known-good version
+
+<Callout type="warning" title="Never Skip Staging">
+Production incidents caused by untested changes are preventable. Always deploy to staging first, run smoke tests, and verify metrics before promoting to production. The only exception is a hotfix for an active P1 incident.
+</Callout>
+
+<KeyConcepts concepts={["GitOps", "Cloud Build", "ArgoCD", "Helm", "Rolling Update", "Canary Deploy", "Feature Flags", "Artifact Registry", "Environment Promotion"]} />
+
+---
+
+**Next up:** Testing & QA — quality assurance practices →

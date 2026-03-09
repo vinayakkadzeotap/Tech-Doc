@@ -1,0 +1,166 @@
+---
+title: Testing & QA
+description: Contract testing, chaos engineering, E2E
+icon: 🧪
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 18
+---
+
+## 🧪 Testing & QA
+
+Quality assurance in a microservices architecture requires multiple testing strategies. This module covers the testing pyramid, contract testing, chaos engineering, and E2E testing at Zeotap.
+
+### Testing Pyramid
+
+<ArchDiagram
+  title="Testing Pyramid"
+  steps={[
+    { label: "Unit Tests", detail: "Fast, isolated, high coverage", icon: "🔬" },
+    { label: "Integration Tests", detail: "Service + dependencies", icon: "🔗" },
+    { label: "Contract Tests", detail: "API compatibility between services", icon: "📜" },
+    { label: "E2E Tests", detail: "Full user flows", icon: "🌐" },
+    { label: "Chaos Tests", detail: "Resilience under failure", icon: "💥" }
+  ]}
+/>
+
+### Unit Testing
+
+**Standards:**
+
+<ComparisonTable
+  headers={["Language", "Framework", "Coverage Target", "Run Time"]}
+  rows={[
+    ["Java", "JUnit 5, Mockito", "80%+", "<2 minutes"],
+    ["Go", "testing, testify", "80%+", "<1 minute"],
+    ["Python", "pytest, unittest.mock", "80%+", "<1 minute"],
+    ["TypeScript", "Jest, Angular TestBed", "70%+", "<3 minutes"],
+    ["Scala", "ScalaTest, Mockito", "75%+", "<2 minutes"]
+  ]}
+  highlightColumn={2}
+/>
+
+**Best Practices:**
+- Test behavior, not implementation
+- Use dependency injection for testability
+- Mock external dependencies (databases, APIs, Kafka)
+- Avoid flaky tests — quarantine immediately if found
+- Run on every PR as a merge gate
+
+### Integration Testing
+
+Integration tests verify a service works with its real dependencies:
+
+- **Database tests** — Service + BigTable emulator or test BigQuery dataset
+- **Kafka tests** — Service + embedded Kafka (Testcontainers)
+- **API tests** — Service + HTTP client against running instance
+- **Cache tests** — Service + Redis via Testcontainers
+
+**Test Environment:**
+- Docker Compose for local integration testing
+- Testcontainers for ephemeral dependency containers
+- Shared staging environment for cross-service integration
+- Test data factories for consistent, reproducible test data
+
+### Contract Testing (Pact)
+
+In a microservices architecture, API contracts between services are critical:
+
+**How Pact Works:**
+
+1. **Consumer** writes a test defining expected API behavior
+2. Pact generates a **contract file** from the consumer test
+3. **Provider** verifies the contract against its actual implementation
+4. Contract stored in **Pact Broker** for versioned tracking
+5. Breaking changes detected before deployment
+
+**Benefits:**
+- Catch breaking API changes without running full E2E suite
+- Each team tests independently against contracts
+- Faster feedback than end-to-end testing
+- Contracts serve as living API documentation
+
+### End-to-End Testing
+
+**Frontend E2E (Cypress):**
+- Critical user flows: login, create audience, set up destination, view reports
+- Run against staging environment on every deploy
+- Visual regression testing with screenshot comparison
+- 15-minute max run time (parallelized)
+
+**API E2E:**
+- Full API workflow tests (create source → ingest event → check profile → build audience → sync destination)
+- Run against staging after deployment
+- Smoke tests also run against production (read-only) after deploy
+
+### Load Testing
+
+<ComparisonTable
+  headers={["Tool", "Use Case", "Target"]}
+  rows={[
+    ["k6", "API load testing", "Verify latency SLOs under load"],
+    ["Locust", "Event ingestion load test", "Verify throughput at 2x peak"],
+    ["Custom Spark", "Batch processing scale test", "10x daily volume in test"]
+  ]}
+  highlightColumn={0}
+/>
+
+**Load Test Schedule:**
+- Weekly automated runs against staging
+- Before major releases: full-scale load test
+- After infrastructure changes: targeted load test
+
+### Chaos Engineering
+
+Chaos engineering verifies the system handles failures gracefully:
+
+**Experiments:**
+
+<ComparisonTable
+  headers={["Experiment", "What It Tests", "Expected Behavior"]}
+  rows={[
+    ["Kill random pod", "Pod recovery, HPA scaling", "Service recovers within 30s"],
+    ["Network partition", "Cross-service resilience", "Graceful degradation, no data loss"],
+    ["Kafka broker down", "Message queue resilience", "Consumer lag, auto-recovery"],
+    ["BigTable latency spike", "Data layer resilience", "Circuit breaker trips, cached responses"],
+    ["Memory pressure", "OOM handling", "Pod restarts, no cascading failure"]
+  ]}
+  highlightColumn={2}
+/>
+
+**Principles:**
+- Start with hypothesis: "If X fails, the system should Y"
+- Run in staging first, then controlled production experiments
+- Always have a kill switch to stop the experiment
+- Progressively increase blast radius
+
+### Test Data Management
+
+- **Factories** — Code-generated test data matching production schemas
+- **Anonymized snapshots** — Production data with PII stripped for realistic testing
+- **Cleanup** — Test data automatically purged after test runs
+- **Isolation** — Each test run uses isolated org/namespace to prevent interference
+
+### QA Environments
+
+<ComparisonTable
+  headers={["Environment", "Purpose", "Data", "Access"]}
+  rows={[
+    ["Local", "Developer machine testing", "Mock/in-memory", "Developer only"],
+    ["CI", "Automated test execution", "Ephemeral containers", "CI system"],
+    ["Staging", "Pre-production validation", "Anonymized production copy", "All engineers"],
+    ["Production", "Live system", "Real customer data", "On-call, with audit"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="important" title="Testing Culture">
+Every PR must include tests. "I'll add tests later" is not acceptable. If a bug is found in production, the fix must include a test that would have caught it. Test coverage is tracked per service and reported in code review.
+</Callout>
+
+<KeyConcepts concepts={["Testing Pyramid", "Contract Testing", "Pact", "Chaos Engineering", "E2E Testing", "Load Testing", "Testcontainers", "Code Coverage", "Test Data Factory"]} />
+
+---
+
+**Congratulations!** You've completed the Engineering Deep Dive track. You now have a comprehensive understanding of Zeotap's technical architecture from data collection to deployment.

@@ -1,0 +1,132 @@
+---
+title: Profile Store
+description: Delta Lake, ACID transactions, BigQuery
+icon: 👤
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 5
+---
+
+## 👤 Profile Store
+
+The Profile Store is the single source of truth for unified customer profiles. Every resolved identity gets a profile that aggregates attributes, computed fields, and event history. This module covers the data model, storage architecture, and APIs.
+
+### Profile Data Model
+
+A customer profile consists of:
+
+<ComparisonTable
+  headers={["Component", "Description", "Examples"]}
+  rows={[
+    ["Identity", "Linked identifiers from ID Graph", "Email, phone, device IDs, UCID"],
+    ["Attributes", "Demographic and declared data", "Name, age, country, preferences"],
+    ["Behaviors", "Aggregated event metrics", "Total purchases, last visit, page views"],
+    ["Computed Fields", "Derived attributes", "LTV score, engagement tier, churn risk"],
+    ["Consent", "Processing permissions", "Analytics: yes, Marketing: no"],
+    ["Segments", "Audience memberships", "High Value, Cart Abandoners, VIP"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Storage Architecture
+
+<ArchDiagram
+  title="Profile Storage Layers"
+  steps={[
+    { label: "Hot Layer", detail: "BigTable — real-time reads/writes", icon: "🔥" },
+    { label: "Warm Layer", detail: "BigQuery — analytical queries", icon: "📊" },
+    { label: "Cold Layer", detail: "GCS — historical archival", icon: "❄️" },
+    { label: "Cache", detail: "Redis — L2 cache for hot profiles", icon: "⚡" }
+  ]}
+/>
+
+**BigTable (Hot Layer):**
+- Primary store for real-time profile access
+- Row key: `{orgId}#{ucid}`
+- Column families: `identity`, `attributes`, `behaviors`, `computed`, `consent`, `segments`
+- Read latency: <10ms p99
+- Write throughput: millions of upserts per second
+
+**BigQuery (Warm Layer):**
+- Full profile data replicated for analytical queries
+- Powers reports, audience insights, and ad-hoc analysis
+- Updated via streaming inserts from BigTable change stream
+- Used for complex queries that BigTable can't serve (JOINs, aggregations)
+
+**Redis (Cache):**
+- L2 cache for frequently accessed profiles (top 10% by access frequency)
+- TTL: 15 minutes
+- Reduces BigTable read load by ~40%
+
+### Profile Merge on Identity Resolution
+
+When the ID Graph merges two clusters:
+
+1. **Merge event** published to `profile.merge` Kafka topic
+2. **Profile Merge Service** reads both profiles
+3. **Attribute precedence** rules applied:
+   - Most recent value wins for most attributes
+   - Configurable per attribute (e.g., "first value wins" for date_of_birth)
+   - Array attributes are unioned (e.g., interests, product categories)
+4. **Merged profile** written to BigTable under the winning UCID
+5. **Old UCID** becomes a redirect pointer to the new UCID
+6. **Downstream consumers** notified of the merge
+
+### Computed Attributes
+
+Computed attributes are derived from raw data and updated in real-time or on schedule:
+
+<ComparisonTable
+  headers={["Attribute", "Computation", "Update Frequency"]}
+  rows={[
+    ["Lifetime Value (LTV)", "Sum of all purchase amounts", "Real-time on purchase"],
+    ["Engagement Score", "Weighted sum of recent activities", "Hourly"],
+    ["Churn Risk", "ML model prediction", "Daily batch"],
+    ["RFM Segment", "Recency, Frequency, Monetary bucketing", "Daily batch"],
+    ["Days Since Last Visit", "Current date - last event date", "Daily batch"],
+    ["Preferred Channel", "Most frequent interaction channel", "Weekly batch"]
+  ]}
+  highlightColumn={2}
+/>
+
+### Profile API
+
+**Read Profile:**
+```
+GET /v1/profiles/{ucid}
+Authorization: Bearer {api_key}
+
+Response: {
+  "ucid": "abc-123",
+  "attributes": { "name": "John", "country": "DE" },
+  "behaviors": { "total_purchases": 12, "last_visit": "2024-01-15" },
+  "segments": ["high_value", "active_users"]
+}
+```
+
+**Search Profiles:**
+```
+GET /v1/profiles?email=user@example.com
+```
+- Resolves identifier to UCID via ID Graph, then returns profile
+- Supports search by any identifier type
+
+### Delta Lake for Batch Updates
+
+Batch profile updates (CRM imports, computed attribute refreshes) use Delta Lake:
+
+- **ACID transactions** — batch updates are atomic, no partial writes
+- **Time travel** — query profile state at any point in time
+- **Schema evolution** — add new attributes without migration
+- **Merge operations** — upsert millions of profiles in a single transaction
+
+<Callout type="info" title="Profile Scale">
+The Profile Store manages billions of profiles across all customers. BigTable's auto-scaling handles the storage and throughput, while BigQuery handles the analytical workload. This separation of concerns allows each layer to optimize for its access pattern.
+</Callout>
+
+<KeyConcepts concepts={["UCID", "Profile Merge", "Attribute Precedence", "BigTable", "BigQuery", "Delta Lake", "Computed Attributes", "Redis Cache", "Hot/Warm/Cold Storage"]} />
+
+---
+
+**Next up:** Audience Management — real-time segmentation →

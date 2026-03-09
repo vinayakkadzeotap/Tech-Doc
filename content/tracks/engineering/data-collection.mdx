@@ -1,0 +1,159 @@
+---
+title: Data Collection & SDKs
+description: Web, Mobile, and Server-side SDKs
+icon: 📡
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 2
+---
+
+## 📡 Data Collection & SDKs
+
+Data collection is the entry point of the Zeotap CDP pipeline. This module covers the SDK architecture, event schema, and ingestion endpoints that capture first-party data from web, mobile, and server-side sources.
+
+### SDK Portfolio
+
+<ComparisonTable
+  headers={["SDK", "Language", "Repo", "Use Case"]}
+  rows={[
+    ["Web SDK", "JavaScript/TypeScript", "analytics-sdk", "Browser tracking, SPA support"],
+    ["iOS SDK", "Swift", "analytics-sdk-ios", "Native iOS apps"],
+    ["Android SDK", "Kotlin", "analytics-sdk-android", "Native Android apps"],
+    ["Server-side", "REST API", "zeocore-api", "Backend event forwarding"],
+    ["GTM Template", "JavaScript", "analytics-sdk", "Google Tag Manager integration"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Web SDK Architecture
+
+The Web SDK is the most widely deployed. Key architecture decisions:
+
+**Event Queue & Batching:**
+- Events are queued in-memory and batched every 2 seconds or when batch reaches 10 events
+- Uses `navigator.sendBeacon()` for reliable delivery on page unload
+- Falls back to `XMLHttpRequest` for older browsers
+- Batch compression using gzip reduces payload size by ~70%
+
+**Offline Support:**
+- Events are persisted to `localStorage` when offline
+- Automatic retry with exponential backoff on network recovery
+- Queue limit of 1000 events to prevent storage overflow
+
+**Identity Management:**
+- Auto-generates anonymous ID (UUID v4) stored in first-party cookie
+- `identify()` call links anonymous ID to known identifiers (email, phone, CRM ID)
+- Supports multiple identity namespaces for flexible resolution
+
+**Consent Integration:**
+- Integrates with CMP (Consent Management Platforms) via TCF 2.0 API
+- Events tagged with consent status at collection time
+- Respects `navigator.globalPrivacyControl` signal
+- No data collected without valid consent
+
+### Event Schema
+
+Every event follows a standardized schema:
+
+```json
+{
+  "event": "page_view",
+  "anonymousId": "uuid-v4",
+  "userId": "user@email.com",
+  "properties": {
+    "page_title": "Product Page",
+    "page_url": "https://example.com/product/123",
+    "referrer": "https://google.com"
+  },
+  "context": {
+    "library": { "name": "zeotap-web", "version": "2.4.1" },
+    "userAgent": "...",
+    "locale": "en-US",
+    "timezone": "Europe/Berlin",
+    "consent": { "analytics": true, "marketing": false }
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "messageId": "uuid-v4"
+}
+```
+
+**Event Types:**
+- `identify` — Associate user with known identifiers
+- `track` — Custom events (purchase, signup, button_click)
+- `page` — Page view with URL, title, referrer
+- `screen` — Mobile screen view (equivalent of page)
+
+### Mobile SDKs
+
+<Expandable title="iOS SDK (Swift)" defaultOpen={true}>
+
+- **Architecture:** Singleton instance, background queue for event processing
+- **Persistence:** SQLite for offline event storage
+- **Identity:** IDFA (with ATT prompt), IDFV as fallback, custom identifiers
+- **Lifecycle events:** App open, app close, screen view auto-tracked
+- **Size:** ~200KB added to app binary
+
+</Expandable>
+
+<Expandable title="Android SDK (Kotlin)">
+
+- **Architecture:** WorkManager for reliable background event delivery
+- **Persistence:** Room database for offline queue
+- **Identity:** GAID (Google Advertising ID), custom identifiers
+- **Lifecycle events:** Activity/Fragment lifecycle auto-tracking
+- **Size:** ~150KB added to APK
+
+</Expandable>
+
+### Server-to-Server API
+
+For backend event forwarding:
+
+```
+POST /v1/collect/event
+Authorization: Bearer {write_key}
+Content-Type: application/json
+
+{
+  "events": [
+    { "event": "purchase", "userId": "user123", "properties": { "amount": 99.99 } }
+  ]
+}
+```
+
+- Rate limit: 1000 requests/second per org
+- Batch endpoint accepts up to 100 events per request
+- Idempotent via `messageId` — safe to retry
+
+### Ingestion Pipeline
+
+<ArchDiagram
+  title="Event Ingestion Flow"
+  steps={[
+    { label: "SDK/API", detail: "Event captured client or server side", icon: "📱" },
+    { label: "API Gateway", detail: "Auth, rate limiting, request validation", icon: "🛡️" },
+    { label: "Collect Service", detail: "Schema validation, consent check, enrichment", icon: "✅" },
+    { label: "Kafka", detail: "Published to events.raw.{orgId} topic", icon: "📨" },
+    { label: "Consumers", detail: "ID Graph, Profile Store, Audience Engine", icon: "⚙️" }
+  ]}
+/>
+
+### Schema Validation
+
+The Collect Service validates every event against the org's configured schema:
+- Required fields must be present
+- Data types must match (string, number, boolean, array)
+- Unknown fields are either rejected or stored in a flexible `extra` field
+- Validation failures go to a dead-letter queue with error details
+- Schema evolution supports additive changes without downtime
+
+<Callout type="info" title="Schema Registry">
+Each org has a schema registry that defines expected event types and their properties. Schema changes are versioned and backward-compatible changes are applied automatically.
+</Callout>
+
+<KeyConcepts concepts={["Web SDK", "Event Schema", "Batching", "Consent Integration", "Schema Validation", "Dead Letter Queue", "Anonymous ID", "Identify Call", "Server-to-Server API"]} />
+
+---
+
+**Next up:** Data Ingestion Pipelines — Kafka, Beam, Spark →

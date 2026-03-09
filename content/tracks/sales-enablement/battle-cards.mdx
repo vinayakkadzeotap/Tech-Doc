@@ -1,0 +1,299 @@
+---
+title: Competitive Battle Cards
+description: Head-to-head comparisons vs Segment, mParticle, Tealium, Adobe CDP, and Salesforce CDP with strengths, weaknesses, and traps
+icon: ⚔️
+estimatedMinutes: 30
+contentType: reference
+trackId: sales-enablement
+order: 6
+---
+
+## ⚔️ Competitive Battle Cards
+
+Know your competition better than they know themselves. This module provides head-to-head battle cards for the five competitors you will encounter most often, with honest assessments of their strengths, exploitable weaknesses, and tactical traps to set during evaluations.
+
+<KeyConcepts concepts={["Competitive Positioning", "Trap Questions", "Win Themes", "Weakness Exploitation", "Evaluation Criteria"]} />
+
+<Callout type="warning" title="Rules of Competitive Engagement">
+1. Never trash a competitor — it makes you look insecure.
+2. Acknowledge their strengths honestly — it builds your credibility.
+3. Steer the conversation to evaluation criteria where Zeotap wins.
+4. Let the prospect discover the competitor's gaps through their own questions.
+5. Always sell Zeotap's value, not against a competitor's weaknesses.
+</Callout>
+
+---
+
+## Zeotap's Universal Win Themes
+
+Before diving into individual competitors, these are the themes that differentiate Zeotap across the board:
+
+<StatCard stats={[
+  { value: "GDPR-First", label: "European-Born Architecture", color: "#3b82f6" },
+  { value: "UCID", label: "Proprietary Identity Resolution", color: "#10b981" },
+  { value: "Zoe AI", label: "Built-In Predictive Segmentation", color: "#a855f7" },
+  { value: "100+", label: "Pre-Built Destinations", color: "#f59e0b" }
+]} />
+
+---
+
+## Battle Card 1: Zeotap vs. Segment (Twilio)
+
+<Callout type="info" title="When You'll Face Segment">
+Segment is the most common competitor, especially when the prospect's engineering team is involved in the decision. Segment has strong brand recognition and a large developer community.
+</Callout>
+
+### Segment's Strengths (Acknowledge These)
+- Strong developer experience and documentation
+- Large ecosystem of integrations (300+ connectors)
+- Good event tracking and data routing capabilities
+- Well-known brand, especially in the US tech ecosystem
+- Twilio backing provides stability and cross-sell opportunities
+
+### Segment's Weaknesses (Exploit These)
+
+<ComparisonTable
+  headers={["Area", "Segment Limitation", "Zeotap Advantage"]}
+  rows={[
+    ["Identity resolution", "Basic identity stitching, relies heavily on known identifiers. No probabilistic matching.", "Proprietary UCID with deterministic + probabilistic matching. Higher match rates across channels."],
+    ["Privacy/GDPR", "US-born architecture. GDPR compliance added as a layer, not foundational. Limited EU data residency options.", "European-born. GDPR is architectural, not a feature. Full EU data residency. Event-level consent tracking."],
+    ["AI/ML capabilities", "Limited native AI. Primarily a data router — you need other tools for intelligence.", "Zoe AI engine built in: predictive segments, lookalike modeling, churn prediction, next-best-action."],
+    ["Audience building", "Requires Personas add-on at significant extra cost. Limited segment computation.", "Full segment builder included. Real-time audience computation. No hidden add-on costs."],
+    ["Enterprise support", "Tiered support model. Enterprise tier is expensive. Community forums for lower tiers.", "Dedicated CSM for every enterprise customer. Hands-on implementation support included."],
+    ["Pricing model", "Event-based pricing can become very expensive at scale. Unpredictable costs.", "Predictable pricing based on profiles, not events. No surprise bills from traffic spikes."]
+  ]}
+/>
+
+### Trap Questions to Suggest the Prospect Ask Segment
+
+<Expandable title="Questions That Expose Segment's Gaps" defaultOpen={true}>
+
+1. "Can you show us your probabilistic identity matching capabilities? What match rates do you achieve across anonymous and known users?"
+2. "Where exactly will our EU customer data be processed and stored? Can you guarantee no transatlantic transfers?"
+3. "What is included in the base platform vs. what requires Personas, Protocols, or other add-ons? Give us the all-in price."
+4. "How does consent propagation work when a user opts out — does it automatically cascade to all connected destinations?"
+5. "Show us your built-in predictive segmentation. Can you build a churn model or lookalike audience natively?"
+
+</Expandable>
+
+### How to Win Against Segment
+
+> **Positioning statement:** "Segment is excellent at what it was built for — collecting events and routing them to your data warehouse. If that is all you need, it is a fine choice. But if you need a true CDP — identity resolution, unified profiles, intelligent segmentation, and privacy-first activation — you will find yourself buying add-ons and building custom solutions on top of Segment to get what Zeotap provides natively."
+
+---
+
+## Battle Card 2: Zeotap vs. mParticle
+
+<Callout type="info" title="When You'll Face mParticle">
+mParticle appears in deals where mobile app data is a key requirement, or where the prospect has a strong US-based digital product team.
+</Callout>
+
+### mParticle's Strengths (Acknowledge These)
+- Strong mobile SDK and app data capabilities
+- Good real-time data quality and transformation features
+- Solid identity resolution for digital channels
+- Developer-friendly API and documentation
+- Good fit for digital-native companies
+
+### mParticle's Weaknesses (Exploit These)
+
+<ComparisonTable
+  headers={["Area", "mParticle Limitation", "Zeotap Advantage"]}
+  rows={[
+    ["Enterprise scale", "Primarily serves mid-market digital companies. Limited enterprise reference customers in Europe.", "Battle-tested with large European enterprises across retail, finance, telco, and media."],
+    ["Offline data", "Strong on digital/mobile but weak on integrating offline data (POS, call center, store).", "Full omnichannel unification including offline sources, CRM, POS, and call center data."],
+    ["European presence", "US-headquartered with limited European go-to-market and support.", "European-born with deep local market understanding, EU infrastructure, and local support teams."],
+    ["AI capabilities", "Basic audience tools. No built-in predictive modeling or AI-driven recommendations.", "Zoe AI engine with predictive segments, lookalike modeling, and automated audience discovery."],
+    ["Vertical expertise", "Horizontal platform without deep vertical solutions.", "Vertical-specific use cases and pre-built models for retail, finance, telco, and media."],
+    ["Privacy architecture", "Solid privacy tools but not GDPR-native. US-first design.", "GDPR-first architecture. Event-level consent. EU data residency by default."]
+  ]}
+/>
+
+### Trap Questions to Suggest the Prospect Ask mParticle
+
+<Expandable title="Questions That Expose mParticle's Gaps" defaultOpen={false}>
+
+1. "Can you show us enterprise reference customers in Europe with similar scale and use cases to ours?"
+2. "How do you handle offline data integration — POS transactions, in-store interactions, call center records?"
+3. "Walk us through your AI and predictive capabilities. Can you build a churn model or next-best-product recommendation natively?"
+4. "What does your European support model look like? Where is your nearest support team?"
+5. "Show us how consent propagation works for GDPR when a user exercises their right to erasure across all connected systems."
+
+</Expandable>
+
+### How to Win Against mParticle
+
+> **Positioning statement:** "mParticle is a strong choice for digital-native companies focused primarily on app and web data. If your data landscape extends beyond digital — into stores, call centers, CRM, and offline channels — and you operate in European markets with GDPR requirements, Zeotap provides the enterprise-grade, privacy-first platform that mParticle was not built for."
+
+---
+
+## Battle Card 3: Zeotap vs. Tealium
+
+<Callout type="info" title="When You'll Face Tealium">
+Tealium shows up in deals where the prospect has a strong tag management heritage or where IT/martech operations teams are leading the evaluation.
+</Callout>
+
+### Tealium's Strengths (Acknowledge These)
+- Industry-leading tag management (iQ TMS)
+- Strong server-side data collection (EventStream)
+- Good real-time data capabilities
+- Large install base, especially in enterprise
+- Solid consent management (via Tealium Consent Manager)
+
+### Tealium's Weaknesses (Exploit These)
+
+<ComparisonTable
+  headers={["Area", "Tealium Limitation", "Zeotap Advantage"]}
+  rows={[
+    ["Identity resolution", "AudienceStream identity is primarily rule-based. Limited probabilistic matching.", "UCID provides both deterministic and probabilistic matching with confidence scoring."],
+    ["AI/ML capabilities", "No native AI. Segment building is manual and rule-based only.", "Zoe AI for predictive segmentation, lookalike modeling, and automated audience discovery."],
+    ["Ease of use", "Complex interface. Steep learning curve. Requires technical expertise to operate.", "Intuitive segment builder designed for marketing teams. No-code audience creation."],
+    ["Modern architecture", "Architecture reflects tag management heritage. Can feel dated.", "Modern cloud-native architecture built for real-time processing at scale."],
+    ["Total cost", "Multiple products required (iQ + EventStream + AudienceStream). Costs add up.", "Unified platform. Identity, segmentation, and activation in one product, one price."],
+    ["Innovation pace", "Slower product development cycle. Tag management focus dilutes CDP investment.", "Focused CDP innovation with rapid feature releases and AI-first roadmap."]
+  ]}
+/>
+
+### Trap Questions to Suggest the Prospect Ask Tealium
+
+<Expandable title="Questions That Expose Tealium's Gaps" defaultOpen={false}>
+
+1. "Can you show us AI-powered segment recommendations? We want the platform to discover audiences we have not thought of."
+2. "What is the total cost for iQ, EventStream, and AudienceStream combined? We need an all-in number."
+3. "How would a marketing team member — not a technical user — build and activate a segment? Show us the workflow."
+4. "What does your probabilistic identity matching look like? What match rates do you achieve across anonymous and known users?"
+5. "Walk us through your product roadmap for AI and machine learning capabilities over the next 12 months."
+
+</Expandable>
+
+### How to Win Against Tealium
+
+> **Positioning statement:** "Tealium built an excellent tag management platform and extended it into CDP territory. If tag management is your primary need, Tealium is a natural fit. But if you need a modern CDP with AI-powered segmentation, advanced identity resolution, and an interface your marketing team can actually use without engineering support, Zeotap is purpose-built for that."
+
+---
+
+## Battle Card 4: Zeotap vs. Adobe CDP (Real-Time CDP)
+
+<Callout type="info" title="When You'll Face Adobe">
+Adobe appears in deals where the prospect is already an Adobe Experience Cloud customer, or where a large system integrator is driving the evaluation.
+</Callout>
+
+### Adobe's Strengths (Acknowledge These)
+- Deep integration with Adobe Experience Cloud (Analytics, Target, Campaign, Journey Optimizer)
+- Strong brand and enterprise credibility
+- Extensive professional services and partner ecosystem
+- Powerful for organizations fully committed to the Adobe stack
+- Rich content and experience management capabilities
+
+### Adobe's Weaknesses (Exploit These)
+
+<ComparisonTable
+  headers={["Area", "Adobe Limitation", "Zeotap Advantage"]}
+  rows={[
+    ["Vendor lock-in", "Best value when you use the full Adobe stack. Limited value as standalone CDP.", "Platform-agnostic. Works with any martech stack. 100+ destinations across all major platforms."],
+    ["Implementation time", "Typical implementation: 6-12 months. Requires SI partner. Extremely complex.", "Typical implementation: 6-10 weeks. Dedicated CSM. Faster time to value."],
+    ["Total cost of ownership", "Very expensive. Platform license + SI fees + Adobe ecosystem costs. Often $1M+ annually.", "Significantly lower TCO. No mandatory SI engagement. Transparent pricing."],
+    ["Identity resolution", "Profile merging capabilities but less sophisticated than dedicated identity solutions.", "UCID with proprietary deterministic + probabilistic matching. Higher match rates."],
+    ["Flexibility", "Rigid within Adobe ecosystem. Difficult to activate to non-Adobe destinations.", "Equal activation to all destinations. No preference for any ecosystem."],
+    ["Ease of use", "Complex interface. Heavy reliance on Adobe consultants for configuration and changes.", "Self-service segment builder. Marketing teams can operate independently after onboarding."]
+  ]}
+/>
+
+### Trap Questions to Suggest the Prospect Ask Adobe
+
+<Expandable title="Questions That Expose Adobe's Gaps" defaultOpen={false}>
+
+1. "What is the total cost including implementation services, training, and ongoing SI support? Give us the 3-year TCO."
+2. "How does the CDP perform if we want to activate to non-Adobe destinations — Google, Meta, Salesforce? Is it as capable?"
+3. "What is a realistic implementation timeline? Can we see a project plan from a recent implementation of similar scope?"
+4. "Can our marketing team build and modify segments without needing Adobe consultants or technical resources?"
+5. "If we decide to move away from Adobe in the future, how portable is our data and our configurations?"
+
+</Expandable>
+
+### How to Win Against Adobe
+
+> **Positioning statement:** "If you are fully committed to the Adobe ecosystem and budget is not a constraint, Adobe CDP makes sense as part of that stack. But if you need a CDP that works with your existing tools — whatever they are — that can be implemented in weeks instead of months, and that does not require an army of consultants to operate, Zeotap delivers better outcomes at a fraction of the cost and complexity."
+
+---
+
+## Battle Card 5: Zeotap vs. Salesforce CDP (Data Cloud)
+
+<Callout type="info" title="When You'll Face Salesforce">
+Salesforce appears when the prospect is a Salesforce CRM customer and their Salesforce AE is positioning Data Cloud as a natural extension.
+</Callout>
+
+### Salesforce's Strengths (Acknowledge These)
+- Deep CRM integration — if you live in Salesforce, Data Cloud connects natively
+- Strong brand trust and enterprise relationships
+- Growing investment in AI (Einstein) and data capabilities
+- Large partner and SI ecosystem
+- Familiar interface for existing Salesforce users
+
+### Salesforce's Weaknesses (Exploit These)
+
+<ComparisonTable
+  headers={["Area", "Salesforce Limitation", "Zeotap Advantage"]}
+  rows={[
+    ["CDP maturity", "Data Cloud is relatively new (rebranded multiple times). Still evolving as a CDP.", "Purpose-built CDP with 7+ years of development. Mature, proven platform."],
+    ["Identity resolution", "Identity resolution tied to Salesforce ecosystem. Limited cross-channel probabilistic matching.", "UCID provides enterprise-grade identity resolution across all channels, online and offline."],
+    ["Real-time capabilities", "Batch-oriented architecture. Real-time is improving but not native.", "Built for real-time from day one. Sub-second event processing and segment evaluation."],
+    ["Non-Salesforce activation", "Optimized for Salesforce ecosystem. Activation to non-Salesforce tools is secondary.", "Equal-priority activation to all 100+ destinations. No ecosystem bias."],
+    ["Privacy architecture", "US-first design. GDPR capabilities added as compliance requirements, not foundational.", "GDPR-first European architecture. Event-level consent. EU data residency."],
+    ["Pricing transparency", "Complex pricing tied to Salesforce contract. Often bundled in ways that obscure true CDP cost.", "Transparent, standalone CDP pricing. Clear value independent of any ecosystem."]
+  ]}
+/>
+
+### Trap Questions to Suggest the Prospect Ask Salesforce
+
+<Expandable title="Questions That Expose Salesforce's Gaps" defaultOpen={false}>
+
+1. "Can you show us real-time segment evaluation — not batch processing marketed as 'near real-time'?"
+2. "How does Data Cloud perform when activating to non-Salesforce destinations? Show us the Google Ads and Meta integration."
+3. "What is the standalone price for Data Cloud without bundling it with other Salesforce products?"
+4. "Show us your probabilistic identity resolution. What match rates do you achieve for anonymous-to-known user stitching?"
+5. "How do you handle GDPR consent propagation at the event level? Show us a data deletion request flowing through the system."
+6. "Can you provide European enterprise reference customers using Data Cloud as their primary CDP — not just as a Salesforce add-on?"
+
+</Expandable>
+
+### How to Win Against Salesforce
+
+> **Positioning statement:** "Salesforce Data Cloud is a natural extension if CRM is the center of your universe. But a CDP needs to be the center of your customer data universe — ingesting from every source, not just CRM, and activating to every destination, not just Salesforce. If you need enterprise-grade identity resolution, real-time processing, GDPR-first architecture, and equal activation across your entire martech stack, Zeotap is the purpose-built solution."
+
+---
+
+## Competitive Quick Reference
+
+<ComparisonTable
+  headers={["Competitor", "Their Story", "Our Counter", "Key Trap Question"]}
+  rows={[
+    ["Segment", "Developer-loved data router with huge ecosystem", "Data router ≠ CDP. No real identity resolution, AI, or GDPR-first design.", "Show us probabilistic matching and built-in predictive segments."],
+    ["mParticle", "Mobile-first CDP for digital companies", "Digital-only. No offline data. No European presence. No AI.", "Show us enterprise EU references and offline data handling."],
+    ["Tealium", "Tag management leader extended to CDP", "Tag heritage shows. No AI. Complex UI. Multiple products to buy.", "Show us AI-powered segmentation and the all-in price."],
+    ["Adobe CDP", "Part of the industry-leading Experience Cloud", "Ecosystem lock-in. 6-12 month implementation. Extremely expensive.", "Give us 3-year TCO including SI costs and non-Adobe activation."],
+    ["Salesforce CDP", "Natural extension of your CRM investment", "CRM add-on, not a real CDP. Batch processing. US-first privacy.", "Show us real-time processing and standalone pricing."]
+  ]}
+/>
+
+---
+
+## Evaluation Criteria to Propose
+
+<Callout type="success" title="Control the Evaluation">
+Whenever possible, propose the evaluation criteria. The criteria you set determine who wins. Here are the criteria where Zeotap consistently leads.
+</Callout>
+
+When a prospect announces a formal evaluation, suggest they assess vendors on these criteria:
+
+1. **Identity resolution quality** — Match rates across known and anonymous users, deterministic and probabilistic matching, cross-device stitching
+2. **Privacy and compliance** — GDPR-native architecture, consent propagation, DSAR automation, data residency options, certifications
+3. **AI and intelligence** — Predictive segmentation, automated audience discovery, lookalike modeling, churn prediction
+4. **Time to value** — Implementation timeline to first activated use case, complexity of onboarding
+5. **Total cost of ownership** — All-in pricing including add-ons, implementation services, ongoing support, and SI costs
+6. **Ecosystem neutrality** — Equal activation quality across all major destinations, not just the vendor's own ecosystem
+7. **Enterprise readiness** — Scale, reliability, support model, European references
+
+These criteria play directly to Zeotap's strengths. If a competitor tries to shift the criteria to areas like developer community size, tag management, or ecosystem breadth, redirect:
+
+> "Those are valid considerations, but the core question is: which platform best unifies your customer data, resolves identities, and activates intelligently while keeping you compliant? That is what a CDP evaluation should ultimately answer."

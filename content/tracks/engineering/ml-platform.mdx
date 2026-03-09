@@ -1,0 +1,121 @@
+---
+title: ML Platform
+description: Vertex AI, propensity scoring, feature store
+icon: 🧠
+estimatedMinutes: 25
+contentType: deep-dive
+trackId: engineering
+order: 10
+---
+
+## 🧠 ML Platform
+
+Zeotap's ML platform powers predictive models, lookalike audiences, and Data Alchemy enrichment. Built on Google Vertex AI, it provides end-to-end ML lifecycle management from feature engineering to model serving.
+
+### Platform Architecture
+
+<ArchDiagram
+  title="ML Platform Components"
+  steps={[
+    { label: "Feature Store", detail: "Engineered features from events/profiles", icon: "📦" },
+    { label: "Model Training", detail: "Vertex AI training pipelines", icon: "🔧" },
+    { label: "Model Registry", detail: "Versioned model storage", icon: "📋" },
+    { label: "Model Serving", detail: "Online + batch inference", icon: "⚡" },
+    { label: "Monitoring", detail: "Drift detection, performance tracking", icon: "📊" }
+  ]}
+/>
+
+### Feature Store
+
+The Feature Store manages reusable, precomputed features:
+
+**Feature Engineering:**
+- Raw events → aggregated features (counts, sums, averages over time windows)
+- Example: `purchase_count_30d`, `avg_order_value_90d`, `days_since_last_visit`
+- Features computed via Spark jobs on schedule (hourly, daily)
+- Stored in BigTable (online serving) and BigQuery (offline training)
+
+**Feature Groups:**
+
+<ComparisonTable
+  headers={["Group", "Features", "Update Frequency"]}
+  rows={[
+    ["Behavioral", "Page views, sessions, event counts", "Hourly"],
+    ["Transactional", "Purchase count, AOV, LTV, revenue", "Daily"],
+    ["Engagement", "Email opens, click rates, app usage", "Daily"],
+    ["Temporal", "Days since X, recency scores", "Daily"],
+    ["Demographic", "Age, location, declared preferences", "On change"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Propensity Models
+
+Pre-built models available to all customers:
+
+**Purchase Propensity:**
+- Predicts likelihood of purchase in next 7/14/30 days
+- Features: recency, frequency, monetary, browsing patterns, cart activity
+- Algorithm: Gradient Boosted Trees (XGBoost on Vertex AI)
+- Output: Score 0-100, updated daily per profile
+
+**Churn Propensity:**
+- Predicts likelihood of becoming inactive
+- Features: declining engagement, support tickets, reduced visit frequency
+- Algorithm: Random Forest with temporal features
+- Output: Risk score (low/medium/high), updated daily
+
+**Engagement Propensity:**
+- Predicts likelihood of engaging with a campaign
+- Features: historical response rates, channel preferences, content affinity
+- Algorithm: Logistic regression with L2 regularization
+- Output: Per-channel engagement probability
+
+### Lookalike Audiences
+
+Generate new audiences similar to a seed audience:
+
+1. **Seed:** Customer provides high-value audience (e.g., top 1000 customers)
+2. **Feature extraction:** Extract feature vectors for seed profiles
+3. **Similarity search:** Find profiles with similar feature vectors using approximate nearest neighbors (ANN)
+4. **Scoring:** Rank all non-seed profiles by similarity score
+5. **Output:** New audience of top-N similar profiles
+
+### Data Alchemy
+
+Data Alchemy enriches customer profiles with derived attributes:
+
+- **Interest scoring** — Infer interests from browsing/purchase behavior
+- **Persona classification** — Assign personas (e.g., "Budget Shopper", "Premium Buyer")
+- **Predictive demographics** — Estimate age range, income bracket from behavioral signals
+- **Content affinity** — Map users to content categories they engage with
+
+### Model Serving
+
+**Online Inference:**
+- Vertex AI Endpoints for real-time predictions
+- Latency: <100ms p99
+- Auto-scaling based on request volume
+- Used for real-time personalization and journey decisions
+
+**Batch Inference:**
+- Spark jobs score all profiles on schedule
+- Results written to Profile Store as computed attributes
+- Used for audience building and reporting
+
+### Model Monitoring
+
+- **Data drift detection** — Alert when feature distributions shift significantly
+- **Performance tracking** — Track model accuracy over time (AUC, precision, recall)
+- **Automated retraining** — Trigger retraining when performance drops below threshold
+- **A/B testing** — Compare new model versions against production in shadow mode
+
+<Callout type="tip" title="ML for Non-ML Engineers">
+You don't need to be an ML expert to work with the ML platform. Feature engineering and model serving are abstracted behind APIs. If you're building a feature that needs predictions, just call the scoring API with a UCID and get back propensity scores.
+</Callout>
+
+<KeyConcepts concepts={["Feature Store", "Propensity Model", "Lookalike Audience", "Data Alchemy", "Vertex AI", "XGBoost", "Model Drift", "Online vs Batch Inference"]} />
+
+---
+
+**Next up:** Reporting & BI — analytics architecture →

@@ -1,0 +1,237 @@
+---
+title: Building Journeys on the Canvas
+description: Create multi-step customer journeys using triggers, actions, wait steps, A/B splits, and the drag-and-drop canvas editor
+icon: 🗺️
+estimatedMinutes: 40
+contentType: tutorial
+trackId: product-mastery
+order: 4
+---
+
+## 🗺️ Building Journeys on the Canvas
+
+Customer journeys turn your audiences into automated, multi-step experiences. Instead of sending a one-time blast, journeys let you orchestrate a sequence of interactions — emails, push notifications, ad targeting, wait periods, and conditional branches — all on a visual drag-and-drop canvas.
+
+<Callout type="info" title="Prerequisites">
+You need **Editor** or **Admin** role access. You should have at least one audience created and at least one destination configured before building a journey.
+</Callout>
+
+### When to Use Journeys vs. Simple Audience Activation
+
+<ComparisonTable
+  headers={["Scenario", "Use Audiences", "Use Journeys"]}
+  rows={[
+    ["One-time campaign blast", "Yes", "No"],
+    ["Ongoing segment sync to ads", "Yes", "No"],
+    ["Multi-step onboarding flow", "No", "Yes"],
+    ["Time-delayed follow-ups", "No", "Yes"],
+    ["A/B testing message variants", "No", "Yes"],
+    ["Conditional branching based on behavior", "No", "Yes"],
+    ["Cart abandonment recovery", "No", "Yes"]
+  ]}
+/>
+
+### Anatomy of the Journey Canvas
+
+The canvas is a visual workspace where you build journeys by dragging and connecting blocks.
+
+<ArchDiagram
+  title="Journey Canvas Components"
+  steps={[
+    { label: "Entry Trigger", detail: "How users enter the journey: audience membership, event, or schedule", icon: "🚪" },
+    { label: "Action Steps", detail: "What happens: send email, push to destination, update profile", icon: "⚡" },
+    { label: "Wait Steps", detail: "Pause the journey for a set time or until a condition is met", icon: "⏳" },
+    { label: "Decision Splits", detail: "Branch based on profile attributes or behavior", icon: "🔀" },
+    { label: "A/B Splits", detail: "Randomly split users to test different paths", icon: "🧪" },
+    { label: "Exit Criteria", detail: "When to remove users from the journey early", icon: "🚪" }
+  ]}
+/>
+
+The left panel contains a **block palette** with all available step types. Drag them onto the canvas and connect them by drawing lines between blocks. The canvas supports zoom, pan, and snap-to-grid for clean layouts.
+
+### Step 1: Create a New Journey
+
+1. Navigate to **Journeys** in the left nav.
+2. Click **+ Create Journey**.
+3. Enter a **name** (e.g., "New Customer Onboarding") and optional **description**.
+4. Select a **category** (Onboarding, Retention, Win-back, Promotional, Custom).
+5. Click **Open Canvas** to enter the editor.
+
+### Step 2: Set the Entry Trigger
+
+Every journey starts with a trigger — the condition that causes a user to enter the journey.
+
+#### Audience-Based Entry
+
+- Select **Audience Entry** from the trigger options.
+- Choose an existing audience. Users who enter the audience will automatically enter the journey.
+- Configure **entry behavior**:
+  - **Enter once** — users enter the journey only the first time they qualify
+  - **Re-enter** — users can re-enter each time they qualify (with a configurable cooldown)
+
+#### Event-Based Entry
+
+- Select **Event Entry** from the trigger options.
+- Choose an event (e.g., `purchase`, `signup`, `support_ticket_created`).
+- Optionally add filters on event properties (e.g., `purchase where amount > 100`).
+- Users enter the journey the moment the event fires.
+
+<Callout type="tip" title="Event Triggers Are Real-Time">
+Unlike audience-based entry (which depends on audience refresh cadence), event-based entry triggers within seconds of the event occurring. Use event triggers when timing is critical — like cart abandonment or signup confirmation.
+</Callout>
+
+#### Scheduled Entry
+
+- Select **Schedule Entry** for journeys that run on a fixed cadence.
+- Define the schedule: daily, weekly, or monthly at a specific time.
+- Choose the audience to process at each scheduled run.
+
+### Step 3: Add Action Steps
+
+Actions are the things that happen to users as they move through the journey.
+
+#### Send to Destination
+
+The most common action. Push the user to a marketing or analytics platform.
+
+1. Drag a **Send to Destination** block onto the canvas.
+2. Connect it to the previous step.
+3. Select the destination (e.g., email platform, Google Ads, Meta).
+4. Configure what data to send:
+   - For email platforms: select the email template or campaign
+   - For ad platforms: add to or remove from a custom audience
+   - For CRM: update a field or create a record
+
+#### Update Profile
+
+Modify a user's profile attributes as they move through the journey.
+
+1. Drag an **Update Profile** block onto the canvas.
+2. Select the attribute to update (e.g., `lifecycle_stage`).
+3. Set the new value (e.g., "Active Customer").
+
+This is useful for tracking journey progress in the profile itself.
+
+#### Send Webhook
+
+For custom integrations, send an HTTP request to any endpoint.
+
+1. Drag a **Webhook** block onto the canvas.
+2. Configure the URL, method (POST/PUT), headers, and payload.
+3. Use template variables to include user data: `{{profile.email}}`, `{{profile.first_name}}`.
+
+### Step 4: Add Wait Steps
+
+Wait steps introduce time delays between actions.
+
+#### Fixed Wait
+
+Pause for a specific duration:
+
+- **Minutes** — 15 min, 30 min, 1 hour
+- **Hours** — 2 hours, 6 hours, 12 hours, 24 hours
+- **Days** — 1 day, 3 days, 7 days, 14 days, 30 days
+
+<Callout type="tip" title="Respect Time Zones">
+When setting wait durations that land on a specific time of day (e.g., "wait until 9 AM"), enable the **User's timezone** option. This ensures an email scheduled for 9 AM arrives at 9 AM local time for each user, not 9 AM in your server's timezone.
+</Callout>
+
+#### Conditional Wait
+
+Wait until a specific condition is met, or a timeout expires:
+
+1. Drag a **Wait Until** block onto the canvas.
+2. Define the condition (e.g., "user opens email" or "user visits pricing page").
+3. Set a **timeout** — if the condition isn't met within this window, the user continues down a separate path.
+
+This creates a natural branch: users who met the condition go one way; users who timed out go another.
+
+### Step 5: Add Decision Splits
+
+Decision splits branch the journey based on conditions.
+
+1. Drag a **Decision Split** block onto the canvas.
+2. Define the condition using the same rule builder from Audiences.
+3. Two paths emerge: **Yes** (condition met) and **No** (condition not met).
+
+**Example branches:**
+
+| Condition | Yes Path | No Path |
+|---|---|---|
+| Has opened email | Send follow-up offer | Send reminder email |
+| Country is "DE" | Send German content | Send English content |
+| Purchase value > 500 | VIP treatment flow | Standard flow |
+
+You can chain decision splits to create complex multi-branch trees.
+
+### Step 6: Add A/B Splits
+
+A/B splits randomly divide users to test different approaches.
+
+1. Drag an **A/B Split** block onto the canvas.
+2. Set the split percentages (e.g., 50/50, 70/30, or multi-way like 33/33/34).
+3. Name each variant (e.g., "Variant A: Discount Offer", "Variant B: Free Shipping").
+4. Build different action sequences for each path.
+
+<Callout type="success" title="Always Have a Control Group">
+Consider using a 3-way split: 45% Variant A, 45% Variant B, 10% Control (no action). The control group lets you measure the true incremental impact of your journey versus doing nothing.
+</Callout>
+
+<Expandable title="How are A/B split results tracked?" defaultOpen={false}>
+After the journey runs for a sufficient period, navigate to **Journeys > [Your Journey] > Performance**. The A/B results panel shows each variant's performance against your selected goal metric (conversion rate, revenue, engagement). Zeotap automatically calculates statistical significance so you know when a winner emerges.
+</Expandable>
+
+### Step 7: Configure Exit Criteria
+
+Exit criteria define when users should be removed from a journey before reaching the end.
+
+1. Click the **Exit Criteria** button in the journey settings panel (top right of canvas).
+2. Add conditions:
+   - **Goal reached** — e.g., user made a purchase (remove them from a cart abandonment journey)
+   - **Audience membership lost** — user no longer qualifies for the entry audience
+   - **Event occurred** — e.g., user unsubscribed
+   - **Manual removal** — you can manually remove specific users
+
+<Callout type="warning" title="Always Set Exit Criteria">
+Without exit criteria, users stay in the journey until they reach the final step. This can lead to embarrassing situations — like sending a "complete your purchase" email to someone who already bought the product.
+</Callout>
+
+### Step 8: Test and Launch
+
+Before going live:
+
+1. Click **Preview** to see a visual summary of the entire journey with step counts and estimated volumes.
+2. Use **Send Test** to push yourself (or a test profile) through the journey and verify each step works.
+3. Check the **Validation panel** — it flags issues like missing destinations, disconnected blocks, or invalid conditions.
+4. Set the **Start date** and optionally an **End date**.
+5. Click **Launch Journey**.
+
+#### Journey States
+
+| State | Meaning |
+|---|---|
+| Draft | Journey is being built, not running |
+| Scheduled | Journey is set to start at a future date |
+| Active | Journey is live and processing users |
+| Paused | Journey is temporarily stopped; users in-flight remain where they are |
+| Completed | Journey has ended (reached end date or manually stopped) |
+
+### Canvas Best Practices
+
+1. **Keep it simple** — start with 3-5 steps. You can always add complexity later.
+2. **Name every block** — double-click any block to rename it. "Send Email" isn't helpful; "Send Welcome Email - Day 1" is.
+3. **Use notes** — the canvas supports sticky notes. Add them to explain business logic for teammates.
+4. **Clone successful journeys** — use **Duplicate Journey** to create variations without starting from scratch.
+5. **Set up alerting** — under journey settings, configure alerts for when error rates exceed a threshold.
+
+<Expandable title="Can I edit a live journey?" defaultOpen={false}>
+Yes, with caveats. You can edit a live journey, but changes only apply to users who haven't yet reached the modified step. Users already past that point continue on the original path. For major restructuring, it's safer to pause the journey, duplicate it, make changes on the copy, then swap them.
+</Expandable>
+
+### Key Terminology
+
+<KeyConcepts concepts={["Journey", "Canvas", "Entry Trigger", "Action Step", "Wait Step", "Decision Split", "A/B Split", "Exit Criteria", "Conditional Wait", "Journey State", "Variant"]} />
+
+---
+
+**Next up:** Learn how to activate your data by setting up destinations and managing syncs.
