@@ -1,6 +1,6 @@
 ---
 title: CI/CD Pipelines
-description: CircleCI, GitHub Actions, Harness, GitOps
+description: CloudBuild, ArgoCD, GitOps
 icon: 🔄
 estimatedMinutes: 20
 contentType: deep-dive
@@ -10,132 +10,307 @@ order: 17
 
 ## 🔄 CI/CD Pipelines
 
-Zeotap follows a GitOps workflow where infrastructure and application state is managed in Git. This module covers the CI/CD pipeline from commit to production deployment.
+Zeotap follows a GitOps workflow where the desired state of every environment is declared in Git. This module covers the complete pipeline from code commit to production deployment, including CloudBuild for CI, ArgoCD for CD, Helm packaging, deployment strategies, feature flags, and rollback procedures.
+
+<StatCard stats={[
+  { value: "CloudBuild", label: "Continuous Integration", color: "#3b82f6" },
+  { value: "ArgoCD", label: "Continuous Deployment", color: "#10b981" },
+  { value: "GitOps", label: "Deployment Model", color: "#a855f7" },
+  { value: "<15 min", label: "Commit to Production", color: "#f59e0b" }
+]} />
 
 ### GitOps Workflow
 
+In the GitOps model, Git is the single source of truth for both application code and infrastructure configuration. No manual `kubectl apply` commands, no ad-hoc configuration changes. Everything flows through Git.
+
 <ArchDiagram
-  title="CI/CD Pipeline"
+  title="GitOps CI/CD Pipeline"
   steps={[
-    { label: "Commit", detail: "Push to feature branch", icon: "📝" },
-    { label: "CI", detail: "Build, test, lint, scan", icon: "🔧" },
-    { label: "Image", detail: "Container image to registry", icon: "📦" },
-    { label: "GitOps", detail: "Update manifests in config repo", icon: "📋" },
-    { label: "CD", detail: "ArgoCD syncs to cluster", icon: "🚀" }
+    { label: "Code Commit", detail: "Push to feature branch, open PR", icon: "📝" },
+    { label: "CI Pipeline", detail: "CloudBuild: lint, test, scan, build image", icon: "🔧" },
+    { label: "Image Registry", detail: "Push tagged image to Google Artifact Registry", icon: "📦" },
+    { label: "Config Update", detail: "Update Helm values with new image tag in config repo", icon: "📋" },
+    { label: "ArgoCD Sync", detail: "Detect config change, apply to GKE cluster", icon: "🚀" },
+    { label: "Health Check", detail: "Verify deployment health, readiness probes pass", icon: "✅" }
   ]}
 />
 
-### Continuous Integration
+**Two-Repository Model:**
 
-Zeotap uses **CircleCI**, **GitHub Actions**, and **Harness** for CI depending on the service:
+Zeotap separates application code from deployment configuration:
 
-<TechStack
-  title="CI/CD Tools"
-  items={[
-    { name: "CircleCI", role: "Primary CI for most services" },
-    { name: "GitHub Actions", role: "CI for newer services and OSS" },
-    { name: "Harness", role: "Enterprise CD and deployment pipelines" },
-    { name: "Helm", role: "K8s package management" },
-    { name: "Google Artifact Registry", role: "Container image storage" }
-  ]}
-/>
+| Repository | Contains | Trigger |
+|---|---|---|
+| Application repo (e.g., `zeocore-api`) | Source code, Dockerfile, unit tests, CloudBuild config | PR creation and merge |
+| Config repo (`k8s-deployments`) | Helm value files per service per environment | Image tag update from CI |
 
-**Pipeline Stages:**
+This separation ensures that deployment configuration changes are versioned, reviewed, and auditable independently from code changes.
+
+### Continuous Integration (CloudBuild)
+
+CloudBuild runs the CI pipeline on every PR and merge to main. The pipeline is defined as a `cloudbuild.yaml` in each application repository.
 
 <ComparisonTable
-  headers={["Stage", "What It Does", "Failure Action"]}
+  headers={["Stage", "What It Does", "Tools", "Failure Action"]}
   rows={[
-    ["Lint", "Code style, formatting checks", "Block merge"],
-    ["Unit Tests", "Run test suite with coverage", "Block merge (<80% coverage)"],
-    ["Integration Tests", "Test against real dependencies", "Block merge"],
-    ["Security Scan", "SAST, dependency vulnerability check", "Block on critical CVEs"],
-    ["Build", "Compile, create Docker image", "Block merge"],
-    ["Push Image", "Push to Google Artifact Registry", "Block deploy"],
-    ["Update Manifests", "Update Helm values with new image tag", "Block deploy"]
+    ["Lint", "Code style, formatting, static analysis", "ESLint, Checkstyle, golangci-lint, Scalafmt", "Block merge"],
+    ["Unit Tests", "Run test suite, enforce coverage threshold", "JUnit, go test, pytest, Jest", "Block merge (<80% coverage)"],
+    ["Integration Tests", "Test with real dependencies via Testcontainers", "Testcontainers, embedded Kafka", "Block merge"],
+    ["Security Scan", "SAST, dependency CVE check, container scan", "Snyk, Trivy, gitleaks", "Block on critical/high CVEs"],
+    ["Build", "Compile application, create Docker image", "Docker, Jib (Java), ko (Go)", "Block merge"],
+    ["Push Image", "Tag and push to Artifact Registry", "Google Artifact Registry", "Block deploy"],
+    ["Update Config", "Patch Helm values with new image tag", "yq, git commit to config repo", "Block deploy"]
   ]}
-  highlightColumn={2}
+  highlightColumn={3}
 />
 
-**CI Configuration:**
-- Triggered on PR creation/update and merge to main
-- Parallel execution of independent stages
-- Build cache for faster subsequent builds
-- Artifacts stored in Google Artifact Registry
-- Build notifications to Slack
+<Expandable title="CloudBuild Configuration Example" defaultOpen={false}>
+
+A typical `cloudbuild.yaml` for a Java Spring Boot service:
+
+```yaml
+steps:
+  - id: 'lint'
+    name: 'gradle:8-jdk17'
+    args: ['gradle', 'checkstyleMain', 'checkstyleTest']
+
+  - id: 'test'
+    name: 'gradle:8-jdk17'
+    args: ['gradle', 'test', 'jacocoTestReport']
+    waitFor: ['lint']
+
+  - id: 'security-scan'
+    name: 'snyk/snyk:gradle'
+    args: ['snyk', 'test', '--severity-threshold=high']
+    waitFor: ['-']  # Run in parallel with lint
+
+  - id: 'build-image'
+    name: 'gradle:8-jdk17'
+    args: ['gradle', 'jib', '--image=${_REGISTRY}/${_SERVICE}:${SHORT_SHA}']
+    waitFor: ['test', 'security-scan']
+
+  - id: 'container-scan'
+    name: 'aquasec/trivy'
+    args: ['image', '--exit-code', '1', '--severity', 'CRITICAL',
+           '${_REGISTRY}/${_SERVICE}:${SHORT_SHA}']
+    waitFor: ['build-image']
+
+  - id: 'update-config'
+    name: 'mikefarah/yq'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        git clone https://github.com/zeotap/k8s-deployments.git
+        cd k8s-deployments
+        yq e '.image.tag = "${SHORT_SHA}"' -i services/${_SERVICE}/values-dev.yaml
+        git commit -am "chore: update ${_SERVICE} to ${SHORT_SHA}"
+        git push
+    waitFor: ['container-scan']
+
+substitutions:
+  _REGISTRY: 'europe-west3-docker.pkg.dev/zeotap-prod/services'
+  _SERVICE: 'zeocore-api'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+```
+
+Key features:
+- **Parallel execution** of independent stages (lint + security scan)
+- **Jib** for Java image builds (no Docker daemon required, layer caching)
+- **Trivy** for container vulnerability scanning
+- **Automated config update** commits the new image tag to the GitOps repo
+
+</Expandable>
+
+**Build Performance:**
+- Average CI pipeline duration: 6-8 minutes for Java services, 3-4 minutes for Go services
+- Docker layer caching via Artifact Registry for faster image builds
+- Gradle/Go build caches stored in GCS for incremental compilation
+- Parallel stage execution reduces critical path
+- Build notifications to Slack with status, duration, and links
 
 ### Continuous Deployment (ArgoCD)
 
-**ArgoCD** monitors a GitOps config repository:
+ArgoCD watches the `k8s-deployments` config repo and continuously reconciles the desired state (Git) with the actual state (GKE cluster). It is the only mechanism for deploying to Kubernetes.
 
-1. CI pipeline updates image tag in Helm values file
-2. ArgoCD detects change in config repo
-3. ArgoCD compares desired state (Git) with actual state (cluster)
-4. ArgoCD applies the diff to the cluster
-5. Health checks verify the deployment succeeded
+<TechStack
+  title="ArgoCD Configuration"
+  items={[
+    { name: "ArgoCD Server", role: "Web UI and API for deployment management" },
+    { name: "Application CRD", role: "One Application per service per environment" },
+    { name: "ApplicationSet", role: "Templated multi-env deployment definitions" },
+    { name: "App of Apps", role: "Root application managing all service applications" },
+    { name: "Sync Waves", role: "Ordered deployment of dependent resources" },
+    { name: "Health Checks", role: "Custom Lua scripts for deployment health validation" }
+  ]}
+/>
 
-**Key ArgoCD Features:**
-- **Auto-sync** — Automatically deploy when config changes (staging)
-- **Manual sync** — Require approval for production deployments
-- **Rollback** — One-click rollback to any previous Git commit
-- **Diff view** — See exactly what will change before deploying
-- **Health monitoring** — Track deployment health and pod status
+**ArgoCD Sync Policies:**
+
+<ComparisonTable
+  headers={["Environment", "Sync Mode", "Auto-Prune", "Self-Heal", "Approval"]}
+  rows={[
+    ["Dev", "Auto-sync (immediate)", "Enabled", "Enabled", "None required"],
+    ["Staging", "Auto-sync (5min delay)", "Enabled", "Enabled", "None required"],
+    ["Production (EU)", "Manual sync", "Disabled", "Enabled", "Requires approval in ArgoCD UI"],
+    ["Production (US)", "Manual sync", "Disabled", "Enabled", "Requires approval in ArgoCD UI"]
+  ]}
+  highlightColumn={1}
+/>
+
+**Deployment Flow:**
+
+1. CI pipeline updates image tag in `k8s-deployments/services/{service}/values-{env}.yaml`
+2. ArgoCD detects the Git commit within 3 minutes (polling interval) or immediately via webhook
+3. ArgoCD renders the Helm chart with updated values and computes the diff
+4. For dev/staging: auto-sync applies the diff immediately
+5. For production: engineer reviews the diff in ArgoCD UI and clicks "Sync"
+6. ArgoCD applies resources in sync-wave order (ConfigMaps first, then Deployments, then Services)
+7. Health checks verify all pods are running and readiness probes pass
+8. ArgoCD marks the sync as "Healthy" or "Degraded"
+
+<Callout type="info" title="Self-Heal Mode">
+ArgoCD's self-heal mode automatically reverts any manual changes made directly to the cluster (e.g., `kubectl edit`). This enforces the GitOps principle that Git is the sole source of truth. If something needs to change, it goes through a PR to the config repo.
+</Callout>
 
 ### Helm Charts
 
-Each service is packaged as a Helm chart:
+Every microservice is packaged as a Helm chart with environment-specific value overrides. A shared base chart provides consistent defaults across all services.
 
 ```
-service-chart/
-├── Chart.yaml          # Chart metadata, version
-├── values.yaml         # Default configuration
-├── values-dev.yaml     # Dev overrides
-├── values-staging.yaml # Staging overrides
-├── values-prod.yaml    # Production overrides
-└── templates/
-    ├── deployment.yaml
-    ├── service.yaml
-    ├── hpa.yaml
-    ├── configmap.yaml
-    └── ingress.yaml
+k8s-deployments/
+├── charts/
+│   └── zeotap-service/          # Shared base chart
+│       ├── Chart.yaml
+│       ├── values.yaml           # Defaults (replicas, resources, probes)
+│       └── templates/
+│           ├── deployment.yaml
+│           ├── service.yaml
+│           ├── hpa.yaml
+│           ├── pdb.yaml
+│           ├── configmap.yaml
+│           ├── serviceaccount.yaml
+│           └── servicemonitor.yaml
+├── services/
+│   ├── zeocore-api/
+│   │   ├── values-dev.yaml
+│   │   ├── values-staging.yaml
+│   │   └── values-prod.yaml
+│   ├── id-graph-service/
+│   │   ├── values-dev.yaml
+│   │   ├── values-staging.yaml
+│   │   └── values-prod.yaml
+│   └── audience-engine/
+│       └── ...
+└── platform/                     # Platform services (ArgoCD, Prometheus, Istio)
 ```
+
+**Value Override Hierarchy:**
+
+Base chart `values.yaml` provides sane defaults (2 replicas, 512Mi memory, standard probes). Environment-specific files override only what differs (image tag, replica count, resource limits, feature flags, external endpoints).
 
 ### Deployment Strategies
 
+Different deployment strategies are used depending on the risk profile and service type.
+
 <ComparisonTable
-  headers={["Strategy", "How It Works", "When to Use"]}
+  headers={["Strategy", "Mechanism", "When to Use", "Rollback Speed"]}
   rows={[
-    ["Rolling Update", "Gradually replace old pods with new", "Default for most services"],
-    ["Canary", "Route 5% traffic to new version, monitor, scale up", "High-risk changes"],
-    ["Blue-Green", "Deploy new version alongside old, switch traffic", "Database migration"],
-    ["Feature Flag", "Deploy code, enable via flag", "Experimental features"]
+    ["Rolling Update", "Gradually replace old pods; maxSurge=25%, maxUnavailable=0", "Default for all services", "Automatic (failed readiness)"],
+    ["Canary", "Route 5% traffic to new version via Istio, monitor error rate", "High-risk changes, new features", "Instant (shift traffic back)"],
+    ["Blue-Green", "Deploy new version alongside old, atomic traffic switch", "Database migrations, breaking changes", "Instant (switch traffic back)"],
+    ["Feature Flag", "Deploy code to all pods, enable via LaunchDarkly flag", "Experimental features, gradual rollout", "Instant (toggle flag off)"]
   ]}
   highlightColumn={0}
 />
 
+<Expandable title="Canary Deployment Process" defaultOpen={false}>
+
+For high-risk deployments, the canary process provides safe incremental rollout:
+
+1. **Deploy canary** -- New version deployed as a separate Deployment with 1 replica
+2. **Traffic split** -- Istio VirtualService routes 5% of traffic to the canary
+3. **Monitor (15 min)** -- Watch error rate, latency P99, and business metrics on canary-specific dashboard
+4. **Increase to 25%** -- If metrics are healthy, increase canary traffic share
+5. **Monitor (15 min)** -- Second observation window at higher traffic
+6. **Promote to 100%** -- Scale up canary, scale down old version
+7. **Cleanup** -- Remove old Deployment after 1 hour (quick rollback window)
+
+**Automated canary analysis** is under development using Flagger, which will automatically promote or rollback based on Prometheus metrics.
+
+</Expandable>
+
+### Feature Flags
+
+Feature flags decouple deployment from release, allowing code to be deployed to production but activated only when ready.
+
+<TechStack
+  title="Feature Flag Stack"
+  items={[
+    { name: "LaunchDarkly", role: "Feature flag management platform" },
+    { name: "Server-side SDK", role: "Java, Go, Python SDKs for backend evaluation" },
+    { name: "Client-side SDK", role: "Angular SDK for frontend flag evaluation" },
+    { name: "Targeting Rules", role: "Per-org, per-user, percentage-based rollout" },
+    { name: "Kill Switch", role: "Instant disable for any feature in production" }
+  ]}
+/>
+
+**Flag Lifecycle:**
+1. Engineer creates flag in LaunchDarkly with naming convention: `enable-{feature}-{team}`
+2. Code checks flag at runtime, defaults to disabled
+3. Flag enabled in dev/staging for testing
+4. Production rollout: enable for internal org first, then 10% of customers, then 50%, then 100%
+5. After full rollout and stability period (2 weeks), flag is removed from code (tech debt cleanup)
+
+<Callout type="warning" title="Flag Hygiene">
+Feature flags are technical debt. Every flag has an assigned owner and a removal date. Flags older than 90 days without a removal plan are flagged in weekly engineering review. Stale flags increase code complexity and testing burden.
+</Callout>
+
 ### Environment Promotion
 
-```
-Feature Branch → Dev → Staging → Production
-```
+Code flows through environments with increasing validation at each stage.
 
-- **Dev:** Auto-deploy on every merge to main
-- **Staging:** Auto-deploy, runs full integration test suite
-- **Production:** Manual approval required, deployed during low-traffic windows
-- **Hotfix:** Can bypass staging with VP Engineering approval
+<ArchDiagram
+  title="Environment Promotion Pipeline"
+  steps={[
+    { label: "Feature Branch", detail: "CI runs lint, test, build on PR", icon: "🌿" },
+    { label: "Dev", detail: "Auto-deploy on merge to main, integration tests", icon: "🔨" },
+    { label: "Staging", detail: "Auto-deploy, full E2E suite, load tests", icon: "🧪" },
+    { label: "Production", detail: "Manual approval, canary optional, monitoring", icon: "🚀" }
+  ]}
+/>
+
+| Environment | Deploy Trigger | Test Suite | Data | Approval |
+|---|---|---|---|---|
+| Dev | Merge to `main` | Unit + integration | Synthetic test data | None |
+| Staging | Auto-promote from dev (5min delay) | Unit + integration + E2E + contract | Anonymized production snapshot | None |
+| Production | Manual promotion from staging | Smoke tests (read-only) post-deploy | Real customer data | Tech lead or on-call engineer |
+| Hotfix | Cherry-pick to `release/*` branch | Targeted regression tests | N/A | VP Engineering approval |
 
 ### Rollback Procedures
 
-1. **Automatic:** If health checks fail after deploy, ArgoCD auto-rollbacks
-2. **Manual:** Run `argocd app rollback {app} {revision}` or click in UI
-3. **Git revert:** Revert the config repo commit, ArgoCD syncs
-4. **Emergency:** Scale to 0 and redeploy known-good version
+Rollbacks are a first-class operation, designed to be fast and reliable.
 
-<Callout type="warning" title="Never Skip Staging">
-Production incidents caused by untested changes are preventable. Always deploy to staging first, run smoke tests, and verify metrics before promoting to production. The only exception is a hotfix for an active P1 incident.
+**Rollback Methods (ordered by speed):**
+
+1. **ArgoCD auto-rollback** -- If health checks fail within 5 minutes of sync, ArgoCD automatically reverts to the previous healthy state. No human intervention required.
+
+2. **ArgoCD manual rollback** -- Click "History" in ArgoCD UI, select the target revision, click "Rollback." Takes effect within 30 seconds. This is the standard rollback method.
+
+3. **Git revert** -- Revert the config repo commit that updated the image tag. ArgoCD detects the revert and syncs. Takes 3-5 minutes. Creates a clear audit trail.
+
+4. **Feature flag kill switch** -- If the issue is in a flagged feature, disable the flag in LaunchDarkly. Takes effect within seconds. No deployment change required.
+
+5. **Emergency scale-to-zero** -- For catastrophic issues, scale the service to 0 replicas, investigate, and redeploy a known-good version. Last resort only.
+
+<Callout type="important" title="Rollback Validation">
+After any rollback, verify recovery by checking: (1) error rate returns to baseline on Grafana, (2) no Kafka consumer lag building up, (3) no customer-facing errors on Statuspage. Log the rollback in the incident channel with the reason, affected version, and rolled-back-to version.
 </Callout>
 
-<KeyConcepts concepts={["GitOps", "Cloud Build", "ArgoCD", "Helm", "Rolling Update", "Canary Deploy", "Feature Flags", "Artifact Registry", "Environment Promotion"]} />
+<KeyConcepts concepts={["GitOps", "CloudBuild", "ArgoCD", "Helm Charts", "Artifact Registry", "Rolling Update", "Canary Deployment", "Blue-Green", "Feature Flags", "LaunchDarkly", "Environment Promotion", "Rollback", "Self-Heal", "Sync Waves", "Two-Repo Model"]} />
 
 ---
 
-**Next up:** Testing & QA — quality assurance practices →
+**Next up:** Testing & QA -- quality assurance practices →

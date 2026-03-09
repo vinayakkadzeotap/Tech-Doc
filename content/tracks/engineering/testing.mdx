@@ -10,157 +10,389 @@ order: 18
 
 ## 🧪 Testing & QA
 
-Quality assurance in a microservices architecture requires multiple testing strategies. This module covers the testing pyramid, contract testing, chaos engineering, and E2E testing at Zeotap.
+Quality assurance in a polyglot microservices architecture requires a layered testing strategy. This module covers the testing pyramid, contract testing with Pact, load testing, chaos engineering, E2E testing, test data management, and the standards that keep Zeotap's platform reliable.
+
+<StatCard stats={[
+  { value: "80%+", label: "Unit Test Coverage Target", color: "#3b82f6" },
+  { value: "Pact", label: "Contract Testing", color: "#10b981" },
+  { value: "k6 + Locust", label: "Load Testing", color: "#a855f7" },
+  { value: "Cypress", label: "Frontend E2E", color: "#f59e0b" }
+]} />
 
 ### Testing Pyramid
+
+Zeotap follows the testing pyramid model: a broad base of fast unit tests, a middle layer of integration tests, and a narrow top of slower but higher-fidelity E2E and chaos tests. Each layer catches different categories of bugs at different costs.
 
 <ArchDiagram
   title="Testing Pyramid"
   steps={[
-    { label: "Unit Tests", detail: "Fast, isolated, high coverage", icon: "🔬" },
-    { label: "Integration Tests", detail: "Service + dependencies", icon: "🔗" },
-    { label: "Contract Tests", detail: "API compatibility between services", icon: "📜" },
-    { label: "E2E Tests", detail: "Full user flows", icon: "🌐" },
-    { label: "Chaos Tests", detail: "Resilience under failure", icon: "💥" }
+    { label: "Unit Tests", detail: "Fast, isolated, mock dependencies — 80%+ coverage", icon: "🔬" },
+    { label: "Integration Tests", detail: "Service + real dependencies via Testcontainers", icon: "🔗" },
+    { label: "Contract Tests", detail: "Pact: verify API compatibility between services", icon: "📜" },
+    { label: "E2E Tests", detail: "Full user flows — Cypress (frontend), API workflows", icon: "🌐" },
+    { label: "Chaos & Load Tests", detail: "Fault injection, throughput validation at scale", icon: "💥" }
   ]}
+/>
+
+<ComparisonTable
+  headers={["Layer", "Speed", "Scope", "Run Frequency", "Failure Impact"]}
+  rows={[
+    ["Unit", "<3 min per service", "Single class/function", "Every PR, every commit", "Blocks merge"],
+    ["Integration", "5-10 min per service", "Service + dependencies", "Every PR, every commit", "Blocks merge"],
+    ["Contract", "2-5 min per consumer-provider pair", "API boundary between services", "Every PR on consumer or provider", "Blocks merge"],
+    ["E2E", "15-25 min full suite", "Complete user workflows", "Post-deploy to staging", "Blocks production promotion"],
+    ["Load", "30-60 min full run", "System throughput and latency", "Weekly + pre-release", "Blocks release if SLOs fail"],
+    ["Chaos", "15-30 min per experiment", "Resilience under failure", "Weekly in staging, monthly in prod", "Generates reliability backlog items"]
+  ]}
+  highlightColumn={0}
 />
 
 ### Unit Testing
 
-**Standards:**
+Unit tests form the foundation. They are fast, deterministic, and test individual components in isolation with all external dependencies mocked.
+
+**Standards per Language:**
 
 <ComparisonTable
-  headers={["Language", "Framework", "Coverage Target", "Run Time"]}
+  headers={["Language", "Framework", "Mocking", "Coverage Target", "Max Duration"]}
   rows={[
-    ["Java", "JUnit 5, Mockito", "80%+", "<2 minutes"],
-    ["Go", "testing, testify", "80%+", "<1 minute"],
-    ["Python", "pytest, unittest.mock", "80%+", "<1 minute"],
-    ["TypeScript", "Jest, Angular TestBed", "70%+", "<3 minutes"],
-    ["Scala", "ScalaTest, Mockito", "75%+", "<2 minutes"]
+    ["Java (Spring)", "JUnit 5, AssertJ", "Mockito, MockMvc", "80%+ line coverage", "<2 minutes"],
+    ["Go", "testing, testify", "gomock, httptest", "80%+ line coverage", "<1 minute"],
+    ["Python", "pytest", "unittest.mock, responses", "80%+ line coverage", "<1 minute"],
+    ["TypeScript (Angular)", "Jest, Angular TestBed", "jest.mock, HttpClientTestingModule", "70%+ line coverage", "<3 minutes"],
+    ["Scala (Spark)", "ScalaTest, FlatSpec", "Mockito, SparkSession (local)", "75%+ line coverage", "<2 minutes"]
   ]}
-  highlightColumn={2}
+  highlightColumn={3}
 />
 
-**Best Practices:**
-- Test behavior, not implementation
-- Use dependency injection for testability
-- Mock external dependencies (databases, APIs, Kafka)
-- Avoid flaky tests — quarantine immediately if found
-- Run on every PR as a merge gate
+**Unit Testing Best Practices:**
+
+- **Test behavior, not implementation** -- Assert on outputs and side effects, not internal method calls
+- **Use dependency injection** -- Constructor injection makes classes testable without reflection hacks
+- **Arrange-Act-Assert pattern** -- Clear separation of setup, execution, and verification
+- **Descriptive test names** -- `shouldReturnErrorWhenAudienceExceedsMaxSize` not `testAudience3`
+- **No flaky tests** -- Zero tolerance. Flaky tests are quarantined immediately and fixed within 48 hours
+- **Test edge cases** -- Null inputs, empty collections, boundary values, concurrent access
+
+<Expandable title="Java Unit Test Example" defaultOpen={false}>
+
+```java
+@ExtendWith(MockitoExtension.class)
+class AudienceServiceTest {
+
+    @Mock private AudienceRepository audienceRepository;
+    @Mock private ProfileStore profileStore;
+    @Mock private EventPublisher eventPublisher;
+
+    @InjectMocks private AudienceService audienceService;
+
+    @Test
+    void shouldCreateAudienceWithValidRules() {
+        // Arrange
+        var orgId = "org_123";
+        var request = AudienceRequest.builder()
+            .name("High Value Users")
+            .rules(List.of(Rule.greaterThan("ltv", 1000)))
+            .build();
+
+        when(audienceRepository.countByOrgId(orgId)).thenReturn(5L);
+
+        // Act
+        var result = audienceService.createAudience(orgId, request);
+
+        // Assert
+        assertThat(result.getName()).isEqualTo("High Value Users");
+        assertThat(result.getStatus()).isEqualTo(AudienceStatus.EVALUATING);
+        verify(eventPublisher).publish(any(AudienceCreatedEvent.class));
+    }
+
+    @Test
+    void shouldRejectAudienceWhenOrgLimitExceeded() {
+        // Arrange
+        var orgId = "org_123";
+        when(audienceRepository.countByOrgId(orgId)).thenReturn(500L);
+
+        // Act & Assert
+        assertThatThrownBy(() -> audienceService.createAudience(orgId, anyRequest()))
+            .isInstanceOf(QuotaExceededException.class)
+            .hasMessageContaining("Maximum audience limit");
+    }
+}
+```
+
+</Expandable>
 
 ### Integration Testing
 
-Integration tests verify a service works with its real dependencies:
+Integration tests verify that a service works correctly with its real dependencies, catching issues that unit tests miss: serialization bugs, query syntax errors, connection pool behavior, and message format mismatches.
 
-- **Database tests** — Service + BigTable emulator or test BigQuery dataset
-- **Kafka tests** — Service + embedded Kafka (Testcontainers)
-- **API tests** — Service + HTTP client against running instance
-- **Cache tests** — Service + Redis via Testcontainers
+<TechStack
+  title="Integration Testing Stack"
+  items={[
+    { name: "Testcontainers", role: "Ephemeral Docker containers for Kafka, Redis, PostgreSQL" },
+    { name: "BigTable Emulator", role: "Local BigTable instance for read/write testing" },
+    { name: "Embedded Kafka", role: "In-process Kafka broker for producer/consumer tests" },
+    { name: "WireMock", role: "HTTP mock server for external API dependencies" },
+    { name: "Docker Compose", role: "Multi-container local development and testing" }
+  ]}
+/>
 
-**Test Environment:**
-- Docker Compose for local integration testing
-- Testcontainers for ephemeral dependency containers
-- Shared staging environment for cross-service integration
-- Test data factories for consistent, reproducible test data
+**Integration Test Categories:**
+
+| Category | What It Tests | Infrastructure |
+|---|---|---|
+| Database integration | Query correctness, schema compatibility, transaction behavior | BigTable emulator, test BigQuery dataset |
+| Kafka integration | Message serialization, consumer offset handling, error topics | Testcontainers Kafka |
+| Cache integration | Cache hit/miss behavior, TTL, eviction, serialization | Testcontainers Redis |
+| HTTP client integration | Upstream API contract, timeout handling, retry logic | WireMock |
+| End-to-end service | Full request lifecycle within a single service | All of the above combined |
+
+<Callout type="tip" title="Testcontainers Best Practice">
+Use `@Testcontainers` with `@Container` annotations in JUnit 5 for automatic lifecycle management. Containers start before tests and stop after. Use `reuse = true` during local development to avoid container startup overhead on every test run.
+</Callout>
 
 ### Contract Testing (Pact)
 
-In a microservices architecture, API contracts between services are critical:
+In a microservices architecture, the API contract between services is a critical reliability boundary. Pact ensures that consumers and providers agree on the API shape before deployment.
 
-**How Pact Works:**
+<ArchDiagram
+  title="Pact Contract Testing Flow"
+  steps={[
+    { label: "Consumer Test", detail: "Define expected request/response interactions", icon: "📋" },
+    { label: "Pact File", detail: "Generated JSON contract from consumer test", icon: "📄" },
+    { label: "Pact Broker", detail: "Central registry for versioned contracts", icon: "🏢" },
+    { label: "Provider Verification", detail: "Provider replays interactions against real service", icon: "✅" },
+    { label: "Can-I-Deploy", detail: "Pre-deploy check: are all contracts satisfied?", icon: "🚦" }
+  ]}
+/>
 
-1. **Consumer** writes a test defining expected API behavior
-2. Pact generates a **contract file** from the consumer test
-3. **Provider** verifies the contract against its actual implementation
-4. Contract stored in **Pact Broker** for versioned tracking
-5. Breaking changes detected before deployment
+**How Pact Works at Zeotap:**
 
-**Benefits:**
-- Catch breaking API changes without running full E2E suite
-- Each team tests independently against contracts
-- Faster feedback than end-to-end testing
-- Contracts serve as living API documentation
+1. **Consumer team** writes a Pact test defining the API interactions their service depends on (request method, path, headers, body, expected response)
+2. **Pact generates** a contract file (JSON) capturing all interactions
+3. **Contract published** to the Pact Broker with the consumer's version tag
+4. **Provider team's CI** runs provider verification: replays every interaction from the contract against the actual running service
+5. **can-i-deploy** check runs before each deployment, querying the Pact Broker to confirm all contracts between the deploying service and its dependents are satisfied
+6. **Breaking changes** are caught before they reach any environment
+
+<Expandable title="Pact Consumer Test Example (Java)" defaultOpen={false}>
+
+```java
+@ExtendWith(PactConsumerTestExt.class)
+@PactTestFor(providerName = "profile-service", port = "8080")
+class ProfileServiceConsumerTest {
+
+    @Pact(consumer = "audience-engine")
+    public V4Pact getProfilePact(PactDslWithProvider builder) {
+        return builder
+            .given("profile exists for user_abc in org_123")
+            .uponReceiving("a request for user profile")
+              .path("/api/v1/profiles/user_abc")
+              .header("X-Org-Id", "org_123")
+              .method("GET")
+            .willRespondWith()
+              .status(200)
+              .header("Content-Type", "application/json")
+              .body(newJsonBody(body -> {
+                  body.stringType("userId", "user_abc");
+                  body.stringType("orgId", "org_123");
+                  body.object("attributes", attrs -> {
+                      attrs.numberType("ltv", 1500);
+                      attrs.stringType("segment", "high_value");
+                  });
+              }).build())
+            .toPact(V4Pact.class);
+    }
+
+    @Test
+    @PactTestFor(pactMethod = "getProfilePact")
+    void shouldGetUserProfile(MockServer mockServer) {
+        var client = new ProfileServiceClient(mockServer.getUrl());
+        var profile = client.getProfile("org_123", "user_abc");
+
+        assertThat(profile.getUserId()).isEqualTo("user_abc");
+        assertThat(profile.getAttributes()).containsKey("ltv");
+    }
+}
+```
+
+</Expandable>
+
+**Pact Coverage at Zeotap:**
+
+Contract tests cover the critical service boundaries:
+- Audience Engine <-> Profile Service
+- Collect Service <-> ID Graph Service
+- Dashboard API <-> Backend APIs (audiences, destinations, reports)
+- Destination Service <-> Partner APIs (via WireMock provider stubs)
 
 ### End-to-End Testing
 
-**Frontend E2E (Cypress):**
-- Critical user flows: login, create audience, set up destination, view reports
-- Run against staging environment on every deploy
-- Visual regression testing with screenshot comparison
-- 15-minute max run time (parallelized)
+E2E tests validate complete user workflows through the entire system stack, catching integration issues that lower-level tests miss.
 
-**API E2E:**
-- Full API workflow tests (create source → ingest event → check profile → build audience → sync destination)
-- Run against staging after deployment
-- Smoke tests also run against production (read-only) after deploy
+**Frontend E2E (Cypress):**
+
+<ComparisonTable
+  headers={["Test Suite", "User Flow", "Duration", "Run Trigger"]}
+  rows={[
+    ["Auth Flow", "Login via SSO, MFA challenge, session expiry", "2 min", "Every staging deploy"],
+    ["Audience Builder", "Create audience with rules, preview size, activate", "4 min", "Every staging deploy"],
+    ["Source Setup", "Configure new data source, validate schema, test connection", "3 min", "Every staging deploy"],
+    ["Destination Sync", "Set up destination, map fields, trigger sync, verify", "5 min", "Every staging deploy"],
+    ["Reporting", "Navigate dashboards, apply filters, export CSV", "2 min", "Every staging deploy"]
+  ]}
+  highlightColumn={1}
+/>
+
+**Cypress Best Practices:**
+- **Stable selectors** -- Use `data-testid` attributes, never CSS classes or DOM structure
+- **API seeding** -- Set up test data via API calls in `before()`, not through the UI
+- **No waits** -- Use Cypress retry-ability and assertions, never `cy.wait(5000)`
+- **Parallelized** -- Tests run across 4 parallel workers, keeping total suite under 15 minutes
+- **Visual regression** -- Screenshot comparison for critical UI components (audience builder, dashboard charts)
+
+**API E2E Tests:**
+
+Full workflow tests that exercise the complete data pipeline:
+
+1. Create a source via API
+2. Ingest test events through the Collect endpoint
+3. Wait for identity resolution to complete
+4. Query the profile store to verify profile creation
+5. Create an audience with rules matching the test data
+6. Trigger a destination sync and verify delivery
+
+These tests run against staging after every deployment and as read-only smoke tests against production post-deploy.
 
 ### Load Testing
 
+Load testing validates that the system meets throughput and latency SLOs under production-scale traffic.
+
 <ComparisonTable
-  headers={["Tool", "Use Case", "Target"]}
+  headers={["Tool", "Scope", "Target Metric", "Typical Scenario"]}
   rows={[
-    ["k6", "API load testing", "Verify latency SLOs under load"],
-    ["Locust", "Event ingestion load test", "Verify throughput at 2x peak"],
-    ["Custom Spark", "Batch processing scale test", "10x daily volume in test"]
+    ["k6", "API endpoint load testing", "P99 latency under sustained load", "500 RPS against audience query API for 30 min"],
+    ["Locust", "Event ingestion throughput", "Events/sec at 2x peak traffic", "2M events/sec sustained for 1 hour"],
+    ["Custom Spark", "Batch processing scale", "Processing time at 10x daily volume", "Process 10B events in a single batch run"]
   ]}
   highlightColumn={0}
 />
 
+<Expandable title="k6 Load Test Example" defaultOpen={false}>
+
+```javascript
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { Rate } from 'k6/metrics';
+
+const errorRate = new Rate('errors');
+
+export const options = {
+  stages: [
+    { duration: '2m', target: 100 },   // Ramp up to 100 VUs
+    { duration: '10m', target: 500 },   // Ramp to 500 VUs (peak load)
+    { duration: '15m', target: 500 },   // Sustain peak for 15 min
+    { duration: '5m', target: 1000 },   // Spike to 2x peak
+    { duration: '3m', target: 0 },      // Ramp down
+  ],
+  thresholds: {
+    http_req_duration: ['p(99)<500'],    // P99 latency < 500ms
+    errors: ['rate<0.01'],                // Error rate < 1%
+  },
+};
+
+export default function () {
+  const res = http.get('https://staging-api.zeotap.com/v1/audiences', {
+    headers: { 'Authorization': `Bearer ${__ENV.AUTH_TOKEN}` },
+  });
+
+  check(res, {
+    'status is 200': (r) => r.status === 200,
+    'response time < 500ms': (r) => r.timings.duration < 500,
+  });
+
+  errorRate.add(res.status >= 400);
+  sleep(0.1);
+}
+```
+
+</Expandable>
+
 **Load Test Schedule:**
-- Weekly automated runs against staging
-- Before major releases: full-scale load test
-- After infrastructure changes: targeted load test
+- **Weekly automated runs** against staging (baseline validation)
+- **Pre-release** -- Full-scale load test before every major release
+- **Post-infrastructure change** -- Targeted load test after node pool resizing, BigTable rebalancing, or Kafka partition changes
+- **Results archived** in GCS and compared against previous runs to detect performance regressions
 
 ### Chaos Engineering
 
-Chaos engineering verifies the system handles failures gracefully:
-
-**Experiments:**
+Chaos engineering proactively tests system resilience by injecting controlled failures and observing system behavior.
 
 <ComparisonTable
-  headers={["Experiment", "What It Tests", "Expected Behavior"]}
+  headers={["Experiment", "Failure Injected", "Expected Behavior", "Blast Radius"]}
   rows={[
-    ["Kill random pod", "Pod recovery, HPA scaling", "Service recovers within 30s"],
-    ["Network partition", "Cross-service resilience", "Graceful degradation, no data loss"],
-    ["Kafka broker down", "Message queue resilience", "Consumer lag, auto-recovery"],
-    ["BigTable latency spike", "Data layer resilience", "Circuit breaker trips, cached responses"],
-    ["Memory pressure", "OOM handling", "Pod restarts, no cascading failure"]
+    ["Pod termination", "Kill random pods in a service", "HPA scales up, requests rerouted within 30s", "Single service"],
+    ["Network partition", "Drop traffic between services", "Circuit breaker trips, graceful degradation", "Service pair"],
+    ["Kafka broker failure", "Kill 1 of 3 Kafka brokers", "Consumers rebalance, no message loss", "Kafka cluster"],
+    ["BigTable latency injection", "Add 5s latency to BigTable reads", "Circuit breaker opens, serve from cache", "Data layer"],
+    ["Memory pressure", "Stress test pod memory limits", "OOM kill + restart, no cascading failure", "Single pod"],
+    ["DNS failure", "Block DNS resolution for external services", "Cached responses, retry with backoff", "External integrations"]
   ]}
   highlightColumn={2}
 />
 
-**Principles:**
-- Start with hypothesis: "If X fails, the system should Y"
-- Run in staging first, then controlled production experiments
-- Always have a kill switch to stop the experiment
-- Progressively increase blast radius
+**Chaos Engineering Principles:**
+
+1. **Start with a hypothesis** -- "If we kill 2 of 5 audience-engine pods, the remaining 3 should handle traffic within SLO while HPA scales up"
+2. **Measure steady state first** -- Establish baseline metrics before injecting failure
+3. **Minimize blast radius** -- Start in staging, start small, progressively increase scope
+4. **Always have a kill switch** -- Automated abort if metrics exceed safety thresholds
+5. **Run during business hours** -- So the team is available if something goes wrong
+6. **Document findings** -- Every experiment generates a report with observations and action items
+
+<Callout type="warning" title="Production Chaos">
+Chaos experiments in production require VP Engineering approval, a documented rollback plan, and an active on-call engineer monitoring dashboards throughout the experiment. Production experiments are scoped to a single service or pod and never run during peak traffic windows.
+</Callout>
 
 ### Test Data Management
 
-- **Factories** — Code-generated test data matching production schemas
-- **Anonymized snapshots** — Production data with PII stripped for realistic testing
-- **Cleanup** — Test data automatically purged after test runs
-- **Isolation** — Each test run uses isolated org/namespace to prevent interference
+Reliable tests require reliable test data. Zeotap uses a structured approach to test data creation and cleanup.
+
+- **Factories** -- Code-generated test data matching production schemas. Each language has a `TestDataFactory` class producing valid entities with randomized fields.
+- **Anonymized snapshots** -- Production data with all PII stripped (hashed emails, randomized names, preserved distributions) for realistic integration and load testing.
+- **Isolated test orgs** -- Each test run creates a dedicated org in the test environment, preventing interference between parallel test suites.
+- **Automatic cleanup** -- Test data and test orgs are purged 24 hours after creation via a scheduled cleanup job.
+- **Seed data** -- Reference datasets (industry taxonomies, geo data, test destinations) are version-controlled and deployed with each environment.
 
 ### QA Environments
 
 <ComparisonTable
-  headers={["Environment", "Purpose", "Data", "Access"]}
+  headers={["Environment", "Purpose", "Data Source", "Test Types", "Access"]}
   rows={[
-    ["Local", "Developer machine testing", "Mock/in-memory", "Developer only"],
-    ["CI", "Automated test execution", "Ephemeral containers", "CI system"],
-    ["Staging", "Pre-production validation", "Anonymized production copy", "All engineers"],
-    ["Production", "Live system", "Real customer data", "On-call, with audit"]
+    ["Local", "Developer machine", "Mock/in-memory, emulators", "Unit, integration", "Developer only"],
+    ["CI", "Automated pipeline", "Testcontainers (ephemeral)", "Unit, integration, contract", "CloudBuild SA"],
+    ["Staging", "Pre-production validation", "Anonymized production snapshot", "E2E, load, chaos, smoke", "All engineers"],
+    ["Production", "Live system", "Real customer data", "Read-only smoke tests post-deploy", "On-call + audit log"]
   ]}
   highlightColumn={0}
 />
 
+### Code Coverage Standards
+
+Coverage is tracked per service and enforced as a merge gate in CI.
+
+- **Minimum thresholds** -- 80% line coverage for backend services, 70% for frontend, 75% for Spark jobs
+- **Coverage tool** -- JaCoCo (Java), go tool cover (Go), coverage.py (Python), Istanbul (TypeScript)
+- **Trend tracking** -- Coverage percentage reported on every PR with delta from base branch
+- **No gaming** -- Coverage without meaningful assertions is caught in code review. A test that executes code without asserting behavior does not count.
+- **New code rule** -- All new code in a PR must have 90%+ coverage, even if the overall service is below threshold
+
 <Callout type="important" title="Testing Culture">
-Every PR must include tests. "I'll add tests later" is not acceptable. If a bug is found in production, the fix must include a test that would have caught it. Test coverage is tracked per service and reported in code review.
+Every PR must include tests. "I'll add tests later" is not acceptable and will be rejected in review. If a bug is found in production, the fix must include a regression test that would have caught it. Testing is not a phase -- it is part of writing code.
 </Callout>
 
-<KeyConcepts concepts={["Testing Pyramid", "Contract Testing", "Pact", "Chaos Engineering", "E2E Testing", "Load Testing", "Testcontainers", "Code Coverage", "Test Data Factory"]} />
+<KeyConcepts concepts={["Testing Pyramid", "Unit Testing", "Integration Testing", "Testcontainers", "Contract Testing", "Pact", "Pact Broker", "Can-I-Deploy", "Cypress", "E2E Testing", "k6", "Locust", "Load Testing", "Chaos Engineering", "Fault Injection", "Test Data Factory", "Code Coverage", "Anonymized Data"]} />
 
 ---
 
-**Congratulations!** You've completed the Engineering Deep Dive track. You now have a comprehensive understanding of Zeotap's technical architecture from data collection to deployment.
+**Congratulations!** You have completed the Engineering Deep Dive track. You now have a comprehensive understanding of Zeotap's technical architecture from data collection to deployment and quality assurance.

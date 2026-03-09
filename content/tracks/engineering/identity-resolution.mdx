@@ -125,6 +125,29 @@ The identity resolution service (`id-graph-lib-v2-go`) is written in Go because:
 The Go-based identity service handles 500K identity resolution requests per second with <50ms p99 latency. It runs as a horizontally scaled deployment on GKE with 20-50 pods depending on load.
 </Callout>
 
+### ID+ Universal Identity Solution
+
+**ID+** is Zeotap's standalone universal identity product, also used within the CDP:
+
+- Creates a first-party ID+ cookie unique per browser/website/device
+- Identifies users at a non-PII individual level
+- Attaches deterministic identities when users log in
+- Does NOT rely on third-party cookies, MAIDs, or platform identifiers
+- **~50 billion IDs** tracked and correlated globally
+- **400M+** ID-verified/self-declared linkages
+- Available across North America, Latin America, Europe, and India
+- Joined the **Prebid ecosystem** for publisher-side identity resolution
+
+### Architecture Evolution
+
+The identity graph has undergone significant migrations:
+
+| Era | Storage | Latency | Key Change |
+|-----|---------|---------|------------|
+| Pre-2020 | JanusGraph on ScyllaDB (AWS) | ~600ms | World's largest native JanusGraph database |
+| 2020-2022 | Direct ScyllaDB via CQL | ~30ms | Removed JanusGraph layer, used CQL directly |
+| 2024+ | Google BigTable | <10ms | Cloud-native, reduced operational footprint by 20% |
+
 ### Privacy Considerations
 
 - All PII identifiers are hashed (SHA-256) before storage
@@ -132,7 +155,7 @@ The Go-based identity service handles 500K identity resolution requests per seco
 - Right-to-erasure deletes all nodes and edges for a given identifier
 - Data residency enforced — EU graph data stays in EU region
 
-<KeyConcepts concepts={["UCID", "Identity Graph", "Deterministic Matching", "Probabilistic Matching", "Graph Merge", "Split Detection", "BigTable", "Go", "Connected Components"]} />
+<KeyConcepts concepts={["UCID", "Identity Graph", "ID+", "Deterministic Matching", "Probabilistic Matching", "Graph Merge", "Split Detection", "BigTable", "Go", "Connected Components", "Prebid"]} />
 
 ---
 
