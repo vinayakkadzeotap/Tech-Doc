@@ -10,113 +10,326 @@ order: 16
 
 ## 📊 Observability
 
-Observability is how we understand what's happening inside the platform. This module covers the three pillars: metrics, logs, and traces — plus alerting and incident response.
+Observability is how Zeotap engineers understand what is happening inside a distributed system of hundreds of microservices. This module covers the three pillars -- metrics, logs, and traces -- along with SLOs, alerting, incident response, and on-call practices.
 
-### Three Pillars
+<StatCard stats={[
+  { value: "3 Pillars", label: "Metrics, Logs, Traces", color: "#3b82f6" },
+  { value: "500+", label: "Grafana Dashboards", color: "#10b981" },
+  { value: "99.95%", label: "Platform Availability SLO", color: "#a855f7" },
+  { value: "<5 min", label: "Alert-to-Acknowledge Target", color: "#f59e0b" }
+]} />
+
+### The Three Pillars
+
+Observability at Zeotap is built on three complementary signal types. Each pillar answers different questions about system behavior, and together they provide the context needed to diagnose any issue.
 
 <ArchDiagram
   title="Observability Stack"
   steps={[
-    { label: "Metrics", detail: "Prometheus + Grafana", icon: "📈" },
-    { label: "Logs", detail: "Cloud Logging + structured JSON", icon: "📝" },
-    { label: "Traces", detail: "OpenTelemetry + Cloud Trace", icon: "🔍" },
-    { label: "Alerts", detail: "Alertmanager + PagerDuty", icon: "🚨" }
+    { label: "Metrics", detail: "Prometheus + Grafana — what is happening now", icon: "📈" },
+    { label: "Logs", detail: "Cloud Logging + BigQuery — what happened and why", icon: "📝" },
+    { label: "Traces", detail: "OpenTelemetry + Cloud Trace — how a request flows", icon: "🔍" },
+    { label: "Alerts", detail: "Alertmanager + PagerDuty — when to act", icon: "🚨" },
+    { label: "Dashboards", detail: "Grafana — unified visualization layer", icon: "📊" }
   ]}
+/>
+
+<ComparisonTable
+  headers={["Pillar", "Tool", "Signal Type", "Best For", "Retention"]}
+  rows={[
+    ["Metrics", "Prometheus + Thanos", "Numeric time series", "Trends, alerting, SLO tracking", "90 days (Thanos long-term)"],
+    ["Logs", "GCP Cloud Logging", "Structured JSON events", "Debugging, audit trails, error context", "30 days (BigQuery for long-term)"],
+    ["Traces", "OpenTelemetry + Cloud Trace", "Distributed request spans", "Latency analysis, dependency mapping", "30 days"]
+  ]}
+  highlightColumn={0}
 />
 
 ### Metrics (Prometheus + Grafana)
 
+Prometheus is the backbone of the metrics system. Every service exposes a `/metrics` endpoint scraped by Prometheus at 15-second intervals. Thanos provides long-term storage and cross-cluster querying.
+
 <TechStack
   title="Metrics Stack"
   items={[
-    { name: "Prometheus", role: "Metrics collection and storage" },
-    { name: "Grafana", role: "Dashboards and visualization" },
-    { name: "Alertmanager", role: "Alert routing and dedup" },
-    { name: "kube-state-metrics", role: "K8s resource metrics" },
-    { name: "node-exporter", role: "Node-level metrics" }
+    { name: "Prometheus", role: "Metrics collection, storage, and PromQL queries" },
+    { name: "Thanos", role: "Long-term storage, global query view across clusters" },
+    { name: "Grafana", role: "Dashboards, visualization, and annotations" },
+    { name: "Alertmanager", role: "Alert routing, grouping, silencing, and deduplication" },
+    { name: "kube-state-metrics", role: "Kubernetes object state (pods, deployments, nodes)" },
+    { name: "node-exporter", role: "Node-level CPU, memory, disk, network metrics" },
+    { name: "Prometheus Operator", role: "CRD-based Prometheus and ServiceMonitor management" }
   ]}
 />
 
-**Key Metrics per Service:**
+**The RED Method:**
+
+Every service is instrumented with RED (Rate, Errors, Duration) metrics as the baseline for monitoring:
 
 <ComparisonTable
-  headers={["Metric Type", "Examples", "Alert Threshold"]}
+  headers={["Metric", "PromQL Example", "Alert Threshold", "Dashboard Panel"]}
   rows={[
-    ["RED (Rate)", "Requests/sec, events/sec", "Sudden drop >50%"],
-    ["RED (Errors)", "Error rate, 5xx percentage", ">1% error rate"],
-    ["RED (Duration)", "P50, P95, P99 latency", "P99 > 2x baseline"],
-    ["Saturation", "CPU, memory, disk usage", ">80% sustained"],
-    ["Business", "Profiles resolved/sec, syncs completed", "Varies by SLA"]
+    ["Rate", "rate(http_requests_total[5m])", "Sudden drop >50% from baseline", "Requests/sec line chart"],
+    ["Errors", "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m])", ">1% error rate sustained 5min", "Error rate percentage gauge"],
+    ["Duration", "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))", "P99 > 2x baseline for 10min", "Latency heatmap (P50/P95/P99)"]
   ]}
   highlightColumn={2}
 />
 
-### Logs (Structured Logging)
+**Custom Business Metrics:**
 
-- **Format:** JSON structured logs with standardized fields
-- **Fields:** `timestamp`, `level`, `service`, `traceId`, `orgId`, `message`, `error`
-- **Storage:** GCP Cloud Logging with 30-day retention
-- **Long-term:** Exported to BigQuery for analysis beyond 30 days
-- **PII:** Never log PII — use hashed identifiers only
+Beyond RED, services expose domain-specific metrics:
 
-### Traces (OpenTelemetry)
+- `events_ingested_total` -- Events processed per source per org
+- `identity_resolutions_total` -- ID graph stitching operations per second
+- `audience_evaluations_duration_seconds` -- Segment evaluation latency
+- `destination_sync_success_total` -- Successful audience syncs per destination
+- `kafka_consumer_lag` -- Consumer group lag per topic partition
 
-Distributed tracing tracks requests across microservices:
+<Expandable title="Instrumentation Standards" defaultOpen={false}>
 
-- **OpenTelemetry SDK** instrumented in every service
-- **Trace context** propagated via HTTP headers (W3C Trace Context)
-- **Spans** record timing for each operation (DB query, API call, Kafka publish)
-- **Sampling:** Head-based sampling at 1% for production, 100% for staging
-- **Visualization:** Cloud Trace for trace viewing and analysis
+All services follow these instrumentation standards:
 
-**Example Trace:**
+**Java/Spring Services:**
+- Micrometer library with Prometheus registry
+- Spring Boot Actuator exposes `/actuator/prometheus`
+- `@Timed` annotation on controller methods for automatic histogram metrics
+- Custom `MeterBinder` implementations for business metrics
+
+**Go Services:**
+- `prometheus/client_golang` library
+- HTTP middleware auto-records request duration and status
+- Custom collectors for identity graph operations and BigTable latency
+
+**Scala/Spark Jobs:**
+- Spark metrics sink configured to push to Prometheus Pushgateway
+- Job duration, records processed, and error counts per batch run
+
+**Naming Conventions:**
+- Snake_case metric names: `http_request_duration_seconds`
+- Labels for dimensionality: `service`, `method`, `status`, `org_id`
+- Histograms for latency (not summaries) to allow aggregation
+- Counter suffix `_total`, histogram suffix `_seconds` or `_bytes`
+
+</Expandable>
+
+### Structured Logging (GCP Cloud Logging)
+
+Logs provide the detailed context that metrics cannot. Every service writes structured JSON logs with standardized fields to enable consistent querying and correlation.
+
+**Standard Log Fields:**
+
+```json
+{
+  "timestamp": "2024-01-15T10:30:45.123Z",
+  "severity": "ERROR",
+  "service": "audience-engine",
+  "version": "v2.14.3",
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "spanId": "00f067aa0ba902b7",
+  "orgId": "org_12345",
+  "userId": "user_abc",
+  "message": "Failed to evaluate audience segment",
+  "error": {
+    "type": "BigTableReadException",
+    "message": "Deadline exceeded after 5000ms",
+    "stackTrace": "..."
+  },
+  "context": {
+    "audienceId": "aud_xyz",
+    "segmentSize": 150000
+  }
+}
 ```
-Browser → API Gateway (5ms) → Collect Service (12ms) → Kafka Publish (3ms)
-                                                     → Schema Validation (8ms)
+
+**Logging Rules:**
+
+- **Never log PII** -- Use hashed identifiers (`sha256(email)`) instead of raw values
+- **Always include traceId** -- Links logs to distributed traces for request correlation
+- **Always include orgId** -- Enables tenant-scoped log queries during debugging
+- **Use appropriate severity** -- DEBUG for development, INFO for operational events, WARN for recoverable issues, ERROR for failures requiring attention
+- **Structured context** -- Use nested JSON objects for request-specific context, not string interpolation
+
+**Log Storage and Routing:**
+
+| Destination | Retention | Use Case |
+|---|---|---|
+| Cloud Logging | 30 days | Real-time querying, recent incident investigation |
+| BigQuery (log sink) | 1 year | Long-term analysis, compliance auditing, trend analysis |
+| Error Reporting | 30 days | Automated error grouping and notification |
+
+<Callout type="tip" title="Log-Based Metrics">
+GCP Cloud Logging can create metrics from log entries. Use log-based metrics for signals that are expensive to instrument in code, such as counting specific error types or tracking configuration change events.
+</Callout>
+
+### Distributed Tracing (OpenTelemetry)
+
+Distributed tracing tracks a single request as it flows across multiple microservices, revealing latency bottlenecks and dependency issues that metrics alone cannot surface.
+
+<ArchDiagram
+  title="Trace Propagation Flow"
+  steps={[
+    { label: "SDK / Browser", detail: "Generates root trace ID", icon: "📱" },
+    { label: "API Gateway", detail: "Adds gateway span, propagates W3C headers", icon: "🛡️" },
+    { label: "Service A", detail: "Creates child span, calls Service B + Kafka", icon: "⚙️" },
+    { label: "Service B", detail: "Creates child span, queries BigTable", icon: "🗄️" },
+    { label: "Cloud Trace", detail: "Aggregates spans into full trace view", icon: "🔍" }
+  ]}
+/>
+
+**OpenTelemetry Configuration:**
+
+- **SDK:** OpenTelemetry SDK instrumented in every service (Java, Go, Python, TypeScript)
+- **Propagation:** W3C Trace Context headers (`traceparent`, `tracestate`) for cross-service correlation
+- **Auto-instrumentation:** HTTP clients, gRPC, JDBC, Redis, and Kafka are auto-instrumented
+- **Custom spans:** Engineers add manual spans for business-critical operations (e.g., audience evaluation, identity resolution)
+- **Sampling:** Head-based sampling at 1% for production traffic, 100% for staging and error traces
+- **Export:** Spans exported to GCP Cloud Trace via the OpenTelemetry Collector
+
+<Expandable title="Trace Example: Event Ingestion" defaultOpen={false}>
+
+A single event ingestion request generates spans across multiple services:
+
 ```
+[Root] POST /collect/event (API Gateway) ................ 45ms
+  ├── [Auth] Token validation ........................... 3ms
+  ├── [Collect] Schema validation ....................... 8ms
+  ├── [Collect] Consent check .......................... 2ms
+  ├── [Kafka] Publish to events.raw.org_123 ............. 5ms
+  ├── [ID Graph] Identity resolution ................... 18ms
+  │     ├── [BigTable] Read identity edges .............. 7ms
+  │     ├── [Graph] Component merge ..................... 4ms
+  │     └── [BigTable] Write updated edges .............. 6ms
+  └── [Profile] Upsert profile attributes ............... 9ms
+        ├── [BigTable] Read current profile ............. 4ms
+        └── [BigTable] Write updated profile ............ 5ms
+```
+
+This trace immediately shows that identity resolution (18ms) is the largest contributor to overall latency, with BigTable reads as the bottleneck.
+
+</Expandable>
 
 ### SLOs and SLIs
 
+Service Level Objectives define the reliability targets for critical services. Each SLO is measured by a Service Level Indicator and has an associated error budget.
+
 <ComparisonTable
-  headers={["Service", "SLI", "SLO", "Error Budget"]}
+  headers={["Service", "SLI", "SLO Target", "Error Budget (monthly)", "Measurement"]}
   rows={[
-    ["API Gateway", "Availability (non-5xx responses)", "99.95%", "21.6 min/month"],
-    ["Collect Service", "Event ingestion success rate", "99.99%", "4.3 min/month"],
-    ["Identity Resolution", "Resolution latency P99", "<50ms", "Measured monthly"],
-    ["Audience Engine", "Evaluation latency P99", "<200ms", "Measured monthly"],
-    ["Destination Sync", "Sync success rate", "99.9%", "43.2 min/month"]
+    ["API Gateway", "Non-5xx response rate", "99.95%", "21.6 minutes downtime", "Prometheus http_requests_total"],
+    ["Collect Service", "Event ingestion success rate", "99.99%", "4.3 minutes downtime", "Events accepted / events received"],
+    ["Identity Resolution", "Resolution latency P99", "<50ms", "Measured per evaluation window", "histogram_quantile on resolution_duration"],
+    ["Audience Engine", "Evaluation latency P99", "<200ms", "Measured per evaluation window", "histogram_quantile on evaluation_duration"],
+    ["Destination Sync", "Sync completion success rate", "99.9%", "43.2 minutes downtime", "Successful syncs / total syncs attempted"],
+    ["Dashboard (Frontend)", "Page load time P95", "<3 seconds", "Measured weekly", "Real User Monitoring via browser SDK"]
   ]}
   highlightColumn={2}
 />
 
-### Alerting
+<Callout type="info" title="Error Budget Policy">
+When a service exhausts its monthly error budget, the owning team pauses feature work and focuses exclusively on reliability improvements until the budget is restored. This policy is enforced by engineering leadership and tracked in the weekly SRE review.
+</Callout>
 
-**Alert Routing:**
-1. Prometheus Alertmanager evaluates alert rules
-2. Critical alerts → PagerDuty → on-call engineer (immediate)
-3. Warning alerts → Slack #alerts channel → team review
-4. Info alerts → Grafana dashboard annotation
+**SLO Burn Rate Alerts:**
 
-**On-Call Rotation:**
-- Weekly rotation per team (Collect, Identity, Activation, Platform)
-- Primary + secondary on-call for coverage
-- Runbooks linked in every alert for fast resolution
-- Post-incident review for every P1/P2 alert
+Rather than alerting on instantaneous threshold breaches, Zeotap uses multi-window burn rate alerting:
+
+- **Fast burn (2% budget consumed in 1 hour)** -- Page on-call immediately (P1)
+- **Slow burn (5% budget consumed in 6 hours)** -- Alert to Slack, review within shift (P2)
+- **Informational (10% budget consumed in 3 days)** -- Weekly SRE review agenda item (P3)
+
+### PagerDuty Integration and Alerting
+
+Alerts flow from Prometheus Alertmanager through a structured routing pipeline to ensure the right person is notified at the right time.
+
+<ArchDiagram
+  title="Alert Routing Pipeline"
+  steps={[
+    { label: "Prometheus", detail: "Alert rule evaluates to firing state", icon: "📈" },
+    { label: "Alertmanager", detail: "Groups, deduplicates, applies inhibition rules", icon: "🔔" },
+    { label: "Routing", detail: "Matches alert labels to notification channel", icon: "🔀" },
+    { label: "PagerDuty (P1/P2)", detail: "Pages on-call engineer, escalation after 10min", icon: "📟" },
+    { label: "Slack (P3/P4)", detail: "Posts to team alert channel for review", icon: "💬" }
+  ]}
+/>
+
+**Alert Severity Levels:**
+
+| Severity | Response Time | Escalation | Example |
+|---|---|---|---|
+| P1 (Critical) | Acknowledge in 5 min | Auto-escalate to secondary after 10min, manager after 30min | Platform-wide outage, data loss risk |
+| P2 (High) | Acknowledge in 15 min | Escalate to secondary after 30min | Single service degraded, SLO burn rate high |
+| P3 (Medium) | Review within shift | No automatic escalation | Elevated error rate, non-critical service down |
+| P4 (Low) | Review next business day | None | Resource utilization warning, non-urgent maintenance |
+
+### Incident Response and On-Call
+
+<TechStack
+  title="Incident Response Tooling"
+  items={[
+    { name: "PagerDuty", role: "On-call scheduling, alert routing, escalation" },
+    { name: "Slack (#incident-*)", role: "Real-time incident coordination channel" },
+    { name: "Grafana", role: "Live dashboards during investigation" },
+    { name: "Runbooks", role: "Step-by-step resolution guides per alert" },
+    { name: "Statuspage", role: "External customer communication" },
+    { name: "Jira (Post-Incident)", role: "Post-mortem tracking and action items" }
+  ]}
+/>
+
+**Incident Lifecycle:**
+
+1. **Detection** -- Alert fires, PagerDuty pages on-call engineer
+2. **Acknowledge** -- On-call acknowledges within SLA, opens Slack incident channel
+3. **Triage** -- Assess severity and impact using dashboards and traces
+4. **Mitigate** -- Apply fix or rollback using runbook procedures
+5. **Resolve** -- Confirm service recovery via metrics and customer reports
+6. **Post-mortem** -- Blameless review within 48 hours for P1/P2 incidents, action items tracked in Jira
+
+<Expandable title="Runbook Structure" defaultOpen={false}>
+
+Every alert links to a runbook with the following structure:
+
+1. **Alert description** -- What this alert means, what service is affected
+2. **Impact assessment** -- How to determine customer impact and severity
+3. **Dashboard links** -- Direct links to relevant Grafana dashboards
+4. **Investigation steps** -- Ordered checklist of diagnostic queries and commands
+5. **Mitigation options** -- Possible fixes ranked by speed and risk (rollback, restart, scale, config change)
+6. **Escalation criteria** -- When to escalate to secondary on-call or engineering manager
+7. **Communication template** -- Pre-drafted customer communication for statuspage
+
+Runbooks are stored in the `runbooks/` directory of the DevOps repo and reviewed quarterly for accuracy.
+
+</Expandable>
+
+**On-Call Practices:**
+
+- **Weekly rotation** per domain team (Collect, Identity, Activation, Platform)
+- **Primary + secondary** on-call for coverage and escalation
+- **Handoff meeting** at rotation change with open issues and context
+- **On-call compensation** -- Additional pay for after-hours pages
+- **Toil tracking** -- Repetitive incident responses are logged as toil and prioritized for automation
 
 ### Key Dashboards
 
-Every team maintains these Grafana dashboards:
-- **Service Overview** — RED metrics, error breakdown, latency distribution
-- **Infrastructure** — Pod count, CPU/memory, node health
-- **Business Metrics** — Events ingested, profiles resolved, syncs completed
-- **SLO Tracker** — Error budget consumption over time
+Every team maintains a standard set of Grafana dashboards following a consistent layout.
 
-<Callout type="tip" title="Dashboard Hygiene">
-A dashboard with 50 panels is useless in an incident. Keep dashboards focused: 6-8 panels per dashboard, clear titles, and consistent time ranges. Create separate dashboards for investigation vs. monitoring.
+<ComparisonTable
+  headers={["Dashboard", "Purpose", "Audience", "Refresh Rate"]}
+  rows={[
+    ["Service Overview", "RED metrics, error breakdown, latency distribution", "On-call engineer", "15 seconds"],
+    ["Infrastructure", "Pod count, CPU/memory per node pool, disk I/O", "Platform team", "30 seconds"],
+    ["Business Metrics", "Events ingested, profiles resolved, syncs completed", "Engineering + Product", "1 minute"],
+    ["SLO Tracker", "Error budget consumption, burn rate, monthly trend", "SRE + Engineering leads", "5 minutes"],
+    ["Kafka Overview", "Consumer lag, partition distribution, throughput", "Data platform team", "15 seconds"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="warning" title="Dashboard Hygiene">
+A dashboard with 50 panels is useless during an incident. Keep dashboards focused: 6-8 panels per dashboard, clear titles, consistent time ranges, and a logical reading order (top-to-bottom, left-to-right). Create separate dashboards for monitoring (glanceable) vs. investigation (detailed drill-down).
 </Callout>
 
-<KeyConcepts concepts={["Prometheus", "Grafana", "OpenTelemetry", "SLO", "SLI", "Error Budget", "PagerDuty", "Structured Logging", "Distributed Tracing", "RED Metrics"]} />
+<KeyConcepts concepts={["Prometheus", "Thanos", "Grafana", "OpenTelemetry", "Cloud Logging", "Cloud Trace", "SLO", "SLI", "Error Budget", "Burn Rate Alerts", "RED Method", "PagerDuty", "Alertmanager", "Structured Logging", "Runbooks", "On-Call Rotation", "Blameless Post-Mortem"]} />
 
 ---
 
-**Next up:** CI/CD Pipelines — build, test, deploy →
+**Next up:** CI/CD Pipelines -- build, test, deploy →

@@ -22,10 +22,17 @@ Data collection is the entry point of the Zeotap CDP pipeline. This module cover
     ["Android SDK", "Kotlin/Java", "analytics-sdk-android", "Native Android apps"],
     ["Server-to-Server API", "REST", "zeocore-api", "Backend event forwarding"],
     ["GTM Template", "JavaScript", "zeocollect-gtm-template", "Google Tag Manager (Community Template)"],
-    ["AEP Extension", "JavaScript", "zeocollect-adobe-extension", "Adobe Experience Platform Launch"]
+    ["AEP Extension", "JavaScript", "zeocollect-adobe-extension", "Adobe Experience Platform Launch"],
+    ["Snowflake Connector", "SQL", "—", "Data warehouse source (automated sync)"],
+    ["BigQuery Connector", "SQL", "—", "GCP data warehouse (intraday sync)"],
+    ["Databricks Connector", "SQL/Spark", "—", "Lakehouse data source"]
   ]}
   highlightColumn={0}
 />
+
+<Callout type="tip" title="Data Warehouse Sources">
+Beyond SDKs and APIs, Zeotap supports direct connectors to **Snowflake**, **Google BigQuery**, **Databricks**, **Microsoft Fabric**, and **Azure Blob Storage** as data sources. These enable automated sync of existing warehouse data into the CDP without building custom ETL pipelines.
+</Callout>
 
 **SDK Version History:**
 - **v4.4.5** (Latest) — Real-time consent sync, ID Graph v3, Kotlin/Swift async

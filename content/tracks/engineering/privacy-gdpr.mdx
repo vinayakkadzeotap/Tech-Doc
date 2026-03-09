@@ -10,7 +10,7 @@ order: 13
 
 ## 🔒 Privacy & GDPR
 
-Privacy is not a feature — it's an architectural principle. Zeotap was born in Berlin with GDPR in its DNA. This module covers how privacy is enforced at every layer of the platform.
+Privacy is not a feature — it's an architectural principle. Zeotap was born in Berlin with GDPR in its DNA. The platform holds **ePrivacy Seal** (since 2016), **GDPR Seal**, **ISO 27001**, **ISO 27017**, **ISO 27018**, **ISO 27701**, **SOC 2 Type II**, and **CSA Star** certifications. This module covers how privacy is enforced at every layer of the platform.
 
 ### Privacy-by-Design Architecture
 
@@ -25,13 +25,23 @@ Privacy is not a feature — it's an architectural principle. Zeotap was born in
   ]}
 />
 
-### Consent Management
+### Consent Orchestration
+
+Zeotap's consent system goes beyond basic consent collection — it provides **end-to-end consent orchestration** where rules are set once by the DPO and enforced everywhere automatically.
 
 **Consent Collection:**
-- Web SDK integrates with CMP (OneTrust, Cookiebot, etc.) via TCF 2.2 API
+- Web SDK integrates with CMPs (**Usercentrics**, **Didomi**, **OneTrust**, etc.) via TCF 2.2 API
+- Collects both **online and offline** consent data for a 360-degree consent view per profile
 - Every event tagged with consent state at collection time
 - Consent purposes: `analytics`, `marketing`, `personalization`, `advertising`
 - GPC (Global Privacy Control) signal respected automatically
+
+**DIY Consent Control Centre:**
+- Self-serve interface for privacy compliance tasks — no IT dependency
+- Quick setup of consent and marketing preference rules
+- Standardizes, masters, and resolves consent across all capture points into a single record
+- Universal consent rules: set once, enforce everywhere
+- Marketers can activate at scale without constant DPO oversight
 
 **Consent Storage:**
 - Consent state stored per UCID in the Profile Store
@@ -80,6 +90,7 @@ When a data subject requests deletion:
 4. **Verification** — Automated check confirms data removal across all stores
 5. **Audit log** — Deletion request and completion logged (metadata only, no PII)
 6. **SLA** — Complete erasure within 72 hours (GDPR requires 30 days)
+7. **Bulk Delete API** — Supports deleting profiles in bulk within hours for large-scale erasure requests
 
 ### Data Residency
 
@@ -116,7 +127,7 @@ Every data access and modification is logged:
 Every engineer at Zeotap must consider privacy implications when building features. Ask: "Does this feature handle PII? Is consent checked? Can data be deleted? Is access logged?" If you're unsure, consult the Privacy Engineering team.
 </Callout>
 
-<KeyConcepts concepts={["GDPR", "Consent Management", "TCF 2.2", "Right to Erasure", "DSAR", "Data Residency", "Encryption at Rest", "CMEK", "Audit Logging", "Privacy-by-Design", "ISO 27018", "ISO 27701", "SOC 2"]} />
+<KeyConcepts concepts={["GDPR", "Consent Orchestration", "TCF 2.2", "Right to Erasure", "DSAR", "Bulk Delete API", "Data Residency", "Encryption at Rest", "CMEK", "Audit Logging", "Privacy-by-Design", "ePrivacy Seal", "ISO 27001", "ISO 27017", "ISO 27018", "ISO 27701", "SOC 2", "CSA Star"]} />
 
 ---
 

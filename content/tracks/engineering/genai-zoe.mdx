@@ -39,9 +39,10 @@ order: 9
 />
 
 **Model Selection:**
-- Primary: Gemini Pro for complex reasoning and segment generation
+- Primary: **PaLM-2** (via Vertex AI) for complex reasoning and segment generation — Ada was initially built on PaLM-2 and is being migrated to Gemini
 - Fast: Gemini Flash for intent classification and simple queries
 - Embeddings: text-embedding model for RAG document indexing
+- **BigQuery ML** is used for predictive models (RFM scoring, CLV, propensity) that feed into Ada's recommendations
 
 ### RAG Pipeline
 
@@ -105,6 +106,15 @@ Ada supports multi-turn conversations:
 - Context maintained across conversation turns
 - Can ask clarifying questions when query is ambiguous
 - Supports both chat and command-style interactions
+
+### ZeoAI Platform Layer
+
+Ada is part of the broader **ZeoAI** platform layer that applies AI across the entire CDP:
+
+- **Setup & Onboarding** — Automated data mapping, catalogue creation, schema detection
+- **Segmentation** — Natural language to segment rules, predictive audiences
+- **Insights** — Natural language customer analytics and trend discovery
+- **Deployment Acceleration** — Cuts deployment time by 3x vs. traditional CDPs
 
 <Callout type="info" title="zeotap-genai Repository">
 The Ada backend lives in the `zeotap-genai` and `zeotap-agentic-server` repositories. It's a Python FastAPI application using Google ADK for agent orchestration with MCP (Model Context Protocol) for tool integration. The service runs on GKE with GPU-backed nodes for low-latency inference.

@@ -21,9 +21,9 @@ Zeotap CDP is an enterprise Customer Data Platform that unifies identity, enrich
 
 ### What is Zeotap CDP?
 
-Zeotap is a privacy-first Customer Data Platform that enables enterprises to collect first-party data, resolve identities across devices and channels, build rich customer audiences, and activate those audiences across 100+ destinations in real time.
+Zeotap is a privacy-first Customer Data Platform that enables enterprises to collect first-party data, resolve identities across devices and channels, build rich customer audiences, and activate those audiences across 150+ destinations in real time.
 
-The platform sits at the intersection of **data engineering**, **identity resolution**, **machine learning**, and **real-time activation**, serving telcos, retailers, financial services, and media companies globally.
+The platform sits at the intersection of **data engineering**, **identity resolution**, **machine learning**, and **real-time activation**, serving telcos, retailers, financial services, and media companies globally. Recognized as a **Gartner Cool Vendor** and **G2 CDP Momentum Leader**, Zeotap is trusted by brands like P&G, Audi, Virgin Media O2, Sky Italia, and Breuninger.
 
 ### Platform Product Modules
 
@@ -41,7 +41,7 @@ Zeotap's platform is organized into six core product modules:
   ]}
 />
 
-**Integrate** — Ingest first-party data from web, mobile, CRM, offline, and third-party sources via SDKs and batch pipelines. Push data to 100+ destinations.
+**Integrate** — Ingest first-party data from web, mobile, CRM, offline, and third-party sources via SDKs, batch pipelines, and **Integr8** no-code connector builder. Push data to 150+ destinations.
 
 **Unify** — Stitch identities across devices and channels into a single customer profile using the ID+ identity strategy and Data Catalogue.
 
@@ -65,7 +65,7 @@ Zeotap is built as a collection of domain-oriented microservices organized aroun
     { label: "Ingestion", detail: "Collect Service, Kafka, Batch", icon: "📥" },
     { label: "Core Platform", detail: "ID Graph, Profiles, Audiences, Journeys", icon: "⚙️" },
     { label: "Data Stores", detail: "BigTable, BigQuery, Redis, Redshift", icon: "🗄️" },
-    { label: "Delivery", detail: "100+ Destinations, SmartPixel", icon: "📤" }
+    { label: "Delivery", detail: "150+ Destinations, SmartPixel", icon: "📤" }
   ]}
 />
 
@@ -164,7 +164,35 @@ Services are organized into domain-specific Kubernetes namespaces:
   highlightColumn={0}
 />
 
-<KeyConcepts concepts={["Microservices", "Integrate-Unify-Segment-Orchestrate", "UCID", "Kafka", "BigTable", "BigQuery", "Delta Lake", "GKE", "Identity Graph", "Profile Store", "Audience Engine", "ID+"]} />
+### Architecture Evolution
+
+Zeotap's data layer has evolved significantly:
+
+<ComparisonTable
+  headers={["Era", "Architecture", "Key Changes"]}
+  rows={[
+    ["Pre-2020", "JanusGraph on ScyllaDB (AWS)", "20B IDs in graph, ~600ms query latency, batch ingestion via Spark"],
+    ["2020-2022", "Direct ScyllaDB via CQL (GCP)", "Removed JanusGraph layer, latency dropped to ~30ms, streaming via Kafka"],
+    ["2023", "Kappa Architecture", "Real-time streaming prioritized, Kafka as single source of truth"],
+    ["2024+", "Cloud-native on GCP", "ScyllaDB replaced by BigTable, Spark eliminated, 20% operational footprint reduction"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="info" title="Kappa Architecture">
+Since 2023, Zeotap uses a **Kappa architecture** — all data flows through a single real-time streaming pipeline (Kafka/Pub/Sub → Dataflow → BigQuery/BigTable). There is no separate batch layer. Historical reprocessing is handled by replaying the stream. This simplifies the architecture and ensures real-time consistency.
+</Callout>
+
+### Scale Numbers
+
+<StatCard stats={[
+  { value: "10B+", label: "New Data Points/Day", color: "#3b82f6" },
+  { value: "300K+", label: "Writes/Second", color: "#10b981" },
+  { value: "500+", label: "Data Sources (Across Clients)", color: "#a855f7" },
+  { value: "2000+", label: "Active Workflows", color: "#f59e0b" }
+]} />
+
+<KeyConcepts concepts={["Microservices", "Integrate-Unify-Segment-Orchestrate", "UCID", "Kafka", "BigTable", "BigQuery", "Delta Lake", "GKE", "Identity Graph", "Profile Store", "Audience Engine", "ID+", "Kappa Architecture"]} />
 
 ---
 

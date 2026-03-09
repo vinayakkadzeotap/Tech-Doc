@@ -130,11 +130,36 @@ Audiences can be exported in multiple formats:
 - **API** — Query membership via REST API
 - **Destination push** — Automatic sync to activated destinations
 
+### Predictive Audiences
+
+The Segment module includes two out-of-the-box ML models powered by **Vertex AI / BigQuery ML**:
+
+<ComparisonTable
+  headers={["Model", "What It Predicts", "Use Case"]}
+  rows={[
+    ["RFM Scoring", "Recency, Frequency, Monetary value per customer", "Identify high-value vs at-risk customers automatically"],
+    ["Customer Lifetime Value (CLV)", "Predicted future revenue from a customer", "Prioritize retention spend, optimize ROAS"]
+  ]}
+  highlightColumn={0}
+/>
+
+- **No-code setup** — Predictive segments created in a few clicks
+- **Deterministic lookalikes** — Find new users similar to a seed audience using deterministic matching (not probabilistic)
+- **Champion Segments** — 2,500+ pre-built audience templates for common use cases
+
+### Real-Time Calculated Attributes (RT CAs)
+
+**RT CAs** enable dynamic profile enrichment computed in real-time as events arrive:
+
+- Compute derived attributes on-the-fly (e.g., "cart value in current session", "pages viewed today")
+- Used by the **Interact SDK** for client-side personalization at millisecond latency
+- Powers real-time decisions without waiting for batch computation
+
 <Callout type="info" title="Performance Target">
-Real-time segment re-evaluation completes within 200ms of a profile change. For an org with 1000 active segments, the engine evaluates only the ~50 segments affected by a given profile change.
+Real-time segment re-evaluation completes within 200ms of a profile change. For an org with 1000 active segments, the engine evaluates only the ~50 segments affected by a given profile change. The audience size estimator is 90% faster than traditional methods with a 66% cost reduction.
 </Callout>
 
-<KeyConcepts concepts={["Segment DSL", "Real-Time Evaluation", "Batch Recomputation", "HyperLogLog", "Bloom Filter", "Membership Storage", "Audience Overlap", "Incremental Evaluation"]} />
+<KeyConcepts concepts={["Segment DSL", "Real-Time Evaluation", "Batch Recomputation", "Bitmap Engine", "Bloom Filter", "Membership Storage", "Audience Overlap", "Predictive Audiences", "RFM", "CLV", "RT CAs", "Champion Segments"]} />
 
 ---
 
