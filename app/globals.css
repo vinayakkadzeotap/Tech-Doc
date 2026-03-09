@@ -105,4 +105,16 @@
   .animation-delay-450 {
     animation-delay: 450ms;
   }
+
+  /* Universe detail panel slide-in */
+  @keyframes slideInPanel {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 }
