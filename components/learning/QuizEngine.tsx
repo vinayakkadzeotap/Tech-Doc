@@ -144,7 +144,6 @@ export default function QuizEngine({ quiz, onClose }: Props) {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h3 className="text-lg font-bold mb-2">{quiz.title}</h3>
         <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden mb-2">
           <div
             className="h-full bg-gradient-to-r from-brand-blue to-brand-purple rounded-full transition-all duration-500"
