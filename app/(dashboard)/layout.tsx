@@ -28,12 +28,14 @@ export default async function DashboardLayout({
         full_name: profile.full_name,
         role: profile.role,
         is_admin: profile.is_admin,
+        avatar_url: profile.avatar_url || '',
       }
     : {
         email: user.email || '',
         full_name: '',
         role: 'engineering',
         is_admin: false,
+        avatar_url: '',
       };
 
   return (
