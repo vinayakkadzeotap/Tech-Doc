@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     .eq('user_id', user.id)
     .eq('track_id', track_id)
     .eq('module_id', module_id)
-    .single();
+    .maybeSingle();
 
   let data, error;
   if (existing) {

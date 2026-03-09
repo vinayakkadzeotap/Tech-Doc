@@ -32,7 +32,7 @@ export default function MarkCompleteBar({ trackId, moduleId, isComplete }: Props
       .eq('user_id', user.id)
       .eq('track_id', trackId)
       .eq('module_id', moduleId)
-      .single();
+      .maybeSingle();
 
     let error;
     if (existing) {
