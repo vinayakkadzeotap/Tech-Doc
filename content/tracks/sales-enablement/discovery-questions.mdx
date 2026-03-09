@@ -1,253 +1,330 @@
 ---
 title: Discovery Questions
-description: Qualification framework, questions by pain point, and red/green flags to identify the best opportunities
-icon: 🔍
+description: Qualification framework and key questions
+icon: ❓
 estimatedMinutes: 30
 contentType: reference
 trackId: sales-enablement
 order: 2
 ---
 
-## 🔍 Discovery Questions
+## ❓ Discovery Questions
 
-Discovery is where deals are won or lost. This module gives you a structured framework for qualifying opportunities, the exact questions to ask for each pain point, and the signals that tell you whether to pursue or pass.
+Great discovery is the difference between a deal that closes in 60 days and one that lingers for 18 months before dying. This module gives you a structured BANT and MEDDPICC qualification framework adapted for CDP sales, persona-specific discovery questions, and clear signals for when to qualify in or out.
 
-<KeyConcepts concepts={["BANT Framework", "Pain-Point Discovery", "Green Flags", "Red Flags", "Qualification Criteria", "Champion Identification"]} />
-
----
-
-## Qualification Framework
-
-Before diving into questions, understand what you are qualifying for. Use the **MEDDPICC-lite** framework adapted for Zeotap deals.
-
-<ArchDiagram
-  title="Zeotap Qualification Framework"
-  steps={[
-    { label: "Metrics", detail: "What business outcomes are they measuring? What KPIs need to improve?", icon: "📊" },
-    { label: "Economic Buyer", detail: "Who signs the check? CMO, CDO, or CTO? What is their budget cycle?", icon: "💼" },
-    { label: "Decision Process", detail: "How do they evaluate vendors? RFP, POC, committee, or single decision maker?", icon: "🔄" },
-    { label: "Pain", detail: "What specific problem is driving urgency? Is it acute or chronic?", icon: "🔥" },
-    { label: "Champion", detail: "Who internally will advocate for Zeotap? Do they have influence?", icon: "⭐" },
-    { label: "Timeline", detail: "Is there a triggering event? Contract renewal? Board mandate? Regulation deadline?", icon: "⏰" }
-  ]}
-/>
+<KeyConcepts concepts={["BANT Framework", "MEDDPICC", "Buyer Personas", "Discovery by Persona", "Current Data Stack", "Pain Discovery", "Green Flags", "Red Flags", "Qualify In/Out"]} />
 
 ---
 
-## Opening the Discovery Call
+## BANT Qualification: The Quick Screen
 
-<Callout type="tip" title="The First 3 Minutes Matter Most">
-Do not start by presenting Zeotap. Start by demonstrating that you understand their world. The goal of discovery is to listen 70% and talk 30%.
-</Callout>
-
-**Opening script:**
-> "Thanks for taking the time. Before I share anything about Zeotap, I want to make sure I understand your current situation so I can focus on what is most relevant to you. Can you walk me through how your team currently manages customer data — from collection to activation?"
-
-**Follow-up framing:**
-> "That is helpful context. Let me ask a few more specific questions so I can understand where the biggest opportunities are for you."
-
----
-
-## Questions by Pain Point
-
-### Pain Point 1: Fragmented Customer Data
-
-<Callout type="info" title="Signal You're Hearing This Pain">
-"We have data everywhere." / "We don't have a single view of the customer." / "Our teams are working with different numbers."
-</Callout>
-
-**Discovery questions:**
-
-1. "How many different systems hold customer data today?" *(Establishes scope — typical answer is 5-15)*
-2. "When your marketing team wants to build a campaign audience, how do they get the data? How long does that process take?"
-3. "If I asked your email team and your paid media team how many active customers you have, would they give me the same number?"
-4. "What happens when a customer interacts across channels — say they browse on web, get an email, then call support? Can your team see that full journey?"
-5. "Have you tried to solve this before? What happened?"
-
-**What to listen for:**
-- Number of data silos (more = bigger pain)
-- Manual processes and workarounds (indicates urgency)
-- Previous failed attempts (validates need, but watch for vendor fatigue)
-- Specific examples of business impact (use these in your proposal)
-
-### Pain Point 2: Identity Resolution Challenges
-
-<Callout type="info" title="Signal You're Hearing This Pain">
-"We can't match users across devices." / "Our match rates are terrible." / "We're losing track of customers when cookies go away."
-</Callout>
-
-**Discovery questions:**
-
-1. "What identifiers do you use to recognize customers? Email, phone, device ID, loyalty ID?"
-2. "What is your current match rate between online and offline customer data?"
-3. "How are you preparing for the cookieless future? What is your first-party data strategy?"
-4. "Do you have a concept of a unified customer ID today? How is it generated?"
-5. "When a customer creates an account on web and then uses the mobile app, how long does it take for those profiles to merge?"
-
-**What to listen for:**
-- Low match rates (below 50% is painful)
-- Dependence on third-party cookies (urgency driver)
-- No existing identity graph (greenfield opportunity)
-- Real-time vs. batch requirements
-
-### Pain Point 3: Privacy and Compliance Pressure
-
-<Callout type="info" title="Signal You're Hearing This Pain">
-"Our legal team is blocking projects." / "We got flagged in an audit." / "We need to handle GDPR better."
-</Callout>
-
-**Discovery questions:**
-
-1. "How do you currently manage consent across your digital properties?"
-2. "If a customer submits a data deletion request, how long does it take to process across all your systems?"
-3. "Has your DPO raised concerns about your current martech stack?"
-4. "Are you operating across multiple jurisdictions? How do you handle different privacy regulations?"
-5. "Have you had any compliance incidents or near-misses that are driving urgency here?"
-
-**What to listen for:**
-- Active DPO involvement (they will be a stakeholder — could be champion or blocker)
-- Cross-border data requirements (Zeotap strength)
-- Compliance deadlines (creates urgency)
-- Previous incidents (strong motivator)
-
-### Pain Point 4: Slow Time to Activation
-
-<Callout type="info" title="Signal You're Hearing This Pain">
-"It takes weeks to launch a campaign." / "We're always waiting on engineering." / "By the time we get the data, it's stale."
-</Callout>
-
-**Discovery questions:**
-
-1. "Walk me through the process from when marketing defines a segment to when that audience is live in your ad platform. How many steps? How many teams involved?"
-2. "How much engineering time goes into building and maintaining data pipelines for marketing?"
-3. "How often does marketing request a new integration or connector? How long does it typically take?"
-4. "Are you doing any real-time personalization today, or is everything batch-based?"
-5. "If you could reduce activation time from weeks to hours, what would that mean for your business?"
-
-**What to listen for:**
-- Long cycle times (weeks/months indicates strong need)
-- Engineering bottleneck (Zeotap removes this dependency)
-- Requests for specific connectors (check if we support them)
-- Real-time requirements (our differentiator)
-
-### Pain Point 5: Proving Marketing ROI
-
-<Callout type="info" title="Signal You're Hearing This Pain">
-"We can't prove what's working." / "The board wants to see marketing ROI." / "We're cutting budget because we can't show results."
-</Callout>
-
-**Discovery questions:**
-
-1. "How do you currently measure the ROI of your marketing campaigns?"
-2. "Can you connect a specific campaign to revenue impact today?"
-3. "What does your attribution model look like? Single-touch, multi-touch, or no formal model?"
-4. "Is there pressure from leadership to justify marketing spend? What is that conversation like?"
-5. "If you could prove that a specific segment generated 3x ROI, how would that change your budget conversations?"
-
-**What to listen for:**
-- No attribution model (opportunity for Zeotap insights)
-- Budget pressure (creates urgency and executive sponsorship)
-- Specific revenue targets (anchor your ROI case to these)
-
----
-
-## Green Flags and Red Flags
+Use BANT in the first 5-10 minutes of any call to determine whether this opportunity deserves further investment. You need positive signals on at least 3 of 4 elements to proceed.
 
 <ComparisonTable
-  headers={["Green Flags (Pursue)", "Red Flags (Proceed with Caution)"]}
+  headers={["BANT Element", "CDP-Specific Focus", "Strong Signal", "Weak Signal", "Disqualifier"]}
   rows={[
-    ["Active budget allocated for CDP or data platform", "No budget and no plan to create one"],
-    ["Executive sponsor identified (CMO, CDO, or CTO)", "Only talking to mid-level with no exec access"],
-    ["Specific use cases defined with measurable KPIs", "Vague interest in 'better data' with no specifics"],
-    ["Timeline driven by external event (contract renewal, regulation, board mandate)", "No urgency — 'exploring for next year'"],
-    ["Current solution is failing or contract is ending", "Happy with current vendor, just 'looking around'"],
-    ["Multiple stakeholders engaged across teams", "Single person with no organizational support"],
-    ["GDPR/privacy is a top concern (our sweet spot)", "US-only company with no privacy pressure"],
-    ["Enterprise scale (100K+ customers, 5+ data sources)", "Small company with simple data needs"],
-    ["Previous CDP evaluation or failed implementation", "No understanding of what a CDP does"],
-    ["Willing to do a POC with defined success criteria", "Wants a free trial with no commitment"]
+    ["Budget", "Has funding allocated for CDP, data infrastructure, or martech consolidation", "Named budget line for CDP or data platform this fiscal year", "Budget exists for broader digital transformation, not earmarked for CDP", "No budget, no funding cycle in sight, and no business case being built"],
+    ["Authority", "Talking to someone with purchasing power or direct access to the economic buyer", "Speaking with VP+ who owns the decision or has CxO ear", "Manager-level with genuine influence and willingness to champion", "Individual contributor exploring on their own with no exec awareness"],
+    ["Need", "Has a specific, quantified pain that a CDP solves", "Active data unification, privacy compliance, or personalization initiative underway", "Recognized pain but no active project or timeline", "Happy with current stack, no articulated challenge, browsing out of curiosity"],
+    ["Timeline", "Has a driving event creating urgency", "Formal evaluation underway, decision expected in 1-3 months", "Planning for next quarter, waiting on budget approval", "No timeline, purely exploratory, 'maybe next year'"]
   ]}
+  highlightColumn={2}
 />
 
----
-
-## Champion Identification Questions
-
-<Callout type="important" title="No Champion = No Deal">
-Every won deal has an internal champion. If you cannot identify one, the deal will stall. Ask these questions to find and develop your champion.
+<Callout type="tip" title="BANT Pro Tip">
+Budget is the element most likely to be hidden early. If you cannot confirm budget directly, ask: "Has your organization invested in data infrastructure or martech in the past 12 months? What did that process look like?" This reveals budget history without forcing a direct number.
 </Callout>
 
-**Questions to identify a champion:**
+---
 
-1. "Who on your team feels the pain of fragmented data most acutely?"
-2. "If this project were approved, who would own the implementation?"
-3. "Who has been advocating for a CDP internally?"
-4. "Is there someone on your team who has used a CDP before — maybe at a previous company?"
-5. "Who would present the business case to leadership?"
+## MEDDPICC: The Deep Qualification Framework
 
-**Questions to test champion strength:**
+For enterprise CDP deals, BANT is not enough. Use MEDDPICC to map every element required to close. Update your MEDDPICC scorecard after every interaction.
 
-1. "Have you presented this initiative to your leadership yet? How did they respond?"
-2. "If I gave you a business case document, would you be comfortable presenting it to the economic buyer?"
-3. "What would need to be true for you to recommend Zeotap to your leadership?"
-4. "Are there other stakeholders I should meet with? Can you facilitate those introductions?"
+<ArchDiagram title="MEDDPICC for Zeotap CDP Sales" steps={[
+  { label: "Metrics", detail: "What quantified business outcomes does the buyer expect? Examples: 30% lift in ROAS, 50% reduction in data silos, 20% churn reduction, GDPR audit readiness", icon: "📊" },
+  { label: "Economic Buyer", detail: "Who signs the check? Typically CMO, CDO, CTO, or sometimes CFO for large deals. Get access early or get blocked late.", icon: "💰" },
+  { label: "Decision Criteria", detail: "What will they evaluate? Privacy compliance, identity resolution accuracy, integration count, time-to-value, AI capabilities, total cost of ownership", icon: "✅" },
+  { label: "Decision Process", detail: "How will they evaluate? RFP, POC, vendor bake-off, security review, procurement. Map every step and timeline.", icon: "🔄" },
+  { label: "Paper Process", detail: "Legal, procurement, DPA, InfoSec review. In regulated industries this can add 4-8 weeks. Know this early.", icon: "📄" },
+  { label: "Identified Pain", detail: "The specific, quantified pain driving urgency. Data silos costing $X in wasted spend, GDPR fine risk, 3-week campaign launch cycle, failed regulatory audit.", icon: "🎯" },
+  { label: "Champion", detail: "Your internal advocate who sells when you are not in the room. They must have influence, access to the EB, and a personal win tied to your success.", icon: "🏆" },
+  { label: "Competition", detail: "Who else is in the deal? Segment, Adobe, Salesforce, mParticle, Tealium, or the dreaded build-it-ourselves option. Know their pitch.", icon: "⚔️" }
+]} />
+
+<Callout type="important" title="MEDDPICC Scoring">
+Score each element 1-3 after every interaction. A deal with any element at 0 is at risk. A deal with Metrics, Champion, or Economic Buyer at 0 is likely to stall. Address gaps proactively — do not wait for them to surface during contract negotiations.
+</Callout>
 
 ---
 
-## Budget and Timeline Questions
+## Discovery Questions by Buyer Persona
 
-<Expandable title="Budget Qualification" defaultOpen={true}>
+### CMO — Chief Marketing Officer
 
-**Direct approach (when you have rapport):**
-> "Do you have budget allocated for a customer data platform this year?"
+<Callout type="info" title="What the CMO Cares About">
+Revenue growth, campaign performance, customer lifetime value, personalization at scale, proving marketing ROI to the board. The CMO thinks in terms of business outcomes, not technology.
+</Callout>
 
-**Indirect approach (early stage):**
-> "When you think about the investment required to solve this problem — not just a platform, but the people and process changes too — has your team started to scope that out?"
+**Opening questions:**
+1. "How do you currently measure the ROI of your marketing spend across channels? Are you able to attribute revenue to specific campaigns at the individual customer level?"
+2. "When you think about personalization today, what percentage of your customer interactions are truly personalized versus batch-and-blast to broad segments?"
+3. "What does your ideal customer journey look like versus what you can actually execute with your current technology? Where are the biggest gaps?"
 
-**Anchoring approach:**
-> "For an enterprise deployment, our customers typically invest between X and Y annually. Does that align with what you had in mind, or should we be thinking about a phased approach?"
+**Pain-probing questions:**
+4. "How much of your marketing budget do you estimate is wasted on duplicate profiles, reaching the same person across channels without deduplication, or targeting existing customers with acquisition campaigns?"
+5. "If you could wave a magic wand and fix one thing about your marketing data infrastructure, what would it be and why?"
+6. "How are you preparing for increasing privacy regulations and the loss of third-party signals? Do you have a first-party data strategy in place, or is that still being developed?"
+7. "When your team wants to launch a new campaign to a specific audience, how long does that process take from idea to live activation? Are you happy with that timeline?"
+
+**Value-linking questions:**
+8. "If you could increase campaign conversion rates by 25-35% through better targeting and identity resolution, what would that mean in revenue terms for your business this year?"
+9. "How much time does your marketing team spend each week manually pulling data from different systems, building audiences in spreadsheets, and coordinating across tools? What would they do with that time back?"
+
+**Budget and timeline questions:**
+10. "Has your team scoped the investment required for a customer data platform — not just the technology, but the organizational change management as well?"
+11. "Is there a board-level or executive mandate driving this initiative, or is this being driven bottom-up from your team?"
+
+---
+
+### CDO — Chief Data Officer
+
+<Callout type="info" title="What the CDO Cares About">
+Data architecture, governance, compliance, data quality, and building a scalable foundation. The CDO thinks in terms of architecture, standards, and risk reduction.
+</Callout>
+
+**Opening questions:**
+1. "Can you walk me through your current customer data architecture? Where does customer data live today, how many systems are involved, and how do they talk to each other?"
+2. "How do you currently resolve customer identity across channels — do you have a unified customer ID, or are you working with fragmented profiles that require manual matching?"
+3. "What is your current approach to data governance and consent management? How confident are you in your GDPR and CCPA compliance posture if a regulator audited you tomorrow?"
+
+**Pain-probing questions:**
+4. "When a business user requests a unified customer view or a new audience segment, how long does it take your team to deliver that? What is the bottleneck — engineering capacity, data quality, or tooling?"
+5. "How much of your engineering team's time goes to maintaining data pipelines, fixing identity resolution edge cases, and building custom connectors versus working on strategic data products?"
+6. "Have you experienced data quality issues that directly impacted a business decision or customer experience? What happened and what was the cost?"
+7. "How do you handle Data Subject Access Requests today? How long does a deletion request take to propagate across all your systems?"
+
+**Value-linking questions:**
+8. "If you could reduce the time to onboard a new data source from weeks to hours with pre-built connectors and automatic schema mapping, what would that free your team up to work on instead?"
+9. "What would it mean for your organization to have a deterministic identity graph with 90%+ match rates across all channels, maintained automatically without your engineering team?"
+
+**Architecture questions:**
+10. "Are you on a modern cloud data warehouse — Snowflake, BigQuery, Databricks? How does the CDP need to fit into that architecture?"
+11. "Have you evaluated or attempted to build CDP capabilities in-house? What worked and what did not?"
+
+---
+
+### VP of Marketing / Head of Digital
+
+<Callout type="info" title="What the VP Marketing Cares About">
+Day-to-day campaign operations, tool frustrations, team velocity, and independence from engineering. This persona lives in the weeds and can become your strongest champion because they feel the pain daily.
+</Callout>
+
+**Opening questions:**
+1. "Walk me through how your team builds and activates an audience segment today, end-to-end. What tools are involved, who needs to be in the loop, and how long does it take from idea to live campaign?"
+2. "How many marketing platforms and activation channels are you pushing audiences to? How do you keep segments synchronized across them?"
+3. "What does your martech stack look like today? How satisfied are you with how your tools work together — on a scale of 1-10?"
+
+**Pain-probing questions:**
+4. "When was the last time a campaign underperformed specifically because of a data issue — duplicate contacts, missing attributes, stale segments, or reaching the wrong audience?"
+5. "How dependent is your marketing team on engineering or data teams to create new segments, add data attributes, or integrate new channels? How does that dependency affect your speed?"
+6. "Are you able to do any real-time personalization today — reacting to customer behavior as it happens — or is everything batch-based on yesterday's data?"
+7. "How do you currently suppress existing customers from acquisition campaigns? Do you know how much you are spending on converting people who already bought?"
+
+**Value-linking questions:**
+8. "If your team could build and activate segments in minutes using a visual builder — no SQL, no engineering tickets, no waiting — how would that change your daily operations and campaign velocity?"
+9. "What if you could see every customer's full journey across all touchpoints — web, app, email, store, call center — in one place before building a campaign? How would that change your targeting?"
+
+**Champion-building questions:**
+10. "If we could solve this problem, who would get the credit internally? How would this initiative help your career and your team's standing in the organization?"
+11. "What would need to be true for you to recommend Zeotap to your leadership? What does your ideal vendor look like?"
+
+---
+
+### Head of Data / Data Engineering Lead
+
+<Callout type="info" title="What the Head of Data Cares About">
+Technical architecture, build-vs-buy decisions, integration patterns, scalability, and not getting stuck maintaining vendor infrastructure. This persona will either champion or block you based on technical credibility.
+</Callout>
+
+**Opening questions:**
+1. "What does your current data infrastructure look like? Are you on Snowflake, BigQuery, Redshift, Databricks, or running on-premise systems? How does data flow between your systems today?"
+2. "Have you evaluated or built any customer data platform capabilities in-house? What did you build, how far did you get, and what was the outcome?"
+3. "What is your event volume — how many events per day are you ingesting and processing across web, mobile, backend systems, and offline sources?"
+
+**Pain-probing questions:**
+4. "What percentage of your team's time goes to maintaining data pipelines, fixing identity resolution logic, and keeping connectors up to date versus building new data products and capabilities?"
+5. "When marketing asks for a new integration, data source, or audience attribute, what is the typical turnaround time? Is that creating friction between your team and marketing?"
+6. "Have you run into scaling issues with your current identity resolution approach? How are you handling cross-device matching, profile merging, and unmerging?"
+7. "What is your biggest concern about adopting a vendor CDP versus building on your own stack?"
+
+**Value-linking questions:**
+8. "If Zeotap handled identity resolution, audience computation, consent propagation, and destination syncing out of the box — with pre-built connectors and API-first architecture — what would your team focus on instead?"
+9. "What if you could ingest data from any source via pre-built connectors or API, with automatic schema detection and identity stitching, and query unified profiles directly from your data warehouse?"
+
+**Technical credibility questions:**
+10. "How important is it that the CDP integrates bidirectionally with your data warehouse rather than creating another data silo?"
+11. "What are your requirements for data residency, encryption, and security certifications? Do you need EU-only processing?"
+
+---
+
+## Questions About Current Data Stack
+
+Map the existing technology landscape to identify integration requirements, competitive overlap, and displacement opportunities.
+
+<Expandable title="Data Infrastructure and Tools" defaultOpen={true}>
+
+1. "What is your primary data warehouse or data lake?" *(Snowflake, BigQuery, Redshift, Databricks, Azure Synapse)*
+2. "Do you have a customer data platform today? If so, which one, how long have you had it, and how satisfied are you?"
+3. "What CRM system are you using?" *(Salesforce, HubSpot, Microsoft Dynamics, SAP)*
+4. "What marketing automation or engagement platform are you on?" *(Marketo, Braze, Salesforce Marketing Cloud, Klaviyo, Emarsys)*
+5. "How are you collecting web and app analytics?" *(GA4, Adobe Analytics, Amplitude, Mixpanel, Heap)*
+6. "Do you have a tag management system?" *(GTM, Tealium iQ, Adobe Launch, Ensighten)*
+7. "What is your consent management platform?" *(OneTrust, Cookiebot, Didomi, Usercentrics, custom-built)*
+8. "Are you using any data integration, ETL, or reverse-ETL tools?" *(Fivetran, Hightouch, Census, Segment, Airflow, dbt)*
+9. "Do you have a data clean room or any second-party data partnerships?" *(AWS Clean Rooms, Snowflake Data Sharing, LiveRamp)*
+10. "What is your mobile SDK and push notification setup?" *(Firebase, Braze, Airship, custom)*
 
 </Expandable>
 
-<Expandable title="Timeline Qualification" defaultOpen={false}>
+<Expandable title="Data Quality and Governance" defaultOpen={false}>
 
-**Key questions:**
-1. "Is there a specific date or event driving the timeline for this decision?"
-2. "When does your current contract expire?" *(If they have a competing tool)*
-3. "If we started today, when would you need to see first results?"
-4. "What does your procurement process look like? How long does vendor approval typically take?"
-5. "Are there any board meetings or budget cycles that would affect timing?"
+1. "How would you rate your customer data quality today on a scale of 1-10? What drives that rating?"
+2. "Do you have a data catalog or metadata management tool in place?" *(Alation, Collibra, Atlan, dbt)*
+3. "How do you handle data deduplication today — is it automated or manual?"
+4. "What is your consent architecture — do you collect and enforce consent at the event level, or is it a global flag?"
+5. "How do you handle DSARs — data subject access requests and deletion requests? How long does it take to process one end-to-end?"
+6. "Do you have a formal data governance framework with defined data owners, or is it ad hoc?"
+7. "How is PII handled across your systems — encrypted, hashed, tokenized, or stored in plaintext?"
+8. "Who owns customer data quality in your organization — marketing, IT, data, or nobody?"
 
-**Urgency boosters to listen for:**
-- Contract renewal within 6 months
-- Board mandate with a deadline
-- Regulatory compliance deadline
-- Upcoming product launch that needs personalization
-- New fiscal year budget approval
+</Expandable>
+
+<Expandable title="Budget and Investment History" defaultOpen={false}>
+
+1. "What does your annual martech and data infrastructure spend look like? Has it been growing, flat, or under pressure?"
+2. "Have you made any significant data or martech investments in the past 12-18 months? What were they and how did they go?"
+3. "Are you planning any major migrations or consolidations in the next 6-12 months?"
+4. "When was the last time your organization purchased enterprise software at this price point? What did that process look like?"
+5. "Is there a specific budget cycle we should be aware of — annual planning, quarterly reviews, board approval thresholds?"
 
 </Expandable>
 
 ---
 
-## After Discovery: Next Steps
+## Green Flags: Signals to Qualify In
 
-<Callout type="success" title="Always End with Clear Next Steps">
-Never end a discovery call without agreeing on the next step. Vague follow-ups kill deals.
+These are the signals that indicate a high-quality opportunity worth investing your time and resources. The more green flags you see, the more aggressively you should pursue.
+
+<StatCard stats={[
+  { value: "Active RFP", label: "Formally evaluating CDP vendors", color: "green" },
+  { value: "Budget Confirmed", label: "Funding allocated for data/martech", color: "green" },
+  { value: "Exec Sponsor", label: "C-level or VP actively engaged", color: "green" },
+  { value: "Quantified Pain", label: "Specific, measurable business problem", color: "green" }
+]} />
+
+<Expandable title="Full List of Green Flags — Qualify In Aggressively" defaultOpen={true}>
+
+- **Named project with a project owner** — They have an internal initiative like "Customer 360" or "First-Party Data Strategy" with a named sponsor and allocated resources. This means organizational commitment, not just curiosity.
+- **Regulatory pressure or recent incident** — They received a GDPR fine, warning, DPA audit, or near-miss. A privacy-first CDP becomes urgent and the budget unlocks.
+- **Cookie deprecation urgency** — Their acquisition strategy depends heavily on third-party data and they need a first-party data plan before third-party cookies fully disappear.
+- **Failed DIY attempt** — They tried to build identity resolution or a CDP in-house and it did not scale, cost too much, or got deprioritized. They are now open to buying.
+- **Martech consolidation initiative** — They are actively rationalizing their stack and want fewer, more integrated tools. A CDP consolidation play is strong here.
+- **New leadership** — A new CMO, CDO, or CTO joined in the last 6 months and wants to make an impact quickly. New leaders bring fresh budget, urgency, and willingness to make big decisions.
+- **Competitive pressure** — Their competitors are delivering better personalization and winning market share. Fear of falling behind is a powerful motivator.
+- **Multi-market or EU expansion** — They are expanding into EU markets or multiple jurisdictions and need a privacy-compliant, multi-region data strategy.
+- **Upcoming contract renewal** — Their current CDP, DMP, or data platform contract renews in 3-9 months. This is the perfect evaluation window.
+- **Engineering team frustrated with pipeline maintenance** — Data engineers spending 60-80% of their time on pipeline maintenance want to offload commodity data infrastructure and focus on higher-value work.
+- **Multiple stakeholders engaged early** — When both marketing and data/IT teams show up to the first call together, it signals organizational alignment and seriousness.
+
+</Expandable>
+
+---
+
+## Red Flags: Signals to Qualify Out or Deprioritize
+
+Not every opportunity is worth pursuing. Qualifying out early saves your most valuable resource — time. These red flags do not always mean "walk away" but they should trigger a serious evaluation of whether to invest further.
+
+<Callout type="warning" title="The Courage to Qualify Out">
+It takes discipline to walk away from a deal, but pursuing bad-fit opportunities costs more than losing them. For every hour you spend on a deal that will never close, you could be advancing one that will.
 </Callout>
 
-**Closing the discovery call:**
+<Expandable title="Full List of Red Flags — Qualify Out or Deprioritize" defaultOpen={true}>
 
-> "Based on what you've shared, I think there is a strong fit here — particularly around [specific pain point they mentioned]. Here is what I'd recommend as a next step: I will put together a tailored overview that maps Zeotap's capabilities to the three use cases you mentioned — [use case 1], [use case 2], and [use case 3]. Then I would love to show you a focused demo with data that looks like yours. Can we get 45 minutes on [specific date] and include [champion name] and [other stakeholder they mentioned]?"
+- **No executive sponsor and no path to one** — If no one above director level is involved, aware, or accessible, the deal will stall in committee. Ask: "Who on the leadership team is sponsoring this initiative?" If the answer is vague, you have a problem.
+- **No budget and no budget cycle** — Exploratory conversations are fine for pipeline building, but if there is no budget, no business case in progress, and no upcoming planning cycle, park the deal and set a follow-up in 3-6 months.
+- **"We are just researching"** — Unless research is part of a formal evaluation with a defined timeline, selection criteria, and project owner, this is tire-kicking. Ask: "What will you do with the information from this research? Is there a specific project or decision this feeds into?"
+- **Heavy build-it-ourselves culture with executive backing** — If the CTO believes infrastructure should be built in-house and has the CEO's support, you will fight an uphill battle. Present the build-vs-buy ROI case, but be realistic about your odds.
+- **No articulated data pain** — If they are genuinely happy with their current setup and cannot describe a single data challenge, there is no urgency and no compelling event. Education is expensive — let them come back when the pain surfaces.
+- **Single-channel focus** — If they only care about email marketing and have no plans for cross-channel activation, personalization, or data unification, a CDP is overkill. Point them to a good ESP and stay in touch.
+- **Very small data volume** — If they have fewer than 50K customer profiles, minimal event data, and no complexity in their customer journey, they may not need an enterprise CDP. Be honest about fit rather than forcing a deal that will churn.
+- **Ongoing major platform migration** — If they are mid-migration on their data warehouse, CRM, or core martech stack, adding a CDP on top will create chaos and implementation risk. Suggest revisiting in 6-12 months when the dust settles.
+- **Political infighting between marketing and IT** — If the two teams that must collaborate on a CDP implementation are actively in conflict, the deal will die in requirements disagreements. Look for a neutral executive who can align them.
+- **Price anchored to free or open-source tools** — If they are comparing your pricing to GA4, open-source CDPs, or DIY solutions, they fundamentally misunderstand the enterprise CDP category. Extensive education is required before they become a real opportunity.
+- **Decision maker changes mid-cycle** — If the exec sponsor leaves or a reorg happens during the evaluation, the deal resets to zero. Reassess whether the new stakeholder has the same pain and urgency.
+- **No willingness to do a technical evaluation** — If they want to make a decision based solely on slides and demos without a POC, proof of value, or technical deep dive, they may not be serious or may not have technical stakeholders engaged.
 
-**What to document after every discovery call:**
+</Expandable>
+
+---
+
+## How to Qualify In or Out: The Decision Framework
+
+<ComparisonTable
+  headers={["Criteria", "Qualify In", "Nurture (Long-Term)", "Qualify Out"]}
+  rows={[
+    ["Budget", "Allocated or being allocated this quarter", "Planned for next fiscal year", "No budget and no plan to get one"],
+    ["Authority", "Access to economic buyer confirmed", "Champion identified, working on exec access", "No exec sponsor and no path to one"],
+    ["Need", "Quantified pain with active initiative", "Recognized pain, no active project yet", "No pain, no urgency, happy with status quo"],
+    ["Timeline", "Decision in 1-3 months with compelling event", "Decision in 3-9 months, awaiting trigger", "No timeline, purely exploratory"],
+    ["Champion", "Strong internal advocate with influence and motivation", "Potential champion identified, needs development", "No internal advocate found"],
+    ["Competition", "We are in the evaluation or can shape criteria", "They are locked into a competitor with renewal 6+ months away", "They just signed a 3-year deal with a competitor"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="success" title="The Golden Rule of Qualification">
+A deal worth pursuing has three things: a person with power, a problem that hurts, and a timeline that creates urgency. If any one of these is missing, your job is to create it or move on. The best salespeople qualify out fast and reallocate their energy to deals that will close.
+</Callout>
+
+---
+
+## Decision Process Mapping
+
+Understanding how the deal gets done is just as important as understanding the pain. Map the decision process in the first or second call to avoid surprises.
+
+<Expandable title="Decision Process Discovery Questions" defaultOpen={false}>
+
+1. "Can you walk me through how your organization typically evaluates and purchases enterprise software? What does the process look like from first meeting to signed contract?"
+2. "Who are the key stakeholders who need to weigh in on this decision? Can we map them out — who are the evaluators, influencers, and final decision makers?"
+3. "Is there a formal procurement process? Will this go through an RFP, and if so, when will that be issued?"
+4. "What is the typical timeline from vendor selection to signed contract? Are there known bottlenecks — legal review, security audit, board approval?"
+5. "Will there be an InfoSec or security review? How long does that typically take at your organization?"
+6. "Do you need a Data Processing Agreement? Does your legal team have a standard template, or should we provide ours?"
+7. "Is a technical proof of concept or pilot required before a purchase decision? What would success criteria look like?"
+8. "Who has final sign-off authority on a purchase of this size? Have they been briefed on this initiative?"
+9. "Are there any internal deadlines driving the timeline — board presentations, product launches, regulatory compliance dates, contract renewals?"
+10. "Have you been through a vendor evaluation like this before? What did the process look like and what was the outcome?"
+
+</Expandable>
+
+---
+
+## After Discovery: The Post-Call Checklist
+
+<Callout type="important" title="Document Within 2 Hours">
+Your memory degrades rapidly after a call. Document everything within 2 hours while the details are fresh. Update your CRM, share notes with your team, and send the prospect a recap.
+</Callout>
 
 | Field | What to Capture |
 |-------|----------------|
-| Pain points | Top 3, ranked by urgency |
-| Key stakeholders | Names, titles, roles in decision |
-| Current stack | Tools they use today, contracts, gaps |
-| Budget status | Allocated, planned, or unbudgeted |
-| Timeline | Decision date, implementation target |
-| Competition | Other vendors in evaluation |
-| Next step | Specific action with date and attendees |
-| Champion | Who and how strong |
+| Pain points | Top 3, ranked by urgency and business impact |
+| Key stakeholders | Names, titles, roles in the decision, and motivations |
+| Current stack | Tools they use today, contract status, known gaps |
+| Budget status | Allocated, planned, or unbudgeted — and the budget cycle |
+| Timeline | Decision date, implementation target, compelling events |
+| Competition | Other vendors in evaluation, incumbent, build-vs-buy sentiment |
+| Champion | Who, how strong (1-3), and what is their personal win |
+| MEDDPICC score | Score each element 1-3 and identify the gaps to address |
+| Next step | Specific action with date, attendees, and owner |
+| Qualification decision | Qualify in, nurture, or qualify out — and why |
