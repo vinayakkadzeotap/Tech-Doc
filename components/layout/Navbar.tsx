@@ -29,6 +29,7 @@ interface NavbarProps {
     full_name: string;
     role: string;
     is_admin: boolean;
+    avatar_url?: string;
   } | null;
 }
 
@@ -146,10 +147,14 @@ export default function Navbar({ user }: NavbarProps) {
                   href="/profile"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center">
-                    <span className="text-white text-[10px] font-bold">
-                      {(user.full_name || user.email).charAt(0).toUpperCase()}
-                    </span>
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center overflow-hidden">
+                    {user.avatar_url ? (
+                      <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-white text-[10px] font-bold">
+                        {(user.full_name || user.email).charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
                   <span className="max-w-[100px] truncate text-xs font-medium">{user.full_name || user.email}</span>
                 </Link>
