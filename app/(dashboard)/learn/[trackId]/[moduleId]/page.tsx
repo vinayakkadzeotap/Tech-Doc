@@ -44,7 +44,11 @@ export default async function ModulePage({ params }: Props) {
   const moduleContent = getModuleContent(trackId, moduleId);
   let mdxSource = null;
   if (moduleContent) {
-    mdxSource = await serialize(moduleContent.content);
+    try {
+      mdxSource = await serialize(moduleContent.content);
+    } catch {
+      // MDX parse error - leave mdxSource as null to show fallback UI
+    }
   }
 
   const contentTypeColors: Record<string, string> = {
