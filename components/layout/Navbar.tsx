@@ -32,7 +32,7 @@ export default function Navbar({ user }: NavbarProps) {
   const navItems = [
     { href: '/home', label: 'Dashboard', icon: '🏠' },
     { href: '/learn', label: 'Learn', icon: '📚' },
-    { href: '/explore', label: 'Explore', icon: '🗺️' },
+    { href: '/explore', label: 'Simulators', icon: '🔬' },
     { href: '/assess', label: 'Assess', icon: '📝' },
     { href: '/achievements', label: 'Achievements', icon: '🏆' },
     { href: '/certifications', label: 'Certs', icon: '🎓' },

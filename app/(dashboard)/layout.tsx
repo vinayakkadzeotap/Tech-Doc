@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
+import CelebrationWrapper from '@/components/interactive/CelebrationWrapper';
 
 export default async function DashboardLayout({
   children,
@@ -38,7 +39,9 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar user={navUser} />
-      <main className="flex-1">{children}</main>
+      <CelebrationWrapper>
+        <main className="flex-1">{children}</main>
+      </CelebrationWrapper>
     </div>
   );
 }
