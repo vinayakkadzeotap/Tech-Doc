@@ -59,7 +59,7 @@ export default function ProfilePage() {
         if (data) {
           setProfile({
             full_name: data.full_name || '',
-            email: data.email || '',
+            email: data.email || user.email || '',
             role: data.role || 'engineering',
             team: data.team || '',
             department: data.department || '',
@@ -69,6 +69,21 @@ export default function ProfilePage() {
             phone: data.phone || '',
             linkedin: data.linkedin || '',
             location: data.location || '',
+          });
+        } else {
+          // No profile row yet — show empty form with email from auth
+          setProfile({
+            full_name: '',
+            email: user.email || '',
+            role: 'engineering',
+            team: '',
+            department: '',
+            avatar_url: '',
+            designation: '',
+            bio: '',
+            phone: '',
+            linkedin: '',
+            location: '',
           });
         }
       }
@@ -139,7 +154,9 @@ export default function ProfilePage() {
 
     const { error } = await supabase
       .from('profiles')
-      .update({
+      .upsert({
+        id: userId,
+        email: profile.email,
         full_name: profile.full_name,
         role: profile.role,
         team: profile.team,
@@ -149,8 +166,7 @@ export default function ProfilePage() {
         phone: profile.phone,
         linkedin: profile.linkedin,
         location: profile.location,
-      })
-      .eq('id', userId);
+      });
 
     if (error) {
       show({ message: 'Failed to save. Try again.', icon: 'alert-circle', color: '#ef4444' });
