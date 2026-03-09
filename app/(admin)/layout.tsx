@@ -15,7 +15,7 @@ export default async function AdminLayout({
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile?.is_admin) {
     redirect('/home');

@@ -11,7 +11,7 @@ export async function GET() {
     .from('profiles')
     .select('is_admin, is_manager')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile?.is_admin && !profile?.is_manager) {
     // Regular users only see their own assignments
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     .from('profiles')
     .select('is_admin, is_manager')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile?.is_admin && !profile?.is_manager) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

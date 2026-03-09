@@ -15,12 +15,12 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
-  // Fetch profile
+  // Fetch profile — use maybeSingle() to avoid 406 when no row exists
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   const navUser = profile
     ? {

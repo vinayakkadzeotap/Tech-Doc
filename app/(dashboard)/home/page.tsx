@@ -17,7 +17,7 @@ export default async function HomePage() {
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   const role = (profile?.role || 'engineering') as UserRole;
   const fullName = profile?.full_name || user.email || 'Learner';
