@@ -23,9 +23,9 @@ export default function Sidebar({ overallProgress, role }: SidebarProps) {
       ],
     },
     {
-      title: 'Explore',
+      title: 'Simulators',
       items: [
-        { href: '/explore', label: 'Architecture Map', icon: '🗺️' },
+        { href: '/explore', label: 'Interactive Explorer', icon: '🔬' },
       ],
     },
     {

@@ -5,6 +5,7 @@ import { getTracksForRole, TRACKS, type UserRole } from '@/lib/utils/roles';
 import Card from '@/components/ui/Card';
 import ProgressBar from '@/components/ui/ProgressBar';
 import Badge from '@/components/ui/Badge';
+import ProgressDashboard from '@/components/interactive/ProgressDashboard';
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -84,6 +85,9 @@ export default async function HomePage() {
         ))}
       </div>
 
+      {/* Analytics Dashboard */}
+      <ProgressDashboard />
+
       {/* Your tracks */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -138,10 +142,12 @@ export default async function HomePage() {
       {/* Quick actions */}
       <div>
         <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[
-            { href: '/explore', icon: '🗺️', label: 'Architecture Map', desc: 'Interactive CDP graph' },
-            { href: '/assess', icon: '📝', label: 'Take a Quiz', desc: 'Test your knowledge' },
+            { href: '/explore', icon: '🔄', label: 'Data Pipeline', desc: 'Live data flow simulator' },
+            { href: '/explore', icon: '🎯', label: 'Segment Builder', desc: 'Practice building audiences' },
+            { href: '/explore', icon: '🔗', label: 'Identity Viz', desc: 'See profiles merge live' },
+            { href: '/assess', icon: '📝', label: 'Assessments', desc: 'Quizzes & scenarios' },
             { href: '/achievements', icon: '🏆', label: 'Achievements', desc: `${earnedBadges} badges earned` },
             { href: '/certifications', icon: '🎓', label: 'Certifications', desc: 'Earn credentials' },
             { href: '/glossary', icon: '📖', label: 'Glossary', desc: 'Key terms & concepts' },
