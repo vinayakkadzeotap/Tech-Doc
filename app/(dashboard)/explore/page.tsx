@@ -50,8 +50,8 @@ export default function ExplorePage() {
         </p>
       </div>
 
-      {/* Tab navigation */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      {/* Tab navigation - scrollable on mobile */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-hide">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const IconComponent = tab.icon;
@@ -60,7 +60,7 @@ export default function ExplorePage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0
                 ${isActive
                   ? 'text-white border border-transparent shadow-lg'
                   : 'bg-bg-surface/50 text-text-secondary border border-border hover:border-border-strong hover:text-text-primary'
@@ -69,7 +69,7 @@ export default function ExplorePage() {
               style={isActive ? { background: tab.color, boxShadow: `0 4px 20px ${tab.color}30` } : undefined}
             >
               <IconComponent size={16} strokeWidth={isActive ? 2.5 : 2} />
-              <span className="hidden sm:inline">{tab.label}</span>
+              <span>{tab.label}</span>
             </button>
           );
         })}

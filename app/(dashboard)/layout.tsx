@@ -40,7 +40,7 @@ export default async function DashboardLayout({
     <div className="min-h-screen flex flex-col">
       <Navbar user={navUser} />
       <CelebrationWrapper>
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 animate-fade-in">{children}</main>
       </CelebrationWrapper>
     </div>
   );

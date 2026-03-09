@@ -150,6 +150,8 @@ interface IconProps {
   color?: string;
   /** Container size: sm (32px), md (40px), lg (48px) */
   containerSize?: 'sm' | 'md' | 'lg';
+  /** Accessible label for screen readers */
+  label?: string;
 }
 
 const containerSizes = {
@@ -171,28 +173,32 @@ export default function Icon({
   contained = false,
   color,
   containerSize = 'md',
+  label,
 }: IconProps) {
   const LucideComponent = ICON_MAP[name];
 
   if (!LucideComponent) {
     // Fallback: render the string as-is (e.g. for unmapped emojis)
-    return <span className={className}>{name}</span>;
+    return <span className={className} role="img" aria-label={label || 'icon'}>{name}</span>;
   }
 
   const iconSize = size || (contained ? iconSizes[containerSize] : 18);
+  const ariaProps = label ? { 'aria-label': label, role: 'img' as const } : { 'aria-hidden': true as const };
 
   if (contained) {
     const bgColor = color || '#3b82f6';
     return (
       <div
-        className={`${containerSizes[containerSize]} rounded-xl flex items-center justify-center flex-shrink-0`}
+        className={`${containerSizes[containerSize]} rounded-xl flex items-center justify-center flex-shrink-0 transition-colors`}
         style={{ background: `${bgColor}15` }}
+        {...(label ? { 'aria-label': label, role: 'img' } : {})}
       >
         <LucideComponent
           size={iconSize}
           style={{ color: bgColor }}
           className={className}
           strokeWidth={2}
+          aria-hidden
         />
       </div>
     );
@@ -204,6 +210,7 @@ export default function Icon({
       className={className}
       strokeWidth={2}
       style={color ? { color } : undefined}
+      {...ariaProps}
     />
   );
 }

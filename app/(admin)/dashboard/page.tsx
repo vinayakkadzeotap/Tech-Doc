@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import ProgressBar from '@/components/ui/ProgressBar';
+import Icon from '@/components/ui/Icon';
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -47,7 +48,7 @@ export default async function AdminDashboardPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xl">⚡</span>
+          <Icon name="⚡" size={22} color="#6366f1" />
           <h1 className="text-2xl font-extrabold">Admin Dashboard</h1>
         </div>
         <p className="text-text-secondary text-sm">Organization-wide learning analytics</p>
@@ -77,7 +78,7 @@ export default async function AdminDashboardPage() {
         ].map((stat) => (
           <Card key={stat.label}>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">{stat.icon}</span>
+              <Icon name={stat.icon} contained color={stat.color} containerSize="sm" />
               <div>
                 <div className="text-2xl font-extrabold" style={{ color: stat.color }}>
                   {stat.value}

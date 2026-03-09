@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useCallback, type ReactNode } from 'react';
+import { useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { X } from 'lucide-react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ export default function Modal({
   children,
   maxWidth = 'max-w-2xl',
 }: ModalProps) {
+  const triggerRef = useRef<HTMLElement | null>(null);
+
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -26,12 +29,16 @@ export default function Modal({
 
   useEffect(() => {
     if (isOpen) {
+      triggerRef.current = document.activeElement as HTMLElement;
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
     }
     return () => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
+      if (!isOpen && triggerRef.current) {
+        triggerRef.current.focus();
+      }
     };
   }, [isOpen, handleEscape]);
 
@@ -58,9 +65,9 @@ export default function Modal({
             <button
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.07] text-text-secondary hover:text-white hover:bg-white/[0.14] transition-colors focus-ring"
-              aria-label="Close"
+              aria-label="Close dialog"
             >
-              ✕
+              <X size={16} />
             </button>
           </div>
         )}
