@@ -5,6 +5,7 @@ import { getTracksForRole, TRACKS, type UserRole } from '@/lib/utils/roles';
 import Card from '@/components/ui/Card';
 import ProgressBar from '@/components/ui/ProgressBar';
 import Badge from '@/components/ui/Badge';
+import Icon from '@/components/ui/Icon';
 import ProgressDashboard from '@/components/interactive/ProgressDashboard';
 
 export default async function HomePage() {
@@ -51,37 +52,63 @@ export default async function HomePage() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
+  const stats = [
+    { label: 'Overall Progress', value: `${overallProgress}%`, color: '#3b82f6', icon: '📊' },
+    { label: 'Modules Done', value: String(completedModules), color: '#10b981', icon: '✅' },
+    { label: 'Quizzes Passed', value: String(passedQuizzes), color: '#a855f7', icon: '📝' },
+    { label: 'Badges Earned', value: String(earnedBadges), color: '#f59e0b', icon: '🏆' },
+  ];
+
+  const quickActions = [
+    { href: '/explore?tab=pipeline', icon: '🔄', label: 'Data Pipeline', desc: 'Live data flow simulator', color: '#6366f1' },
+    { href: '/explore?tab=segments', icon: '🎯', label: 'Segment Builder', desc: 'Practice building audiences', color: '#10b981' },
+    { href: '/explore?tab=identity', icon: '🔗', label: 'Identity Viz', desc: 'See profiles merge live', color: '#3b82f6' },
+    { href: '/assess', icon: '📝', label: 'Assessments', desc: 'Quizzes & scenarios', color: '#a855f7' },
+    { href: '/achievements', icon: '🏆', label: 'Achievements', desc: `${earnedBadges} badges earned`, color: '#f59e0b' },
+    { href: '/certifications', icon: '🎓', label: 'Certifications', desc: 'Earn credentials', color: '#ec4899' },
+    { href: '/glossary', icon: '📖', label: 'Glossary', desc: 'Key terms & concepts', color: '#14b8a6' },
+  ];
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Welcome header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold">
-          {greeting}, <span className="text-gradient">{fullName.split(' ')[0]}</span>
-        </h1>
-        <p className="mt-1 text-text-secondary text-sm">
-          Continue your learning journey. You&apos;re doing great!
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold">
+            {greeting}, <span className="text-gradient">{fullName.split(' ')[0]}</span>
+          </h1>
+          <p className="mt-1 text-text-secondary text-sm">
+            Continue your learning journey. You&apos;re doing great!
+          </p>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-bg-surface/50 border border-border">
+          <div className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
+          <span className="text-xs text-text-muted font-medium">Learning streak active</span>
+        </div>
       </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { label: 'Overall Progress', value: `${overallProgress}%`, color: '#3b82f6', icon: '📊' },
-          { label: 'Modules Done', value: String(completedModules), color: '#10b981', icon: '✅' },
-          { label: 'Quizzes Passed', value: String(passedQuizzes), color: '#a855f7', icon: '📝' },
-          { label: 'Badges Earned', value: String(earnedBadges), color: '#f59e0b', icon: '🏆' },
-        ].map((stat) => (
-          <Card key={stat.label}>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{stat.icon}</span>
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="group relative overflow-hidden rounded-2xl border border-border bg-bg-surface/50 p-5 transition-all duration-300 hover:border-border-strong hover:-translate-y-0.5 hover:shadow-card"
+          >
+            {/* Subtle gradient accent */}
+            <div
+              className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-[0.07] blur-2xl -translate-y-8 translate-x-8"
+              style={{ background: stat.color }}
+            />
+            <div className="relative flex items-start justify-between">
               <div>
-                <div className="text-2xl font-extrabold" style={{ color: stat.color }}>
+                <div className="text-3xl font-extrabold tracking-tight" style={{ color: stat.color }}>
                   {stat.value}
                 </div>
-                <div className="text-xs text-text-muted">{stat.label}</div>
+                <div className="text-xs text-text-muted mt-1 font-medium">{stat.label}</div>
               </div>
+              <Icon name={stat.icon} contained color={stat.color} containerSize="sm" />
             </div>
-          </Card>
+          </div>
         ))}
       </div>
 
@@ -111,12 +138,7 @@ export default async function HomePage() {
               <Link key={track.id} href={`/learn?track=${track.id}`}>
                 <Card hover className="h-full">
                   <div className="flex items-start gap-3 mb-4">
-                    <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                      style={{ background: `${track.color}15` }}
-                    >
-                      {track.icon}
-                    </div>
+                    <Icon name={track.icon} contained color={track.color} containerSize="lg" />
                     <div className="min-w-0">
                       <h3 className="font-bold text-sm">{track.title}</h3>
                       <p className="text-xs text-text-muted mt-0.5 line-clamp-2">{track.subtitle}</p>
@@ -143,18 +165,12 @@ export default async function HomePage() {
       <div>
         <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          {[
-            { href: '/explore', icon: '🔄', label: 'Data Pipeline', desc: 'Live data flow simulator' },
-            { href: '/explore', icon: '🎯', label: 'Segment Builder', desc: 'Practice building audiences' },
-            { href: '/explore', icon: '🔗', label: 'Identity Viz', desc: 'See profiles merge live' },
-            { href: '/assess', icon: '📝', label: 'Assessments', desc: 'Quizzes & scenarios' },
-            { href: '/achievements', icon: '🏆', label: 'Achievements', desc: `${earnedBadges} badges earned` },
-            { href: '/certifications', icon: '🎓', label: 'Certifications', desc: 'Earn credentials' },
-            { href: '/glossary', icon: '📖', label: 'Glossary', desc: 'Key terms & concepts' },
-          ].map((action) => (
-            <Link key={action.href} href={action.href}>
-              <Card hover className="text-center">
-                <span className="text-3xl block mb-2">{action.icon}</span>
+          {quickActions.map((action) => (
+            <Link key={action.label} href={action.href}>
+              <Card hover className="text-center group">
+                <div className="flex justify-center mb-3">
+                  <Icon name={action.icon} contained color={action.color} containerSize="lg" />
+                </div>
                 <div className="text-sm font-semibold">{action.label}</div>
                 <div className="text-[11px] text-text-muted mt-0.5">{action.desc}</div>
               </Card>

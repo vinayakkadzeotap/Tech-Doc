@@ -49,9 +49,14 @@ function LoginForm() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-extrabold text-gradient">
-            Zeotap Learning
-          </Link>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-blue to-brand-purple mb-4">
+            <span className="text-white text-lg font-black">Z</span>
+          </div>
+          <div>
+            <Link href="/" className="text-2xl font-extrabold text-gradient">
+              Zeotap Learning
+            </Link>
+          </div>
           <p className="mt-2 text-sm text-text-secondary">Sign in to continue learning</p>
         </div>
 

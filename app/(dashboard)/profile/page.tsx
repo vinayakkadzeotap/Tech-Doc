@@ -6,6 +6,7 @@ import { ROLES, type UserRole } from '@/lib/utils/roles';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
+import Icon from '@/components/ui/Icon';
 import { useToast } from '@/components/ui/Toast';
 
 export default function ProfilePage() {
@@ -65,7 +66,18 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <h1 className="text-2xl font-extrabold">Profile</h1>
+      {/* Profile header with avatar */}
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center">
+          <span className="text-white text-2xl font-bold">
+            {(profile.full_name || profile.email).charAt(0).toUpperCase()}
+          </span>
+        </div>
+        <div>
+          <h1 className="text-2xl font-extrabold">{profile.full_name || 'Your Profile'}</h1>
+          <p className="text-text-muted text-sm">{profile.email}</p>
+        </div>
+      </div>
 
       <Card className="space-y-6">
         <Input
@@ -88,14 +100,14 @@ export default function ProfilePage() {
                 key={key}
                 onClick={() => setProfile({ ...profile, role: key })}
                 className={`
-                  flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm transition-all
+                  flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm transition-all
                   ${profile.role === key
                     ? 'border-brand-blue bg-brand-blue/10 text-brand-blue'
                     : 'border-border hover:border-border-strong text-text-secondary'
                   }
                 `}
               >
-                <span>{role.icon}</span>
+                <Icon name={role.icon} size={16} color={profile.role === key ? '#3b82f6' : undefined} />
                 <span className="font-medium">{role.label}</span>
               </button>
             ))}

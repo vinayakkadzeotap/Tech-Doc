@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TRACKS } from '@/lib/utils/roles';
 import MarkCompleteBar from '@/components/learning/MarkCompleteBar';
 import ModuleToolbar from '@/components/learning/ModuleToolbar';
 import ScrollTracker from '@/components/learning/ScrollTracker';
 import Badge from '@/components/ui/Badge';
+import Icon from '@/components/ui/Icon';
 import { getModuleContent } from '@/lib/mdx';
 import { serialize } from 'next-mdx-remote/serialize';
 import MDXRenderer from '@/components/mdx/MDXRenderer';
@@ -86,10 +88,10 @@ export default async function ModulePage({ params }: Props) {
             <Badge color="#10b981">Completed</Badge>
           )}
         </div>
-        <h1 className="text-3xl font-extrabold mb-2">
-          <span className="mr-3">{module.icon}</span>
-          {module.title}
-        </h1>
+        <div className="flex items-center gap-4 mb-2">
+          <Icon name={module.icon} contained color={track.color} containerSize="lg" />
+          <h1 className="text-3xl font-extrabold">{module.title}</h1>
+        </div>
         <p className="text-text-secondary">{module.description}</p>
       </div>
 
@@ -105,7 +107,9 @@ export default async function ModulePage({ params }: Props) {
           <MDXRenderer source={mdxSource} />
         ) : (
           <div className="bg-bg-surface/50 border border-border rounded-2xl p-8 text-center space-y-4">
-            <div className="text-5xl">{module.icon}</div>
+            <div className="flex justify-center">
+              <Icon name={module.icon} contained color={track.color} containerSize="lg" />
+            </div>
             <h2 className="text-xl font-bold">Content Coming Soon</h2>
             <p className="text-text-secondary max-w-md mx-auto">
               This module&apos;s content is being prepared. The full interactive content with diagrams,
@@ -123,9 +127,9 @@ export default async function ModulePage({ params }: Props) {
         {prevModule ? (
           <Link
             href={`/learn/${trackId}/${prevModule.id}`}
-            className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+            className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors group"
           >
-            <span>←</span>
+            <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
             <div>
               <div className="text-[11px] text-text-muted">Previous</div>
               <div className="font-medium">{prevModule.title}</div>
@@ -137,13 +141,13 @@ export default async function ModulePage({ params }: Props) {
         {nextModule ? (
           <Link
             href={`/learn/${trackId}/${nextModule.id}`}
-            className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors text-right"
+            className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors text-right group"
           >
             <div>
               <div className="text-[11px] text-text-muted">Next</div>
               <div className="font-medium">{nextModule.title}</div>
             </div>
-            <span>→</span>
+            <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </Link>
         ) : (
           <Link

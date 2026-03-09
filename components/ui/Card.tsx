@@ -17,7 +17,7 @@ export default function Card({
       className={`
         bg-bg-surface/50 border border-border rounded-2xl p-6
         backdrop-blur-sm
-        ${hover ? 'transition-all duration-200 hover:border-border-strong hover:-translate-y-0.5 hover:shadow-card cursor-pointer' : ''}
+        ${hover ? 'transition-all duration-300 hover:border-border-strong hover:-translate-y-1 hover:shadow-card cursor-pointer group' : ''}
         ${glow ? 'shadow-glow' : ''}
         ${className}
       `}
