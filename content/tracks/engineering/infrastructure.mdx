@@ -10,122 +10,288 @@ order: 15
 
 ## 🏗️ Infrastructure
 
-Zeotap runs on Google Cloud Platform across multiple regions. This module covers the Kubernetes architecture, infrastructure-as-code, networking, and cost optimization.
+Zeotap CDP runs on Google Cloud Platform across multiple regions, orchestrated by Kubernetes and provisioned through Infrastructure as Code. This module covers the GKE cluster architecture, Terraform modules, multi-region deployment model, networking, secret management, and cost optimization strategies.
 
-### GKE Architecture
+<StatCard stats={[
+  { value: "GKE", label: "Container Orchestration", color: "#3b82f6" },
+  { value: "Terraform", label: "Infrastructure as Code", color: "#10b981" },
+  { value: "2 Regions", label: "EU + US Data Planes", color: "#a855f7" },
+  { value: "99.95%", label: "Platform Availability SLO", color: "#f59e0b" }
+]} />
+
+### GKE Cluster Architecture
+
+Zeotap runs on Google Kubernetes Engine with purpose-built node pools optimized for different workload profiles. Each environment (dev, staging, production) runs its own GKE cluster with consistent configuration managed through Terraform.
 
 <TechStack
   title="Infrastructure Stack"
   items={[
-    { name: "GKE", role: "Kubernetes orchestration" },
-    { name: "Terraform", role: "Infrastructure as Code" },
-    { name: "Helm", role: "K8s package management" },
-    { name: "ArgoCD", role: "GitOps deployments" },
-    { name: "Istio", role: "Service mesh" },
-    { name: "Cloud NAT", role: "Egress networking" }
+    { name: "GKE", role: "Kubernetes orchestration (1.28+, release channel: regular)" },
+    { name: "Terraform", role: "Infrastructure as Code, modular provisioning" },
+    { name: "Helm", role: "Kubernetes package management for services" },
+    { name: "ArgoCD", role: "GitOps-based continuous deployment" },
+    { name: "Istio", role: "Service mesh for mTLS, traffic management" },
+    { name: "Cloud NAT", role: "Managed egress for private GKE nodes" },
+    { name: "External Secrets Operator", role: "Secret Manager to K8s secret sync" }
   ]}
 />
 
-### Cluster Design
+### Node Pools
+
+The production cluster uses specialized node pools to match workload requirements with appropriate machine types, balancing performance and cost.
 
 <ComparisonTable
-  headers={["Node Pool", "Machine Type", "Purpose", "Scaling"]}
+  headers={["Node Pool", "Machine Type", "Purpose", "Scaling Range", "Key Taints/Labels"]}
   rows={[
-    ["default", "e2-standard-8", "General workloads", "3-20 nodes"],
-    ["high-mem", "n2-highmem-16", "Kafka, BigTable clients", "5-15 nodes"],
-    ["high-cpu", "c2-standard-16", "Compute-intensive (Spark, ML)", "2-30 nodes (burst)"],
-    ["gpu", "a2-highgpu-1g", "ML inference (Zoe)", "1-5 nodes"],
-    ["preemptible", "e2-standard-4", "Batch jobs, testing", "0-50 nodes"]
+    ["default", "e2-standard-8", "General API services, web servers", "3-20 nodes", "None (accepts all pods)"],
+    ["high-mem", "n2-highmem-16", "Kafka consumers, BigTable clients, Redis", "5-15 nodes", "workload=memory-intensive"],
+    ["high-cpu", "c2-standard-16", "Spark drivers, ML training, batch compute", "2-30 nodes (burst)", "workload=compute-intensive"],
+    ["gpu", "a2-highgpu-1g", "ML inference (Zoe AI), embedding generation", "0-5 nodes", "workload=gpu, nvidia.com/gpu"],
+    ["preemptible", "e2-standard-4", "Batch jobs, integration tests, staging workloads", "0-50 nodes", "cloud.google.com/gke-preemptible"]
   ]}
-  highlightColumn={1}
+  highlightColumn={0}
 />
 
-**Autoscaling:**
-- Horizontal Pod Autoscaler (HPA) based on CPU/memory/custom metrics
-- Cluster Autoscaler adjusts node count based on pending pods
-- Vertical Pod Autoscaler (VPA) recommends resource requests
-- Scale-to-zero for non-critical batch workloads during off-peak
+**Autoscaling Configuration:**
+
+- **Horizontal Pod Autoscaler (HPA)** -- Scales pod replicas based on CPU, memory, and custom Prometheus metrics (e.g., Kafka consumer lag, request queue depth). Default target: 70% CPU utilization.
+- **Cluster Autoscaler** -- Adjusts node count based on pending pods. Scale-up latency target: under 2 minutes. Scale-down delay: 10 minutes of underutilization.
+- **Vertical Pod Autoscaler (VPA)** -- Runs in recommendation mode, generating right-sizing suggestions reviewed quarterly. Not used in auto-update mode to avoid unexpected restarts.
+- **Scale-to-zero** -- Non-critical batch workloads (report generators, data export jobs) scale to zero during off-peak hours via CronHPA.
+
+<Expandable title="Resource Quotas and Limits" defaultOpen={false}>
+
+Every namespace has resource quotas to prevent runaway resource consumption:
+
+```yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: team-quota
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: 200Gi
+    limits.cpu: "200"
+    limits.memory: 400Gi
+    pods: "500"
+    services: "50"
+    persistentvolumeclaims: "20"
+```
+
+**Pod-level standards:**
+- Every pod MUST define `requests` and `limits` for CPU and memory
+- CPU limits set to 2x requests to allow bursting
+- Memory limits set to 1.5x requests (OOM-kill is preferred over swap)
+- Liveness and readiness probes required for all production deployments
+- Pod Disruption Budgets (PDB) ensure minimum availability during node drains
+
+</Expandable>
 
 ### Terraform Modules
 
-The `gcp-terraform-modules` repository contains reusable modules:
+The `gcp-terraform-modules` repository contains reusable, version-pinned modules for all GCP resources. Every infrastructure change goes through code review, plan approval, and automated apply.
 
 ```
 gcp-terraform-modules/
 ├── modules/
-│   ├── gke-cluster/      # GKE cluster configuration
-│   ├── bigtable/          # BigTable instance + tables
-│   ├── bigquery/          # Datasets, tables, views
-│   ├── kafka/             # Confluent Kafka on GKE
-│   ├── redis/             # Memorystore Redis
-│   ├── networking/        # VPC, subnets, firewall rules
-│   ├── monitoring/        # Prometheus, Grafana stack
-│   └── iam/               # Service accounts, roles
+│   ├── gke-cluster/         # GKE cluster, node pools, RBAC, network policy
+│   ├── bigtable/            # BigTable instances, tables, IAM, app profiles
+│   ├── bigquery/            # Datasets, tables, views, scheduled queries
+│   ├── kafka/               # Confluent Kafka on GKE, topics, ACLs
+│   ├── redis/               # Memorystore Redis instances, failover config
+│   ├── networking/          # VPC, subnets, firewall rules, Cloud NAT
+│   ├── monitoring/          # Prometheus operator, Grafana, alert rules
+│   ├── secrets/             # Secret Manager secrets, IAM bindings
+│   ├── dns/                 # Cloud DNS zones, records, health checks
+│   └── iam/                 # Service accounts, custom roles, Workload Identity
 ├── environments/
-│   ├── dev/
-│   ├── staging/
-│   └── production/
-└── global/                # Cross-environment resources
+│   ├── dev/                 # Development environment root module
+│   ├── staging/             # Staging environment root module
+│   └── production/          # Production environment root module (EU + US)
+└── global/                  # Cross-environment resources (DNS, IAM, billing)
 ```
 
 **State Management:**
-- Terraform state stored in GCS bucket with versioning
-- State locking via GCS to prevent concurrent modifications
-- Separate state files per environment and module
+
+| Aspect | Configuration |
+|---|---|
+| State backend | GCS bucket with versioning and object lifecycle |
+| State locking | GCS-based locking to prevent concurrent modifications |
+| State structure | Separate state files per environment AND per module |
+| Encryption | AES-256 encryption at rest, CMEK for production |
+| Access control | IAM-restricted: only CI service account and infra team |
+
+<Callout type="warning" title="Terraform Workflow">
+Never run `terraform apply` locally against production. All production changes go through CloudBuild: PR with plan output attached for review, approval by infra team lead, automated apply on merge. Emergency changes require VP Engineering approval and are logged as incidents.
+</Callout>
+
+**Module Versioning:**
+
+Modules are versioned using Git tags. Environment configurations pin specific versions:
+
+```hcl
+module "gke_cluster" {
+  source  = "git::https://github.com/zeotap/gcp-terraform-modules.git//modules/gke-cluster?ref=v3.2.1"
+
+  project_id       = var.project_id
+  region           = var.region
+  cluster_name     = "zeotap-${var.environment}"
+  node_pools       = var.node_pool_config
+  enable_istio     = true
+  release_channel  = "REGULAR"
+}
+```
 
 ### Multi-Region Deployment
+
+Zeotap operates a multi-region architecture to meet GDPR data residency requirements and provide low-latency access globally. Customer data never crosses region boundaries.
 
 <ArchDiagram
   title="Multi-Region Architecture"
   steps={[
-    { label: "EU Region", detail: "europe-west3 (Frankfurt)", icon: "🇪🇺" },
-    { label: "US Region", detail: "us-central1 (Iowa)", icon: "🇺🇸" },
-    { label: "Control Plane", detail: "Shared org config, user mgmt", icon: "🎛️" },
-    { label: "Global LB", detail: "Geo-routing to nearest region", icon: "🌐" }
+    { label: "Global Load Balancer", detail: "Geo-routing, SSL termination, Cloud Armor WAF", icon: "🌐" },
+    { label: "EU Data Plane", detail: "europe-west3 (Frankfurt) — EU customer data", icon: "🇪🇺" },
+    { label: "US Data Plane", detail: "us-central1 (Iowa) — US customer data", icon: "🇺🇸" },
+    { label: "Shared Control Plane", detail: "Auth, org config, billing, platform admin", icon: "🎛️" },
+    { label: "Cross-Region Sync", detail: "Config replication only, never customer data", icon: "🔄" }
   ]}
 />
 
-- Each region runs a complete, independent data plane
-- No customer data crosses region boundaries
-- Control plane services (auth, org config) are global
-- DNS-based geo-routing directs users to nearest region
+**Data Plane (per region):**
+- Complete, independent deployment of all data-processing services
+- Dedicated GKE cluster, BigTable instances, BigQuery datasets, Kafka clusters
+- Customer data is ingested, processed, stored, and activated entirely within the region
+- No cross-region data transfer for customer PII or behavioral data
+
+**Control Plane (shared):**
+- Authentication and user management (Auth0 + platform user service)
+- Organization configuration, billing, and license management
+- Platform admin tools and internal dashboards
+- Replicated across regions for high availability
+
+<Callout type="important" title="Data Residency Guarantee">
+When a customer is provisioned in the EU region, all their data -- events, profiles, audiences, identity graph edges -- resides exclusively in `europe-west3`. This is enforced at the infrastructure level: the EU GKE cluster has no network path to US data stores.
+</Callout>
+
+**Region Assignment:**
+- Each organization is assigned a home region during onboarding
+- The region is encoded in the org's configuration and cannot be changed post-provisioning
+- API routing uses the org's region to direct requests to the correct data plane
+- Global Load Balancer routes based on URL path prefix or org-specific subdomain
 
 ### Networking
 
-- **VPC per region** — Isolated networks with private subnets
-- **Cloud NAT** — Managed egress for GKE pods (no public IPs on pods)
-- **Internal Load Balancer** — Service-to-service within cluster
-- **External Load Balancer** — Customer-facing APIs with Cloud Armor WAF
-- **Cloud CDN** — Static assets and SmartPixel content
-- **Private Google Access** — GCP services accessed without public internet
+The network architecture follows GCP best practices for private, secure, and performant connectivity.
+
+<ComparisonTable
+  headers={["Component", "Configuration", "Purpose"]}
+  rows={[
+    ["VPC", "One per region, private subnets only", "Network isolation boundary"],
+    ["GKE Networking", "VPC-native with alias IPs, private nodes", "Pod-to-pod and pod-to-service communication"],
+    ["Cloud NAT", "Per-region, static IP pool", "Egress for pods to external APIs and destinations"],
+    ["Internal Load Balancer", "L4/L7 ILB per service", "Service-to-service within the cluster"],
+    ["External Load Balancer", "Global HTTPS LB with Cloud Armor", "Customer-facing APIs, dashboard, SDKs"],
+    ["Cloud CDN", "Enabled on static assets, SmartPixel JS", "Low-latency content delivery worldwide"],
+    ["Private Google Access", "Enabled on all subnets", "GCP services accessed without public internet"],
+    ["Cloud Interconnect", "Dedicated 10Gbps for select customers", "Private connectivity for on-prem data sources"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Expandable title="DNS and Traffic Management" defaultOpen={false}>
+
+**DNS Architecture:**
+- Cloud DNS manages `zeotap.com` and `*.zeotap.com` zones
+- Per-environment subdomains: `dev.zeotap.com`, `staging.zeotap.com`, `app.zeotap.com`
+- Health-checked DNS for failover scenarios
+- TTL set to 300s for production, 60s for dev/staging
+
+**Traffic Flow (external request):**
+1. Client resolves `app.zeotap.com` via Cloud DNS
+2. Request hits Global HTTPS Load Balancer (Anycast IP)
+3. Cloud Armor evaluates WAF rules (OWASP Top 10, rate limiting, geo-blocking)
+4. SSL terminated at the load balancer (managed certificates, auto-renewal)
+5. Request routed to the appropriate regional backend service
+6. Istio sidecar handles mTLS for all intra-cluster communication
+
+**Firewall Rules:**
+- Default deny all ingress and egress
+- Explicit allow list for known CIDR ranges (GCP services, partner integrations)
+- Kubernetes Network Policies (Calico) enforce pod-to-pod communication rules
+- All firewall changes require code review via Terraform
+
+</Expandable>
 
 ### Secret Management
 
-- **Google Secret Manager** — API keys, database passwords, service credentials
-- **External Secrets Operator** — Syncs secrets from Secret Manager to K8s secrets
-- **Rotation** — Automated secret rotation for service accounts (90-day cycle)
-- **Access control** — IAM-based access to secrets per service account
+Secrets are managed through GCP Secret Manager with automated synchronization to Kubernetes and strict access controls.
+
+<ArchDiagram
+  title="Secret Management Flow"
+  steps={[
+    { label: "Secret Manager", detail: "Source of truth for all secrets", icon: "🔒" },
+    { label: "External Secrets Operator", detail: "Watches Secret Manager, syncs to K8s", icon: "🔄" },
+    { label: "K8s Secrets", detail: "Mounted as env vars or volumes in pods", icon: "📦" },
+    { label: "Application", detail: "Reads secret from env var at startup", icon: "⚙️" },
+    { label: "Rotation", detail: "Automated 90-day cycle, zero-downtime", icon: "🔁" }
+  ]}
+/>
+
+**Secret Categories:**
+
+| Category | Examples | Rotation Cycle |
+|---|---|---|
+| Database credentials | BigTable, Redis, PostgreSQL passwords | 90 days (automated) |
+| API keys | Auth0 management API, destination partner keys | 180 days (manual review) |
+| Encryption keys | Data-at-rest encryption, token signing | Annual (CMEK via Cloud KMS) |
+| TLS certificates | Internal mTLS, webhook endpoint certs | Auto-renewed via cert-manager |
+| Service account keys | GCP SA keys for external integrations | 90 days (automated, prefer Workload Identity) |
+
+<Callout type="tip" title="Workload Identity over SA Keys">
+Prefer GKE Workload Identity over exported service account keys. Workload Identity maps Kubernetes service accounts directly to GCP service accounts without managing key files. This eliminates key rotation overhead and reduces the attack surface significantly.
+</Callout>
 
 ### Cost Optimization
 
+Infrastructure cost is a significant operational concern. The team applies multiple strategies to optimize spend without compromising performance or reliability.
+
 <ComparisonTable
-  headers={["Strategy", "Savings", "Implementation"]}
+  headers={["Strategy", "Savings Estimate", "Implementation", "Risk"]}
   rows={[
-    ["Preemptible VMs for batch", "60-80%", "Batch Spark jobs on preemptible node pool"],
-    ["Committed Use Discounts", "20-57%", "1-3 year commitments for steady-state workloads"],
-    ["Resource right-sizing", "15-30%", "VPA recommendations applied quarterly"],
-    ["BigQuery slot reservations", "30-40%", "Flat-rate pricing vs on-demand for heavy queries"],
-    ["Storage tiering", "40-60%", "Cold storage for data >90 days old"]
+    ["Preemptible/Spot VMs", "60-80% on batch compute", "Spark jobs, test workloads on preemptible pool", "Low (fault-tolerant)"],
+    ["Committed Use Discounts", "20-57% on steady state", "1-3 year commitments for baseline node pools", "Medium (planning required)"],
+    ["Resource right-sizing", "15-30% on compute", "VPA recommendations applied quarterly", "Low (data-driven)"],
+    ["BigQuery slot reservations", "30-40% on analytics", "Flat-rate pricing, flex slots for burst", "Low"],
+    ["Storage lifecycle policies", "40-60% on cold data", "Nearline 30d, Coldline 90d, Archive 365d", "Low (validated patterns)"],
+    ["Scale-to-zero", "100% off-peak savings", "CronHPA for batch services, GPU nodes overnight", "Low (non-critical only)"]
   ]}
   highlightColumn={1}
 />
 
-<Callout type="info" title="Infrastructure Cost">
-Infrastructure cost is a significant line item. Every engineer should consider cost implications of their architectural decisions. Prefer managed services (BigTable, BigQuery) over self-hosted alternatives. Use preemptible instances for fault-tolerant workloads.
-</Callout>
+**Cost Visibility:**
+- Per-team cost attribution using GKE namespace labels and GCP billing labels
+- Monthly cost reports broken down by service, team, and environment
+- Budget alerts at 80% and 100% of quarterly allocation
+- FinOps review in sprint retrospectives for teams exceeding budget
 
-<KeyConcepts concepts={["GKE", "Terraform", "Multi-Region", "Node Pools", "Autoscaling", "Cloud NAT", "Secret Manager", "Cost Optimization", "VPC", "Preemptible VMs"]} />
+<Expandable title="Capacity Planning Process" defaultOpen={false}>
+
+Quarterly capacity planning ensures infrastructure scales ahead of demand:
+
+1. **Traffic forecasting** -- Analyze growth trends, factor in new customer onboarding pipeline
+2. **Load test validation** -- Run load tests at 2x projected peak to identify bottlenecks
+3. **Resource modeling** -- Map projected traffic to CPU, memory, storage, and network requirements
+4. **CUD evaluation** -- Review committed use discount opportunities based on new baseline
+5. **Budget proposal** -- Submit infrastructure budget for next quarter with cost-benefit justification
+6. **Provisioning** -- Terraform changes to adjust node pool limits, storage quotas, BigTable node count
+
+The infra team maintains a capacity dashboard in Grafana showing current utilization vs. provisioned capacity for all critical resources with 30-day trend projections.
+
+</Expandable>
+
+<KeyConcepts concepts={["GKE", "Node Pools", "HPA", "Cluster Autoscaler", "Terraform Modules", "State Management", "Multi-Region", "Data Residency", "VPC", "Cloud NAT", "Cloud Armor", "Secret Manager", "External Secrets Operator", "Workload Identity", "Committed Use Discounts", "Preemptible VMs"]} />
 
 ---
 
-**Next up:** Observability — monitoring, logging, and tracing →
+**Next up:** Observability -- monitoring, logging, and tracing →

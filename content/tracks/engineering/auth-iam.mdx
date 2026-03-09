@@ -10,111 +10,254 @@ order: 14
 
 ## 🛡️ Auth & IAM
 
-Authentication and authorization protect the platform and its data. This module covers the identity provider integration, token flow, RBAC model, and multi-tenancy isolation.
+Zeotap CDP enforces enterprise-grade authentication and authorization through a layered security model built on Auth0, JWT tokens, and a fine-grained RBAC system designed for multi-tenant isolation across hundreds of organizations.
+
+<StatCard stats={[
+  { value: "Auth0", label: "Identity Provider", color: "#3b82f6" },
+  { value: "OAuth 2.0", label: "Auth Protocol", color: "#10b981" },
+  { value: "RBAC", label: "Authorization Model", color: "#a855f7" },
+  { value: "<50ms", label: "Token Validation P99", color: "#f59e0b" }
+]} />
 
 ### Authentication Architecture
 
+Every request to Zeotap passes through a multi-layered authentication pipeline. The architecture separates identity verification (AuthN) from access control (AuthZ), with Auth0 handling identity and the platform enforcing permissions.
+
 <ArchDiagram
-  title="Auth Flow"
+  title="Authentication Flow Overview"
   steps={[
-    { label: "Login", detail: "User authenticates via Auth0", icon: "🔑" },
-    { label: "Token", detail: "JWT access + refresh tokens issued", icon: "🎫" },
-    { label: "Request", detail: "JWT sent with every API call", icon: "📨" },
-    { label: "Validation", detail: "API Gateway validates token", icon: "✅" },
-    { label: "Authorization", detail: "RBAC check per endpoint", icon: "🛡️" }
+    { label: "User / Client", detail: "Browser, API consumer, service account", icon: "👤" },
+    { label: "Auth0", detail: "SSO via SAML/OIDC, MFA, connection routing", icon: "🔐" },
+    { label: "Token Issuance", detail: "JWT access token (15m) + refresh token (24h)", icon: "🎟️" },
+    { label: "API Gateway", detail: "Signature verification, expiry, audience check", icon: "🛡️" },
+    { label: "Service Layer", detail: "Claims extraction, RBAC enforcement, tenant scoping", icon: "⚙️" }
   ]}
 />
 
-### Auth0 Integration
+The platform supports three primary authentication flows depending on the client type:
+
+<ComparisonTable
+  headers={["Flow", "Protocol", "Client Type", "Token Delivery"]}
+  rows={[
+    ["Interactive Login", "Authorization Code + PKCE", "Angular dashboard (browser)", "httpOnly secure cookie"],
+    ["Enterprise SSO", "SAML 2.0 / OIDC federation", "Corporate IdP users (Okta, Azure AD)", "Redirected through Auth0"],
+    ["Machine-to-Machine", "Client Credentials grant", "API integrations, CI/CD pipelines", "Direct token response"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="info" title="Auth0 Universal Login">
+Zeotap uses Auth0's Universal Login page rather than embedded authentication. This centralizes MFA enforcement, branding customization, and protocol handling on the Auth0 side, reducing custom security code in the Angular frontend and ensuring consistent login behavior across all entry points.
+</Callout>
+
+### SSO Integration (SAML & OIDC)
+
+Enterprise customers connect their corporate identity provider to Zeotap via SAML 2.0 or OpenID Connect, configured as Auth0 Enterprise Connections. Each customer organization maps to an Auth0 Organization entity.
 
 <TechStack
-  title="Auth Stack"
+  title="SSO Stack"
   items={[
-    { name: "Auth0", role: "Identity provider and SSO" },
-    { name: "JWT", role: "Stateless access tokens" },
-    { name: "OAuth 2.0", role: "Authorization framework" },
-    { name: "SAML 2.0", role: "Enterprise SSO" },
-    { name: "OIDC", role: "Identity layer on OAuth" }
+    { name: "Auth0 Organizations", role: "Tenant-aware IdP routing" },
+    { name: "SAML 2.0", role: "Enterprise SSO with legacy IdPs (ADFS, Ping, Okta)" },
+    { name: "OIDC", role: "Modern SSO with cloud IdPs (Azure AD, Google Workspace)" },
+    { name: "JIT Provisioning", role: "Auto-create users on first SSO login" },
+    { name: "Domain Routing", role: "Email domain determines IdP connection" }
   ]}
 />
 
-**Supported Auth Methods:**
-- Email + password (default)
-- SSO via SAML 2.0 (enterprise customers)
-- SSO via OIDC (Google, Azure AD, Okta)
-- MFA via TOTP (Google Authenticator, Authy)
+<Expandable title="SAML Configuration Walkthrough" defaultOpen={false}>
+
+When onboarding an enterprise customer with SAML SSO:
+
+1. **Customer provides** their IdP metadata XML containing entity ID, SSO URL, and X.509 signing certificate
+2. **Zeotap ops creates** an Auth0 Enterprise Connection of type SAMLP, uploading the metadata
+3. **Auth0 generates** Service Provider metadata (ACS URL, Entity ID, signing cert) shared back to customer
+4. **Customer configures** attribute mappings in their IdP: email, firstName, lastName, groups
+5. **Auth0 connection** is linked to the customer's Auth0 Organization
+6. **Domain routing** is configured so `@customer.com` emails are automatically directed to the SAML connection
+7. **Testing** validates end-to-end flow with a test user before enabling for all users
+
+The SAML assertion is consumed and validated by Auth0, which normalizes claims into a standard profile and issues a JWT. Backend services never interact with SAML XML directly -- they only see the normalized JWT.
+
+</Expandable>
+
+<Expandable title="OIDC Federation Setup" defaultOpen={false}>
+
+For customers using Azure AD or Google Workspace:
+
+1. **Customer registers** Zeotap as an OAuth application in their IdP, receiving a client ID and secret
+2. **Zeotap configures** an Auth0 OIDC Enterprise Connection with the customer's discovery URL
+3. **Scopes requested:** `openid profile email groups` for identity and group membership
+4. **Group-to-role mapping** translates IdP groups (e.g., `zeotap-admins`) to Zeotap RBAC roles
+5. **Token exchange:** Auth0 receives the id_token from the customer's IdP, maps claims, and issues its own JWT
+
+OIDC is preferred over SAML for new integrations due to simpler configuration and native JSON token format.
+
+</Expandable>
 
 ### JWT Token Flow
 
-1. User logs in via Auth0 Universal Login page
-2. Auth0 returns `access_token` (JWT, 1-hour TTL) and `refresh_token` (7-day TTL)
-3. Frontend stores tokens securely (httpOnly cookies)
-4. Every API request includes `Authorization: Bearer {access_token}`
-5. API Gateway validates JWT signature, expiration, and claims
-6. On token expiry, frontend uses refresh token to get new access token
-7. Refresh token rotation prevents token theft replay
+All authenticated requests carry a JWT access token issued by Auth0. The token lifecycle follows a strict pattern balancing security with user experience.
 
-**JWT Claims:**
+**Access Token Structure:**
+
 ```json
 {
-  "sub": "auth0|user123",
-  "org_id": "org_abc",
-  "roles": ["admin", "analyst"],
-  "permissions": ["audiences:read", "audiences:write", "destinations:read"],
-  "exp": 1705334400
+  "sub": "auth0|user_abc123",
+  "aud": "https://api.zeotap.com",
+  "iss": "https://zeotap.auth0.com/",
+  "exp": 1710000900,
+  "iat": 1710000000,
+  "azp": "zeotap-dashboard-spa",
+  "org_id": "org_enterprise_xyz",
+  "permissions": ["read:audiences", "write:audiences", "read:profiles", "read:reports"],
+  "roles": ["analyst"],
+  "https://zeotap.com/tenant_id": "tenant_12345"
 }
 ```
 
+**Token Configuration:**
+
+| Parameter | Value | Rationale |
+|---|---|---|
+| Access token TTL | 15 minutes | Short-lived to limit blast radius of token theft |
+| Refresh token TTL | 24 hours | Absolute expiry, forces daily re-authentication |
+| Refresh token rotation | Enabled | Each use issues a new refresh token, invalidates the old |
+| Audience | `https://api.zeotap.com` | Tokens are scoped to the Zeotap API only |
+| Algorithm | RS256 | Asymmetric signing for distributed verification |
+
+**Token Validation Pipeline:**
+
+1. API Gateway extracts `Authorization: Bearer {token}` header
+2. Signature verified against Auth0 JWKS endpoint (keys cached with 24h TTL)
+3. `exp` claim checked -- reject expired tokens
+4. `aud` claim must match `https://api.zeotap.com`
+5. `iss` claim must match `https://zeotap.auth0.com/`
+6. `org_id` extracted and set as tenant context for the request
+7. `permissions` array checked against endpoint requirements
+
+<Callout type="warning" title="Token Validation is Non-Negotiable">
+Every backend service MUST validate the JWT signature using Auth0's JWKS endpoint. The API gateway performs initial validation, but services must re-validate for sensitive operations. Never trust claims without signature verification. Never decode a JWT without validating it first.
+</Callout>
+
+**Silent Token Renewal:**
+
+The Angular frontend uses Auth0's SDK to perform silent renewal before access token expiry. An invisible iframe requests a new token using the refresh token. If renewal fails (expired refresh token, revoked session), the user is redirected to the login page.
+
 ### RBAC Model
 
+Zeotap implements hierarchical Role-Based Access Control operating at the organization level. Roles aggregate permissions, and users are assigned roles within the context of their organization.
+
 <ComparisonTable
-  headers={["Role", "Description", "Key Permissions"]}
+  headers={["Role", "Scope", "Key Permissions", "Typical User"]}
   rows={[
-    ["Admin", "Full platform access", "All permissions + user management"],
-    ["Analyst", "Data and audience management", "Audiences, reports, profiles (read/write)"],
-    ["Viewer", "Read-only access", "View dashboards, audiences, reports"],
-    ["Developer", "Technical integration", "Sources, destinations, APIs"],
-    ["Custom", "Customer-defined roles", "Configurable per org"]
+    ["Super Admin", "Platform-wide", "All permissions, org management, billing, user provisioning", "Zeotap internal ops"],
+    ["Org Admin", "Single org", "User management, source/destination config, all data operations", "Customer IT admin"],
+    ["Analyst", "Single org", "Audience CRUD, profile queries, reporting, dashboard access", "Marketing analyst"],
+    ["Developer", "Single org", "API key management, source config, schema management, debug tools", "Customer engineer"],
+    ["Viewer", "Single org", "Read-only access to dashboards, audiences, and reports", "Business stakeholder"],
+    ["Custom", "Single org", "Customer-defined permission set", "Varies by customer needs"]
   ]}
   highlightColumn={0}
 />
 
 **Permission Granularity:**
-- Resource-level: `audiences`, `destinations`, `profiles`, `reports`, `settings`
-- Action-level: `read`, `write`, `delete`, `admin`
-- Combined: `audiences:write`, `destinations:delete`, `settings:admin`
 
-### Multi-Tenancy Isolation
+Permissions follow a `resource:action` pattern providing fine-grained control:
 
-Every request is scoped to an organization:
+- **Resources:** `audiences`, `profiles`, `sources`, `destinations`, `reports`, `settings`, `users`, `api_keys`
+- **Actions:** `read`, `write`, `delete`, `admin`
+- **Examples:** `audiences:write`, `destinations:delete`, `settings:admin`, `users:read`
 
-- `org_id` embedded in JWT claims
-- API Gateway extracts `org_id` and passes to all downstream services
-- Every database query filtered by `org_id`
-- No cross-org data access possible at the application layer
-- Network-level isolation for enterprise customers (dedicated namespaces)
+**Enforcement Layers:**
+
+Permission checks happen at two layers for defense in depth:
+
+1. **API Gateway** -- Validates that the JWT `permissions` array contains the required permission for the endpoint. Unauthorized requests are rejected with `403 Forbidden` before reaching the service.
+
+2. **Service Layer** -- Spring Security `@PreAuthorize` annotations enforce fine-grained access within business logic, including org-level data scoping:
+
+```java
+@PreAuthorize("hasPermission(#orgId, 'AUDIENCE', 'WRITE')")
+public AudienceResponse createAudience(String orgId, AudienceRequest request) {
+    // Tenant-scoped: only data belonging to orgId is accessible
+}
+```
 
 ### API Authentication
 
-For server-to-server integrations:
+External API consumers authenticate using one of three mechanisms depending on the integration type.
 
-- **API Keys** — Long-lived keys for SDK and S2S API authentication
-- **Service Accounts** — Machine-to-machine OAuth client credentials flow
-- **Scoped Tokens** — Limited-permission tokens for specific integrations
+<ComparisonTable
+  headers={["Method", "Use Case", "How It Works", "Lifecycle"]}
+  rows={[
+    ["API Keys", "SDK integration, webhook callbacks", "X-API-Key header, SHA-256 hashed storage", "Manual rotation, optional expiry date"],
+    ["OAuth Client Credentials", "Programmatic API access, CI/CD", "client_id + client_secret exchanged for JWT", "Secret rotation every 90 days"],
+    ["GCP Workload Identity", "Internal microservice-to-microservice", "K8s SA mapped to GCP SA, automatic token", "Managed by GKE, no manual rotation"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Expandable title="API Key Lifecycle" defaultOpen={false}>
+
+API keys are managed through the Zeotap dashboard and follow a secure lifecycle:
+
+1. User with `manage:api_keys` permission generates a key via the dashboard
+2. The raw key is displayed **once** and never stored -- only a SHA-256 hash is persisted in the database
+3. Each key is scoped to an organization and carries a fixed permission set defined at creation
+4. Incoming requests with `X-API-Key` header are validated by computing the hash and performing a lookup
+5. Keys support optional expiry dates and can be revoked immediately by any Org Admin
+6. Rate limiting is applied per API key (configurable per org, default 1000 req/min)
+7. All API key usage is logged for audit, including the key fingerprint, endpoint, and response status
+
+API keys provide a simpler integration path but do not support the full RBAC model. For programmatic access with full role-based permissions, use OAuth Client Credentials instead.
+
+</Expandable>
+
+### Multi-Tenancy Isolation
+
+Every request is scoped to an organization. The auth layer establishes tenant context, and every downstream component enforces isolation.
+
+<ArchDiagram
+  title="Tenant Isolation Layers"
+  steps={[
+    { label: "Auth Layer", detail: "JWT org_id claim establishes tenant identity", icon: "🔐" },
+    { label: "API Layer", detail: "TenantContext ThreadLocal, query filters auto-injected", icon: "🔍" },
+    { label: "Data Layer", detail: "BigTable row key prefix, BigQuery dataset per org", icon: "🗄️" },
+    { label: "Messaging", detail: "Kafka topic partitioning by org_id, message headers", icon: "📨" },
+    { label: "Cache Layer", detail: "Redis key namespace: {tenant_id}:{resource}:{id}", icon: "⚡" }
+  ]}
+/>
+
+<Callout type="important" title="Tenant Context Propagation">
+The `org_id` from the JWT is extracted at the API gateway and propagated through all downstream service calls via gRPC metadata or HTTP headers (`X-Tenant-Id`). Every database query, cache lookup, and Kafka message is scoped to this tenant context. Cross-tenant data access is architecturally impossible for non-super-admin roles.
+</Callout>
+
+**Implementation Details:**
+
+- **Request-scoped context** -- A `TenantContext` object is set in a ThreadLocal (Java) or context value (Go) at the start of each request and cleared on completion
+- **JPA/Hibernate filters** -- Global `@Filter` annotations automatically append `WHERE org_id = :tenantId` to all database queries
+- **BigTable row key design** -- Row keys use the pattern `{org_id}#{entity_type}#{entity_id}`, ensuring range scans are inherently tenant-isolated
+- **BigQuery authorized views** -- Each org accesses data through authorized views that enforce row-level security
+- **Redis key namespacing** -- All cache keys follow `{tenant_id}:{service}:{key}` convention, preventing cross-tenant cache pollution
 
 ### Session Management
 
-- Sessions stored server-side with Auth0
-- Inactive sessions expire after 30 minutes (configurable per org)
-- Maximum concurrent sessions: 5 per user (configurable)
-- Force logout capability for admins (revoke all sessions)
+The Angular frontend manages sessions using Auth0's SPA SDK with silent token renewal and strict security controls.
 
-<Callout type="warning" title="Security Best Practices">
-Never store JWTs in localStorage — use httpOnly, secure, SameSite cookies. Always validate tokens server-side. Implement token rotation for refresh tokens. Log all authentication events for audit.
+- **Session duration:** Controlled by Auth0 SSO session settings (configurable per org, default 72 hours inactivity timeout)
+- **Token renewal:** Silent iframe-based renewal initiated 60 seconds before access token expiry
+- **Logout:** Triggers local session clear, Auth0 session termination, and optional federated IdP logout
+- **Concurrent sessions:** Users may have multiple active sessions across devices (max 5, configurable per org)
+- **Force logout:** Org Admins can revoke all refresh tokens for a user via the dashboard, terminating all active sessions
+- **Audit logging:** All authentication events (login, logout, MFA challenge, token refresh, failed attempt) are logged to Cloud Logging with user ID, IP, user agent, and org context
+
+<Callout type="tip" title="Security Headers">
+All API responses include security headers: `Strict-Transport-Security` (HSTS with 1-year max-age), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and a strict `Content-Security-Policy`. CORS is restricted to `*.zeotap.com` domains only.
 </Callout>
 
-<KeyConcepts concepts={["Auth0", "JWT", "OAuth 2.0", "SAML", "RBAC", "Multi-Tenancy", "Token Rotation", "API Keys", "Service Accounts"]} />
+<KeyConcepts concepts={["Auth0", "OAuth 2.0", "SAML 2.0", "OIDC", "JWT", "RBAC", "PKCE", "Multi-Tenancy", "Tenant Isolation", "API Keys", "Client Credentials", "Refresh Token Rotation", "Workload Identity", "Session Management"]} />
 
 ---
 
-**Next up:** Infrastructure — GKE, Terraform, multi-region →
+**Next up:** Infrastructure -- GKE clusters, Terraform, and multi-region deployment →

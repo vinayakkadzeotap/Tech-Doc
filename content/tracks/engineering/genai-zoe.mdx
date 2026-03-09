@@ -1,5 +1,5 @@
 ---
-title: GenAI & Zoe Assistant
+title: GenAI & Ada AI Copilot
 description: Vertex AI, RAG, natural language queries
 icon: 🤖
 estimatedMinutes: 20
@@ -8,14 +8,14 @@ trackId: engineering
 order: 9
 ---
 
-## 🤖 GenAI & Zoe Assistant
+## 🤖 GenAI & Ada AI Copilot
 
-Zoe is Zeotap's AI assistant that enables non-technical users to interact with the CDP using natural language. This module covers the LLM architecture, RAG pipeline, and natural language to segment translation.
+**Ada** is Zeotap's official AI copilot (previously referred to internally as "Zoe") that enables non-technical users to interact with the CDP using natural language. Ada is embedded across the platform — in the Audience Builder, Data Catalogue, and Journey Canvas — providing contextual AI assistance wherever users need it.
 
-### Zoe Architecture
+### Ada Architecture
 
 <ArchDiagram
-  title="Zoe AI Pipeline"
+  title="Ada AI Pipeline"
   steps={[
     { label: "User Query", detail: "Natural language input", icon: "💬" },
     { label: "Intent Detection", detail: "Classify query type", icon: "🎯" },
@@ -45,7 +45,7 @@ Zoe is Zeotap's AI assistant that enables non-technical users to interact with t
 
 ### RAG Pipeline
 
-**Retrieval-Augmented Generation** ensures Zoe answers with accurate, org-specific context:
+**Retrieval-Augmented Generation** ensures Ada answers with accurate, org-specific context:
 
 **Document Indexing:**
 1. Platform documentation, schema definitions, and segment catalogs indexed
@@ -66,7 +66,7 @@ Zoe is Zeotap's AI assistant that enables non-technical users to interact with t
 
 ### Natural Language to Segment Rules
 
-The most powerful Zoe capability — translating natural language to segment DSL:
+The most powerful Ada capability — translating natural language to segment DSL:
 
 **Example:**
 - Input: "Find users who abandoned their cart in the last 7 days and have spent more than $100 total"
@@ -94,23 +94,23 @@ The most powerful Zoe capability — translating natural language to segment DSL
 - **Input sanitization** — Prevent prompt injection attacks
 - **Output validation** — Generated segment rules validated against schema
 - **Rate limiting** — Per-user query rate limits to prevent abuse
-- **PII filtering** — Zoe never returns individual PII in responses
+- **PII filtering** — Ada never returns individual PII in responses
 - **Human-in-the-loop** — Segment rules always reviewed by user before activation
-- **Audit logging** — Every Zoe interaction logged for compliance
+- **Audit logging** — Every Ada interaction logged for compliance
 
 ### Conversational Interface
 
-Zoe supports multi-turn conversations:
+Ada supports multi-turn conversations:
 - Follow-up questions refine previous queries
 - Context maintained across conversation turns
 - Can ask clarifying questions when query is ambiguous
 - Supports both chat and command-style interactions
 
 <Callout type="info" title="zeotap-genai Repository">
-The Zoe backend lives in the `zeotap-genai` repository. It's a Python FastAPI application using Google ADK for agent orchestration. The service runs on GKE with GPU-backed nodes for low-latency inference.
+The Ada backend lives in the `zeotap-genai` and `zeotap-agentic-server` repositories. It's a Python FastAPI application using Google ADK for agent orchestration with MCP (Model Context Protocol) for tool integration. The service runs on GKE with GPU-backed nodes for low-latency inference.
 </Callout>
 
-<KeyConcepts concepts={["RAG", "Vertex AI", "LLM", "Vector Search", "Intent Classification", "Segment Translation", "Prompt Engineering", "Safety Guardrails", "Google ADK"]} />
+<KeyConcepts concepts={["Ada AI", "RAG", "Vertex AI", "LLM", "Vector Search", "Intent Classification", "Segment Translation", "Prompt Engineering", "Safety Guardrails", "Google ADK", "MCP"]} />
 
 ---
 

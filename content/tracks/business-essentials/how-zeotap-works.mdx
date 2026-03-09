@@ -14,7 +14,7 @@ This module walks through Zeotap's product from the **user interface perspective
 
 ### The Unity Dashboard
 
-The **Unity Dashboard** is Zeotap's web interface — the single pane of glass where users manage their entire CDP. It's a modern React-based application accessible from any browser.
+The **Unity Dashboard** is Zeotap's web interface — the single pane of glass where users manage their entire CDP. It's a modern Angular-based application accessible from any browser.
 
 When you log in, you'll see:
 
@@ -36,10 +36,10 @@ Before you can do anything useful, data needs to flow into the platform. Zeotap 
   ]}
 />
 
-**In the UI, setting up a source looks like this:**
-1. Go to **Data Sources** in the sidebar
-2. Click **Add Source**
-3. Choose the type (Web, Mobile, Server, File)
+**In the UI, setting up a source with the Integr8 builder looks like this:**
+1. Go to **Integrate > Sources** in the sidebar
+2. Click **Add Source** to open the **Integr8** connector builder
+3. Choose from **150+ pre-built connectors** or configure custom (Web, Mobile, Server, File)
 4. Follow the setup wizard (it generates the SDK code or API credentials)
 5. Verify data is flowing by checking the **Live Events** panel
 
@@ -59,13 +59,15 @@ Once data flows in, Zeotap's identity resolution engine works automatically. Her
 
 ### Step 3: Exploring Customer Profiles
 
-The **Profile Explorer** lets you search for any customer and see their complete unified view:
+The **Customer 360** view (under Protect) lets you search for any customer and see their complete unified view:
 
-- **Identity tab** — All linked identifiers (email, phone, device IDs, cookie IDs)
-- **Attributes tab** — Demographic and behavioral data (age, location, preferences)
+- **Identity tab** — All linked identifiers (email, phone, device IDs, cookie IDs) resolved via **ID+** (~50B deterministic IDs)
+- **Attributes tab** — Demographic and behavioral data, plus **Calculated Attributes** (derived fields computed from raw data)
 - **Events timeline** — Every interaction: page views, purchases, app opens, support tickets
 - **Audiences tab** — Which segments this customer belongs to
-- **Consent tab** — What data processing this customer has consented to
+- **Consent tab** — What data processing this customer has consented to (TCF 2.2, GDPR)
+
+You can also enrich profiles with **Zeotap Fuel** — third-party data enrichment using NCE (non-customer entity) data to fill gaps in your first-party data.
 
 ### Step 4: Building Audiences
 
@@ -77,13 +79,14 @@ The **Audience Builder** is where Zeotap gets powerful. You can create customer 
 - Nest conditions for complex segments
 - See real-time count estimates as you build
 
-**Natural Language (Zoe AI):**
+**Natural Language (Ada AI):**
 - Type: "Find users who abandoned cart in the last 7 days and have spent more than $100 total"
-- Zoe translates this into segment rules automatically
+- Ada translates this into segment rules automatically
 - Review and edit the generated rules before saving
+- Access **2,500+ Champion Segments** as pre-built audience templates
 
 <Callout type="success" title="This Is Our Differentiator">
-Natural language segmentation via Zoe is a key selling point. Non-technical marketers can build sophisticated segments without knowing SQL or rule syntax.
+Natural language segmentation via Ada is a key selling point. Non-technical marketers can build sophisticated segments without knowing SQL or rule syntax.
 </Callout>
 
 ### Step 5: Creating Customer Journeys
@@ -107,7 +110,7 @@ The **Journey Canvas** is a visual drag-and-drop tool for building automated, mu
 
 ### Step 6: Activating Data to Destinations
 
-The **Destinations** section lets you push your audiences and events to 100+ platforms:
+The **Destinations** section lets you push your audiences and events to 150+ platforms:
 
 - **Advertising:** Google Ads, Meta Ads, The Trade Desk, DV360
 - **Email/Marketing:** Braze, Salesforce Marketing Cloud, HubSpot
@@ -139,7 +142,7 @@ The **Reports** section provides visibility into:
   { value: "Real-time", label: "Processing", color: "#f59e0b" }
 ]} />
 
-<KeyConcepts concepts={["Unity Dashboard", "Data Source", "Profile Explorer", "Audience Builder", "Journey Canvas", "Destination", "Zoe AI", "UCID"]} />
+<KeyConcepts concepts={["Unity Dashboard", "Integr8", "Customer 360", "Audience Builder", "Journey Canvas", "Destination", "Ada AI", "UCID", "ID+", "Calculated Attributes", "Champion Segments", "Zeotap Fuel"]} />
 
 ---
 

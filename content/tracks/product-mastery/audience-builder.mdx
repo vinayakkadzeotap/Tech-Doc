@@ -1,6 +1,6 @@
 ---
 title: Building Audiences with the Segment Builder
-description: Create powerful audience segments using the visual rule builder, AND/OR logic, Zoe AI natural language, and audience estimation
+description: Create powerful audience segments using the visual rule builder, AND/OR logic, Ada AI natural language, and audience estimation
 icon: 👥
 estimatedMinutes: 40
 contentType: tutorial
@@ -10,7 +10,7 @@ order: 3
 
 ## 👥 Building Audiences with the Segment Builder
 
-Audiences are the heart of any CDP. They let you define groups of customers based on who they are, what they've done, and how they've interacted with your brand. Zeotap's Audience Builder combines a visual drag-and-drop rule builder with Zoe, an AI assistant that lets you describe segments in plain English.
+Audiences are the heart of any CDP. They let you define groups of customers based on who they are, what they've done, and how they've interacted with your brand. Zeotap's Audience Builder combines a visual drag-and-drop rule builder with Ada, Zeotap's AI copilot that lets you describe segments in plain English.
 
 <Callout type="info" title="Prerequisites">
 You need **Analyst**, **Editor**, or **Admin** role access. At least one data source should be actively sending data so you have profiles and events to segment against.
@@ -23,7 +23,7 @@ You need **Analyst**, **Editor**, or **Admin** role access. At least one data so
 3. Click **+ Create Audience** in the top right corner.
 4. Choose your creation method:
    - **Rule Builder** — visual, point-and-click interface
-   - **Zoe AI** — describe your audience in natural language
+   - **Ada AI** — describe your audience in natural language
    - **Upload List** — import a list of known identifiers (emails, phone numbers)
 
 ### Method 1: The Visual Rule Builder
@@ -137,37 +137,37 @@ As you build rules, the **Estimated Size** panel on the right updates in real ti
 If the estimated size is unexpectedly large or small, review your AND/OR logic. A common mistake is using AND when you meant OR (making the audience too narrow) or vice versa. The estimation panel is your sanity check.
 </Callout>
 
-### Method 2: Zoe AI — Natural Language Segmentation
+### Method 2: Ada AI — Natural Language Segmentation
 
-Zoe is Zeotap's AI assistant that lets you describe audiences in plain English. It translates your description into rule builder logic.
+Ada is Zeotap's AI copilot that lets you describe audiences in plain English. It translates your description into rule builder logic.
 
-#### How to Use Zoe
+#### How to Use Ada
 
-1. When creating a new audience, select **Zoe AI** as your creation method.
+1. When creating a new audience, select **Ada AI** as your creation method.
 2. Type a natural language description in the text box. For example:
    - "Customers in Germany who purchased more than 200 euros in the last 30 days"
    - "Users who viewed the pricing page but didn't sign up"
    - "High-value customers who haven't been active in 90 days"
-3. Click **Generate** — Zoe translates your description into rule builder rules.
-4. Review the generated rules. Zoe shows you exactly what it interpreted.
+3. Click **Generate** — Ada translates your description into rule builder rules.
+4. Review the generated rules. Ada shows you exactly what it interpreted.
 5. **Edit if needed** — you can modify any generated rule using the standard rule builder.
 6. Click **Apply** to accept the rules.
 
-<Callout type="success" title="Zoe Gets Smarter Over Time">
-Zoe learns from your organization's data schema. It knows your custom event names, attribute labels, and commonly used segments. The more your team uses Zoe, the better it gets at interpreting requests.
+<Callout type="success" title="Ada Gets Smarter Over Time">
+Ada learns from your organization's data schema. It knows your custom event names, attribute labels, and commonly used segments. The more your team uses Ada, the better it gets at interpreting requests.
 </Callout>
 
-<Expandable title="What if Zoe misinterprets my request?" defaultOpen={false}>
-Zoe always shows you the rules it generated before applying them. If something is wrong:
+<Expandable title="What if Ada misinterprets my request?" defaultOpen={false}>
+Ada always shows you the rules it generated before applying them. If something is wrong:
 
 1. Click **Edit** on the specific rule that's incorrect.
 2. Adjust the field, operator, or value manually.
 3. Alternatively, rephrase your request with more specifics — e.g., instead of "big spenders," say "customers with total_purchase_value greater than 1000."
 
-Zoe works best with specific, quantifiable descriptions rather than vague marketing terms.
+Ada works best with specific, quantifiable descriptions rather than vague marketing terms.
 </Expandable>
 
-#### Zoe Tips for Best Results
+#### Ada Tips for Best Results
 
 | Do This | Not This |
 |---|---|
@@ -227,11 +227,11 @@ Use overlap analysis before activating audiences to the same destination. If two
 3. **Start broad, then narrow** — begin with a simple rule, check the size, then add conditions.
 4. **Use folders** — organize audiences into folders by campaign, team, or funnel stage.
 5. **Archive old audiences** — don't delete them (they preserve history), but archive to reduce clutter.
-6. **Test with Zoe first** — even if you prefer the rule builder, Zoe is a great starting point for complex segments.
+6. **Test with Ada first** — even if you prefer the rule builder, Ada is a great starting point for complex segments.
 
 ### Key Terminology
 
-<KeyConcepts concepts={["Audience", "Segment", "Rule Builder", "AND/OR Logic", "Event-Based Rule", "Audience Estimation", "Zoe AI", "Dynamic Audience", "Static Audience", "Overlap Analysis", "UCID"]} />
+<KeyConcepts concepts={["Audience", "Segment", "Rule Builder", "AND/OR Logic", "Event-Based Rule", "Audience Estimation", "Ada AI", "Dynamic Audience", "Static Audience", "Overlap Analysis", "UCID"]} />
 
 ---
 
