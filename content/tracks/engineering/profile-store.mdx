@@ -29,15 +29,34 @@ A customer profile consists of:
   highlightColumn={0}
 />
 
+### Repository Architecture
+
+The Profile Store is a **Maven multi-module project** (`com.zeotap:profile-store`) written in Scala with 7 modules:
+
+<ComparisonTable
+  headers={["Module", "Language", "Purpose"]}
+  rows={[
+    ["profilestore-commons", "Scala", "Domain models, ProfileStoreConfiguration, constants"],
+    ["profile-merge", "Scala", "Main Spark job — validation → merge orchestration"],
+    ["idu-profile-merge", "Scala", "Merge driven by IDU identity graph decisions"],
+    ["multi-profile-merge", "Scala", "Cross-data-partner dedup and attribute fusion"],
+    ["post-processors", "Scala", "Recency/frequency/value computation, derived attributes"],
+    ["predictive-attribution", "Scala/Python", "Attaches ML model scores (propensity, LTV, churn)"],
+    ["deltalake-utilities", "Scala", "Delta table helpers (vacuum, optimize, CDF readers)"]
+  ]}
+  highlightColumn={0}
+/>
+
 ### Storage Architecture
 
 <ArchDiagram
   title="Profile Storage Layers"
   steps={[
-    { label: "Hot Layer", detail: "BigTable — real-time reads/writes", icon: "🔥" },
-    { label: "Warm Layer", detail: "BigQuery — analytical queries", icon: "📊" },
-    { label: "Cold Layer", detail: "GCS — historical archival", icon: "❄️" },
-    { label: "Cache", detail: "Redis — L2 cache for hot profiles", icon: "⚡" }
+    { label: "Delta Lake", detail: "ACID profile store (Spark)", icon: "📦" },
+    { label: "BigTable", detail: "Real-time reads/writes", icon: "🔥" },
+    { label: "BigQuery", detail: "Analytical queries", icon: "📊" },
+    { label: "GCS", detail: "Data lake + archival", icon: "❄️" },
+    { label: "Redis", detail: "L2 cache for hot profiles", icon: "⚡" }
   ]}
 />
 
@@ -90,39 +109,65 @@ Computed attributes are derived from raw data and updated in real-time or on sch
   highlightColumn={2}
 />
 
-### Profile API
+### Customer-Facing Profile API
 
-**Read Profile:**
+The Profile API supports HTTPS and mTLS access:
+
+**Base URLs:**
+- Standard: `https://api.zeotap.com`
+- Enhanced security: `https://mtls-api.zeotap.com`
+- Auth: API Key header (`apikey: <api_key>`)
+
+**Rate Limits:** 10,000 requests/min, 200 req/sec burst, 1KB avg response
+
+**Read (Search) API:**
 ```
-GET /v1/profiles/{ucid}
-Authorization: Bearer {api_key}
+POST https://api.zeotap.com/cdp/v1/users/_search
+{ "orgId": 4521, "search": { "email": ["user@example.com"] }, "regions": ["eu"] }
+```
+- Max 5 immutable IDs per call
+- Returns attributes, ID graph, consent, marketing prefs, AI attributes
 
-Response: {
-  "ucid": "abc-123",
-  "attributes": { "name": "John", "country": "DE" },
-  "behaviors": { "total_purchases": 12, "last_visit": "2024-01-15" },
-  "segments": ["high_value", "active_users"]
-}
+**Write (Upsert) API:**
+```
+POST https://api.zeotap.com/cdp/v1/users
+{ "orgId": 4521, "region": "eu", "ids": { "email": "user@example.com" }, "upsert": { "profile": { "age_range": "25-34" } } }
+```
+- Response: 204 No Content + `X-Zeotap-UCID` header
+- Writes via Pub/Sub → Dataflow enrichment → Delta MERGE INTO
+
+**Delete (GDPR Erasure) API:**
+```
+POST https://api.zeotap.com/cdp/v1/users/_delete
+{ "orgId": 4521, "region": "eu", "ids": { "email": ["user@example.com"] } }
+```
+- Bulk delete up to 400 IDs per call
+- Erasure SLA: 7-10 business days
+
+### Delta Lake Storage Design
+
+The Profile Store is built on **Delta Lake** — providing ACID transactions on top of Apache Spark:
+
+- **ACID Transactions** — Concurrent Spark jobs write safely via optimistic concurrency control in `_delta_log`
+- **Change Data Feed (CDF)** — `delta.enableChangeDataFeed = true` streams only changed rows downstream
+- **Schema Evolution** — `mergeSchema = true` allows new attributes from partners without rewriting
+- **Time Travel** — `VERSION AS OF {n}` queries historical snapshots for audits and reproducible audience builds
+
+**Delta Table Path Convention:**
+```
+gs://<bucket>/profile-store/<org_id>.<region>/delta-table/
+  part-*.snappy.parquet     (data files)
+  _delta_log/               (transaction log)
+  _change_data/             (CDC files for streaming consumers)
 ```
 
-**Search Profiles:**
-```
-GET /v1/profiles?email=user@example.com
-```
-- Resolves identifier to UCID via ID Graph, then returns profile
-- Supports search by any identifier type
-
-### Delta Lake for Batch Updates
-
-Batch profile updates (CRM imports, computed attribute refreshes) use Delta Lake:
-
-- **ACID transactions** — batch updates are atomic, no partial writes
-- **Time travel** — query profile state at any point in time
-- **Schema evolution** — add new attributes without migration
-- **Merge operations** — upsert millions of profiles in a single transaction
+**Merge Strategy (MERGE INTO):**
+- Upsert by UCID — matched profiles update with `COALESCE(source, target)` for each field
+- Unmatched profiles inserted with `created_at = NOW()`
+- Attribute merge follows priority: first-party app > Tier 1 data partner > Tier 2 partner > ML predictions
 
 <Callout type="info" title="Profile Scale">
-The Profile Store manages billions of profiles across all customers. BigTable's auto-scaling handles the storage and throughput, while BigQuery handles the analytical workload. This separation of concerns allows each layer to optimize for its access pattern.
+The Profile Store manages billions of profiles across all customers. Delta Lake provides ACID guarantees on batch updates, BigTable serves real-time reads, and BigQuery handles analytical workloads.
 </Callout>
 
 <KeyConcepts concepts={["UCID", "Profile Merge", "Attribute Precedence", "BigTable", "BigQuery", "Delta Lake", "Computed Attributes", "Redis Cache", "Hot/Warm/Cold Storage"]} />

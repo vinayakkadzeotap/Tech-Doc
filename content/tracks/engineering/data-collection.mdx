@@ -17,18 +17,38 @@ Data collection is the entry point of the Zeotap CDP pipeline. This module cover
 <ComparisonTable
   headers={["SDK", "Language", "Repo", "Use Case"]}
   rows={[
-    ["Web SDK", "JavaScript/TypeScript", "analytics-sdk", "Browser tracking, SPA support"],
-    ["iOS SDK", "Swift", "analytics-sdk-ios", "Native iOS apps"],
-    ["Android SDK", "Kotlin", "analytics-sdk-android", "Native Android apps"],
-    ["Server-side", "REST API", "zeocore-api", "Backend event forwarding"],
-    ["GTM Template", "JavaScript", "analytics-sdk", "Google Tag Manager integration"]
+    ["Collect SDK (Web)", "JavaScript/TypeScript", "analytics-sdk (v4.4.5)", "Browser tracking, SPA support"],
+    ["ZeotapCollect (iOS)", "Swift", "ZeotapCollect (SPM)", "Native iOS apps"],
+    ["Android SDK", "Kotlin/Java", "analytics-sdk-android", "Native Android apps"],
+    ["Server-to-Server API", "REST", "zeocore-api", "Backend event forwarding"],
+    ["GTM Template", "JavaScript", "zeocollect-gtm-template", "Google Tag Manager (Community Template)"],
+    ["AEP Extension", "JavaScript", "zeocollect-adobe-extension", "Adobe Experience Platform Launch"]
   ]}
   highlightColumn={0}
 />
 
+**SDK Version History:**
+- **v4.4.5** (Latest) — Real-time consent sync, ID Graph v3, Kotlin/Swift async
+- **v4.3.2** — GDPR TCF 2.2 support, batch event compression
+- **v4.2.0** — Legacy, limited audience segment support
+- **v3.x** — End of Life (security patches ended Dec 2024)
+
 ### Web SDK Architecture
 
-The Web SDK is the most widely deployed. Key architecture decisions:
+The analytics-sdk repo contains four sub-modules built via Rollup:
+
+<ComparisonTable
+  headers={["Module", "Build Output", "Purpose"]}
+  rows={[
+    ["Collect SDK", "zeo-analytics (CJS, ESM, UMD)", "Primary event tracking"],
+    ["IDP SDK", "idp.min.js (UMD)", "IDP cookie stamping"],
+    ["Mapper SDK", "mapper.min.js (UMD)", "Cookie sync via SmartPixel"],
+    ["Interact SDK", "interact.min.js (UMD)", "Personalization triggers"]
+  ]}
+  highlightColumn={0}
+/>
+
+Key architecture decisions:
 
 **Event Queue & Batching:**
 - Events are queued in-memory and batched every 2 seconds or when batch reaches 10 events
@@ -47,7 +67,7 @@ The Web SDK is the most widely deployed. Key architecture decisions:
 - Supports multiple identity namespaces for flexible resolution
 
 **Consent Integration:**
-- Integrates with CMP (Consent Management Platforms) via TCF 2.0 API
+- Integrates with CMP (Consent Management Platforms) via TCF v2.2 API (OneTrust, Didomi, etc.)
 - Events tagged with consent status at collection time
 - Respects `navigator.globalPrivacyControl` signal
 - No data collected without valid consent
@@ -67,7 +87,7 @@ Every event follows a standardized schema:
     "referrer": "https://google.com"
   },
   "context": {
-    "library": { "name": "zeotap-web", "version": "2.4.1" },
+    "library": { "name": "zeo-analytics", "version": "4.4.5" },
     "userAgent": "...",
     "locale": "en-US",
     "timezone": "Europe/Berlin",
@@ -86,13 +106,14 @@ Every event follows a standardized schema:
 
 ### Mobile SDKs
 
-<Expandable title="iOS SDK (Swift)" defaultOpen={true}>
+<Expandable title="ZeotapCollect — iOS SDK (Swift)" defaultOpen={true}>
 
-- **Architecture:** Singleton instance, background queue for event processing
-- **Persistence:** SQLite for offline event storage
+- **Installation:** Swift Package Manager (v2.0.0+)
+- **Initialization:** `Zeotap.initialize()` in AppDelegate with Write Key, Region (EU/US), Flush Interval (30s), Flush At (20 events)
+- **Core Methods:** `Zeotap.shared.identify()` with userId + traits, `Zeotap.shared.track()` with event + properties
 - **Identity:** IDFA (with ATT prompt), IDFV as fallback, custom identifiers
-- **Lifecycle events:** App open, app close, screen view auto-tracked
-- **Size:** ~200KB added to app binary
+- **Lifecycle:** `trackApplicationLifecycleEvents` flag for automatic lifecycle event tracking
+- **Offline:** Queued events persisted and flushed on network recovery
 
 </Expandable>
 
