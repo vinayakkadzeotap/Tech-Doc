@@ -2,6 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  BookOpen,
+  ClipboardCheck,
+  Trophy,
+  BookMarked,
+  Microscope,
+  User,
+  type LucideIcon,
+} from 'lucide-react';
 import ProgressBar from '@/components/ui/ProgressBar';
 
 interface SidebarProps {
@@ -9,29 +18,34 @@ interface SidebarProps {
   role: string;
 }
 
+interface NavSection {
+  title: string;
+  items: { href: string; label: string; icon: LucideIcon }[];
+}
+
 export default function Sidebar({ overallProgress, role }: SidebarProps) {
   const pathname = usePathname();
 
-  const sections = [
+  const sections: NavSection[] = [
     {
       title: 'Learning',
       items: [
-        { href: '/learn', label: 'All Tracks', icon: '📚' },
-        { href: '/assess', label: 'Assessments', icon: '📝' },
-        { href: '/achievements', label: 'Achievements', icon: '🏆' },
-        { href: '/glossary', label: 'Glossary', icon: '📖' },
+        { href: '/learn', label: 'All Tracks', icon: BookOpen },
+        { href: '/assess', label: 'Assessments', icon: ClipboardCheck },
+        { href: '/achievements', label: 'Achievements', icon: Trophy },
+        { href: '/glossary', label: 'Glossary', icon: BookMarked },
       ],
     },
     {
       title: 'Simulators',
       items: [
-        { href: '/explore', label: 'Interactive Explorer', icon: '🔬' },
+        { href: '/explore', label: 'Interactive Explorer', icon: Microscope },
       ],
     },
     {
       title: 'Account',
       items: [
-        { href: '/profile', label: 'Profile', icon: '👤' },
+        { href: '/profile', label: 'Profile', icon: User },
       ],
     },
   ];
@@ -59,22 +73,26 @@ export default function Sidebar({ overallProgress, role }: SidebarProps) {
             {section.title}
           </h3>
           <div className="space-y-0.5">
-            {section.items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
-                  ${pathname === item.href
-                    ? 'bg-brand-blue/10 text-brand-blue'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
-                  }
-                `}
-              >
-                <span>{item.icon}</span>
-                {item.label}
-              </Link>
-            ))}
+            {section.items.map((item) => {
+              const isActive = pathname === item.href;
+              const IconComponent = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`
+                    flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                    ${isActive
+                      ? 'bg-brand-blue/10 text-brand-blue'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
+                    }
+                  `}
+                >
+                  <IconComponent size={16} strokeWidth={isActive ? 2.5 : 2} />
+                  {item.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
       ))}

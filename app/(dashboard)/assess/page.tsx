@@ -1,6 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  Workflow,
+  Handshake,
+  ClipboardCheck,
+} from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -240,29 +245,37 @@ export default function AssessPage() {
           Real-world scenarios with ordering, matching, and situational questions.
         </p>
         <div className="grid sm:grid-cols-2 gap-4">
-          {SCENARIO_QUIZZES.map((quiz) => (
-            <Card key={quiz.id} hover>
-              <div className="flex items-start gap-4">
-                <div className="text-3xl">{quiz.icon}</div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-sm">{quiz.title}</h3>
-                  <p className="text-xs text-text-muted mt-1">{quiz.description}</p>
-                  <div className="flex items-center gap-2 flex-wrap mt-3">
-                    <Badge color={quiz.color}>{quiz.questions.length} questions</Badge>
-                    <Badge color="#f59e0b">Pass: {quiz.passScore}%</Badge>
-                    <Badge color="#a855f7">Interactive</Badge>
-                  </div>
-                  <Button
-                    size="sm"
-                    className="mt-4"
-                    onClick={() => setActiveScenario(quiz)}
+          {SCENARIO_QUIZZES.map((quiz) => {
+            const IconComponent = quiz.icon === '🔄' ? Workflow : Handshake;
+            return (
+              <Card key={quiz.id} hover>
+                <div className="flex items-start gap-4">
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${quiz.color}15` }}
                   >
-                    Start Challenge
-                  </Button>
+                    <IconComponent size={22} style={{ color: quiz.color }} strokeWidth={2} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm">{quiz.title}</h3>
+                    <p className="text-xs text-text-muted mt-1">{quiz.description}</p>
+                    <div className="flex items-center gap-2 flex-wrap mt-3">
+                      <Badge color={quiz.color}>{quiz.questions.length} questions</Badge>
+                      <Badge color="#f59e0b">Pass: {quiz.passScore}%</Badge>
+                      <Badge color="#a855f7">Interactive</Badge>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="mt-4"
+                      onClick={() => setActiveScenario(quiz)}
+                    >
+                      Start Challenge
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       </div>
 
@@ -275,7 +288,9 @@ export default function AssessPage() {
           {QUIZZES.map((quiz) => (
             <Card key={quiz.id} hover>
               <div className="flex items-start gap-4">
-                <div className="text-3xl">📝</div>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-brand-blue/10">
+                  <ClipboardCheck size={22} className="text-brand-blue" strokeWidth={2} />
+                </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-sm">{quiz.title}</h3>
                   <p className="text-xs text-text-muted mt-1">{quiz.description}</p>

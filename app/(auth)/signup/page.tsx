@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { ROLES, type UserRole } from '@/lib/utils/roles';
 import { Mail, Lock, User } from 'lucide-react';
+import Icon from '@/components/ui/Icon';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -75,9 +76,14 @@ export default function SignupPage() {
 
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-extrabold text-gradient">
-            Zeotap Learning
-          </Link>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-blue to-brand-purple mb-4">
+            <span className="text-white text-lg font-black">Z</span>
+          </div>
+          <div>
+            <Link href="/" className="text-2xl font-extrabold text-gradient">
+              Zeotap Learning
+            </Link>
+          </div>
           <p className="mt-2 text-sm text-text-secondary">
             {step === 'credentials' ? 'Create your account' : 'Tell us about your role'}
           </p>
@@ -155,7 +161,7 @@ export default function SignupPage() {
                       }
                     `}
                   >
-                    <span className="text-2xl">{role.icon}</span>
+                    <Icon name={role.icon} contained color={selectedRole === key ? '#3b82f6' : role.color} containerSize="md" />
                     <span className="text-sm font-semibold">{role.label}</span>
                     <span className="text-[10px] text-text-muted leading-tight">{role.description}</span>
                   </button>

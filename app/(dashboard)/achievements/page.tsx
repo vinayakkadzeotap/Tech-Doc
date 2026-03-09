@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { BADGES } from '@/lib/utils/badges';
 import Card from '@/components/ui/Card';
+import Icon from '@/components/ui/Icon';
 
 export default async function AchievementsPage() {
   const supabase = await createClient();
@@ -31,15 +32,19 @@ export default async function AchievementsPage() {
           return (
             <Card
               key={badge.id}
-              className={`text-center !p-5 transition-all ${
-                isEarned ? '' : 'opacity-30 grayscale'
+              className={`text-center !p-5 transition-all duration-300 ${
+                isEarned
+                  ? 'hover:-translate-y-1 hover:shadow-card'
+                  : 'opacity-30 grayscale'
               }`}
             >
-              <span className="text-4xl block mb-3">{badge.icon}</span>
+              <div className="flex justify-center mb-3">
+                <Icon name={badge.icon} contained color={badge.color} containerSize="lg" />
+              </div>
               <h3 className="text-sm font-bold mb-1">{badge.title}</h3>
               <p className="text-[11px] text-text-muted leading-relaxed">{badge.description}</p>
               {isEarned && earnedMap[badge.id] && (
-                <p className="text-[10px] text-text-muted mt-2">
+                <p className="text-[10px] text-brand-green mt-2 font-medium">
                   Earned {new Date(earnedMap[badge.id]).toLocaleDateString()}
                 </p>
               )}
@@ -47,6 +52,17 @@ export default async function AchievementsPage() {
           );
         })}
       </div>
+
+      {/* Empty state */}
+      {earnedIds.size === 0 && (
+        <div className="text-center py-12 rounded-2xl border border-dashed border-border">
+          <div className="flex justify-center">
+            <Icon name="🏆" contained color="#f59e0b" containerSize="lg" />
+          </div>
+          <p className="mt-4 text-sm text-text-secondary font-medium">No badges earned yet</p>
+          <p className="text-xs text-text-muted mt-1">Start completing modules and quizzes to earn your first badge!</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -70,6 +70,7 @@ const config: Config = {
         'slide-in-right': 'slideInRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
         'slide-out-right': 'slideOutRight 0.4s ease forwards',
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+        'scale-in': 'scaleIn 0.2s ease forwards',
       },
       keyframes: {
         fadeIn: {
@@ -87,6 +88,10 @@ const config: Config = {
         slideOutRight: {
           from: { transform: 'translateX(0)', opacity: '1' },
           to: { transform: 'translateX(120%)', opacity: '0' },
+        },
+        scaleIn: {
+          from: { opacity: '0', transform: 'scale(0.95)' },
+          to: { opacity: '1', transform: 'scale(1)' },
         },
         pulseGlow: {
           '0%, 100%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.1)' },

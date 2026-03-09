@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import Icon from '@/components/ui/Icon';
 
 export default async function LandingPage() {
   let isAuthenticated = false;
@@ -21,7 +22,12 @@ export default async function LandingPage() {
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-bg-primary/95 backdrop-blur-xl border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-lg font-extrabold text-gradient">Zeotap Learning</span>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center">
+              <span className="text-white text-xs font-black">Z</span>
+            </div>
+            <span className="text-lg font-extrabold text-gradient">Zeotap Learning</span>
+          </div>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
@@ -82,17 +88,17 @@ export default async function LandingPage() {
         {/* Role cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-20 max-w-4xl mx-auto w-full">
           {[
-            { icon: '⚙️', label: 'Engineering', desc: 'Architecture deep dives' },
-            { icon: '💼', label: 'Sales', desc: 'Pitch & demo playbooks' },
-            { icon: '🤝', label: 'Customer Success', desc: 'Onboarding & support' },
-            { icon: '📐', label: 'Product', desc: 'Feature mastery' },
-            { icon: '📣', label: 'Marketing', desc: 'Positioning & use cases' },
+            { icon: '⚙️', label: 'Engineering', desc: 'Architecture deep dives', color: '#3b82f6' },
+            { icon: '💼', label: 'Sales', desc: 'Pitch & demo playbooks', color: '#f59e0b' },
+            { icon: '🤝', label: 'Customer Success', desc: 'Onboarding & support', color: '#10b981' },
+            { icon: '📐', label: 'Product', desc: 'Feature mastery', color: '#a855f7' },
+            { icon: '📣', label: 'Marketing', desc: 'Positioning & use cases', color: '#ec4899' },
           ].map((role) => (
             <div
               key={role.label}
-              className="flex flex-col items-center gap-2 p-5 rounded-2xl bg-bg-surface/50 border border-border hover:border-border-strong hover:-translate-y-1 transition-all cursor-default"
+              className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-bg-surface/50 border border-border hover:border-border-strong hover:-translate-y-1 transition-all duration-300 cursor-default"
             >
-              <span className="text-3xl">{role.icon}</span>
+              <Icon name={role.icon} contained color={role.color} containerSize="lg" />
               <span className="text-sm font-semibold">{role.label}</span>
               <span className="text-xs text-text-muted text-center">{role.desc}</span>
             </div>

@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
 import { TRACKS } from '@/lib/utils/roles';
+import Icon from '@/components/ui/Icon';
 
 interface Assignment {
   id: string;
@@ -212,7 +213,7 @@ export default function AssignmentsPage() {
                         <div className="text-[11px] text-text-muted">{assignedUser?.email}</div>
                       </td>
                       <td className="py-3 px-2">
-                        <span className="mr-1">{track?.icon}</span>
+                        {track?.icon && <Icon name={track.icon} size={14} className="inline mr-1" />}
                         {track?.title || a.track_id}
                       </td>
                       <td className="py-3 px-2">

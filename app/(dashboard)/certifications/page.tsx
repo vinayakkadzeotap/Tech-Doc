@@ -2,9 +2,11 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import Icon from '@/components/ui/Icon';
 import { CERTIFICATIONS } from '@/lib/utils/certifications';
 import { TRACKS } from '@/lib/utils/roles';
 import CertActions from '@/components/learning/CertActions';
+import ProgressBar from '@/components/ui/ProgressBar';
 
 export default async function CertificationsPage() {
   const supabase = await createClient();
@@ -41,14 +43,12 @@ export default async function CertificationsPage() {
 
   // Check eligibility for each certification
   const certStatus = CERTIFICATIONS.map((cert) => {
-    // Check track completions
     const tracksComplete = cert.requirements.tracks.every((trackId) => {
       const track = TRACKS.find((t) => t.id === trackId);
       if (!track) return false;
       return track.modules.every((m) => completedKeys.has(`${trackId}:${m.id}`));
     });
 
-    // Check quizzes passed with min score
     const quizzesPassed = cert.requirements.quizzes.every((quizId) => {
       const attempts = quizAttempts?.filter((a) => a.quiz_id === quizId) || [];
       return attempts.some((a) => a.passed && a.percentage >= cert.requirements.minQuizScore);
@@ -57,7 +57,6 @@ export default async function CertificationsPage() {
     const isEligible = tracksComplete && quizzesPassed;
     const isEarned = earnedCertIds.has(cert.id);
 
-    // Progress calculation
     const totalTracks = cert.requirements.tracks.length;
     const completedTracks = cert.requirements.tracks.filter((trackId) => {
       const track = TRACKS.find((t) => t.id === trackId);
@@ -71,6 +70,10 @@ export default async function CertificationsPage() {
       return attempts.some((a) => a.passed && a.percentage >= cert.requirements.minQuizScore);
     }).length;
 
+    const totalReqs = totalTracks + totalQuizzes;
+    const completedReqs = completedTracks + completedQuizzes;
+    const progressPct = totalReqs > 0 ? Math.round((completedReqs / totalReqs) * 100) : 0;
+
     return {
       ...cert,
       isEligible,
@@ -80,10 +83,11 @@ export default async function CertificationsPage() {
       totalTracks,
       completedQuizzes,
       totalQuizzes,
+      progressPct,
     };
   });
 
-  const levelColors = { associate: '#3b82f6', professional: '#a855f7', expert: '#f59e0b' };
+  const levelColors: Record<string, string> = { associate: '#3b82f6', professional: '#a855f7', expert: '#f59e0b' };
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -97,34 +101,41 @@ export default async function CertificationsPage() {
 
       <div className="space-y-4">
         {certStatus.map((cert) => (
-          <Card key={cert.id} className={cert.isEarned ? '' : 'opacity-80'}>
+          <Card
+            key={cert.id}
+            className={`transition-all duration-300 ${cert.isEarned ? 'hover:-translate-y-0.5 hover:shadow-card' : 'opacity-80'}`}
+          >
             <div className="flex items-start gap-4">
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
-                style={{ background: `${cert.color}15` }}
-              >
-                {cert.icon}
-              </div>
+              <Icon name={cert.icon} contained color={cert.color} containerSize="lg" />
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h3 className="font-bold">{cert.title}</h3>
                   <Badge color={levelColors[cert.level]}>{cert.level}</Badge>
                   {cert.isEarned && <Badge color="#10b981">Earned</Badge>}
                 </div>
                 <p className="text-sm text-text-secondary">{cert.description}</p>
 
-                {/* Requirements */}
-                <div className="mt-3 space-y-1.5">
-                  <div className="text-xs text-text-muted">
-                    Tracks: {cert.completedTracks}/{cert.totalTracks} complete
+                {/* Progress bar */}
+                {!cert.isEarned && (
+                  <div className="mt-3">
+                    <ProgressBar value={cert.progressPct} color={cert.color} size="sm" showLabel />
                   </div>
-                  <div className="text-xs text-text-muted">
-                    Quizzes: {cert.completedQuizzes}/{cert.totalQuizzes} passed (min {cert.requirements.minQuizScore}%)
+                )}
+
+                {/* Requirements */}
+                <div className="mt-3 flex items-center gap-4 flex-wrap">
+                  <div className="flex items-center gap-1.5 text-xs text-text-muted">
+                    <div className={`w-1.5 h-1.5 rounded-full ${cert.completedTracks >= cert.totalTracks ? 'bg-brand-green' : 'bg-border-strong'}`} />
+                    Tracks: {cert.completedTracks}/{cert.totalTracks}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-text-muted">
+                    <div className={`w-1.5 h-1.5 rounded-full ${cert.completedQuizzes >= cert.totalQuizzes ? 'bg-brand-green' : 'bg-border-strong'}`} />
+                    Quizzes: {cert.completedQuizzes}/{cert.totalQuizzes} (min {cert.requirements.minQuizScore}%)
                   </div>
                 </div>
 
                 {cert.isEarned && cert.earnedAt && (
-                  <p className="text-xs text-text-muted mt-2">
+                  <p className="text-xs text-brand-green mt-2 font-medium">
                     Issued {new Date(cert.earnedAt).toLocaleDateString()}
                   </p>
                 )}
@@ -136,7 +147,7 @@ export default async function CertificationsPage() {
                 )}
 
                 {!cert.isEligible && !cert.isEarned && (
-                  <p className="text-xs text-brand-amber mt-3">
+                  <p className="text-xs text-text-muted mt-3">
                     Complete the requirements above to unlock this certification.
                   </p>
                 )}

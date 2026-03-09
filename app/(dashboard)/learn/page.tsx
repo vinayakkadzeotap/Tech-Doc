@@ -5,6 +5,7 @@ import { TRACKS, getTracksForRole, type UserRole, type Track } from '@/lib/utils
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import ProgressBar from '@/components/ui/ProgressBar';
+import Icon from '@/components/ui/Icon';
 import EngineerPOCTable from '@/components/learning/EngineerPOCTable';
 import AccountPOCTable from '@/components/learning/AccountPOCTable';
 
@@ -24,12 +25,7 @@ function TrackDetail({ track, completedModules }: { track: Track; completedModul
     <div className="space-y-4">
       {/* Track header */}
       <div className="flex items-center gap-4 mb-6">
-        <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
-          style={{ background: `${track.color}15` }}
-        >
-          {track.icon}
-        </div>
+        <Icon name={track.icon} contained color={track.color} containerSize="lg" />
         <div className="flex-1 min-w-0">
           <h2 className="text-xl font-bold">{track.title}</h2>
           <p className="text-sm text-text-secondary">{track.subtitle}</p>
@@ -80,7 +76,7 @@ function TrackDetail({ track, completedModules }: { track: Track; completedModul
               </div>
 
               {/* Icon */}
-              <span className="text-xl flex-shrink-0">{module.icon}</span>
+              <Icon name={module.icon} size={18} color={track.color} />
 
               {/* Info */}
               <div className="flex-1 min-w-0">

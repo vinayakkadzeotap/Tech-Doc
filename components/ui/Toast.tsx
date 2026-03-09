@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, createContext, useContext, type ReactNode } from 'react';
+import Icon from '@/components/ui/Icon';
 
 interface ToastData {
   id: string;
@@ -50,7 +51,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 20px ${t.color || '#3b82f6'}40`,
               }}
             >
-              {t.icon && <span className="text-2xl">{t.icon}</span>}
+              {t.icon && <Icon name={t.icon} size={22} color={t.color} />}
               <p className="text-sm font-medium text-text-primary">{t.message}</p>
             </div>
           </div>
