@@ -28,13 +28,28 @@ export default function MarkCompleteBar({ trackId, moduleId, isComplete }: Props
 
     if (!user) return;
 
-    const { error } = await supabase.from('progress').upsert({
-      user_id: user.id,
-      track_id: trackId,
-      module_id: moduleId,
-      status: 'completed',
-      completed_at: new Date().toISOString(),
-    }, { onConflict: 'user_id,track_id,module_id' });
+    // Use select + insert/update to avoid 409 when unique constraint is missing
+    const { data: existing } = await supabase
+      .from('progress')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('track_id', trackId)
+      .eq('module_id', moduleId)
+      .maybeSingle();
+
+    const now = new Date().toISOString();
+    const { error } = existing
+      ? await supabase.from('progress').update({
+          status: 'completed',
+          completed_at: now,
+        }).eq('id', existing.id)
+      : await supabase.from('progress').insert({
+          user_id: user.id,
+          track_id: trackId,
+          module_id: moduleId,
+          status: 'completed',
+          completed_at: now,
+        });
 
     if (!error) {
       setComplete(true);

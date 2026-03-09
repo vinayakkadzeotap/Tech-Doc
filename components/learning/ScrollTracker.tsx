@@ -11,7 +11,6 @@ interface Props {
 export default function ScrollTracker({ trackId, moduleId }: Props) {
   const startTime = useRef(Date.now());
   const maxScroll = useRef(0);
-  const saved = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,34 +24,56 @@ export default function ScrollTracker({ trackId, moduleId }: Props) {
     };
 
     const saveProgress = async () => {
-      if (saved.current) return;
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
-      if (timeSpent < 3 && maxScroll.current < 5) return; // skip trivial visits
 
-      await supabase.from('analytics_events').insert({
-        user_id: user.id,
-        event_type: 'module_reading',
-        event_data: {
+      // Use select + insert/update to avoid 409 when unique constraint is missing
+      const { data: existing } = await supabase
+        .from('progress')
+        .select('id, scroll_pct, time_spent_seconds, status')
+        .eq('user_id', user.id)
+        .eq('track_id', trackId)
+        .eq('module_id', moduleId)
+        .maybeSingle();
+
+      if (existing) {
+        // Only update scroll/time, never downgrade status
+        const updates: Record<string, unknown> = {
+          scroll_pct: Math.max(maxScroll.current, existing.scroll_pct || 0),
+          time_spent_seconds: (existing.time_spent_seconds || 0) + timeSpent,
+        };
+        if (existing.status !== 'completed' && maxScroll.current >= 90) {
+          updates.status = 'in_progress';
+        }
+        await supabase.from('progress').update(updates).eq('id', existing.id);
+      } else {
+        await supabase.from('progress').insert({
+          user_id: user.id,
           track_id: trackId,
           module_id: moduleId,
           scroll_pct: maxScroll.current,
           time_spent_seconds: timeSpent,
-        },
-      });
-
-      saved.current = true;
+          status: maxScroll.current >= 90 ? 'in_progress' : 'not_started',
+        });
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('beforeunload', saveProgress);
+
+    const handleBeforeUnload = () => {
+      saveProgress();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    const interval = setInterval(saveProgress, 30000);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('beforeunload', saveProgress);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      clearInterval(interval);
       saveProgress();
     };
   }, [trackId, moduleId]);

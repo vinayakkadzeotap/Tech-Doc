@@ -17,13 +17,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  const { data, error } = await supabase.from('progress').upsert({
-    user_id: user.id,
-    track_id,
-    module_id,
-    status,
-    completed_at: status === 'completed' ? new Date().toISOString() : null,
-  }, { onConflict: 'user_id,track_id,module_id' }).select();
+  // Use select + insert/update to avoid 409 when unique constraint is missing
+  const { data: existing } = await supabase
+    .from('progress')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('track_id', track_id)
+    .eq('module_id', module_id)
+    .maybeSingle();
+
+  const now = new Date().toISOString();
+  const { data, error } = existing
+    ? await supabase.from('progress').update({
+        status,
+        completed_at: status === 'completed' ? now : null,
+      }).eq('id', existing.id).select()
+    : await supabase.from('progress').insert({
+        user_id: user.id,
+        track_id,
+        module_id,
+        status,
+        completed_at: status === 'completed' ? now : null,
+      }).select();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
