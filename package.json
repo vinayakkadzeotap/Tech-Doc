@@ -1,7 +1,32 @@
 {
-  "name": "zeotap-cdp-tech-doc",
-  "version": "2.0.0",
-  "description": "Zeotap CDP Platform Architecture Explorer - Interactive Technical Documentation",
+  "name": "zeotap-learning-platform",
+  "version": "3.0.0",
   "private": true,
-  "type": "module"
+  "description": "Zeotap CDP Learning Platform — Interactive learning for all roles",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.47.12",
+    "gray-matter": "^4.0.3",
+    "lucide-react": "^0.468.0",
+    "next": "14.2.21",
+    "next-mdx-remote": "^6.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.7.2"
+  }
 }

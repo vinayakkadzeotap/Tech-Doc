@@ -1,0 +1,141 @@
+---
+title: Audience Management
+description: Real-time segmentation engine
+icon: 🎯
+estimatedMinutes: 25
+contentType: deep-dive
+trackId: engineering
+order: 6
+---
+
+## 🎯 Audience Management
+
+The Audience Engine evaluates segment membership in real-time as profiles change. This module covers the rule DSL, evaluation engine, storage model, and performance optimizations.
+
+### Four Microservices
+
+The Audience Management system consists of four microservices:
+
+<ComparisonTable
+  headers={["Service", "Technology", "Port", "Purpose"]}
+  rows={[
+    ["audiences", "Play Framework / Scala", ":9000", "Audience CRUD, folder management, lifecycle orchestration"],
+    ["segmentestimator", "Go + Gin", ":3000", "Real-time size estimates using bitmap indexes"],
+    ["segment-overlap", "Go / Python", "—", "Jaccard similarity and overlap counts between segments"],
+    ["bulk-segment-creation", "Spark Job", "—", "Create hundreds of segments from manifest"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Architecture Overview
+
+<ArchDiagram
+  title="Audience Engine Flow"
+  steps={[
+    { label: "Unity UI", detail: "Audience Builder creates rules", icon: "📝" },
+    { label: "Audiences API", detail: "Play/Scala :9000 — CRUD + orchestration", icon: "⚙️" },
+    { label: "Segment Estimator", detail: "Go :3000 — bitmap-based size estimation", icon: "📊" },
+    { label: "Query Backends", detail: "Druid, BigQuery, Qubole/HiveQL, Delta Lake", icon: "🗄️" },
+    { label: "State Store", detail: "PostgreSQL (metadata), GCS/S3 (bitmaps)", icon: "💾" }
+  ]}
+/>
+
+### Segment Rule DSL
+
+Segment rules are defined in a JSON-based DSL:
+
+```json
+{
+  "operator": "AND",
+  "conditions": [
+    { "field": "attributes.country", "op": "eq", "value": "DE" },
+    { "field": "behaviors.total_purchases", "op": "gte", "value": 5 },
+    { "field": "events.cart_abandon", "op": "occurred_within", "value": "7d" }
+  ]
+}
+```
+
+**Supported Operators:**
+- Comparison: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`
+- String: `contains`, `starts_with`, `ends_with`, `matches` (regex)
+- Set: `in`, `not_in`
+- Temporal: `occurred_within`, `not_occurred_within`, `between_dates`
+- Existence: `exists`, `not_exists`
+- Logical: `AND`, `OR`, `NOT` with unlimited nesting
+
+### Evaluation Engine
+
+**Real-Time Evaluation:**
+1. Profile change event arrives (new attribute, new event, identity merge)
+2. Engine identifies which segments reference the changed fields
+3. Only affected segments are re-evaluated (not all segments)
+4. Membership changes (enter/exit) published to `audience.changes.{orgId}` topic
+
+**Batch Evaluation:**
+- Scheduled full recomputation for complex segments (ML-based, time-decay)
+- Runs on Spark for parallelism across millions of profiles
+- Reconciles any drift between real-time and batch
+
+### Audience Size Estimation (Bitmap Engine)
+
+The `segmentestimator` service answers "How many users match?" in **&lt;500ms** using a **roaring-style bitmap engine**:
+
+**How It Works:**
+1. Parse audience rules into extension lookups
+2. Check in-process LRU cache (TTL: 7200s / 2 hours)
+3. If cache miss: load bitmap files from S3/GCS
+4. Bitwise AND across all rule bitmaps (`[]uint64`, 64 users per word)
+5. Popcount (Hamming weight) x inverse sample rate = estimated size
+6. Fan out to peer replicas and aggregate counts
+7. Cache result for future queries
+
+**Bitmap Data Structure (Go):**
+- Each feature extension is a `[]uint64` bitmap — 64 users per uint64 word
+- Bitwise AND between two bitmaps = instant intersection
+- Sample rate configurable per region (e.g., 0.1% for India)
+- Bitmaps refreshed every 2 hours via Qubole/BigQuery ingestion jobs
+
+**Configuration:**
+- `ESTIMATOR_DATA_REFRESH=enabled` — auto-refresh bitmaps
+- `ESTIMATOR_UPDATE_FREQUENCY=7200` — refresh every 2 hours
+- `ESTIMATOR_PEER_IP_LIST=10.0.0.1:3000,10.0.0.2:3000` — replica peers for fan-out
+- `ESTIMATOR_FETCHER=bigquery` — data source (qubole or bigquery)
+
+### Membership Storage
+
+<ComparisonTable
+  headers={["Storage", "Purpose", "Access Pattern"]}
+  rows={[
+    ["BigTable", "Real-time membership lookup", "Is UCID X in segment Y?"],
+    ["BigQuery", "Analytics and overlap analysis", "How many in segment Y by country?"],
+    ["Bloom Filters", "Fast negative lookup", "Quickly exclude non-members"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Audience Overlap Analysis (segment-overlap)
+
+The `segment-overlap` service computes set comparisons between audiences:
+
+- Takes two audience segment UCIDs
+- Calculates intersection via bitmap AND
+- Returns: `overlap_count` (|A ∩ B|), `jaccard_similarity` (|A ∩ B| / |A ∪ B|), `a_only_count`, `b_only_count`
+- Use cases: reach planning, suppression lists, lookalike seeding
+
+### Audience Export
+
+Audiences can be exported in multiple formats:
+- **Real-time stream** — Kafka topic with enter/exit events
+- **Batch file** — CSV/JSON to GCS on schedule
+- **API** — Query membership via REST API
+- **Destination push** — Automatic sync to activated destinations
+
+<Callout type="info" title="Performance Target">
+Real-time segment re-evaluation completes within 200ms of a profile change. For an org with 1000 active segments, the engine evaluates only the ~50 segments affected by a given profile change.
+</Callout>
+
+<KeyConcepts concepts={["Segment DSL", "Real-Time Evaluation", "Batch Recomputation", "HyperLogLog", "Bloom Filter", "Membership Storage", "Audience Overlap", "Incremental Evaluation"]} />
+
+---
+
+**Next up:** Customer Journeys — orchestration engine →

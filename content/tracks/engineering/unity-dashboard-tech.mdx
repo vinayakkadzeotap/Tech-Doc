@@ -1,0 +1,123 @@
+---
+title: Unity Dashboard (Tech)
+description: React SPA, micro-frontends, API gateway
+icon: 🖥️
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 12
+---
+
+## 🖥️ Unity Dashboard — Technical Architecture
+
+The Unity Dashboard is the customer-facing web application. This module covers the frontend architecture, state management, component library, and API gateway.
+
+### Frontend Stack
+
+<TechStack
+  title="Frontend Technologies"
+  items={[
+    { name: "Angular 15+", role: "Core SPA framework" },
+    { name: "TypeScript", role: "Type-safe development" },
+    { name: "NgRx", role: "Redux-inspired state management" },
+    { name: "RxJS", role: "Reactive programming" },
+    { name: "ZUILibrary", role: "Shared component library" },
+    { name: "SCSS", role: "Styling with design tokens" }
+  ]}
+/>
+
+### Micro-Frontend Architecture
+
+The dashboard is organized as micro-frontends for independent team ownership:
+
+<ComparisonTable
+  headers={["Module", "Team", "Route", "Key Features"]}
+  rows={[
+    ["Shell", "Platform", "/", "Navigation, auth, layout"],
+    ["Sources", "Collect", "/sources/*", "Data source management"],
+    ["Profiles", "Identity", "/profiles/*", "Profile explorer, ID graph viewer"],
+    ["Audiences", "Segmentation", "/audiences/*", "Audience builder, insights"],
+    ["Journeys", "Orchestration", "/journeys/*", "Journey canvas editor"],
+    ["Destinations", "Activation", "/destinations/*", "Destination catalog, sync status"],
+    ["Reports", "Analytics", "/reports/*", "Dashboards, custom reports"]
+  ]}
+  highlightColumn={0}
+/>
+
+**Module Federation:**
+- Each micro-frontend is independently built and deployed
+- Shell application loads modules dynamically at runtime
+- Shared dependencies (Angular, RxJS, ZUILibrary) loaded once
+- Teams can deploy their module without coordinating with other teams
+
+### ZUILibrary (Component Library)
+
+The shared component library provides consistent UI:
+
+- **50+ components** — Buttons, forms, tables, charts, modals, toasts
+- **Design tokens** — Colors, spacing, typography from design system
+- **Accessibility** — WCAG 2.1 AA compliance
+- **Storybook** — Interactive component documentation
+- **Angular schematics** — Code generators for common patterns
+
+### State Management (NgRx)
+
+- **Store** — Global state tree per micro-frontend
+- **Actions** — Events that trigger state changes
+- **Reducers** — Pure functions that compute new state
+- **Effects** — Side effects (API calls, navigation)
+- **Selectors** — Memoized state queries for components
+
+### API Gateway
+
+The API Gateway sits between the frontend and backend microservices:
+
+<ArchDiagram
+  title="API Gateway Flow"
+  steps={[
+    { label: "Browser", detail: "HTTP request from dashboard", icon: "🌐" },
+    { label: "CDN/LB", detail: "Cloud CDN + Load Balancer", icon: "🔀" },
+    { label: "API Gateway", detail: "Auth, rate limit, route", icon: "🛡️" },
+    { label: "BFF", detail: "Backend for Frontend aggregation", icon: "📦" },
+    { label: "Microservices", detail: "Domain-specific APIs", icon: "⚙️" }
+  ]}
+/>
+
+**Gateway Responsibilities:**
+- **Authentication** — Validate JWT tokens from Auth0
+- **Authorization** — Check RBAC permissions per endpoint
+- **Rate limiting** — Per-user and per-org limits
+- **Request routing** — Route to correct microservice based on path
+- **Response caching** — Cache idempotent GET responses
+- **Request logging** — Structured audit logs for compliance
+
+### BFF (Backend for Frontend)
+
+The BFF layer aggregates data from multiple microservices into frontend-optimized responses:
+
+- Dashboard home page calls 5+ microservices — BFF combines into one response
+- Reduces frontend round-trips (1 BFF call vs. 5 microservice calls)
+- Handles data transformation for frontend consumption
+- Implements frontend-specific business logic
+
+### Performance Optimization
+
+- **Lazy loading** — Micro-frontends loaded on-demand (route-based)
+- **Tree shaking** — Unused code eliminated at build time
+- **Ahead-of-Time (AOT) compilation** — Templates compiled at build time
+- **Service Worker** — Caches static assets for offline-capable shell
+- **Virtual scrolling** — Large lists (profiles, events) rendered on-demand
+- **CDN** — Static assets served from Cloud CDN edge nodes
+
+<StatCard stats={[
+  { value: "<2s", label: "Initial Load Time", color: "#10b981" },
+  { value: "<500ms", label: "Route Navigation", color: "#3b82f6" },
+  { value: "50+", label: "Shared Components", color: "#a855f7" },
+  { value: "7", label: "Micro-Frontends", color: "#f59e0b" }
+]} />
+
+<KeyConcepts concepts={["Angular", "Micro-Frontends", "NgRx", "Module Federation", "API Gateway", "BFF", "ZUILibrary", "Lazy Loading"]} />
+
+---
+
+**Next up:** Privacy & GDPR — consent management and data protection →

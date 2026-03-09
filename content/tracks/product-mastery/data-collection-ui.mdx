@@ -1,0 +1,232 @@
+---
+title: Setting Up Data Collection
+description: Configure data sources from the UI, use the SDK setup wizard, and verify that data is flowing correctly
+icon: 📡
+estimatedMinutes: 35
+contentType: tutorial
+trackId: product-mastery
+order: 2
+---
+
+## 📡 Setting Up Data Collection
+
+Before you can build audiences or activate data, you need to get customer data flowing into Zeotap. This tutorial covers how to set up data sources entirely from the Unity Dashboard UI — including the SDK setup wizard, file imports, and data flow verification.
+
+<Callout type="info" title="What You'll Need">
+**Editor** or **Admin** role access to the Unity Dashboard. For SDK installation, you'll also need to coordinate with your development team for the final code deployment step.
+</Callout>
+
+### How Data Enters Zeotap
+
+Zeotap supports multiple ingestion methods. Choose the right one based on your data source and technical resources.
+
+<ArchDiagram
+  title="Data Ingestion Pathways"
+  steps={[
+    { label: "Web SDK", detail: "JavaScript snippet for websites, tracks pageviews and events", icon: "🌐" },
+    { label: "Mobile SDK", detail: "iOS and Android SDKs for app event tracking", icon: "📱" },
+    { label: "Server API", detail: "Server-to-server REST API for backend events", icon: "🖥️" },
+    { label: "File Import", detail: "CSV/JSON batch uploads for historical or CRM data", icon: "📁" },
+    { label: "Connectors", detail: "Pre-built integrations with Salesforce, HubSpot, Shopify, etc.", icon: "🔌" }
+  ]}
+/>
+
+<ComparisonTable
+  headers={["Method", "Best For", "Technical Effort", "Data Freshness"]}
+  rows={[
+    ["Web SDK", "Website behavior tracking", "Low (copy-paste snippet)", "Real-time"],
+    ["Mobile SDK", "App behavior tracking", "Medium (requires app release)", "Real-time"],
+    ["Server API", "Backend events, transactions", "Medium (developer needed)", "Real-time"],
+    ["File Import", "Historical data, CRM exports", "Low (upload CSV)", "Batch (manual or scheduled)"],
+    ["Connectors", "SaaS tool integration", "Low (OAuth setup)", "Scheduled (hourly/daily)"]
+  ]}
+/>
+
+### Setting Up the Web SDK
+
+The Web SDK is the most common starting point. The Unity Dashboard provides a guided wizard.
+
+#### Step 1: Create a New Data Source
+
+1. Navigate to **Data Sources** in the left nav.
+2. Click **+ Add Data Source** in the top right.
+3. Select **Web SDK** from the source type grid.
+4. Enter a **name** for this source (e.g., "Main Website" or "EU Storefront").
+5. Optionally add a **description** and assign it to a **team**.
+
+#### Step 2: Configure SDK Settings
+
+The wizard presents configuration options:
+
+- **Tracking domain** — enter your website domain (e.g., `www.example.com`)
+- **Auto-track page views** — toggle on to automatically capture every page load
+- **Auto-track clicks** — toggle on to capture link and button clicks
+- **Session tracking** — enable to group events into user sessions
+- **Cross-domain tracking** — enable if you need to track users across multiple domains
+
+<Callout type="tip" title="Start Simple">
+For your first setup, enable auto-track page views and session tracking. You can always add custom event tracking later. Getting basic data flowing quickly is more valuable than perfecting the configuration upfront.
+</Callout>
+
+#### Step 3: Install the Snippet
+
+The wizard generates a JavaScript snippet customized with your settings. It looks like this:
+
+```html
+<script>
+  (function(z,e,o,t,a,p){z['ZeotapObject']=a;z[a]=z[a]||function(){
+  (z[a].q=z[a].q||[]).push(arguments)};z[a].l=1*new Date();p=e.createElement(o);
+  p.async=1;p.src=t;e.head.appendChild(p)
+  })(window,document,'script','https://sdk.zeotap.com/v3/zeo.min.js','zeo');
+  zeo('init', 'YOUR_SOURCE_KEY');
+  zeo('pageview');
+</script>
+```
+
+You have two options:
+
+1. **Copy the snippet** and share it with your developer to add before the closing `</head>` tag.
+2. **Use a Tag Manager** — click the "Google Tag Manager" tab for GTM-specific instructions and a ready-made custom HTML tag.
+
+<Callout type="warning" title="Consent Integration">
+If you use a consent management platform (CMP), configure the SDK to load only after consent is granted. The wizard has a **Consent Mode** section where you can select your CMP and configure the integration.
+</Callout>
+
+#### Step 4: Define Custom Events
+
+Beyond automatic tracking, you'll want to capture business-specific events.
+
+1. In the wizard, click **Custom Events**.
+2. Click **+ Add Event** and define:
+   - **Event name** (e.g., `purchase`, `add_to_cart`, `signup`)
+   - **Properties** — key-value pairs carried with the event (e.g., `product_id`, `price`, `currency`)
+   - **Data type** for each property (string, number, boolean, date)
+3. The wizard generates the tracking code for each event.
+
+<Expandable title="Example: Tracking a purchase event" defaultOpen={false}>
+After defining a `purchase` event with properties `order_id` (string), `total` (number), and `items` (number), the wizard generates:
+
+```javascript
+zeo('track', 'purchase', {
+  order_id: 'ORD-12345',
+  total: 149.99,
+  items: 3
+});
+```
+
+Share this with your developer to implement at the appropriate point in your checkout flow.
+</Expandable>
+
+### Setting Up File Imports
+
+For historical data or CRM exports, file imports are the fastest path.
+
+#### Step 1: Create a File Import Source
+
+1. Go to **Data Sources > + Add Data Source**.
+2. Select **File Import**.
+3. Name your source (e.g., "CRM Export Q4 2025").
+
+#### Step 2: Upload Your File
+
+1. Drag and drop a **CSV** or **JSON** file (max 500 MB per file).
+2. The system previews the first 100 rows so you can verify the data looks correct.
+3. If your CSV uses a non-standard delimiter, select it from the dropdown.
+
+#### Step 3: Map Fields
+
+This is the most important step. You need to tell Zeotap what each column means.
+
+1. The system auto-detects common fields like `email`, `phone`, `first_name`, `last_name`.
+2. Review each mapping and correct any mismatches.
+3. For identity fields, mark which columns are **identifiers** (email, phone, customer ID) — these are used for identity resolution.
+4. For attribute fields, select the correct **data type** and assign a **category** (demographic, behavioral, transactional).
+
+<Callout type="important" title="Identity Fields Are Critical">
+At least one identity field must be mapped for the import to create or match customer profiles. Without an identifier, the data cannot be linked to any customer via the UCID.
+</Callout>
+
+#### Step 4: Configure Import Settings
+
+- **Deduplication** — choose whether to skip, update, or create new records for duplicates
+- **Update strategy** — for existing profiles, choose "overwrite" or "fill empty only"
+- **Scheduling** — for recurring imports, set up SFTP/S3 pickup on a daily or weekly cadence
+
+### Setting Up Pre-Built Connectors
+
+Zeotap offers pre-built connectors for popular platforms.
+
+1. Go to **Data Sources > + Add Data Source > Connectors**.
+2. Browse or search the connector catalog.
+3. Select your platform (e.g., Salesforce, HubSpot, Shopify).
+4. Click **Connect** and authenticate via OAuth or API key.
+5. Select which **objects** to sync (e.g., Contacts, Deals, Orders).
+6. Map fields to Zeotap attributes.
+7. Set a **sync schedule** (hourly, daily, or weekly).
+
+<StatCard stats={[
+  { value: "50+", label: "Pre-built Connectors", color: "#3b82f6" },
+  { value: "OAuth", label: "Secure Authentication", color: "#10b981" },
+  { value: "15 min", label: "Avg Setup Time", color: "#a855f7" }
+]} />
+
+### Verifying Data Flow
+
+After setting up a source, you must verify that data is arriving correctly.
+
+#### Live Event Debugger
+
+1. Navigate to **Data Sources > [Your Source] > Debugger**.
+2. The debugger shows a **live stream** of incoming events in real time.
+3. Each event displays:
+   - Timestamp
+   - Event name
+   - User identifiers detected
+   - All properties and their values
+4. Click any event to see the full raw payload.
+
+<Callout type="tip" title="Test with Your Own Browser">
+After installing the Web SDK, open your website in a new tab, perform some actions, then switch back to the Debugger. You should see your events appear within 2-3 seconds.
+</Callout>
+
+#### Source Health Dashboard
+
+Each data source has a health dashboard showing:
+
+- **Events received** — total count and trend over the last 7 days
+- **Unique users** — how many distinct identities are sending data
+- **Error rate** — percentage of events that failed validation
+- **Schema violations** — events with unexpected properties or wrong data types
+
+<Callout type="warning" title="Watch for Schema Violations">
+A high number of schema violations means your tracking implementation doesn't match your event definitions. This can lead to missing data in audiences and reports. Fix violations promptly by updating either the event definition or the tracking code.
+</Callout>
+
+#### Data Freshness Indicators
+
+Every data source shows a freshness indicator:
+
+- 🟢 **Healthy** — data received within the expected interval
+- 🟡 **Delayed** — data is arriving but slower than expected
+- 🔴 **Stale** — no data received in the last expected interval
+
+### Managing Multiple Data Sources
+
+As your setup grows, keep things organized:
+
+- **Name sources clearly** — use a convention like `[Platform] - [Region] - [Purpose]`
+- **Tag sources** — add tags like `production`, `staging`, `marketing`, `sales`
+- **Archive unused sources** — don't delete old sources (they preserve history), but archive them to reduce clutter
+- **Monitor the Sources overview page** — it shows all sources with their status, last event time, and event counts
+
+<Expandable title="How many data sources should I have?" defaultOpen={false}>
+There's no strict limit, but a typical enterprise setup has 5-15 active sources: one Web SDK per major website, one Mobile SDK per app, a few file import schedules, and connectors for key SaaS tools. Avoid creating separate sources for the same data — use one source per distinct data origin.
+</Expandable>
+
+### Key Terminology
+
+<KeyConcepts concepts={["Data Source", "Web SDK", "Mobile SDK", "Server API", "File Import", "Connector", "Event Debugger", "Schema Validation", "Field Mapping", "Identity Fields"]} />
+
+---
+
+**Next up:** Learn how to build powerful audience segments using the visual rule builder and Ada AI.

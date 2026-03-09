@@ -1,0 +1,171 @@
+---
+title: Platform Architecture Overview
+description: Architecture pillars — Integrate, Unify, Segment, Orchestrate, Activate
+icon: 🏗️
+estimatedMinutes: 15
+contentType: concept
+trackId: engineering
+order: 1
+---
+
+## 🏗️ Platform Architecture Overview
+
+Zeotap CDP is an enterprise Customer Data Platform that unifies identity, enriches profiles, and activates audiences across channels — built on a microservices architecture deployed on Google Cloud Platform.
+
+<StatCard stats={[
+  { value: "497", label: "Repositories", color: "#3b82f6" },
+  { value: "14B+", label: "Profiles Processed", color: "#10b981" },
+  { value: "2.1M/s", label: "Peak Events", color: "#a855f7" },
+  { value: "<500ms", label: "P99 Latency", color: "#f59e0b" }
+]} />
+
+### What is Zeotap CDP?
+
+Zeotap is a privacy-first Customer Data Platform that enables enterprises to collect first-party data, resolve identities across devices and channels, build rich customer audiences, and activate those audiences across 100+ destinations in real time.
+
+The platform sits at the intersection of **data engineering**, **identity resolution**, **machine learning**, and **real-time activation**, serving telcos, retailers, financial services, and media companies globally.
+
+### Platform Product Modules
+
+Zeotap's platform is organized into six core product modules:
+
+<ArchDiagram
+  title="CDP Product Modules"
+  steps={[
+    { label: "Integrate", detail: "Sources & Destinations — data in and out", icon: "📡" },
+    { label: "Unify", detail: "Catalogue, Calculated Attributes, ID Strategy", icon: "🔗" },
+    { label: "Segment", detail: "Audience Builder — cohort creation", icon: "🎯" },
+    { label: "Orchestrate", detail: "Journeys — personalized workflows", icon: "🗺️" },
+    { label: "Dashboard", detail: "Platform usage & consumption metrics", icon: "📊" },
+    { label: "Protect", detail: "Consent, Customer 360, Data Lifecycle", icon: "🔒" }
+  ]}
+/>
+
+**Integrate** — Ingest first-party data from web, mobile, CRM, offline, and third-party sources via SDKs and batch pipelines. Push data to 100+ destinations.
+
+**Unify** — Stitch identities across devices and channels into a single customer profile using the ID+ identity strategy and Data Catalogue.
+
+**Segment** — Build audiences using the visual rule builder or Ada AI natural language segmentation.
+
+**Orchestrate** — Create multi-step customer journeys with triggers, conditions, actions, and A/B splits.
+
+**Dashboard** — Monitor platform health, usage analytics, and consumption metrics.
+
+**Protect** — Manage consent (TCF 2.2, GDPR), Customer 360 views, and data lifecycle policies.
+
+### System Architecture
+
+Zeotap is built as a collection of domain-oriented microservices organized around the **Integrate → Unify → Segment → Orchestrate → Activate** data lifecycle. Services communicate via REST, gRPC, and event streaming (Kafka / GCP Pub/Sub).
+
+<ArchDiagram
+  title="High-Level System Architecture"
+  steps={[
+    { label: "Client SDKs", detail: "Web, iOS, Android, GTM", icon: "📱" },
+    { label: "API Gateway", detail: "Auth, rate limiting, routing", icon: "🛡️" },
+    { label: "Ingestion", detail: "Collect Service, Kafka, Batch", icon: "📥" },
+    { label: "Core Platform", detail: "ID Graph, Profiles, Audiences, Journeys", icon: "⚙️" },
+    { label: "Data Stores", detail: "BigTable, BigQuery, Redis, Redshift", icon: "🗄️" },
+    { label: "Delivery", detail: "100+ Destinations, SmartPixel", icon: "📤" }
+  ]}
+/>
+
+### End-to-End Data Flow
+
+The complete journey of a data event from collection to activation:
+
+1. **Browser/App** sends event via SDK → `POST /collect/event`
+2. **API Gateway** authenticates request and enforces rate limits
+3. **Collect Service** validates schema, applies consent rules
+4. **Kafka** receives the event on `events.raw.{orgId}` topic
+5. **ID Graph** consumes event, resolves UCID, stitches device IDs
+6. **Profile Store** upserts profile with new attributes
+7. **Audience Engine** re-evaluates segment membership rules
+8. **Destinations** push updated audience membership to activated platforms
+
+<Callout type="info" title="Event Processing Latency">
+The full pipeline from event collection to audience membership update is designed for **&lt;500ms p99 latency** for real-time use cases. Batch ingestion operates on a separate pipeline with configurable scheduling.
+</Callout>
+
+### Technology Stack
+
+Zeotap's polyglot architecture uses the right language for each domain:
+
+<ComparisonTable
+  headers={["Layer", "Technology", "Key Repos", "Purpose"]}
+  rows={[
+    ["Frontend", "Angular 15+, TypeScript, NgRx", "unity, ZUILibrary", "Enterprise dashboard"],
+    ["Backend APIs", "Java (Spring, Play), Scala", "zeocore-api, audiences", "Core API services"],
+    ["Real-time", "Go 1.24, Gin", "id-graph-lib-v2-go", "High-throughput identity"],
+    ["AI / ML", "Python 3.10+, FastAPI, Google ADK", "zeotap-genai, zeotap-agentic-server", "LLM & agent integration"],
+    ["Data Processing", "Apache Spark, Scala, CDAP, Beam", "daap-processing, zai-v2-dataflow", "Batch and stream ETL"],
+    ["Client SDKs", "JavaScript, Swift, Kotlin", "analytics-sdk (v4.4.5)", "First-party collection"],
+    ["Primary DB", "Google BigTable, BigQuery", "id-graph-lib-v2-go", "Identity, profiles, analytics"],
+    ["Profile Store", "Delta Lake, Spark", "profile-store (7 modules)", "ACID profile management"],
+    ["Cache", "Redis, Aerospike", "cache-client", "L2 cache"],
+    ["Reporting DB", "AWS Redshift, Apache Druid", "reporting services", "BI and real-time OLAP"],
+    ["Messaging", "Apache Kafka, GCP Pub/Sub", "zeocore-idu-microservices", "Event streaming"],
+    ["CI/CD", "CircleCI, GitHub Actions, Harness", "DevOps", "Build, test, deploy"],
+    ["Infrastructure", "Kubernetes, Terraform, Helm", "gcp-terraform-modules", "Cloud orchestration"]
+  ]}
+  highlightColumn={1}
+/>
+
+### Deployment Model
+
+Zeotap runs on **Google Kubernetes Engine (GKE)** across multiple regions:
+
+<TechStack
+  title="Infrastructure Stack"
+  items={[
+    { name: "GKE", role: "Container orchestration" },
+    { name: "Terraform", role: "Infrastructure as code" },
+    { name: "Helm", role: "K8s package management" },
+    { name: "ArgoCD", role: "GitOps deployments" },
+    { name: "Prometheus", role: "Metrics collection" },
+    { name: "Grafana", role: "Dashboards & alerting" },
+    { name: "OpenTelemetry", role: "Distributed tracing" },
+    { name: "PagerDuty", role: "Incident management" }
+  ]}
+/>
+
+<Callout type="tip" title="Multi-Region Architecture">
+Zeotap operates in multiple GCP regions (Europe, US) to meet data residency requirements. Each region runs an independent data plane with shared control plane services.
+</Callout>
+
+### Kubernetes Namespaces
+
+Services are organized into domain-specific Kubernetes namespaces:
+
+<ComparisonTable
+  headers={["Namespace", "Services", "Purpose"]}
+  rows={[
+    ["zeotap-core", "zeocore-api, cf-api-gateway", "Core API services"],
+    ["zeotap-ingestion", "Collect Service, DAAP processing", "Data collection & batch ETL"],
+    ["zeotap-identity", "id-graph-lib-v2-go, Profile Store", "ID Graph & profile management"],
+    ["zeotap-audience", "audiences, segmentestimator, segment-overlap", "Audience engine & estimation"],
+    ["zeotap-activation", "data-destination, SmartPixel", "Destinations & real-time delivery"],
+    ["zeotap-ai", "zeotap-genai, agentic-server, MCP", "Ada AI & agent services"],
+    ["zeotap-reporting", "Analytics, BI services", "Reporting & dashboards"],
+    ["zeotap-monitoring", "Prometheus, Alertmanager", "Observability stack"],
+    ["zeotap-privacy", "Consent, GDPR services", "Privacy & compliance"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Environments
+
+<ComparisonTable
+  headers={["Environment", "GCP Project", "Access", "Purpose"]}
+  rows={[
+    ["Production", "zeotap-cdp-prod-datascience", "SRE + L3 (VPN required)", "Live customer traffic"],
+    ["QA / Staging", "zeotap-dev-datascience", "Engineering team (VPN required)", "Pre-release testing"],
+    ["Development", "Local / Docker Compose", "All engineers", "Feature development"]
+  ]}
+  highlightColumn={0}
+/>
+
+<KeyConcepts concepts={["Microservices", "Integrate-Unify-Segment-Orchestrate", "UCID", "Kafka", "BigTable", "BigQuery", "Delta Lake", "GKE", "Identity Graph", "Profile Store", "Audience Engine", "ID+"]} />
+
+---
+
+**Next up:** Data Collection & SDKs — how data gets into the platform →

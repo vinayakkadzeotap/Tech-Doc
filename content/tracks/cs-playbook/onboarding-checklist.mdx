@@ -1,0 +1,181 @@
+---
+title: 30-60-90 Day Onboarding Plan
+description: Structured onboarding checklist with technical milestones, first value delivery, and stakeholder mapping
+icon: 📋
+estimatedMinutes: 30
+contentType: tutorial
+trackId: cs-playbook
+order: 1
+---
+
+## 📋 30-60-90 Day Onboarding Plan
+
+A structured onboarding is the single best predictor of long-term retention. This playbook gives you a repeatable framework for every new Zeotap customer, from contract signing through first value delivery.
+
+<KeyConcepts concepts={["Time-to-Value", "Stakeholder Mapping", "Technical Milestones", "Success Criteria", "Go-Live Readiness"]} />
+
+---
+
+### Stakeholder Mapping
+
+Before anything else, identify **who you're working with**. Every successful onboarding requires engagement across multiple roles on the customer side.
+
+<ComparisonTable
+  headers={["Role", "Why They Matter", "Engagement Frequency"]}
+  rows={[
+    ["Executive Sponsor", "Signs off on budget and renewal — needs ROI proof", "Monthly check-in"],
+    ["Marketing Lead", "Primary user — builds audiences and journeys", "Weekly during onboarding"],
+    ["Data/Analytics Lead", "Owns data quality, defines events and attributes", "Weekly during setup"],
+    ["Engineering Lead", "Implements SDKs, APIs, and data pipelines", "As needed during integration"],
+    ["Privacy/Legal", "Approves consent configuration and data handling", "Once during setup, then as needed"]
+  ]}
+/>
+
+<Callout type="tip" title="Stakeholder Map Template">
+Create a shared document with: Name, Role, Email, Preferred Channel, Decision Authority, Engagement Level (Champion / Supporter / Neutral / Blocker). Update it before every QBR.
+</Callout>
+
+---
+
+### Phase 1: First 30 Days — Foundation
+
+**Goal:** Data flowing into Zeotap, identity resolution active, first profiles visible.
+
+#### Week 1: Kickoff and Planning
+
+- [ ] Schedule kickoff call with all key stakeholders
+- [ ] Walk through the **Statement of Work** and agreed success criteria
+- [ ] Confirm data sources to integrate (website, app, CRM, other)
+- [ ] Share Zeotap onboarding guide and Unity Dashboard credentials
+- [ ] Set up a shared Slack/Teams channel for real-time support
+- [ ] Define the **onboarding project plan** with dates and owners
+
+#### Week 2-3: Technical Integration
+
+- [ ] Engineering team installs **Web SDK** on staging environment
+- [ ] Verify events are flowing in the **Live Events** panel
+- [ ] Configure **event taxonomy** — map customer events to Zeotap schema
+- [ ] Set up **user identity fields** (email, phone, CRM ID, cookie)
+- [ ] Install **Mobile SDK** if applicable (iOS/Android)
+- [ ] Test identity resolution — confirm profiles are merging correctly
+
+<Callout type="warning" title="Common Blocker: SDK Installation Delays">
+Engineering teams often deprioritize SDK installation. Get a firm commitment with a date during the kickoff call, and follow up within 3 days if no progress. Offer a 30-minute pairing session with Solutions Engineering if needed.
+</Callout>
+
+#### Week 4: Data Validation
+
+- [ ] Confirm event volume matches expectations (compare with customer's analytics tool)
+- [ ] Validate at least **3 key events** are tracked correctly (e.g., page_view, purchase, sign_up)
+- [ ] Check identity graph — are profiles merging as expected?
+- [ ] Review data in **Profile Explorer** with the customer's data lead
+- [ ] Document any data gaps or quality issues
+
+<ArchDiagram
+  title="First 30 Days Milestone Flow"
+  steps={[
+    { label: "Kickoff", detail: "Align on goals and stakeholders", icon: "🤝" },
+    { label: "SDK Install", detail: "Web and/or mobile integration", icon: "🔧" },
+    { label: "Events Flowing", detail: "Verify in Live Events panel", icon: "📡" },
+    { label: "Identity Active", detail: "Profiles merging with UCIDs", icon: "🔗" },
+    { label: "Data Validated", detail: "Volume and quality confirmed", icon: "✅" }
+  ]}
+/>
+
+---
+
+### Phase 2: Days 31-60 — First Value
+
+**Goal:** Customer builds their first audience, activates to a destination, and sees measurable value.
+
+#### Week 5-6: Audience Building
+
+- [ ] Train the marketing team on the **Audience Builder** (schedule a 45-min workshop)
+- [ ] Help them build **3 starter audiences** relevant to their use case:
+  - High-value customers (e.g., top 20% by purchase frequency)
+  - At-risk / lapsed users (e.g., no activity in 30+ days)
+  - Lookalike seed audience for acquisition
+- [ ] Explain estimated vs. actual audience counts (this comes up constantly)
+- [ ] Introduce **Ada AI** for natural language audience creation
+
+<Callout type="info" title="Audience Count Expectations">
+Set expectations early: estimated counts in the builder use sampling and may differ from actual sync counts by 5-15%. Actual counts are computed during the full audience evaluation job. This is the number one source of customer confusion.
+</Callout>
+
+#### Week 7-8: First Activation
+
+- [ ] Connect at least **one destination** (Google Ads and Meta are the most common)
+- [ ] Map fields between Zeotap profiles and the destination schema
+- [ ] Run a test sync and validate match rates with the customer
+- [ ] Set up recurring sync schedule (daily or real-time depending on use case)
+- [ ] Document the **first activation win** — share with the executive sponsor
+
+<StatCard stats={[
+  { value: "60", label: "Days to First Value (Target)", color: "#10b981" },
+  { value: "3", label: "Starter Audiences", color: "#3b82f6" },
+  { value: "1+", label: "Active Destinations", color: "#a855f7" },
+  { value: ">70%", label: "Target Match Rate", color: "#f59e0b" }
+]} />
+
+---
+
+### Phase 3: Days 61-90 — Scale and Expand
+
+**Goal:** Customer is self-sufficient, using multiple features, and seeing measurable ROI.
+
+#### Week 9-10: Journey Canvas and Advanced Features
+
+- [ ] Train marketing team on the **Journey Canvas** — build one automated journey together
+- [ ] Set up **consent management** if not already configured
+- [ ] Introduce **Reports** dashboard and key metrics to track
+- [ ] Connect additional destinations based on customer roadmap
+- [ ] Review and optimize existing audiences based on performance data
+
+#### Week 11-12: Handoff to Steady State
+
+- [ ] Conduct a **30-60-90 review meeting** with the executive sponsor
+- [ ] Present an **impact report**: events processed, profiles unified, audiences activated, campaign performance
+- [ ] Transition from onboarding cadence (weekly) to steady-state cadence (bi-weekly or monthly)
+- [ ] Schedule the first **QBR** (Quarterly Business Review) date
+- [ ] Introduce the customer to self-service resources (docs, community, support portal)
+- [ ] Update the customer health score in your CS tool
+
+<Expandable title="90-Day Review Meeting Agenda Template" defaultOpen={false}>
+
+**Agenda — 90-Day Onboarding Review (45 min)**
+
+1. **Recap goals from kickoff** (5 min) — What did we set out to achieve?
+2. **Integration summary** (10 min) — Data sources connected, event volume, identity resolution stats
+3. **Usage highlights** (10 min) — Audiences built, journeys running, destinations active
+4. **Business impact** (10 min) — Match rates, campaign performance, time saved
+5. **Roadmap and next steps** (5 min) — Upcoming features, expansion opportunities
+6. **Open Q&A** (5 min)
+
+**Attendees:** Executive Sponsor, Marketing Lead, CSM, Solutions Engineer (optional)
+
+</Expandable>
+
+---
+
+### Onboarding Risk Signals
+
+Watch for these warning signs during onboarding and act immediately:
+
+<ComparisonTable
+  headers={["Risk Signal", "What It Means", "Action"]}
+  rows={[
+    ["SDK not installed by Day 14", "Engineering hasn't prioritized the project", "Escalate to executive sponsor, offer SE pairing session"],
+    ["No login to Unity Dashboard by Day 21", "Low engagement from marketing team", "Schedule a hands-on workshop, resend credentials"],
+    ["Event volume is zero or very low", "Integration may be broken or incomplete", "Check SDK installation, review browser console for errors"],
+    ["Key stakeholder leaves the company", "Risk of losing project momentum", "Immediately identify replacement, brief them, re-engage sponsor"],
+    ["No audience built by Day 45", "Customer may not understand the product value", "Schedule audience-building workshop, build audiences together live"]
+  ]}
+/>
+
+<Callout type="important" title="The 14-Day Rule">
+If a customer has not sent a single event to Zeotap within 14 days of contract signing, treat this as a critical risk. Escalate internally and schedule a direct call with the engineering lead. Every week of delay in integration reduces the probability of a successful renewal.
+</Callout>
+
+---
+
+**Next up:** Learn how to monitor account health with health scores →

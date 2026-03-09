@@ -1,0 +1,173 @@
+---
+title: Escalation Path
+description: When and how to escalate issues
+icon: 📢
+estimatedMinutes: 20
+contentType: reference
+trackId: cs-playbook
+order: 4
+---
+
+## 📢 Escalation Path
+
+Knowing when and how to escalate issues is critical. Escalate too late and customers lose trust. Escalate too early and you overwhelm engineering. This module defines severity levels, SLAs, escalation procedures, and communication best practices.
+
+### Severity Levels
+
+<ComparisonTable
+  headers={["Severity", "Definition", "Examples", "Response SLA"]}
+  rows={[
+    ["P1 — Critical", "Platform down or data loss", "All syncs failing, no events ingesting, data breach", "15 minutes"],
+    ["P2 — High", "Major feature broken, workaround exists", "One destination failing, audience counts wrong, slow dashboard", "1 hour"],
+    ["P3 — Medium", "Feature degraded, limited impact", "Minor UI bug, single report not loading, cosmetic issue", "4 hours"],
+    ["P4 — Low", "Enhancement request or question", "Feature request, how-to question, documentation gap", "1 business day"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="important" title="P1 = All Hands">
+P1 incidents trigger the on-call engineering rotation immediately. If you believe an issue is P1, escalate without hesitation. It's always better to escalate a P1 that turns out to be P2 than to delay a real P1.
+</Callout>
+
+### Escalation Chain
+
+<ArchDiagram
+  title="Internal Escalation Path"
+  steps={[
+    { label: "CS Manager", detail: "First response, triage, basic troubleshooting", icon: "👤" },
+    { label: "Support Engineering", detail: "Technical investigation, log analysis", icon: "🔧" },
+    { label: "Product Team", detail: "Feature-related issues, priorities", icon: "📋" },
+    { label: "Engineering Team", detail: "Bug fixes, infrastructure issues", icon: "⚙️" },
+    { label: "VP Engineering", detail: "P1 incidents, resource allocation", icon: "🎯" }
+  ]}
+/>
+
+### How to Escalate
+
+**Step 1: Gather Information**
+
+Before escalating, collect:
+- Customer org ID and account name
+- Affected feature/service
+- Time the issue started
+- Steps to reproduce (if applicable)
+- Error messages or screenshots
+- Impact scope (how many users/profiles affected?)
+- Workaround available? (yes/no)
+
+**Step 2: Create the Ticket**
+
+Use the internal ticketing system with this template:
+
+```
+Subject: [P{severity}] {Customer Name} — {Brief description}
+
+Customer: {Name} | Org ID: {ID} | Tier: {Enterprise/Growth}
+Impact: {Number of users/profiles affected}
+Started: {Date/time}
+Workaround: {Yes/No — describe if yes}
+
+Description:
+{What's happening, what should happen, and diagnostic steps already taken}
+
+Evidence:
+{Screenshots, log snippets, error messages}
+```
+
+**Step 3: Notify the Right People**
+
+| Severity | Notification Channel | Who to Notify |
+|----------|---------------------|---------------|
+| P1 | Slack #incidents + PagerDuty | VP Engineering, Head of CS, Account Owner |
+| P2 | Slack #support-engineering | Support Engineering lead, Account Owner |
+| P3 | Ticket (Jira/Linear) | Support Engineering queue |
+| P4 | Ticket (Jira/Linear) | Product team backlog |
+
+### Communication During Incidents
+
+<Expandable title="Customer Communication Templates" defaultOpen={true}>
+
+**Initial Acknowledgment (send within SLA):**
+
+> Hi {Name},
+>
+> Thank you for reporting this. We've identified the issue and our engineering team is actively investigating. Here's what we know so far:
+>
+> - **Issue:** {Brief description}
+> - **Impact:** {What's affected}
+> - **Status:** Under investigation
+> - **Next update:** We'll provide an update within {timeframe}
+>
+> If you have any additional details, please share them and we'll incorporate them into our investigation.
+
+**Progress Update:**
+
+> Hi {Name},
+>
+> Quick update on the issue you reported:
+>
+> - **Status:** {Root cause identified / Fix in progress / Testing fix}
+> - **Root Cause:** {Brief explanation if known}
+> - **ETA:** {Expected resolution time}
+> - **Workaround:** {If available}
+>
+> We'll update you again in {timeframe} or sooner if there's a resolution.
+
+**Resolution Notification:**
+
+> Hi {Name},
+>
+> The issue has been resolved. Here's a summary:
+>
+> - **Root Cause:** {What happened}
+> - **Resolution:** {What was fixed}
+> - **Prevention:** {Steps taken to prevent recurrence}
+>
+> Please verify on your end and let us know if everything looks good. We apologize for the inconvenience and appreciate your patience.
+
+</Expandable>
+
+### Post-Incident Review
+
+After every P1 and P2 incident, conduct a post-incident review (PIR):
+
+<ArchDiagram
+  title="Post-Incident Review Process"
+  steps={[
+    { label: "Timeline", detail: "What happened, when, by whom", icon: "📅" },
+    { label: "Root Cause", detail: "Why it happened (5 Whys)", icon: "🔍" },
+    { label: "Impact", detail: "Customers affected, data impact, revenue impact", icon: "📊" },
+    { label: "Action Items", detail: "Prevention measures, monitoring improvements", icon: "✅" }
+  ]}
+/>
+
+**PIR Best Practices:**
+- Conduct within 48 hours of resolution
+- Blameless culture — focus on systems, not individuals
+- Share findings with CS team so everyone learns
+- Track action items to completion
+
+### Escalation Do's and Don'ts
+
+<ComparisonTable
+  headers={["Do", "Don't"]}
+  rows={[
+    ["Escalate P1s immediately", "Wait to see if it resolves itself"],
+    ["Provide complete context in tickets", "Say \"it's broken\" without details"],
+    ["Set expectations with the customer", "Promise a fix time you can't guarantee"],
+    ["Update the customer proactively", "Go silent during an investigation"],
+    ["Follow up after resolution", "Close the ticket without confirming with customer"],
+    ["Conduct PIRs for P1/P2", "Skip reviews because the issue is resolved"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="tip" title="Build Relationships with Engineering">
+The best CS managers know the support engineers by name. Schedule regular sync meetings with the support engineering team. When an escalation happens, a warm relationship means faster response and better collaboration.
+</Callout>
+
+<KeyConcepts concepts={["P1-P4 Severity", "SLA", "Escalation Chain", "Post-Incident Review", "Blameless Culture", "Customer Communication", "PagerDuty", "Root Cause Analysis"]} />
+
+---
+
+**Next up:** Growing accounts and preventing churn →

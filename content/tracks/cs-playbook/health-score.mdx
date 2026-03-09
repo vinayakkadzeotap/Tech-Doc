@@ -1,0 +1,226 @@
+---
+title: Account Health Scores
+description: Understand what makes a healthy account, key signals, risk indicators, and how to read health dashboards
+icon: 💚
+estimatedMinutes: 25
+contentType: concept
+trackId: cs-playbook
+order: 2
+---
+
+## 💚 Account Health Scores
+
+A health score is a composite metric that tells you — at a glance — whether a customer account is thriving, coasting, or at risk. This module explains what goes into a health score, how to interpret signals, and when to act.
+
+<KeyConcepts concepts={["Health Score", "Leading Indicators", "Lagging Indicators", "Usage Metrics", "Engagement Signals", "Risk Indicators", "NPS"]} />
+
+---
+
+### What Makes a Healthy Account?
+
+A healthy Zeotap customer has these characteristics:
+
+<StatCard stats={[
+  { value: "Active", label: "Daily Platform Usage", color: "#10b981" },
+  { value: "Growing", label: "Event Volume Trend", color: "#3b82f6" },
+  { value: "< 3", label: "Open Support Tickets", color: "#a855f7" },
+  { value: "Multiple", label: "Active Stakeholders", color: "#f59e0b" }
+]} />
+
+Health is not just about whether the platform is working — it is about whether the customer is **getting value** from it. A customer can have zero support tickets but still be at risk if nobody is logging in.
+
+---
+
+### The Five Pillars of Account Health
+
+<ArchDiagram
+  title="Health Score Components"
+  steps={[
+    { label: "Product Usage", detail: "Login frequency, features used, audiences created", icon: "📊" },
+    { label: "Data Health", detail: "Event volume trends, data quality, identity resolution rate", icon: "📡" },
+    { label: "Support Health", detail: "Ticket volume, severity, resolution time, CSAT", icon: "🎫" },
+    { label: "Relationship", detail: "Stakeholder engagement, meeting attendance, NPS", icon: "🤝" },
+    { label: "Business Outcome", detail: "ROI achieved, use cases delivered, expansion signals", icon: "💰" }
+  ]}
+/>
+
+---
+
+### Pillar 1: Product Usage
+
+Product usage is the strongest leading indicator of account health. Track these metrics:
+
+<ComparisonTable
+  headers={["Metric", "Healthy", "Warning", "Critical"]}
+  rows={[
+    ["Weekly active users", "3+ users logging in", "1-2 users logging in", "No logins in 2+ weeks"],
+    ["Audiences created (last 30d)", "5+ new audiences", "1-4 new audiences", "Zero new audiences"],
+    ["Journeys active", "2+ running journeys", "1 running journey", "No active journeys"],
+    ["Destinations syncing", "3+ active destinations", "1-2 active destinations", "No syncs in 7+ days"],
+    ["Ada AI queries", "Regular usage", "Occasional usage", "Never used"]
+  ]}
+/>
+
+<Callout type="tip" title="Feature Adoption Matters">
+A customer using only the Audience Builder but not Journeys or Ada AI is underutilizing the platform. This is an expansion opportunity but also a risk — they may conclude the platform does not justify the cost. Proactively introduce underused features.
+</Callout>
+
+---
+
+### Pillar 2: Data Health
+
+Without good data flowing in, nothing else works. Monitor these signals:
+
+**Event Volume Trends**
+- **Healthy:** Stable or growing event volume week-over-week
+- **Warning:** Volume dropped 20%+ from the trailing 4-week average
+- **Critical:** Volume dropped 50%+ or went to zero
+
+**Identity Resolution Rate**
+- **Healthy:** 60%+ of events resolve to a known UCID
+- **Warning:** 30-60% resolution rate
+- **Critical:** Below 30% — likely missing identity fields or SDK misconfiguration
+
+**Data Freshness**
+- **Healthy:** Most recent event within the last hour
+- **Warning:** No events in 6-24 hours
+- **Critical:** No events in 24+ hours
+
+<Callout type="warning" title="Volume Drops Are Often Silent">
+Customers frequently do not notice when their event volume drops — especially if it is caused by a website deploy that removed the SDK snippet. Set up internal alerts for any account where event volume drops more than 30% day-over-day and proactively notify the customer.
+</Callout>
+
+---
+
+### Pillar 3: Support Health
+
+Support interactions tell you about both product stability and customer sentiment.
+
+<ComparisonTable
+  headers={["Signal", "Positive", "Concerning"]}
+  rows={[
+    ["Ticket volume", "Low and stable (0-2/month)", "Increasing trend or 5+/month"],
+    ["Ticket severity", "Mostly P3/P4 (questions, how-to)", "P1/P2 tickets (outages, data loss)"],
+    ["Resolution time", "Within SLA targets", "Repeatedly missing SLA"],
+    ["CSAT scores", "4+ out of 5 on closed tickets", "Below 3 on multiple tickets"],
+    ["Repeat issues", "Different topics each time", "Same issue recurring"]
+  ]}
+/>
+
+**Red flag pattern:** A customer who stops filing support tickets after a period of high ticket volume may have given up, not gotten better. Check their usage metrics before assuming silence is good news.
+
+---
+
+### Pillar 4: Relationship Health
+
+This pillar is qualitative and requires your judgment as a CSM.
+
+**Positive signals:**
+- Executive sponsor attends QBRs and engages with results
+- Customer proactively shares roadmap and asks about upcoming features
+- Multiple team members are trained and active on the platform
+- Customer references Zeotap positively in industry conversations
+- They respond to emails and meeting invites promptly
+
+**Negative signals:**
+- Key champion leaves the company (critical risk event)
+- Meeting cancellations increasing
+- Emails go unanswered for 5+ business days
+- Customer pushes back on QBR scheduling
+- New stakeholders are brought in who were not part of the original deal
+
+<Expandable title="What to Do When Your Champion Leaves" defaultOpen={false}>
+
+Losing your primary champion is one of the highest-risk events in CS. Follow this protocol:
+
+1. **Within 24 hours:** Reach out to the executive sponsor to understand the transition plan
+2. **Within 1 week:** Get introduced to the replacement contact
+3. **Within 2 weeks:** Schedule an onboarding session for the new contact — treat them like a new customer
+4. **Within 30 days:** Re-establish the meeting cadence and re-present the value delivered so far
+5. **Ongoing:** Ensure at least 2-3 contacts are engaged so you are never single-threaded
+
+Document the outgoing champion's context: what use cases they cared about, what success looked like to them, and any open issues.
+
+</Expandable>
+
+---
+
+### Pillar 5: Business Outcome
+
+Ultimately, health comes down to whether the customer is achieving their goals.
+
+**Outcome metrics to track:**
+- **Audience reach:** Are activated audiences reaching enough users in downstream platforms?
+- **Match rates:** What percentage of Zeotap profiles match in destinations like Google Ads or Meta?
+- **Campaign performance:** Are campaigns using Zeotap audiences outperforming others?
+- **Time savings:** Has the platform reduced manual data work for the marketing team?
+- **Data unification:** How many profiles have been unified across channels?
+
+<StatCard stats={[
+  { value: ">65%", label: "Target Match Rate", color: "#10b981" },
+  { value: "2x", label: "Campaign ROAS Lift", color: "#3b82f6" },
+  { value: "10hrs", label: "Weekly Time Saved", color: "#a855f7" },
+  { value: "80%+", label: "Profile Unification Rate", color: "#f59e0b" }
+]} />
+
+---
+
+### Calculating the Composite Score
+
+While exact scoring models vary by organization, here is a reference framework:
+
+<ComparisonTable
+  headers={["Pillar", "Weight", "Score Range", "How to Measure"]}
+  rows={[
+    ["Product Usage", "30%", "0-100", "Automated from platform telemetry"],
+    ["Data Health", "25%", "0-100", "Automated from pipeline metrics"],
+    ["Support Health", "15%", "0-100", "Automated from ticketing system"],
+    ["Relationship", "15%", "0-100", "CSM subjective assessment (updated monthly)"],
+    ["Business Outcome", "15%", "0-100", "QBR data + customer feedback"]
+  ]}
+/>
+
+**Overall score interpretation:**
+- **80-100 (Green):** Healthy account, focus on expansion
+- **60-79 (Yellow):** Needs attention, identify and address gaps
+- **40-59 (Orange):** At risk, create an action plan within 1 week
+- **0-39 (Red):** Critical risk, escalate to CS leadership immediately
+
+---
+
+### Reading the Health Dashboard
+
+When you open the health dashboard in your CS tool, focus on these views:
+
+<Expandable title="Daily Review Checklist" defaultOpen={false}>
+
+Spend 10 minutes each morning reviewing your portfolio:
+
+1. **Sort by health score** (lowest first) — who needs attention today?
+2. **Check for score changes** — any account that dropped 10+ points in the last week needs investigation
+3. **Review open P1/P2 tickets** — are any of your accounts waiting on critical fixes?
+4. **Check event volume alerts** — did any account have a data drop overnight?
+5. **Review upcoming renewals** (next 90 days) — are those accounts healthy?
+
+</Expandable>
+
+<Callout type="important" title="Health Scores Are a Starting Point, Not the Answer">
+A health score tells you where to look, not what to do. A green account can still churn if a new CTO decides to switch platforms. A red account can be saved with the right executive engagement. Always combine quantitative scores with your qualitative understanding of the account.
+</Callout>
+
+---
+
+### Acting on Health Score Changes
+
+| Score Trend | Action |
+|---|---|
+| Green and stable | Focus on expansion opportunities, schedule QBR |
+| Green dropping to Yellow | Investigate root cause within 48 hours, reach out to champion |
+| Yellow and stable | Create improvement plan, increase meeting cadence to bi-weekly |
+| Yellow dropping to Red | Escalate to CS leadership, schedule emergency call with customer |
+| Red and stable | Executive-level intervention, consider involving product team |
+| Any score, renewal in < 90 days | Treat as highest priority regardless of color |
+
+---
+
+**Next up:** Troubleshooting common customer issues →

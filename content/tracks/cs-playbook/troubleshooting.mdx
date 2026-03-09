@@ -1,0 +1,288 @@
+---
+title: Troubleshooting
+description: Common issues and diagnostic flows
+icon: 🔧
+estimatedMinutes: 40
+contentType: reference
+trackId: cs-playbook
+order: 3
+---
+
+## 🔧 Troubleshooting Guide
+
+This module covers the most common issues customers face with Zeotap CDP and how to diagnose and resolve them. Bookmark this page — you'll reference it often.
+
+<Callout type="important" title="Before You Start">
+Always gather these basics first: customer org ID, affected data source/destination, time window when the issue started, and any error messages they see in the UI.
+</Callout>
+
+### Data Ingestion Issues
+
+<Expandable title="SDK not sending events" defaultOpen={true}>
+
+**Symptoms:**
+- No events appearing in the Live Events panel
+- Event count shows 0 for a data source
+- Customer reports "we installed the SDK but see nothing"
+
+**Diagnostic Steps:**
+1. Confirm the SDK is loaded — check browser DevTools → Network tab for calls to the collect endpoint
+2. Check the **source status** in Unity Dashboard → Data Sources — is it showing "Active"?
+3. Verify the **write key** matches the source configuration
+4. Check for JavaScript errors in the browser console that might block SDK initialization
+5. Test with a simple `zeotap.track('test_event')` call in the browser console
+
+**Common Causes:**
+- Wrong write key configured in the SDK snippet
+- Content Security Policy (CSP) blocking the SDK's network requests
+- Ad blocker or privacy extension blocking the tracking script
+- SDK loaded after the page has already fired events (async loading issue)
+
+**Resolution:**
+- Confirm correct write key from Data Sources settings
+- Ask customer to whitelist Zeotap domains in their CSP
+- Verify SDK placement in the page `<head>` section
+
+</Expandable>
+
+<Expandable title="Missing attributes on profiles">
+
+**Symptoms:**
+- Events are flowing but specific attributes aren't appearing on profiles
+- Profile Explorer shows empty fields that should have data
+
+**Diagnostic Steps:**
+1. Check the **event schema** — is the attribute name matching the schema definition?
+2. Look at raw events in the Live Events panel — is the attribute present in the payload?
+3. Check **schema validation** — rejected fields appear in the schema errors log
+4. Verify attribute naming conventions (camelCase vs snake_case mismatch)
+
+**Common Causes:**
+- Attribute name in SDK doesn't match the schema definition (case sensitivity)
+- Attribute type mismatch (sending string when number is expected)
+- Attribute not mapped in the schema configuration
+- Consent rules filtering out certain attributes
+
+**Resolution:**
+- Update SDK attribute names to match schema
+- Add missing attributes to the schema definition
+- Check consent configuration for attribute-level restrictions
+
+</Expandable>
+
+<Expandable title="Batch file upload failures">
+
+**Symptoms:**
+- File upload shows "Failed" status
+- Partial records imported with errors
+- CSV/JSON format validation errors
+
+**Diagnostic Steps:**
+1. Download the **error report** from the upload status page
+2. Check for encoding issues (UTF-8 required)
+3. Verify column headers match expected schema
+4. Look for data type mismatches in specific rows
+
+**Common Causes:**
+- CSV encoding not UTF-8 (common with Excel exports)
+- Headers don't match schema field names
+- Required fields missing in some rows
+- Special characters breaking CSV parsing
+- File exceeds maximum size limit
+
+**Resolution:**
+- Re-export CSV with UTF-8 encoding
+- Use the template CSV from the upload wizard
+- Fix data quality issues in the source file
+
+</Expandable>
+
+### Identity Resolution Issues
+
+<Expandable title="Incorrect identity merges">
+
+**Symptoms:**
+- Two different customers merged into one UCID
+- Profile shows attributes from multiple unrelated people
+- Customer reports "wrong data on my profile"
+
+**Diagnostic Steps:**
+1. Open the affected profile in Profile Explorer
+2. View the **Identity Graph** tab to see all linked identifiers
+3. Look for the merge event that connected the two identities
+4. Check if a shared identifier (email, phone, device ID) caused the false merge
+
+**Common Causes:**
+- Shared device (kiosk, family iPad) linking different users
+- Generic email addresses (info@, support@) used as identifiers
+- Test data with dummy identifiers that match real users
+- Third-party data with incorrect identifier mappings
+
+**Resolution:**
+- Contact engineering to split the incorrectly merged profiles
+- Add the problematic identifier to the merge exclusion list
+- Implement identifier validation rules to prevent future false merges
+- Set up shared device detection if applicable
+
+<Callout type="warning" title="Escalation Required">
+Identity splits require engineering intervention. Create a support ticket with the affected UCID(s) and the identifier that caused the false merge.
+</Callout>
+
+</Expandable>
+
+<Expandable title="Low identity match rate">
+
+**Symptoms:**
+- Identity match rate below expected threshold (<70%)
+- Many anonymous profiles not resolving to known users
+- Customer reports "most of my visitors aren't being identified"
+
+**Diagnostic Steps:**
+1. Check the **identity match rate** metric in the Platform Overview
+2. Review which identifier types are being collected (cookie only vs. email + cookie)
+3. Check if login/registration events include proper identity calls
+4. Compare match rates across different data sources
+
+**Common Causes:**
+- Most visitors are anonymous (no login/registration)
+- Identify calls not firing on login events
+- Cookie consent reducing identifier collection
+- Short cookie lifetimes in Safari/ITP
+
+**Resolution:**
+- Implement progressive identity collection (email capture, newsletter signup)
+- Ensure identify() calls fire on every login and registration event
+- Consider probabilistic matching settings
+- Use first-party cookies with server-side setting for longer persistence
+
+</Expandable>
+
+### Audience Builder Issues
+
+<Expandable title="Segment counts seem wrong">
+
+**Symptoms:**
+- Audience size doesn't match customer's expectation
+- Count changes dramatically between saves
+- Count shows 0 for a condition that should match
+
+**Diagnostic Steps:**
+1. Review the segment rules carefully — check AND vs. OR logic
+2. Test individual conditions separately to isolate the issue
+3. Check the **time window** in conditions (e.g., "last 30 days" vs "all time")
+4. Verify the attribute values being matched (exact match vs. contains)
+
+**Common Causes:**
+- AND/OR logic configured incorrectly (AND is more restrictive than expected)
+- Time window too narrow for the expected behavior
+- Attribute values have whitespace or casing differences
+- Event-based conditions not matching event names exactly
+
+**Resolution:**
+- Walk through the logic with the customer
+- Build the segment step by step, checking count at each addition
+- Use "Preview Members" to spot-check matching profiles
+
+</Expandable>
+
+### Destination Issues
+
+<Expandable title="Sync failures">
+
+**Symptoms:**
+- Destination shows red status
+- Sync history shows "Failed" entries
+- Customer reports "audiences aren't appearing in Google Ads"
+
+**Diagnostic Steps:**
+1. Check the **sync error details** in Destination → Sync History
+2. Look at the error category (auth, rate limit, data, API error)
+3. Check if the issue is consistent or intermittent
+4. Verify the destination API status (external outage?)
+
+**Common Causes:**
+- OAuth token expired — most common issue (re-authenticate)
+- API rate limit exceeded — too many records synced too fast
+- Field mapping mismatch — sending data in wrong format
+- Destination API outage — check their status page
+- Audience too large for destination's limits
+
+**Resolution:**
+- Re-authenticate the destination connection
+- Adjust sync batch size and frequency
+- Fix field mapping configuration
+- Wait for external outage to resolve, then re-sync
+
+</Expandable>
+
+<Expandable title="Audience not appearing in destination">
+
+**Symptoms:**
+- Sync shows "Success" but audience isn't visible in the destination platform
+- Partial audience delivery (some profiles missing)
+
+**Diagnostic Steps:**
+1. Check the **delivery report** — how many records were actually sent?
+2. Verify the audience is **activated** to that destination
+3. Check destination-side — some platforms have processing delays
+4. Look at the identifier matching — are profiles being matched on the destination's required ID?
+
+**Common Causes:**
+- Destination has processing delay (Google Ads: 24-48 hours)
+- Low identifier match rate (profiles lack the ID the destination needs)
+- Audience activated but not yet synced (check schedule)
+- Destination-side audience list is in a different account/property
+
+**Resolution:**
+- Confirm expected processing times with the destination
+- Check identifier coverage for the audience
+- Verify sync schedule and trigger a manual sync if needed
+
+</Expandable>
+
+### Performance Issues
+
+<Expandable title="Dashboard loading slowly">
+
+**Symptoms:**
+- Unity Dashboard pages take >5 seconds to load
+- Reports timeout or show loading spinners indefinitely
+
+**Diagnostic Steps:**
+1. Check if it's account-specific or platform-wide (try a different account)
+2. Note which pages are slow (all pages vs. specific reports)
+3. Check if the customer has very large audiences or many custom reports
+4. Ask about browser and network conditions
+
+**Common Causes:**
+- Very large audience (>10M) with complex composition views
+- Too many custom reports loading simultaneously on dashboard
+- Browser extensions interfering with page rendering
+- Network latency (customer in a region far from data center)
+
+**Resolution:**
+- Simplify complex report views
+- Reduce dashboard widgets to essential metrics
+- Try incognito mode to rule out browser extensions
+- Report to engineering if platform-wide
+
+</Expandable>
+
+### Troubleshooting Decision Tree
+
+<ArchDiagram
+  title="Quick Diagnostic Flow"
+  steps={[
+    { label: "Data Not Appearing?", detail: "Check source status and SDK", icon: "📡" },
+    { label: "Profiles Wrong?", detail: "Check identity graph for false merges", icon: "🔗" },
+    { label: "Audience Wrong?", detail: "Review rules and time windows", icon: "🎯" },
+    { label: "Sync Failing?", detail: "Check auth, rate limits, mapping", icon: "📤" },
+    { label: "Still Stuck?", detail: "Escalate with org ID and details", icon: "📢" }
+  ]}
+/>
+
+<KeyConcepts concepts={["SDK Debugging", "Schema Validation", "Identity Merge", "Match Rate", "Sync Errors", "OAuth Expiry", "Rate Limiting", "Escalation"]} />
+
+---
+
+**Next up:** When and how to escalate issues →

@@ -1,0 +1,137 @@
+---
+title: Data Ingestion Pipelines
+description: Kafka, Beam, Spark, CDAP
+icon: ⚙️
+estimatedMinutes: 25
+contentType: deep-dive
+trackId: engineering
+order: 3
+---
+
+## ⚙️ Data Ingestion Pipelines
+
+After events pass through the Collect Service, they enter the ingestion pipeline — the backbone that routes, transforms, and delivers data to downstream consumers. This module covers real-time and batch ingestion architectures.
+
+### Pipeline Architecture
+
+<ArchDiagram
+  title="Ingestion Pipeline Overview"
+  steps={[
+    { label: "Real-time", detail: "Kafka → Consumer Groups → Services", icon: "⚡" },
+    { label: "Batch", detail: "File Upload → CDAP/Spark → Data Lake", icon: "📦" },
+    { label: "Stream", detail: "Beam/Dataflow → Transformations", icon: "🔄" },
+    { label: "Quality", detail: "Validation, DLQ, Monitoring", icon: "✅" }
+  ]}
+/>
+
+### Real-Time Ingestion (Kafka)
+
+<TechStack
+  title="Real-Time Stack"
+  items={[
+    { name: "Apache Kafka", role: "Event streaming backbone" },
+    { name: "Kafka Connect", role: "Source/sink connectors" },
+    { name: "Schema Registry", role: "Event schema enforcement" },
+    { name: "Consumer Groups", role: "Parallel processing" }
+  ]}
+/>
+
+**Topic Design:**
+- `events.raw.{orgId}` — Raw events from Collect Service
+- `events.validated.{orgId}` — Schema-validated events
+- `events.enriched.{orgId}` — Events with identity resolution applied
+- `events.dlq.{orgId}` — Dead letter queue for failed events
+
+**Partitioning Strategy:**
+- Partitioned by `orgId + userId hash` for ordered processing per user
+- 64 partitions per topic (scales with consumer count)
+- Retention: 7 days for raw, 30 days for enriched
+
+**Consumer Groups:**
+- `id-graph-consumer` — Feeds identity resolution engine
+- `profile-consumer` — Updates profile store
+- `audience-consumer` — Triggers segment re-evaluation
+- `activation-consumer` — Feeds real-time destinations
+
+### Batch Ingestion
+
+<TechStack
+  title="Batch Stack"
+  items={[
+    { name: "CDAP", role: "Pipeline orchestration" },
+    { name: "Apache Spark", role: "Large-scale data processing" },
+    { name: "Apache Beam", role: "Unified batch/stream SDK" },
+    { name: "Cloud Dataflow", role: "Managed Beam runner" }
+  ]}
+/>
+
+**Batch Pipeline Flow:**
+1. Customer uploads CSV/JSON to GCS bucket or SFTP
+2. File watcher triggers CDAP pipeline
+3. Spark job reads file, validates schema, deduplicates records
+4. Valid records published to Kafka `events.batch.{orgId}` topic
+5. Invalid records written to error report (downloadable by customer)
+6. Pipeline metrics emitted to Prometheus
+
+**Batch Processing Features:**
+- Configurable scheduling (hourly, daily, weekly, custom cron)
+- Incremental processing — only new/changed records
+- Large file support — handles files up to 50GB via chunked processing
+- Automatic retry with backoff on transient failures
+
+### Data Quality
+
+**Validation Layers:**
+
+<ComparisonTable
+  headers={["Layer", "What It Checks", "Action on Failure"]}
+  rows={[
+    ["Schema Validation", "Required fields, data types, format", "Reject to DLQ"],
+    ["Deduplication", "Duplicate messageId within time window", "Drop duplicate"],
+    ["Consent Check", "Valid consent for processing purpose", "Drop or flag"],
+    ["Rate Limiting", "Per-org event rate limits", "Backpressure / reject"],
+    ["Data Quality Score", "Completeness, consistency, freshness", "Log metric, allow through"]
+  ]}
+  highlightColumn={2}
+/>
+
+**Dead Letter Queue (DLQ):**
+- Failed events routed to `events.dlq.{orgId}` with error metadata
+- Error categories: schema_error, consent_missing, rate_limited, processing_error
+- DLQ events are inspectable via admin API
+- Retry mechanism for transient errors (with exponential backoff)
+- Permanent failures archived to cold storage after 30 days
+
+### Backpressure Handling
+
+When downstream consumers can't keep up:
+
+1. **Kafka lag monitoring** — Alert when consumer lag exceeds threshold
+2. **Auto-scaling** — Consumer group scales horizontally based on lag
+3. **Rate limiting at source** — API Gateway throttles if pipeline is saturated
+4. **Priority queues** — Real-time events prioritized over batch backfill
+
+### Pipeline Monitoring
+
+<StatCard stats={[
+  { value: "2.1M/s", label: "Peak Event Throughput", color: "#10b981" },
+  { value: "<100ms", label: "Kafka E2E Latency", color: "#3b82f6" },
+  { value: "99.99%", label: "Pipeline Availability", color: "#a855f7" },
+  { value: "<0.01%", label: "DLQ Rate Target", color: "#f59e0b" }
+]} />
+
+**Key Dashboards:**
+- Kafka consumer lag per consumer group
+- Event throughput per org (real-time and batch)
+- DLQ volume and error category breakdown
+- Pipeline processing latency (p50, p95, p99)
+
+<Callout type="info" title="daap-processing Repository">
+The batch ingestion pipelines live in the `daap-processing` repository. It contains CDAP pipeline definitions, Spark jobs, and Beam transforms. Each pipeline is versioned and deployed independently.
+</Callout>
+
+<KeyConcepts concepts={["Kafka", "Consumer Groups", "Dead Letter Queue", "CDAP", "Apache Spark", "Apache Beam", "Schema Registry", "Backpressure", "Partitioning", "Batch vs Real-Time"]} />
+
+---
+
+**Next up:** Identity Resolution — UCID and graph-based matching →

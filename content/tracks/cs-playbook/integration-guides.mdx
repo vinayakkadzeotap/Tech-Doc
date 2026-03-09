@@ -1,0 +1,254 @@
+---
+title: Integration Guides
+description: Step-by-step setup for top destinations
+icon: 🔌
+estimatedMinutes: 35
+contentType: tutorial
+trackId: cs-playbook
+order: 6
+---
+
+## 🔌 Integration Guides
+
+This module provides step-by-step setup guides for the most commonly used destinations. Use these guides to help customers get their first integrations live quickly.
+
+<Callout type="tip" title="First Integration = First Value">
+Getting the first destination activated is a critical milestone in onboarding. It proves the platform works end-to-end and builds customer confidence. Prioritize the destination that delivers the most immediate business value.
+</Callout>
+
+### Destination Setup Overview
+
+Every destination integration follows the same general flow:
+
+<ArchDiagram
+  title="Destination Setup Flow"
+  steps={[
+    { label: "Select", detail: "Choose destination from catalog", icon: "📋" },
+    { label: "Authenticate", detail: "Connect via OAuth or API key", icon: "🔑" },
+    { label: "Map Fields", detail: "Match Zeotap fields to destination fields", icon: "🔗" },
+    { label: "Configure", detail: "Set sync frequency and options", icon: "⚙️" },
+    { label: "Activate", detail: "Start syncing audiences", icon: "✅" }
+  ]}
+/>
+
+### Google Ads (Customer Match)
+
+<Expandable title="Google Ads Setup Guide" defaultOpen={true}>
+
+**Prerequisites:**
+- Google Ads account with Customer Match enabled
+- Google Ads account owner or admin access
+- Customer match policy compliance (minimum audience size, data handling agreement)
+
+**Step-by-Step Setup:**
+
+1. **Navigate:** Destinations → Add Destination → Google Ads
+2. **Authenticate:** Click "Connect with Google" — OAuth flow opens
+3. **Select Account:** Choose the Google Ads account (or MCC) from the dropdown
+4. **Field Mapping:**
+
+| Zeotap Field | Google Ads Field | Required? |
+|---|---|---|
+| Email (hashed) | User Email | Recommended |
+| Phone (hashed) | User Phone | Optional |
+| First Name | First Name | Optional |
+| Last Name | Last Name | Optional |
+| Country | Country Code | Optional |
+| Postal Code | Zip Code | Optional |
+
+5. **Configure Sync:** Choose frequency (real-time or scheduled)
+6. **Activate:** Select audiences to sync → Click "Activate"
+
+**Verification:**
+- In Google Ads, go to **Tools → Audience Manager** — your Zeotap audiences should appear within 24-48 hours
+- Check match rate in Google Ads — aim for >30% (depends on identifier quality)
+
+**Common Issues:**
+- Low match rate: Ensure emails are SHA-256 hashed correctly
+- Audience not appearing: Google has a minimum audience size (1,000 users)
+- Auth expiry: Re-authenticate every 6 months when OAuth token expires
+
+</Expandable>
+
+### Meta Ads (Custom Audiences)
+
+<Expandable title="Meta Ads Setup Guide">
+
+**Prerequisites:**
+- Meta Business Manager account
+- Ad account admin access
+- Custom Audiences terms acceptance in Meta
+
+**Step-by-Step Setup:**
+
+1. **Navigate:** Destinations → Add Destination → Meta Ads
+2. **Authenticate:** Click "Connect with Facebook" — OAuth flow opens
+3. **Select Ad Account:** Choose the correct ad account from your Business Manager
+4. **Field Mapping:**
+
+| Zeotap Field | Meta Field | Required? |
+|---|---|---|
+| Email (hashed) | Email | Recommended |
+| Phone (hashed) | Phone | Optional |
+| First Name | First Name | Improves match |
+| Last Name | Last Name | Improves match |
+| City | City | Improves match |
+| Date of Birth | DOB | Improves match |
+
+5. **Configure:** Set sync frequency and audience naming convention
+6. **Activate:** Select audiences and start sync
+
+**Verification:**
+- In Meta Business Manager, go to **Audiences** — custom audiences from Zeotap appear within a few hours
+- Check the audience size in Meta — compare with Zeotap's audience size to gauge match rate
+
+**Tips:**
+- Send as many identifier fields as possible — Meta uses multi-key matching and more fields = higher match rate
+- Use consistent naming: `[Zeotap] {Audience Name}` helps distinguish from manually created audiences
+
+</Expandable>
+
+### Braze
+
+<Expandable title="Braze Setup Guide">
+
+**Prerequisites:**
+- Braze account with API access enabled
+- Braze REST API key with `users.track` permission
+- Braze REST API endpoint URL (varies by cluster)
+
+**Step-by-Step Setup:**
+
+1. **Navigate:** Destinations → Add Destination → Braze
+2. **Authenticate:** Enter your Braze REST API key and endpoint URL
+3. **Identifier Mapping:** Map Zeotap's UCID or email to Braze's `external_id`
+4. **Field Mapping:**
+
+| Zeotap Field | Braze Field | Notes |
+|---|---|---|
+| UCID or Email | external_id | Primary identifier |
+| First Name | first_name | Standard attribute |
+| Email | email | Standard attribute |
+| Phone | phone | Standard attribute |
+| Custom attributes | custom_attributes | Flexible mapping |
+| Audience membership | custom_attributes.segment_{name} | Boolean flags |
+
+5. **Configure:** Choose sync type (user attributes, events, or both)
+6. **Activate:** Select audiences and data to sync
+
+**Verification:**
+- In Braze, search for a known user and check their profile attributes
+- Verify audience membership flags appear as custom attributes
+- Create a Braze segment using the Zeotap-synced attributes
+
+**Tips:**
+- Use Braze's `external_id` consistently — mixing ID types causes duplicate profiles
+- Sync audience membership as boolean custom attributes for easy Braze segment creation
+- Set up a Braze webhook back to Zeotap for bi-directional data flow
+
+</Expandable>
+
+### Salesforce CRM
+
+<Expandable title="Salesforce CRM Setup Guide">
+
+**Prerequisites:**
+- Salesforce account with API access (Enterprise edition or higher)
+- Salesforce admin or integration user credentials
+- Connected App configured in Salesforce (for OAuth)
+
+**Step-by-Step Setup:**
+
+1. **Navigate:** Destinations → Add Destination → Salesforce CRM
+2. **Authenticate:** Connect via OAuth — log in to Salesforce
+3. **Object Mapping:** Choose which Salesforce object to sync to (Contact, Lead, or Account)
+4. **Field Mapping:**
+
+| Zeotap Field | Salesforce Field | Object |
+|---|---|---|
+| Email | Email | Contact/Lead |
+| First Name | FirstName | Contact/Lead |
+| Last Name | LastName | Contact/Lead |
+| Phone | Phone | Contact/Lead |
+| Company | Company | Lead |
+| Custom fields | Custom fields | Any |
+| Audience membership | Custom checkbox fields | Any |
+
+5. **Dedup Rules:** Configure how to handle existing records (update, skip, or create new)
+6. **Configure:** Set sync frequency (typically scheduled, not real-time)
+7. **Activate:** Start sync
+
+**Verification:**
+- In Salesforce, find a known contact/lead and verify synced fields
+- Check the Salesforce data import log for any rejected records
+- Create a Salesforce report filtering on Zeotap-synced fields
+
+**Common Issues:**
+- Field validation rules in Salesforce rejecting incoming data
+- Required fields in Salesforce not mapped in Zeotap
+- API rate limits on high-volume syncs — use batch mode
+
+</Expandable>
+
+### Google Analytics 4
+
+<Expandable title="Google Analytics 4 Setup Guide">
+
+**Prerequisites:**
+- GA4 property with Measurement Protocol API enabled
+- GA4 Measurement ID and API Secret
+- Understanding of GA4 event model
+
+**Step-by-Step Setup:**
+
+1. **Navigate:** Destinations → Add Destination → Google Analytics 4
+2. **Authenticate:** Enter GA4 Measurement ID and API Secret
+3. **Event Mapping:** Map Zeotap events to GA4 events
+
+| Zeotap Event | GA4 Event | Parameters |
+|---|---|---|
+| Page View | page_view | page_title, page_location |
+| Purchase | purchase | value, currency, items |
+| Add to Cart | add_to_cart | items, value |
+| Custom events | Custom events | Custom parameters |
+
+4. **User Identity:** Map Zeotap UCID to GA4 User-ID for cross-device analytics
+5. **Configure:** Set which events to forward and any parameter transformations
+6. **Activate:** Start event forwarding
+
+**Verification:**
+- In GA4, go to **Realtime** report — verify events from Zeotap appear
+- Check **DebugView** in GA4 for detailed event inspection
+- Create a GA4 audience using forwarded event data
+
+**Tips:**
+- Use GA4's User-ID feature with Zeotap's UCID for unified cross-device reporting
+- Only forward events that GA4 needs — don't overload with every event type
+- Test with DebugView before enabling production sync
+
+</Expandable>
+
+### Integration Troubleshooting Quick Reference
+
+<ComparisonTable
+  headers={["Issue", "Most Likely Cause", "Fix"]}
+  rows={[
+    ["Auth error", "Expired OAuth token", "Re-authenticate the connection"],
+    ["Low match rate", "Missing identifiers", "Add more identifier fields to mapping"],
+    ["Sync timeout", "Too many records in batch", "Reduce batch size or switch to incremental sync"],
+    ["Missing fields", "Field not mapped", "Add missing field to mapping configuration"],
+    ["Duplicate records", "Wrong dedup key", "Verify primary identifier mapping"],
+    ["Rate limit errors", "Too frequent syncs", "Increase sync interval or use batch mode"]
+  ]}
+  highlightColumn={2}
+/>
+
+<Callout type="success" title="You're Now Integration-Ready">
+With these guides, you can help customers set up their most important destinations quickly. Remember: the first successful sync is a major milestone in the customer journey.
+</Callout>
+
+<KeyConcepts concepts={["OAuth", "Field Mapping", "Sync Frequency", "Match Rate", "Customer Match", "Custom Audiences", "Measurement Protocol", "API Key", "Batch Mode"]} />
+
+---
+
+**Congratulations!** You've completed the Customer Success Playbook track. You now have the onboarding checklist, health scoring framework, troubleshooting skills, escalation procedures, renewal/expansion playbook, and integration guides to excel as a CS professional.

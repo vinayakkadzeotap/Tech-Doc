@@ -1,0 +1,121 @@
+---
+title: Customer Journeys
+description: Multi-step orchestration engine
+icon: 🗺️
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 7
+---
+
+## 🗺️ Customer Journeys Engine
+
+The Journey Engine orchestrates multi-step, event-driven customer workflows. It manages state for millions of concurrent user journeys with triggers, conditions, actions, waits, and splits.
+
+### Architecture
+
+The journey engine is a **distributed state machine**:
+
+<ArchDiagram
+  title="Journey Engine Architecture"
+  steps={[
+    { label: "Journey DAG", detail: "Directed Acyclic Graph of steps", icon: "📋" },
+    { label: "Trigger Evaluator", detail: "Detects entry conditions", icon: "🎯" },
+    { label: "State Manager", detail: "Tracks each user's position", icon: "📍" },
+    { label: "Step Executor", detail: "Runs actions, evaluates conditions", icon: "⚡" },
+    { label: "Scheduler", detail: "Manages wait steps and timing", icon: "⏰" }
+  ]}
+/>
+
+### Journey DAG Representation
+
+Each journey is stored as a Directed Acyclic Graph (DAG):
+
+```json
+{
+  "journeyId": "cart-recovery-v2",
+  "nodes": [
+    { "id": "trigger", "type": "segment_entry", "config": { "segmentId": "cart_abandoners" } },
+    { "id": "wait1", "type": "wait", "config": { "duration": "1h" } },
+    { "id": "email1", "type": "action", "config": { "channel": "email", "templateId": "reminder" } },
+    { "id": "check", "type": "condition", "config": { "field": "events.purchase", "op": "occurred_within", "value": "24h" } },
+    { "id": "push1", "type": "action", "config": { "channel": "push", "templateId": "discount" } }
+  ],
+  "edges": [
+    { "from": "trigger", "to": "wait1" },
+    { "from": "wait1", "to": "email1" },
+    { "from": "email1", "to": "check" },
+    { "from": "check", "to": "push1", "branch": "false" },
+    { "from": "check", "to": null, "branch": "true" }
+  ]
+}
+```
+
+### Step Types
+
+<ComparisonTable
+  headers={["Step Type", "Description", "Implementation"]}
+  rows={[
+    ["Trigger", "Entry condition (segment, event, schedule)", "Listens to audience.changes or event topics"],
+    ["Action", "Execute something (email, push, webhook, profile update)", "Calls destination API or internal service"],
+    ["Condition", "Boolean branch (if/else)", "Evaluates profile state at execution time"],
+    ["Wait", "Time delay", "Scheduled wake-up via distributed timer"],
+    ["A/B Split", "Random distribution to variants", "Consistent hashing on UCID for determinism"],
+    ["Exit", "Remove from journey", "Cleanup state, emit analytics event"]
+  ]}
+  highlightColumn={0}
+/>
+
+### State Management
+
+Each user in a journey has a state record:
+
+| Field | Description |
+|-------|-------------|
+| `journeyId` | Which journey |
+| `ucid` | Which user |
+| `currentNodeId` | Current position in DAG |
+| `enteredAt` | When they entered the journey |
+| `stepHistory` | Array of completed steps with timestamps |
+| `variant` | A/B test variant assignment |
+| `status` | active, completed, exited |
+
+- State stored in BigTable for low-latency reads
+- ~100M concurrent journey states across all orgs
+- State compacted after journey completion (archived to BigQuery)
+
+### Concurrency and Rate Limiting
+
+- Journey steps executed via a work queue (Kafka topic)
+- Worker pool processes steps with configurable concurrency
+- Rate limiting per destination (e.g., max 100 emails/second via Braze API)
+- Priority queue for time-sensitive actions (welcome emails > weekly digests)
+
+### A/B Testing
+
+- Users assigned to variants using consistent hashing on UCID
+- Assignment is deterministic — same user always gets same variant
+- Variant distribution configurable (50/50, 70/30, or multi-variant)
+- Statistical significance calculated using Bayesian inference
+- Results available in journey analytics dashboard
+
+### Journey Analytics
+
+Events emitted at each step feed the analytics pipeline:
+
+- `journey.entered` — User entered the journey
+- `journey.step_completed` — User completed a step
+- `journey.exited` — User exited (completed or exit criteria met)
+- `journey.action_result` — Outcome of an action (email delivered, opened, clicked)
+
+These events flow to BigQuery for reporting: conversion funnels, drop-off analysis, A/B test results.
+
+<Callout type="tip" title="Integration with Audiences">
+Journeys and Audiences are tightly coupled. A journey's trigger is typically audience entry/exit. Actions within journeys can update profile attributes, which may cause audience membership changes, which may trigger other journeys. Guard against infinite loops with journey re-entry limits.
+</Callout>
+
+<KeyConcepts concepts={["DAG", "State Machine", "Trigger", "Wait Step", "A/B Split", "Consistent Hashing", "Journey Analytics", "Concurrency Control", "Rate Limiting"]} />
+
+---
+
+**Next up:** Data Activation — destination connectors →

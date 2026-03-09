@@ -1,0 +1,139 @@
+---
+title: Identity Resolution
+description: UCID, deterministic & probabilistic matching
+icon: 🔗
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 4
+---
+
+## 🔗 Identity Resolution
+
+Identity resolution is Zeotap's core differentiator. It stitches fragmented identifiers across devices, channels, and touchpoints into a single Unified Customer Identity (UCID). This module covers the graph-based approach, matching algorithms, and storage model.
+
+### The Identity Problem
+
+A single customer might interact through:
+- Cookie on laptop browser
+- Device ID on mobile app
+- Email address on login
+- Phone number in CRM
+- Loyalty card in-store
+
+Without identity resolution, these look like 5 different people. Zeotap's Identity Graph links them into one UCID.
+
+<StatCard stats={[
+  { value: "14B+", label: "Profiles Resolved", color: "#3b82f6" },
+  { value: "<50ms", label: "Resolution Latency", color: "#10b981" },
+  { value: "99.7%", label: "Deterministic Accuracy", color: "#a855f7" },
+  { value: "Go", label: "Implementation Language", color: "#f59e0b" }
+]} />
+
+### Graph Data Model
+
+The identity graph is modeled as a property graph:
+
+**Nodes (Identifiers):**
+- Each identifier is a node: `email:user@example.com`, `cookie:abc123`, `device:xyz789`
+- Nodes have a type (email, phone, cookie, device, crm_id) and value
+- Nodes carry metadata: first_seen, last_seen, source
+
+**Edges (Observations):**
+- An edge connects two identifiers that were observed together
+- Edges carry: timestamp, source, confidence score, observation count
+- Example: Cookie `abc123` was seen with email `user@example.com` during a login event
+
+**UCID (Cluster):**
+- Connected components in the graph form a cluster = one customer
+- Each cluster gets a stable UCID (UUID)
+- The UCID is the primary key for the Profile Store
+
+### Matching Strategies
+
+<ComparisonTable
+  headers={["Strategy", "Method", "Accuracy", "Coverage"]}
+  rows={[
+    ["Deterministic", "Exact match on known IDs (email, phone)", "99.7%", "Lower (needs known IDs)"],
+    ["Probabilistic", "Statistical matching (device signals, IP, timing)", "85-95%", "Higher (works with anonymous)"],
+    ["Transitive", "A=B and B=C implies A=C", "Varies", "Extends reach of deterministic"]
+  ]}
+  highlightColumn={2}
+/>
+
+**Deterministic Matching:**
+- Email-to-email exact match (normalized, lowercased, hashed)
+- Phone-to-phone match (E.164 normalized)
+- Login ID match across platforms
+- CRM ID match from batch imports
+
+**Probabilistic Matching:**
+- Device fingerprinting signals (screen resolution, timezone, language, OS)
+- IP address clustering (same household)
+- Behavioral patterns (similar browsing patterns from same location)
+- Configurable confidence thresholds per org
+
+### Graph Operations
+
+<ArchDiagram
+  title="Identity Resolution Flow"
+  steps={[
+    { label: "Event Arrives", detail: "With identifiers attached", icon: "📨" },
+    { label: "Lookup", detail: "Find existing nodes for each identifier", icon: "🔍" },
+    { label: "Merge Decision", detail: "Should clusters be merged?", icon: "🤔" },
+    { label: "Graph Update", detail: "Add nodes/edges, merge clusters", icon: "✏️" },
+    { label: "UCID Emit", detail: "Publish resolved UCID downstream", icon: "📤" }
+  ]}
+/>
+
+**Merge Algorithm:**
+1. For each identifier in the event, look up existing graph node
+2. If identifiers belong to different clusters, evaluate merge
+3. Merge criteria: deterministic link (always merge) or probabilistic link above threshold
+4. On merge: smaller cluster absorbed into larger, UCID of larger cluster wins
+5. Emit merge event to downstream consumers (Profile Store, Audience Engine)
+
+**Split Detection:**
+- Monitor for clusters growing suspiciously large (>1000 identifiers)
+- Flag shared devices, generic emails, bot traffic
+- Configurable exclusion lists (e.g., `noreply@`, `info@`)
+- Manual split capability via admin API
+
+### Storage Architecture
+
+**BigTable for Graph Storage:**
+
+| Row Key | Column Family | Columns |
+|---------|--------------|---------|
+| `{orgId}#{identifierType}#{identifierValue}` | `edges` | Connected identifiers + metadata |
+| `{orgId}#ucid#{ucidValue}` | `members` | All identifiers in cluster |
+| `{orgId}#ucid#{ucidValue}` | `meta` | Cluster size, created_at, updated_at |
+
+- BigTable chosen for low-latency random reads (<10ms p99)
+- Row key design enables efficient lookups by identifier or UCID
+- Automatic compaction and TTL for stale edges (configurable, default 90 days)
+
+**Why Go?**
+
+The identity resolution service (`id-graph-lib-v2-go`) is written in Go because:
+- High concurrency with goroutines (millions of concurrent lookups)
+- Low memory footprint per connection
+- Sub-millisecond GC pauses
+- Easy deployment as a single binary on GKE
+
+<Callout type="info" title="Performance at Scale">
+The Go-based identity service handles 500K identity resolution requests per second with <50ms p99 latency. It runs as a horizontally scaled deployment on GKE with 20-50 pods depending on load.
+</Callout>
+
+### Privacy Considerations
+
+- All PII identifiers are hashed (SHA-256) before storage
+- Graph edges respect consent — no linking without valid consent
+- Right-to-erasure deletes all nodes and edges for a given identifier
+- Data residency enforced — EU graph data stays in EU region
+
+<KeyConcepts concepts={["UCID", "Identity Graph", "Deterministic Matching", "Probabilistic Matching", "Graph Merge", "Split Detection", "BigTable", "Go", "Connected Components"]} />
+
+---
+
+**Next up:** Profile Store — unified customer profiles →

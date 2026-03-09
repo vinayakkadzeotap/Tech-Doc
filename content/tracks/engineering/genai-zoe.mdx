@@ -1,0 +1,117 @@
+---
+title: GenAI & Ada AI Copilot
+description: Vertex AI, RAG, natural language queries
+icon: 🤖
+estimatedMinutes: 20
+contentType: deep-dive
+trackId: engineering
+order: 9
+---
+
+## 🤖 GenAI & Ada AI Copilot
+
+**Ada** is Zeotap's official AI copilot (previously referred to internally as "Zoe") that enables non-technical users to interact with the CDP using natural language. Ada is embedded across the platform — in the Audience Builder, Data Catalogue, and Journey Canvas — providing contextual AI assistance wherever users need it.
+
+### Ada Architecture
+
+<ArchDiagram
+  title="Ada AI Pipeline"
+  steps={[
+    { label: "User Query", detail: "Natural language input", icon: "💬" },
+    { label: "Intent Detection", detail: "Classify query type", icon: "🎯" },
+    { label: "RAG Retrieval", detail: "Fetch relevant context", icon: "📚" },
+    { label: "LLM Processing", detail: "Generate response with context", icon: "🧠" },
+    { label: "Action Execution", detail: "Create segment, answer question", icon: "⚡" }
+  ]}
+/>
+
+### LLM Integration
+
+<TechStack
+  title="AI Stack"
+  items={[
+    { name: "Google Vertex AI", role: "LLM hosting and inference" },
+    { name: "Google ADK", role: "Agent Development Kit" },
+    { name: "FastAPI", role: "Python API server" },
+    { name: "LangChain", role: "LLM orchestration" },
+    { name: "Pinecone/Vertex Vector Search", role: "Vector similarity search" }
+  ]}
+/>
+
+**Model Selection:**
+- Primary: Gemini Pro for complex reasoning and segment generation
+- Fast: Gemini Flash for intent classification and simple queries
+- Embeddings: text-embedding model for RAG document indexing
+
+### RAG Pipeline
+
+**Retrieval-Augmented Generation** ensures Ada answers with accurate, org-specific context:
+
+**Document Indexing:**
+1. Platform documentation, schema definitions, and segment catalogs indexed
+2. Documents chunked into ~500 token segments with overlap
+3. Each chunk embedded using text-embedding model
+4. Vectors stored in vector database (Vertex Vector Search)
+
+**At Query Time:**
+1. User query embedded using same embedding model
+2. Top-K similar document chunks retrieved (k=5)
+3. Retrieved context prepended to LLM prompt
+4. LLM generates response grounded in retrieved context
+
+**Org-Specific Context:**
+- Each org's schema (attribute names, event types) is part of the RAG corpus
+- Existing segments and their rules are indexed for reference
+- Historical queries and their results improve future responses
+
+### Natural Language to Segment Rules
+
+The most powerful Ada capability — translating natural language to segment DSL:
+
+**Example:**
+- Input: "Find users who abandoned their cart in the last 7 days and have spent more than $100 total"
+- Output:
+```json
+{
+  "operator": "AND",
+  "conditions": [
+    { "field": "events.cart_abandon", "op": "occurred_within", "value": "7d" },
+    { "field": "behaviors.total_spend", "op": "gt", "value": 100 }
+  ]
+}
+```
+
+**Translation Process:**
+1. Intent classified as "segment_creation"
+2. RAG retrieves org's schema (available attributes, event types)
+3. LLM maps natural language concepts to schema fields
+4. Structured output parsed and validated against segment DSL
+5. Estimated audience size shown to user for confirmation
+6. User can edit the generated rules before saving
+
+### Safety Guardrails
+
+- **Input sanitization** — Prevent prompt injection attacks
+- **Output validation** — Generated segment rules validated against schema
+- **Rate limiting** — Per-user query rate limits to prevent abuse
+- **PII filtering** — Ada never returns individual PII in responses
+- **Human-in-the-loop** — Segment rules always reviewed by user before activation
+- **Audit logging** — Every Ada interaction logged for compliance
+
+### Conversational Interface
+
+Ada supports multi-turn conversations:
+- Follow-up questions refine previous queries
+- Context maintained across conversation turns
+- Can ask clarifying questions when query is ambiguous
+- Supports both chat and command-style interactions
+
+<Callout type="info" title="zeotap-genai Repository">
+The Ada backend lives in the `zeotap-genai` and `zeotap-agentic-server` repositories. It's a Python FastAPI application using Google ADK for agent orchestration with MCP (Model Context Protocol) for tool integration. The service runs on GKE with GPU-backed nodes for low-latency inference.
+</Callout>
+
+<KeyConcepts concepts={["Ada AI", "RAG", "Vertex AI", "LLM", "Vector Search", "Intent Classification", "Segment Translation", "Prompt Engineering", "Safety Guardrails", "Google ADK", "MCP"]} />
+
+---
+
+**Next up:** ML Platform — propensity models and feature store →

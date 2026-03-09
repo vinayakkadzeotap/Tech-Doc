@@ -1,0 +1,238 @@
+---
+title: Building Audiences with the Segment Builder
+description: Create powerful audience segments using the visual rule builder, AND/OR logic, Ada AI natural language, and audience estimation
+icon: 👥
+estimatedMinutes: 40
+contentType: tutorial
+trackId: product-mastery
+order: 3
+---
+
+## 👥 Building Audiences with the Segment Builder
+
+Audiences are the heart of any CDP. They let you define groups of customers based on who they are, what they've done, and how they've interacted with your brand. Zeotap's Audience Builder combines a visual drag-and-drop rule builder with Ada, Zeotap's AI copilot that lets you describe segments in plain English.
+
+<Callout type="info" title="Prerequisites">
+You need **Analyst**, **Editor**, or **Admin** role access. At least one data source should be actively sending data so you have profiles and events to segment against.
+</Callout>
+
+### Accessing the Audience Builder
+
+1. Click **Audiences** in the left navigation.
+2. You'll see a list of all existing audiences with their status, size, and last updated time.
+3. Click **+ Create Audience** in the top right corner.
+4. Choose your creation method:
+   - **Rule Builder** — visual, point-and-click interface
+   - **Ada AI** — describe your audience in natural language
+   - **Upload List** — import a list of known identifiers (emails, phone numbers)
+
+### Method 1: The Visual Rule Builder
+
+The rule builder lets you construct audience definitions using a visual interface. No code, no queries — just clicks.
+
+<ArchDiagram
+  title="Audience Rule Builder Workflow"
+  steps={[
+    { label: "Select Attribute", detail: "Choose from profile attributes, events, or computed fields", icon: "🏷️" },
+    { label: "Set Condition", detail: "Define operators: equals, contains, greater than, between, etc.", icon: "⚙️" },
+    { label: "Combine Rules", detail: "Use AND/OR logic to build complex criteria", icon: "🔗" },
+    { label: "Estimate Size", detail: "See real-time count of matching profiles", icon: "📊" },
+    { label: "Save & Activate", detail: "Name the audience and push to destinations", icon: "💾" }
+  ]}
+/>
+
+#### Step 1: Add Your First Rule
+
+1. Click **+ Add Rule** in the builder canvas.
+2. A rule card appears with three dropdowns:
+   - **Field** — browse or search all available attributes and events
+   - **Operator** — changes based on the field's data type
+   - **Value** — enter or select the value to match
+
+**Available operators by data type:**
+
+<ComparisonTable
+  headers={["Data Type", "Available Operators"]}
+  rows={[
+    ["Text (String)", "equals, not equals, contains, starts with, ends with, is set, is not set"],
+    ["Number", "equals, not equals, greater than, less than, between, is set, is not set"],
+    ["Date", "is, is before, is after, is between, in the last X days, is set, is not set"],
+    ["Boolean", "is true, is false, is set, is not set"],
+    ["List", "includes, excludes, includes any of, includes all of"]
+  ]}
+/>
+
+<Callout type="tip" title="Use 'in the last X days' for Recency">
+Date-based rules with relative time windows (e.g., "purchased in the last 30 days") are extremely powerful. They create **dynamic audiences** that automatically update as time passes — no manual refreshes needed.
+</Callout>
+
+#### Step 2: Combine Rules with AND/OR Logic
+
+Real-world audiences need multiple conditions. The rule builder supports nested AND/OR logic.
+
+- **AND** — all conditions must be true (narrows the audience)
+- **OR** — at least one condition must be true (broadens the audience)
+
+**Example: High-value recent buyers**
+
+```
+(Country equals "Germany" OR Country equals "France")
+AND
+(Total Purchases greater than 500)
+AND
+(Last Purchase Date in the last 90 days)
+```
+
+To build this:
+
+1. Add the first country rule.
+2. Click the **OR** button on that rule card to add the second country.
+3. Click **+ Add Rule Group** to create a new AND block.
+4. Add the purchase amount rule.
+5. Add another AND rule group for the date condition.
+
+<Callout type="warning" title="AND vs OR — Order Matters Visually">
+Rules within the same group are combined with the connector shown (AND or OR). Click the connector label between rules to toggle it. Rule **groups** are always combined with AND. If you need OR logic at the top level, wrap your conditions in groups.
+</Callout>
+
+#### Step 3: Event-Based Rules
+
+Beyond profile attributes, you can segment based on what users have **done** (or not done).
+
+1. In the field picker, switch to the **Events** tab.
+2. Select an event (e.g., `page_view`, `purchase`, `add_to_cart`).
+3. Configure the event rule:
+   - **Has performed** / **Has not performed** — did the user trigger this event?
+   - **Count** — how many times? (e.g., "purchased more than 3 times")
+   - **Time window** — when? (e.g., "in the last 7 days")
+   - **With property** — filter on event properties (e.g., "purchase where category equals Electronics")
+
+<Expandable title="Example: Cart abandoners in the last 48 hours" defaultOpen={false}>
+Build this audience with two rules:
+
+**Rule 1 (Event):** Has performed `add_to_cart` in the last 48 hours
+
+**AND**
+
+**Rule 2 (Event):** Has NOT performed `purchase` in the last 48 hours
+
+This captures users who added items to their cart but didn't complete a purchase within the last two days — a classic retargeting audience.
+</Expandable>
+
+#### Step 4: Audience Estimation
+
+As you build rules, the **Estimated Size** panel on the right updates in real time.
+
+- **Total profiles matching** — the estimated count of profiles that meet all your criteria
+- **Percentage of total** — what fraction of your entire profile base this audience represents
+- **Trend indicator** — whether this audience is growing or shrinking compared to last week
+
+<StatCard stats={[
+  { value: "Real-time", label: "Estimation Speed", color: "#3b82f6" },
+  { value: "99.5%", label: "Estimation Accuracy", color: "#10b981" },
+  { value: "Billions", label: "Profiles Scannable", color: "#a855f7" }
+]} />
+
+<Callout type="tip" title="Check Your Logic with Estimation">
+If the estimated size is unexpectedly large or small, review your AND/OR logic. A common mistake is using AND when you meant OR (making the audience too narrow) or vice versa. The estimation panel is your sanity check.
+</Callout>
+
+### Method 2: Ada AI — Natural Language Segmentation
+
+Ada is Zeotap's AI copilot that lets you describe audiences in plain English. It translates your description into rule builder logic.
+
+#### How to Use Ada
+
+1. When creating a new audience, select **Ada AI** as your creation method.
+2. Type a natural language description in the text box. For example:
+   - "Customers in Germany who purchased more than 200 euros in the last 30 days"
+   - "Users who viewed the pricing page but didn't sign up"
+   - "High-value customers who haven't been active in 90 days"
+3. Click **Generate** — Ada translates your description into rule builder rules.
+4. Review the generated rules. Ada shows you exactly what it interpreted.
+5. **Edit if needed** — you can modify any generated rule using the standard rule builder.
+6. Click **Apply** to accept the rules.
+
+<Callout type="success" title="Ada Gets Smarter Over Time">
+Ada learns from your organization's data schema. It knows your custom event names, attribute labels, and commonly used segments. The more your team uses Ada, the better it gets at interpreting requests.
+</Callout>
+
+<Expandable title="What if Ada misinterprets my request?" defaultOpen={false}>
+Ada always shows you the rules it generated before applying them. If something is wrong:
+
+1. Click **Edit** on the specific rule that's incorrect.
+2. Adjust the field, operator, or value manually.
+3. Alternatively, rephrase your request with more specifics — e.g., instead of "big spenders," say "customers with total_purchase_value greater than 1000."
+
+Ada works best with specific, quantifiable descriptions rather than vague marketing terms.
+</Expandable>
+
+#### Ada Tips for Best Results
+
+| Do This | Not This |
+|---|---|
+| "Users who purchased in the last 30 days" | "Recent buyers" |
+| "Customers in Germany or France" | "European customers" |
+| "Users who opened more than 5 emails" | "Engaged email subscribers" |
+| "Profiles with age between 25 and 34" | "Millennials" |
+
+### Method 3: Upload a List
+
+For known audiences (e.g., a list from an event or a sales team's target accounts):
+
+1. Select **Upload List** as the creation method.
+2. Upload a CSV containing identifiers — email, phone number, or customer ID.
+3. Select which column contains the identifier.
+4. Zeotap matches the identifiers against existing profiles using the UCID.
+5. The audience contains only profiles that were successfully matched.
+
+### Managing Saved Audiences
+
+#### Audience List View
+
+The Audiences page shows all saved audiences with:
+
+- **Name** and description
+- **Size** — current profile count
+- **Status** — Active, Paused, or Draft
+- **Destinations** — which platforms this audience is synced to
+- **Last updated** — when the audience was last recalculated
+
+#### Audience Refresh
+
+Audiences are **dynamic** by default — they recalculate automatically as new data arrives:
+
+- **Real-time audiences** update within minutes of new events
+- **Scheduled audiences** refresh on a configurable cadence (hourly, daily, weekly)
+- **Static audiences** (uploaded lists) do not refresh automatically
+
+You can also click **Refresh Now** on any audience to trigger an immediate recalculation.
+
+#### Audience Overlap Analysis
+
+To understand how audiences relate to each other:
+
+1. Select two or more audiences using the checkboxes.
+2. Click **Compare** in the toolbar.
+3. A Venn diagram shows the overlap — how many profiles belong to both, only one, or neither.
+
+<Callout type="tip" title="Avoid Over-Targeting">
+Use overlap analysis before activating audiences to the same destination. If two audiences have 80% overlap, you may be wasting ad spend by targeting the same people twice through different campaigns.
+</Callout>
+
+### Best Practices for Audience Building
+
+1. **Name audiences descriptively** — use a convention like `[Purpose] - [Criteria] - [Date]` (e.g., "Retargeting - Cart Abandoners - 7d Window").
+2. **Add descriptions** — explain the business intent, not just the rules. Future you will thank you.
+3. **Start broad, then narrow** — begin with a simple rule, check the size, then add conditions.
+4. **Use folders** — organize audiences into folders by campaign, team, or funnel stage.
+5. **Archive old audiences** — don't delete them (they preserve history), but archive to reduce clutter.
+6. **Test with Ada first** — even if you prefer the rule builder, Ada is a great starting point for complex segments.
+
+### Key Terminology
+
+<KeyConcepts concepts={["Audience", "Segment", "Rule Builder", "AND/OR Logic", "Event-Based Rule", "Audience Estimation", "Ada AI", "Dynamic Audience", "Static Audience", "Overlap Analysis", "UCID"]} />
+
+---
+
+**Next up:** Learn how to build automated customer journeys on the visual canvas.
