@@ -30,25 +30,44 @@ export default function ScrollTracker({ trackId, moduleId }: Props) {
 
       const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
 
-      await supabase.from('progress').upsert({
-        user_id: user.id,
-        track_id: trackId,
-        module_id: moduleId,
-        scroll_pct: maxScroll.current,
-        time_spent_seconds: timeSpent,
-        status: maxScroll.current >= 90 ? 'in_progress' : 'not_started',
-      }, { onConflict: 'user_id,track_id,module_id' });
+      // Use select + insert/update to avoid 409 when unique constraint is missing
+      const { data: existing } = await supabase
+        .from('progress')
+        .select('id, scroll_pct, time_spent_seconds, status')
+        .eq('user_id', user.id)
+        .eq('track_id', trackId)
+        .eq('module_id', moduleId)
+        .maybeSingle();
+
+      if (existing) {
+        // Only update scroll/time, never downgrade status
+        const updates: Record<string, unknown> = {
+          scroll_pct: Math.max(maxScroll.current, existing.scroll_pct || 0),
+          time_spent_seconds: (existing.time_spent_seconds || 0) + timeSpent,
+        };
+        if (existing.status !== 'completed' && maxScroll.current >= 90) {
+          updates.status = 'in_progress';
+        }
+        await supabase.from('progress').update(updates).eq('id', existing.id);
+      } else {
+        await supabase.from('progress').insert({
+          user_id: user.id,
+          track_id: trackId,
+          module_id: moduleId,
+          scroll_pct: maxScroll.current,
+          time_spent_seconds: timeSpent,
+          status: maxScroll.current >= 90 ? 'in_progress' : 'not_started',
+        });
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Save on unmount (page leave)
     const handleBeforeUnload = () => {
       saveProgress();
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Save periodically every 30s
     const interval = setInterval(saveProgress, 30000);
 
     return () => {
