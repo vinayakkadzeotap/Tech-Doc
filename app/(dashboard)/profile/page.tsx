@@ -55,7 +55,7 @@ export default function ProfilePage() {
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
         if (data) {
           setProfile({
             full_name: data.full_name || '',

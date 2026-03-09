@@ -108,7 +108,7 @@ export default async function LearnPage() {
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   const role = (profile?.role || 'engineering') as UserRole;
 
