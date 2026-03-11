@@ -8,6 +8,9 @@ import {
   Target,
   Map,
   Trophy,
+  Users,
+  AlertTriangle,
+  Activity,
   type LucideIcon,
 } from 'lucide-react';
 import ArchitectureGraph from '@/components/learning/ArchitectureGraph';
@@ -16,6 +19,9 @@ import SegmentBuilderSandbox from '@/components/interactive/SegmentBuilderSandbo
 import IdentityResolutionViz from '@/components/interactive/IdentityResolutionViz';
 import JourneyBuilderDemo from '@/components/interactive/JourneyBuilderDemo';
 import Leaderboard from '@/components/interactive/Leaderboard';
+import AudienceBuilderLab from '@/components/interactive/AudienceBuilderLab';
+import ChurnDetectionLab from '@/components/interactive/ChurnDetectionLab';
+import DataHealthDashboard from '@/components/interactive/DataHealthDashboard';
 
 interface Tab {
   id: string;
@@ -32,6 +38,9 @@ const TABS: Tab[] = [
   { id: 'segments', label: 'Segment Builder', icon: Target, description: 'Practice building audience segments', color: '#f59e0b' },
   { id: 'journeys', label: 'Journey Builder', icon: Map, description: 'Build customer journeys visually', color: '#ec4899' },
   { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, description: 'See top learners in the org', color: '#a855f7' },
+  { id: 'audience', label: 'Audience Builder', icon: Users, description: 'Build audience segments following CDP workflow — discover schema, define segments, estimate reach', color: '#0ea5e9' },
+  { id: 'churn', label: 'Churn Detection', icon: AlertTriangle, description: 'Identify churn signals, score customer risk, and recommend interventions', color: '#ef4444' },
+  { id: 'data-health', label: 'Data Health', icon: Activity, description: 'Monitor pipeline health, diagnose failures, and inspect destination status', color: '#14b8a6' },
 ];
 
 type TabId = string;
@@ -94,6 +103,9 @@ export default function ExplorePage() {
         {activeTab === 'segments' && <SegmentBuilderSandbox />}
         {activeTab === 'journeys' && <JourneyBuilderDemo />}
         {activeTab === 'leaderboard' && <Leaderboard />}
+        {activeTab === 'audience' && <AudienceBuilderLab />}
+        {activeTab === 'churn' && <ChurnDetectionLab />}
+        {activeTab === 'data-health' && <DataHealthDashboard />}
       </div>
     </div>
   );

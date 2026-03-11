@@ -36,12 +36,11 @@ export default async function HomePage() {
   const { data: quizData } = await supabase
     .from('quiz_attempts')
     .select('*')
-    .eq('user_id', user.id)
-    .eq('passed', true);
+    .eq('user_id', user.id);
 
   const completedModules = progressData?.filter((p) => p.status === 'completed').length || 0;
   const earnedBadges = badgeData?.length || 0;
-  const passedQuizzes = new Set(quizData?.map((q) => q.quiz_id)).size;
+  const passedQuizzes = new Set(quizData?.filter((q) => q.passed).map((q) => q.quiz_id)).size;
 
   // Get relevant tracks
   const tracks = getTracksForRole(role);
@@ -81,10 +80,14 @@ export default async function HomePage() {
             Continue your learning journey. You&apos;re doing great!
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-bg-surface/50 border border-border">
-          <div className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
-          <span className="text-xs text-text-muted font-medium">Learning streak active</span>
-        </div>
+        {completedModules > 0 && (
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl bg-bg-surface/50 border border-border">
+            <div className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
+            <span className="text-xs text-text-muted font-medium">
+              {completedModules} module{completedModules !== 1 ? 's' : ''} completed
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Stats row */}
@@ -113,7 +116,31 @@ export default async function HomePage() {
       </div>
 
       {/* Analytics Dashboard */}
-      <ProgressDashboard />
+      <ProgressDashboard
+        progress={(progressData || []).map((p) => ({
+          track_id: p.track_id,
+          module_id: p.module_id,
+          status: p.status,
+          completed_at: p.completed_at,
+          time_spent_seconds: p.time_spent_seconds || 0,
+        }))}
+        quizAttempts={(quizData || []).map((q) => ({
+          quiz_id: q.quiz_id,
+          score: q.score,
+          total: q.total,
+          percentage: q.percentage,
+          passed: q.passed,
+          created_at: q.created_at,
+        }))}
+        badgeCount={earnedBadges}
+        tracks={tracks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          color: t.color,
+          totalModules: t.totalModules,
+          modules: t.modules.map((m) => ({ id: m.id, contentType: m.contentType })),
+        }))}
+      />
 
       {/* Your tracks */}
       <div>

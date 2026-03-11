@@ -2,118 +2,58 @@
 
 import { useState, useEffect, useRef } from 'react';
 import {
-  LineChart,
   BarChart,
   PieChart,
   RadarChart,
   AreaChart,
-  Line,
   Bar,
   Pie,
   Radar,
   Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   Cell,
   PolarGrid,
   PolarAngleAxis,
+  Legend,
 } from 'recharts';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-interface ProgressDashboardProps {
-  userId?: string;
+interface ProgressRecord {
+  track_id: string;
+  module_id: string;
+  status: string;
+  completed_at: string | null;
+  time_spent_seconds: number;
 }
 
-// ---------------------------------------------------------------------------
-// Deterministic seeded random (consistent per day)
-// ---------------------------------------------------------------------------
-
-function seededRandom(seed: number) {
-  let s = seed;
-  return () => {
-    s = (s * 16807 + 0) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
+interface QuizRecord {
+  quiz_id: string;
+  score: number;
+  total: number;
+  percentage: number;
+  passed: boolean;
+  created_at: string;
 }
 
-function getDaySeed(): number {
-  const d = new Date();
-  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+interface TrackInfo {
+  id: string;
+  title: string;
+  color: string;
+  totalModules: number;
+  modules: { id: string; contentType: string }[];
 }
 
-// ---------------------------------------------------------------------------
-// Demo data generators
-// ---------------------------------------------------------------------------
-
-function generateActivityData(rand: () => number) {
-  const data: { date: string; minutes: number }[] = [];
-  const now = new Date();
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const dayOfWeek = d.getDay();
-    // Weekdays tend to be higher
-    const base = dayOfWeek === 0 || dayOfWeek === 6 ? 15 : 35;
-    const variance = Math.floor(rand() * 50);
-    data.push({
-      date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      minutes: base + variance,
-    });
-  }
-  return data;
-}
-
-const TRACK_DATA = [
-  { name: 'Business\nEssentials', color: '#3b82f6' },
-  { name: 'Product\nMastery', color: '#a855f7' },
-  { name: 'Sales\nEnablement', color: '#f59e0b' },
-  { name: 'CS\nPlaybook', color: '#10b981' },
-  { name: 'Engineering\nDeep Dive', color: '#6366f1' },
-];
-
-function generateTrackCompletion(rand: () => number) {
-  return TRACK_DATA.map((t) => ({
-    name: t.name,
-    completed: Math.floor(rand() * 60 + 30),
-    color: t.color,
-  }));
-}
-
-function generateSkillsData(rand: () => number) {
-  const skills = [
-    'CDP Concepts',
-    'Product Knowledge',
-    'Technical Depth',
-    'Sales Skills',
-    'Customer Success',
-    'Data Architecture',
-  ];
-  return skills.map((skill) => ({
-    skill,
-    proficiency: Math.floor(rand() * 45 + 45),
-    fullMark: 100,
-  }));
-}
-
-function generateContentDistribution(rand: () => number) {
-  const types = [
-    { name: 'Concepts', color: '#3b82f6' },
-    { name: 'Tutorials', color: '#a855f7' },
-    { name: 'References', color: '#f59e0b' },
-    { name: 'Deep Dives', color: '#6366f1' },
-  ];
-  return types.map((t) => ({
-    name: t.name,
-    value: Math.floor(rand() * 15 + 5),
-    color: t.color,
-  }));
+export interface ProgressDashboardProps {
+  progress: ProgressRecord[];
+  quizAttempts: QuizRecord[];
+  badgeCount: number;
+  tracks: TrackInfo[];
 }
 
 // ---------------------------------------------------------------------------
@@ -164,7 +104,6 @@ function useAnimatedCounter(target: number, duration = 1200) {
     const animate = (now: number) => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      // ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setValue(Math.round(eased * target));
       if (progress < 1) {
@@ -228,7 +167,7 @@ function StatCard({
 }
 
 // ---------------------------------------------------------------------------
-// Chart Cards
+// Chart Card
 // ---------------------------------------------------------------------------
 
 function ChartCard({
@@ -249,36 +188,166 @@ function ChartCard({
 }
 
 // ---------------------------------------------------------------------------
+// Data computation from real records
+// ---------------------------------------------------------------------------
+
+function computeActivityData(progress: ProgressRecord[]) {
+  const now = new Date();
+  const buckets: Record<string, number> = {};
+
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    buckets[key] = 0;
+  }
+
+  for (const p of progress) {
+    if (p.completed_at) {
+      const key = p.completed_at.slice(0, 10);
+      if (key in buckets) {
+        buckets[key] += Math.round((p.time_spent_seconds || 0) / 60);
+      }
+    }
+  }
+
+  return Object.entries(buckets).map(([date, minutes]) => ({
+    date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    minutes,
+  }));
+}
+
+function computeTrackCompletion(progress: ProgressRecord[], tracks: TrackInfo[]) {
+  return tracks.map((t) => {
+    const completed = progress.filter(
+      (p) => p.track_id === t.id && p.status === 'completed'
+    ).length;
+    const pct = t.totalModules > 0 ? Math.round((completed / t.totalModules) * 100) : 0;
+    return { name: t.title.replace(' ', '\n'), completed: pct, color: t.color };
+  });
+}
+
+function computeSkillsData(progress: ProgressRecord[], tracks: TrackInfo[]) {
+  const skillMap: Record<string, string> = {
+    'business-essentials': 'CDP Concepts',
+    'product-mastery': 'Product Knowledge',
+    'engineering': 'Technical Depth',
+    'sales-enablement': 'Sales Skills',
+    'cs-playbook': 'Customer Success',
+  };
+
+  return tracks.map((t) => {
+    const completed = progress.filter(
+      (p) => p.track_id === t.id && p.status === 'completed'
+    ).length;
+    const proficiency = t.totalModules > 0 ? Math.round((completed / t.totalModules) * 100) : 0;
+    return {
+      skill: skillMap[t.id] || t.title,
+      proficiency,
+      fullMark: 100,
+    };
+  });
+}
+
+function computeContentDistribution(progress: ProgressRecord[], tracks: TrackInfo[]) {
+  const typeCount: Record<string, number> = {};
+  const completedModuleIds = new Set(
+    progress.filter((p) => p.status === 'completed').map((p) => p.module_id)
+  );
+
+  for (const track of tracks) {
+    for (const mod of track.modules) {
+      if (completedModuleIds.has(mod.id)) {
+        const type = mod.contentType || 'other';
+        const label = type.charAt(0).toUpperCase() + type.slice(1);
+        typeCount[label] = (typeCount[label] || 0) + 1;
+      }
+    }
+  }
+
+  const palette = ['#3b82f6', '#a855f7', '#f59e0b', '#6366f1', '#10b981', '#ec4899'];
+  let colorIdx = 0;
+
+  return Object.entries(typeCount).map(([name, value]) => ({
+    name: name + 's',
+    value,
+    color: palette[colorIdx++ % palette.length],
+  }));
+}
+
+function computeStreak(progress: ProgressRecord[]) {
+  const completedDates = new Set(
+    progress
+      .filter((p) => p.completed_at)
+      .map((p) => p.completed_at!.slice(0, 10))
+  );
+
+  let streak = 0;
+  const now = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    if (completedDates.has(key)) {
+      streak++;
+    } else if (i > 0) {
+      break;
+    }
+  }
+  return streak;
+}
+
+function computeTotalHours(progress: ProgressRecord[]) {
+  const totalSeconds = progress.reduce((s, p) => s + (p.time_spent_seconds || 0), 0);
+  return Math.round(totalSeconds / 3600);
+}
+
+function computeQuizAverage(quizAttempts: QuizRecord[]) {
+  if (quizAttempts.length === 0) return 0;
+  const sum = quizAttempts.reduce((s, q) => s + q.percentage, 0);
+  return Math.round(sum / quizAttempts.length);
+}
+
+// ---------------------------------------------------------------------------
+// Empty State
+// ---------------------------------------------------------------------------
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-center py-8">
+      <p className="text-sm text-white/40">No data yet</p>
+      <p className="text-xs text-white/25 mt-1">Complete modules to see your progress</p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
-export default function ProgressDashboard({ userId }: ProgressDashboardProps) {
+export default function ProgressDashboard({
+  progress,
+  quizAttempts,
+  badgeCount,
+  tracks,
+}: ProgressDashboardProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Deterministic random seeded by day (and userId if present)
-  const seed =
-    getDaySeed() +
-    (userId
-      ? userId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-      : 0);
-  const rand = seededRandom(seed);
+  const activityData = computeActivityData(progress);
+  const trackCompletion = computeTrackCompletion(progress, tracks);
+  const skillsData = computeSkillsData(progress, tracks);
+  const contentDist = computeContentDistribution(progress, tracks);
+  const totalCompletedModules = progress.filter((p) => p.status === 'completed').length;
 
-  // Generate data
-  const activityData = generateActivityData(rand);
-  const trackCompletion = generateTrackCompletion(rand);
-  const skillsData = generateSkillsData(rand);
-  const contentDist = generateContentDistribution(rand);
-  const totalModules = contentDist.reduce((s, d) => s + d.value, 0);
+  const streak = computeStreak(progress);
+  const totalHours = computeTotalHours(progress);
+  const quizAvg = computeQuizAverage(quizAttempts);
 
-  // Summary stats
-  const streak = Math.floor(rand() * 20 + 5);
-  const totalHours = Math.floor(rand() * 60 + 20);
-  const quizAvg = Math.floor(rand() * 20 + 78);
-  const badges = Math.floor(rand() * 10 + 3);
+  const hasAnyData = progress.length > 0;
 
   if (!mounted) {
     return (
@@ -297,105 +366,44 @@ export default function ProgressDashboard({ userId }: ProgressDashboardProps) {
     <div className="space-y-6">
       {/* Summary Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard
-          label="Learning Streak"
-          value={streak}
-          suffix=" days"
-          color="#f59e0b"
-          icon={<FireIcon />}
-        />
-        <StatCard
-          label="Total Hours Learned"
-          value={totalHours}
-          suffix="h"
-          color="#3b82f6"
-          icon={<ClockIcon />}
-        />
-        <StatCard
-          label="Quiz Average Score"
-          value={quizAvg}
-          suffix="%"
-          color="#10b981"
-          icon={<TargetIcon />}
-        />
-        <StatCard
-          label="Badges Earned"
-          value={badges}
-          color="#a855f7"
-          icon={<TrophyIcon />}
-        />
+        <StatCard label="Learning Streak" value={streak} suffix=" days" color="#f59e0b" icon={<FireIcon />} />
+        <StatCard label="Total Hours Learned" value={totalHours} suffix="h" color="#3b82f6" icon={<ClockIcon />} />
+        <StatCard label="Quiz Average Score" value={quizAvg} suffix="%" color="#10b981" icon={<TargetIcon />} />
+        <StatCard label="Badges Earned" value={badgeCount} color="#a855f7" icon={<TrophyIcon />} />
       </div>
 
       {/* Charts Grid */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Area Chart: Learning Activity */}
         <ChartCard title="Learning Activity Over Time">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={activityData}>
-              <defs>
-                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#818cf8" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="date"
-                tick={{ fill: '#ffffff50', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                interval={6}
-              />
-              <YAxis
-                tick={{ fill: '#ffffff50', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                width={30}
-              />
-              <Tooltip
-                content={<CustomTooltip suffix=" min" />}
-                cursor={{ stroke: '#ffffff20' }}
-              />
-              <Area
-                type="monotone"
-                dataKey="minutes"
-                stroke="#818cf8"
-                strokeWidth={2.5}
-                fill="url(#areaGradient)"
-                animationDuration={1400}
-                animationEasing="ease-out"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          {hasAnyData ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={activityData}>
+                <defs>
+                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#818cf8" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" tick={{ fill: '#ffffff50', fontSize: 10 }} axisLine={false} tickLine={false} interval={6} />
+                <YAxis tick={{ fill: '#ffffff50', fontSize: 10 }} axisLine={false} tickLine={false} width={30} />
+                <Tooltip content={<CustomTooltip suffix=" min" />} cursor={{ stroke: '#ffffff20' }} />
+                <Area type="monotone" dataKey="minutes" stroke="#818cf8" strokeWidth={2.5} fill="url(#areaGradient)" animationDuration={1400} animationEasing="ease-out" />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState />
+          )}
         </ChartCard>
 
         {/* Bar Chart: Track Completion */}
         <ChartCard title="Track Completion">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={trackCompletion} barSize={32}>
-              <XAxis
-                dataKey="name"
-                tick={{ fill: '#ffffff50', fontSize: 9 }}
-                axisLine={false}
-                tickLine={false}
-                interval={0}
-              />
-              <YAxis
-                tick={{ fill: '#ffffff50', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                domain={[0, 100]}
-                width={30}
-              />
-              <Tooltip
-                content={<CustomTooltip suffix="%" />}
-                cursor={{ fill: '#ffffff08' }}
-              />
-              <Bar
-                dataKey="completed"
-                radius={[8, 8, 0, 0]}
-                animationDuration={1200}
-                animationEasing="ease-out"
-              >
+              <XAxis dataKey="name" tick={{ fill: '#ffffff50', fontSize: 9 }} axisLine={false} tickLine={false} interval={0} />
+              <YAxis tick={{ fill: '#ffffff50', fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 100]} width={30} />
+              <Tooltip content={<CustomTooltip suffix="%" />} cursor={{ fill: '#ffffff08' }} />
+              <Bar dataKey="completed" radius={[8, 8, 0, 0]} animationDuration={1200} animationEasing="ease-out">
                 {trackCompletion.map((entry, i) => (
                   <Cell key={i} fill={entry.color} />
                 ))}
@@ -406,83 +414,39 @@ export default function ProgressDashboard({ userId }: ProgressDashboardProps) {
 
         {/* Radar Chart: Skills */}
         <ChartCard title="Skills Radar">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart
-              cx="50%"
-              cy="50%"
-              outerRadius="70%"
-              data={skillsData}
-            >
-              <PolarGrid stroke="#ffffff12" />
-              <PolarAngleAxis
-                dataKey="skill"
-                tick={{ fill: '#ffffff60', fontSize: 10 }}
-              />
-              <Radar
-                name="Proficiency"
-                dataKey="proficiency"
-                stroke="#818cf8"
-                strokeWidth={2}
-                fill="#818cf8"
-                fillOpacity={0.2}
-                animationDuration={1400}
-                animationEasing="ease-out"
-              />
-              <Tooltip content={<CustomTooltip suffix="/100" />} />
-            </RadarChart>
-          </ResponsiveContainer>
+          {hasAnyData ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={skillsData}>
+                <PolarGrid stroke="#ffffff12" />
+                <PolarAngleAxis dataKey="skill" tick={{ fill: '#ffffff60', fontSize: 10 }} />
+                <Radar name="Proficiency" dataKey="proficiency" stroke="#818cf8" strokeWidth={2} fill="#818cf8" fillOpacity={0.2} animationDuration={1400} animationEasing="ease-out" />
+                <Tooltip content={<CustomTooltip suffix="/100" />} />
+              </RadarChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState />
+          )}
         </ChartCard>
 
         {/* Pie Chart: Content Distribution */}
         <ChartCard title="Content Distribution">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={contentDist}
-                cx="50%"
-                cy="50%"
-                innerRadius="50%"
-                outerRadius="75%"
-                dataKey="value"
-                stroke="none"
-                animationDuration={1200}
-                animationEasing="ease-out"
-                paddingAngle={3}
-              >
-                {contentDist.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip suffix=" modules" />} />
-              <Legend
-                verticalAlign="bottom"
-                iconType="circle"
-                iconSize={8}
-                formatter={(value: string) => (
-                  <span className="text-xs text-white/60">{value}</span>
-                )}
-              />
-              {/* Center label rendered as custom text */}
-              <text
-                x="50%"
-                y="47%"
-                textAnchor="middle"
-                dominantBaseline="central"
-                className="fill-white text-2xl font-extrabold"
-              >
-                {totalModules}
-              </text>
-              <text
-                x="50%"
-                y="57%"
-                textAnchor="middle"
-                dominantBaseline="central"
-                className="fill-white/40 text-[10px]"
-              >
-                modules
-              </text>
-            </PieChart>
-          </ResponsiveContainer>
+          {contentDist.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={contentDist} cx="50%" cy="50%" innerRadius="50%" outerRadius="75%" dataKey="value" stroke="none" animationDuration={1200} animationEasing="ease-out" paddingAngle={3}>
+                  {contentDist.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip suffix=" modules" />} />
+                <Legend verticalAlign="bottom" iconType="circle" iconSize={8} formatter={(value: string) => <span className="text-xs text-white/60">{value}</span>} />
+                <text x="50%" y="47%" textAnchor="middle" dominantBaseline="central" className="fill-white text-2xl font-extrabold">{totalCompletedModules}</text>
+                <text x="50%" y="57%" textAnchor="middle" dominantBaseline="central" className="fill-white/40 text-[10px]">completed</text>
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState />
+          )}
         </ChartCard>
       </div>
     </div>
@@ -490,21 +454,12 @@ export default function ProgressDashboard({ userId }: ProgressDashboardProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Inline SVG Icons (avoids extra dependency for 4 icons)
+// Inline SVG Icons
 // ---------------------------------------------------------------------------
 
 function FireIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
     </svg>
   );
@@ -512,16 +467,7 @@ function FireIcon() {
 
 function ClockIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
     </svg>
@@ -530,16 +476,7 @@ function ClockIcon() {
 
 function TargetIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10" />
       <circle cx="12" cy="12" r="6" />
       <circle cx="12" cy="12" r="2" />
@@ -549,16 +486,7 @@ function TargetIcon() {
 
 function TrophyIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
       <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
       <path d="M4 22h16" />
