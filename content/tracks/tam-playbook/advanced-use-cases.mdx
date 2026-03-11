@@ -1,422 +1,796 @@
 ---
-title: "Advanced Use Case Library"
+title: Advanced Use Case Library
+description: Complex implementation patterns, multi-system integrations, and advanced CDP use cases for enterprise customers
 icon: 🚀
 estimatedMinutes: 35
-contentType: reference
+contentType: tutorial
 trackId: tam-playbook
 order: 6
 ---
 
 # Advanced Use Case Library
 
-Once a customer has completed onboarding and established foundational audiences, the TAM's role shifts to driving deeper adoption through advanced use cases. Each use case in this library expands the customer's reliance on the platform, increases the value delivered, and strengthens the renewal and expansion story. This module organizes 12+ advanced use cases by capability area, with implementation guidance for each.
+This module is the definitive reference for complex CDP implementations. Each use case includes an architecture pattern, required connectors, estimated timeline, and success metrics. Use this library when scoping advanced engagements, responding to customer RFPs, or designing multi-system integrations that go beyond standard audience activation.
 
-<KeyConcepts concepts={["Cross-Device Matching", "Household Graphs", "B2B Account Matching", "Predictive Audiences", "Lookalike Expansion", "Dynamic Suppression", "Multi-Channel Orchestration", "A/B Testing", "Lifecycle Automation", "Real-Time Personalization", "Data Clean Rooms", "Programmatic Activation"]} />
+<KeyConcepts concepts={["Real-Time Personalization", "Cross-Channel Orchestration", "Ada AI Predictive Modeling", "Data Clean Rooms", "Composable CDP", "SignalSmith", "Multi-Brand Identity Resolution", "Privacy-Preserving Analytics", "Warehouse-Native Activation", "Behavioral Segmentation", "Sequential Segments", "Suppression Logic"]} />
 
 <StatCard stats={[
-  { value: "4.7", label: "Average use cases per retained account", color: "blue" },
-  { value: "1.8", label: "Average use cases per churned account", color: "red" },
-  { value: "35%", label: "Higher NRR for accounts with 5+ active use cases", color: "green" }
+  { value: "<200ms", label: "Real-time personalization end-to-end latency target", color: "blue" },
+  { value: "4.2x", label: "Average ROAS lift with cross-channel orchestration", color: "green" },
+  { value: "73%", label: "Churn prediction accuracy with Ada AI models", color: "purple" },
+  { value: "40%", label: "Reduction in media waste with suppression logic", color: "red" }
 ]} />
 
 ---
 
-## Use Case Maturity Model
+## 1. Real-Time Personalization Pipelines
 
-Customers progress through use case maturity in a predictable pattern. Understanding where a customer sits on this curve helps the TAM recommend the right next use case at the right time.
+Real-time personalization requires sub-second evaluation of user behavior against audience rules, followed by immediate activation to a personalization engine or ad server. This is the most latency-sensitive use case in the CDP and demands a streaming-first architecture.
+
+### Architecture Pattern
 
 <MermaidDiagram
-  title="Use Case Maturity Model"
+  title="Real-Time Personalization Pipeline"
   chart={`flowchart LR
-    subgraph Stage1["Level 1: Foundation"]
-      A["Basic Audience<br/>Segmentation"]:::l1
-      B["Single-Channel<br/>Activation"]:::l1
-      C["Manual Suppression<br/>Lists"]:::l1
+    subgraph Collection
+      A["Web SDK"]:::source
+      B["Mobile SDK"]:::source
+      C["Server Events API"]:::source
     end
-    subgraph Stage2["Level 2: Optimization"]
-      D["Behavioral<br/>Audiences"]:::l2
-      E["Multi-Destination<br/>Activation"]:::l2
-      F["Dynamic<br/>Suppression"]:::l2
+    subgraph Streaming Layer
+      D["Zeotap Event Stream<br/>Ingestion"]:::zeotap
+      E["Identity Resolution<br/>(Real-Time)"]:::zeotap
+      F["Segment Evaluation<br/>Engine"]:::zeotap
     end
-    subgraph Stage3["Level 3: Advanced"]
-      G["Predictive<br/>Audiences"]:::l3
-      H["Cross-Device<br/>Matching"]:::l3
-      I["Multi-Channel<br/>Orchestration"]:::l3
+    subgraph Activation
+      G["Edge Personalization<br/>(Web/App)"]:::dest
+      H["Ad Server<br/>(Google Ad Manager)"]:::dest
+      I["Recommendation<br/>Engine"]:::dest
     end
-    subgraph Stage4["Level 4: Strategic"]
-      J["Data Clean<br/>Rooms"]:::l4
-      K["Lifecycle<br/>Automation"]:::l4
-      L["Real-Time<br/>Personalization"]:::l4
+    subgraph Feedback Loop
+      J["Event Warehouse<br/>(Snowflake)"]:::warehouse
+      K["Model Training<br/>(Ada AI)"]:::process
     end
     A --> D
-    B --> E
-    C --> F
-    D --> G
-    E --> H
+    B --> D
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    F --> H
     F --> I
-    G --> J
-    H --> K
-    I --> L
-    classDef l1 fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
-    classDef l2 fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:2px
-    classDef l3 fill:#1e293b,stroke:#a855f7,color:#e2e8f0,stroke-width:2px
-    classDef l4 fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px`}
-  caption="Customers should master Level 1 before attempting Level 3. Skipping stages leads to poor outcomes and frustration."
+    D --> J
+    J --> K
+    K --> F
+    classDef source fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px
+    classDef warehouse fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px`}
+  caption="Events flow from SDKs through real-time identity resolution and segment evaluation, reaching personalization endpoints in under 200ms. A batch feedback loop refines models over time."
 />
 
-<Callout type="tip" title="The Next Best Use Case">
-When deciding which use case to recommend next, consider three factors: (1) business impact for the customer, (2) technical readiness (do they have the data and integrations needed?), and (3) team capacity (does the customer have the people to execute?). The highest-impact use case is useless if the customer is not ready for it.
+### How It Works
+
+1. **Event ingestion**: The Zeotap Web or Mobile SDK fires behavioral events (page view, product view, add-to-cart, search) to the streaming ingestion endpoint.
+2. **Real-time identity resolution**: The event is matched to a known profile within milliseconds using deterministic identifiers (logged-in user ID, device ID, cookie ID).
+3. **Segment evaluation**: The profile is evaluated against all active real-time segments. Segments that use only real-time attributes (current session behavior, last N events) are evaluated on the streaming path.
+4. **Activation**: Segment membership changes trigger an outbound webhook or API call to the personalization engine, ad server, or recommendation system.
+
+<Callout type="important" title="Latency Budget">
+The total pipeline latency budget is 200ms from event receipt to activation signal. Break this down as: ingestion (20ms) + identity resolution (30ms) + segment evaluation (50ms) + activation API call (100ms). If the customer's personalization engine adds its own processing, the budget is even tighter. Profile the full end-to-end path during implementation.
 </Callout>
 
----
+<Expandable title="Implementation Blueprint" defaultOpen={false}>
 
-## Identity Use Cases
+**Required connectors**: Zeotap Web SDK, Zeotap Mobile SDK, Server-to-Server Events API, Webhook Destination (for personalization engine)
 
-### 1. Cross-Device Matching
+**Timeline**: 4-6 weeks
+- Week 1-2: SDK implementation and event taxonomy design
+- Week 3: Real-time identity resolution configuration
+- Week 4: Segment creation and webhook activation setup
+- Week 5-6: End-to-end latency testing and optimization
 
-<Expandable title="Cross-Device Matching" defaultOpen={true}>
+**Success metrics**:
+- P95 end-to-end latency under 200ms
+- Segment evaluation accuracy (validated against batch recomputation) above 99%
+- Personalization click-through rate lift of 15-30% vs. non-personalized
+- Event throughput capacity matching peak traffic (target: 2x daily peak)
 
-**Description**: Unify a single user's activity across desktop web, mobile web, and mobile app into one profile. This enables frequency capping across devices, consistent messaging, and accurate attribution.
+**Key risks**:
+- High cardinality segments (e.g., "viewed product X" for millions of products) can slow evaluation
+- Identity resolution for anonymous users is probabilistic and less reliable in real time
+- Webhook destination availability must be monitored; implement circuit breakers
 
-**Prerequisites**:
-- Web SDK and Mobile SDK both deployed and ingesting
-- Identity strategy configured with deterministic matching (email or phone as anchor)
-- At least one authenticated touchpoint per device (login, checkout, newsletter signup)
-
-**Implementation Steps**:
-1. Verify that identify calls fire on all authenticated touchpoints across all platforms
-2. Configure cross-device matching rules in the identity graph settings
-3. Set the device ID namespace for each platform (cookie ID for web, IDFA/GAID for mobile)
-4. Run the identity graph and review the cross-device match report
-5. Validate with sample profiles: does the same user show both web and app activity?
-6. Activate a cross-device audience to test frequency capping in the ad platform
-
-**Expected Outcomes**:
-- 20-40% increase in addressable audience through device linking
-- 15-25% reduction in wasted ad spend through cross-device frequency capping
-- More accurate attribution and conversion path analysis
-</Expandable>
-
-### 2. Household Graph
-
-<Expandable title="Household Graph" defaultOpen={false}>
-
-**Description**: Link individual profiles that share a household based on shared identifiers (IP address, physical address, Wi-Fi network). Enables household-level targeting for products bought by families (insurance, streaming, groceries).
-
-**Prerequisites**:
-- Physical address or IP address data available in profiles
-- Identity graph with deterministic matching operational
-- Customer has compliance clearance for household-level targeting in their market
-
-**Implementation Steps**:
-1. Ingest address data (hashed or standardized) from CRM or purchase records
-2. Configure household matching rules: same standardized address = same household
-3. Optionally add IP clustering for households without shared address data
-4. Set household size limits (cap at 6-8 members to prevent apartment building false matches)
-5. Create household-level computed attributes: household total spend, number of members, product coverage
-6. Build a household audience: "Households with high total spend but only one member using the product"
-
-**Expected Outcomes**:
-- 10-30% audience expansion through household-level reach
-- New upsell and cross-sell opportunities within existing customer households
-- More accurate lifetime value modeling at the household level
-</Expandable>
-
-### 3. B2B Account Matching
-
-<Expandable title="B2B Account Matching" defaultOpen={false}>
-
-**Description**: Roll up individual user profiles to company-level accounts for B2B marketing. Map website visitors and product users to their employer or company, enabling account-based marketing (ABM) workflows.
-
-**Prerequisites**:
-- Company domain or company name data on at least a subset of profiles
-- Email domain mapping table (free email domains excluded)
-- IP-to-company enrichment data (optional, for anonymous visitor matching)
-
-**Implementation Steps**:
-1. Create a company namespace in the identity graph
-2. Map user email domains to company accounts (exclude free email domains: gmail, yahoo, hotmail)
-3. Optionally enrich with IP-to-company data for anonymous visitors
-4. Build company-level computed attributes: number of users, total engagement, product adoption score
-5. Create ABM audiences: "Target accounts with 3+ users but no enterprise license"
-6. Activate to LinkedIn Ads, Demandbase, or 6sense for account-based campaigns
-
-**Expected Outcomes**:
-- 60-80% of known users mapped to company accounts
-- ABM campaigns with 2-3x higher conversion rates than non-ABM
-- Sales team receives account-level engagement intelligence for prioritization
 </Expandable>
 
 ---
 
-## Audience Use Cases
+## 2. Cross-Channel Journey Orchestration
 
-### 4. Predictive Audiences
+Cross-channel orchestration coordinates messaging across email, push notifications, SMS, in-app messaging, and paid media to deliver a coherent customer journey. The CDP serves as the central brain that decides which channel, message, and timing to use for each individual.
 
-<Expandable title="Predictive Audiences" defaultOpen={true}>
+### Architecture Pattern
 
-**Description**: Use machine learning models to predict future behavior (likely to purchase, likely to churn, likely to upgrade) and build audiences from those predictions. Predictive audiences outperform rule-based segments because they capture non-obvious behavioral patterns.
+<MermaidDiagram
+  title="Cross-Channel Journey Orchestration"
+  chart={`flowchart TD
+    subgraph Trigger Layer
+      A["Behavioral Event<br/>(cart abandonment)"]:::source
+      B["Lifecycle Event<br/>(subscription renewal)"]:::source
+      C["Segment Entry<br/>(high-value customer)"]:::source
+    end
+    subgraph Zeotap Orchestration Engine
+      D["Journey Builder"]:::zeotap
+      E["Channel Selector<br/>(preference + fatigue rules)"]:::zeotap
+      F["Wait / Decision<br/>Nodes"]:::zeotap
+    end
+    subgraph Channel Activation
+      G["Email<br/>(Braze / SFMC)"]:::dest
+      H["Push<br/>(Braze / Airship)"]:::dest
+      I["SMS<br/>(Twilio / Braze)"]:::dest
+      J["In-App<br/>(Braze / Custom)"]:::dest
+      K["Paid Media<br/>(Meta / Google)"]:::dest
+    end
+    subgraph Feedback
+      L["Engagement Events<br/>(open, click, convert)"]:::process
+      M["Suppression &<br/>Frequency Capping"]:::process
+    end
+    A --> D
+    B --> D
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    F --> H
+    F --> I
+    F --> J
+    F --> K
+    G --> L
+    H --> L
+    I --> L
+    J --> L
+    K --> L
+    L --> M
+    M --> E
+    classDef source fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px`}
+  caption="Triggers flow into the Journey Builder, which selects channels based on user preferences and fatigue rules. Engagement feedback loops back to suppress or redirect subsequent steps."
+/>
 
-**Prerequisites**:
-- 90+ days of behavioral event history
-- Sufficient conversion volume for model training (minimum 500 positive events)
-- Profile attributes and behavioral features available for model input
-
-**Implementation Steps**:
-1. Define the prediction target: what event are you predicting (purchase, churn, upgrade)?
-2. Configure the prediction model: select input features (recency, frequency, monetary, page views, email opens)
-3. Set the prediction window: "likely to purchase within the next 30 days"
-4. Train the model on historical data and review the performance metrics (AUC, precision, recall)
-5. Generate prediction scores for all eligible profiles
-6. Build audience segments by prediction score tier: top 10% (high intent), top 10-30% (medium intent)
-7. Activate predictive audiences to paid media and CRM
-
-**Expected Outcomes**:
-- 2-4x higher conversion rate compared to demographic-based targeting
-- 20-30% improvement in campaign efficiency (lower cost per conversion)
-- Proactive churn prevention for at-risk customers identified by the model
-</Expandable>
-
-### 5. Lookalike Expansion
-
-<Expandable title="Lookalike Expansion" defaultOpen={false}>
-
-**Description**: Take a seed audience of best customers and find statistically similar profiles in the broader population. Lookalike audiences are the primary engine for scaling acquisition campaigns beyond first-party data limits.
-
-**Prerequisites**:
-- A high-quality seed audience (top customers by revenue, engagement, or LTV)
-- Sufficient seed size (minimum 1,000 profiles, ideally 5,000+)
-- Third-party data enrichment or large first-party data footprint for expansion
-
-**Implementation Steps**:
-1. Build the seed audience from top-performing customers (use RFM scoring or LTV model)
-2. Configure lookalike expansion with similarity threshold (start at 90% similarity, then broaden)
-3. Choose expansion source: first-party data only, or include Zeotap's third-party data graph
-4. Generate the lookalike audience and review the overlap analysis with the seed
-5. A/B test the lookalike audience against the platform's native lookalike (Google Similar Audiences, Meta Lookalike) and against broad targeting
-6. Iterate: adjust similarity threshold based on performance vs. scale tradeoff
-
-**Expected Outcomes**:
-- 5-10x audience scale compared to first-party seed alone
-- 30-50% lower CPA compared to broad demographic targeting
-- Consistent source of high-quality acquisition audiences across platforms
-</Expandable>
-
-### 6. Dynamic Suppression
-
-<Expandable title="Dynamic Suppression" defaultOpen={false}>
-
-**Description**: Automatically suppress users from campaigns when they complete a desired action (purchase, sign-up, renewal). Dynamic suppression eliminates wasted ad spend in near real-time.
-
-**Prerequisites**:
-- Conversion events ingested with low latency (ideally real-time via SDK or server-to-server)
-- Audiences syncing to destinations at least daily (ideally hourly or real-time)
-- Suppression audience configured as a negative targeting list in destination platforms
-
-**Implementation Steps**:
-1. Create a suppression audience with criteria: "Completed [conversion event] within last [N] days"
-2. Configure audience refresh frequency to match the customer's latency needs
-3. Push the suppression audience to all acquisition destinations as a negative targeting list
-4. Validate suppression is working: sample recent converters and confirm they are excluded from active campaigns
-5. Measure wasted spend reduction by comparing pre-suppression and post-suppression CPM and frequency
-
-**Expected Outcomes**:
-- 10-25% reduction in acquisition media spend (by eliminating impressions wasted on existing customers)
-- Improved customer experience (no ads for products they already bought)
-- Measurable ROI contribution to the value story
-</Expandable>
-
----
-
-## Journey Use Cases
-
-### 7. Multi-Channel Orchestration
-
-<Expandable title="Multi-Channel Orchestration" defaultOpen={true}>
-
-**Description**: Coordinate messaging across email, push notification, SMS, paid media, and on-site personalization based on a unified customer journey. The right message on the right channel at the right time.
-
-**Prerequisites**:
-- At least 3 destination channels configured (email, push, paid media)
-- Journey builder with channel action nodes for each destination
-- Customer consent captured for each channel (email opt-in, push permission, SMS consent)
-
-**Implementation Steps**:
-1. Map the customer journey for a specific use case (e.g., cart abandonment recovery)
-2. Design the journey flow: trigger event → wait period → first channel attempt → decision node → fallback channel
-3. Configure channel priority: try email first (lowest cost), then push, then SMS, then paid retargeting
-4. Add decision nodes: if user opened email, do not send push; if user converted, exit journey
-5. Set frequency caps: maximum 3 touches across all channels in a 7-day window
-6. Launch the journey and monitor channel-level and journey-level metrics
-7. Optimize based on results: adjust wait times, channel priority, and content per channel
-
-**Expected Outcomes**:
-- 25-40% higher recovery rate compared to single-channel approach
-- Lower overall channel cost by prioritizing cheaper channels first
-- Consistent brand experience across touchpoints
-</Expandable>
-
-### 8. A/B Testing in Journeys
-
-<Expandable title="A/B Testing in Journeys" defaultOpen={false}>
-
-**Description**: Split journey participants into test groups to compare different strategies: messaging variants, channel sequences, timing, or offer types. Systematic testing turns intuition into data-driven decisions.
-
-**Prerequisites**:
-- Journey builder with A/B split nodes
-- Sufficient audience volume for statistical significance (minimum 1,000 per variant)
-- Clear success metric defined before the test starts (conversion rate, revenue per user, engagement rate)
-
-**Implementation Steps**:
-1. Define the hypothesis: "Sending a 10% discount email 2 hours after cart abandonment will convert better than waiting 24 hours"
-2. Configure A/B split in the journey: 50/50 random split (or 80/20 if the variant is risky)
-3. Ensure both paths lead to the same measurement point (conversion event)
-4. Run the test for a statistically significant duration (use a sample size calculator before launching)
-5. Analyze results: compare conversion rate, revenue per user, and cost per conversion between variants
-6. Implement the winner as the default path; design the next test
-
-**Expected Outcomes**:
-- Continuous improvement in journey performance (5-15% lift per winning test)
-- Data-backed evidence for marketing strategy decisions
-- A culture of experimentation that deepens platform engagement
-</Expandable>
-
-### 9. Lifecycle Automation
-
-<Expandable title="Lifecycle Automation" defaultOpen={false}>
-
-**Description**: Automate the entire customer lifecycle from acquisition to retention to win-back with interconnected journeys that hand off users between lifecycle stages automatically.
-
-**Prerequisites**:
-- Lifecycle stage definitions agreed with the customer (prospect, new customer, active, at-risk, churned)
-- Computed attribute for lifecycle stage based on behavioral signals
-- Journey templates for each lifecycle transition
-
-**Implementation Steps**:
-1. Define lifecycle stages and the rules that move a user between stages
-2. Build a computed attribute that calculates each profile's current lifecycle stage daily
-3. Create journeys for each lifecycle transition:
-   - Prospect → New Customer: welcome series (email + push + in-app tour)
-   - New Customer → Active: onboarding milestones and engagement nudges
-   - Active → At-Risk: re-engagement campaign triggered by declining activity
-   - At-Risk → Churned: win-back campaign with incentive escalation
-   - Churned → Reactivated: special return offer and streamlined re-onboarding
-4. Connect journeys via exit criteria: when a user exits "welcome," they enter "active engagement" monitoring
-5. Set up lifecycle stage transition dashboards to track flow between stages
-6. Review and optimize quarterly based on stage duration and transition rates
-
-**Expected Outcomes**:
-- 15-30% improvement in customer retention through proactive lifecycle management
-- Reduced manual campaign management (automated triggers replace manual sends)
-- Clear visibility into where customers are in their lifecycle and where they get stuck
-</Expandable>
-
----
-
-## Activation Use Cases
-
-### 10. Real-Time Personalization
-
-<Expandable title="Real-Time Personalization" defaultOpen={true}>
-
-**Description**: Use Zeotap audience membership and profile attributes to personalize website or app experiences in real time. Show different content, offers, or product recommendations based on who the visitor is.
-
-**Prerequisites**:
-- Zeotap Web SDK deployed with real-time audience evaluation
-- Personalization engine or CMS that can consume audience signals (Optimizely, Dynamic Yield, custom)
-- Integration between Zeotap and the personalization layer (API or edge-side)
-
-**Implementation Steps**:
-1. Define personalization use cases: hero banner by audience, product recommendations by lifecycle stage, CTA by purchase history
-2. Configure real-time audience evaluation in Zeotap for the segments that will drive personalization
-3. Integrate Zeotap's audience API with the personalization engine (REST API call on page load or edge-side decision)
-4. Build personalization rules in the customer's CMS/personalization tool using Zeotap audience membership as the trigger
-5. Set up A/B tests to measure personalization impact vs. default experience
-6. Launch, monitor, and iterate
-
-**Expected Outcomes**:
-- 10-25% increase in on-site conversion rate
-- Higher engagement metrics (time on site, pages per session, click-through rate)
-- Revenue attribution from personalization that strengthens the ROI story
-</Expandable>
-
-### 11. Data Clean Rooms
-
-<Expandable title="Data Clean Rooms" defaultOpen={false}>
-
-**Description**: Enable privacy-safe data collaboration between the customer and their partners (publishers, retailers, walled gardens) without raw data sharing. Data clean rooms allow audience overlap analysis, measurement, and activation on matched audiences.
-
-**Prerequisites**:
-- Customer has a clean room use case with a specific partner (retailer media network, publisher, or walled garden)
-- Clean room infrastructure available (Snowflake DCR, AWS Clean Rooms, Google ADH, or Zeotap's native clean room)
-- Legal and privacy team approval for the data collaboration
-
-**Implementation Steps**:
-1. Define the clean room use case: audience overlap analysis, campaign measurement, or joint audience activation
-2. Determine the clean room technology: customer's preference or partner's requirement
-3. Configure Zeotap's data export to the clean room environment (hashed identifiers, audience membership, aggregated attributes)
-4. Define the query templates: what analyses are permitted within the clean room
-5. Run the first collaboration: measure audience overlap with the partner and identify joint audience opportunities
-6. Activate matched audiences through the partner's media platform
-
-**Expected Outcomes**:
-- Privacy-compliant data collaboration that opens new activation channels
-- Audience overlap insights that inform media planning and partnership value
-- Future-proofed activation strategy for a post-third-party-cookie world
-</Expandable>
-
-### 12. Programmatic Activation at Scale
-
-<Expandable title="Programmatic Activation at Scale" defaultOpen={false}>
-
-**Description**: Push Zeotap audiences to programmatic advertising platforms (The Trade Desk, DV360, Xandr) for precision targeting at scale. Combine first-party data with Zeotap's identity graph for maximum addressable reach.
-
-**Prerequisites**:
-- Programmatic platform accounts configured and connected to Zeotap as destinations
-- Audiences built and validated in Zeotap
-- Media buying team trained on receiving and activating Zeotap audiences in their DSP
-
-**Implementation Steps**:
-1. Connect programmatic destinations in Zeotap (The Trade Desk, DV360, Amazon DSP)
-2. Map Zeotap identity spaces to programmatic IDs (UID2, RampID, or platform-specific IDs)
-3. Push core audiences: high-value customers, lookalikes, retargeting, suppression lists
-4. Configure sync frequency based on campaign needs (daily for always-on, hourly for time-sensitive)
-5. Coordinate with the media buying team to set up campaigns using Zeotap audiences
-6. Measure programmatic campaign performance and compare Zeotap audiences vs. other data sources
-
-**Expected Outcomes**:
-- 30-50% improvement in programmatic campaign ROAS compared to third-party data segments
-- Scalable activation across multiple DSPs from a single audience definition
-- First-party data strategy that reduces dependency on depreciating third-party cookies
-</Expandable>
-
----
-
-## Use Case Implementation Priority Matrix
-
-Use this matrix to help customers prioritize which advanced use cases to tackle next based on their current maturity and business priorities.
+### Journey Design Principles
 
 <ComparisonTable
-  headers={["Use Case", "Business Impact", "Implementation Effort", "Data Readiness Required", "Recommended Stage"]}
+  headers={["Principle", "Good Practice", "Anti-Pattern"]}
   rows={[
-    ["Cross-Device Matching", "High", "Medium", "Web + Mobile SDK", "Level 2"],
-    ["Household Graph", "Medium", "Medium", "Address data in profiles", "Level 3"],
-    ["B2B Account Matching", "High (B2B only)", "Medium", "Email domain + company data", "Level 2"],
-    ["Predictive Audiences", "Very High", "High", "90+ days of event history", "Level 3"],
-    ["Lookalike Expansion", "High", "Low", "High-quality seed audience", "Level 2"],
-    ["Dynamic Suppression", "High", "Low", "Real-time conversion events", "Level 2"],
-    ["Multi-Channel Orchestration", "Very High", "High", "3+ channels configured", "Level 3"],
-    ["A/B Testing", "Medium", "Low", "Journey builder operational", "Level 2"],
-    ["Lifecycle Automation", "Very High", "Very High", "Lifecycle stage computed attribute", "Level 4"],
-    ["Real-Time Personalization", "Very High", "High", "Real-time audience API integration", "Level 4"],
-    ["Data Clean Rooms", "High", "Very High", "Clean room infrastructure + partner", "Level 4"],
-    ["Programmatic Activation", "High", "Medium", "DSP accounts + ID mapping", "Level 2"]
+    ["Channel selection", "Use channel preference scores and recency of engagement per channel", "Blast all channels simultaneously"],
+    ["Frequency capping", "Global cap across all journeys (e.g., max 3 touches/week)", "Per-journey caps only, leading to cross-journey fatigue"],
+    ["Wait steps", "Dynamic waits based on user timezone and engagement patterns", "Fixed 24-hour waits for all users"],
+    ["Exit conditions", "Exit on conversion OR negative signal (unsubscribe, complaint)", "Exit on conversion only"],
+    ["Suppression", "Suppress from paid media when owned channel engagement is high", "No cross-channel suppression"],
+    ["Measurement", "Incrementality testing with holdout groups per journey", "Last-touch attribution only"]
   ]}
   highlightColumn={1}
 />
 
-<Callout type="important" title="Use Cases Drive Retention">
-The data is clear: accounts with 5 or more active use cases retain at dramatically higher rates than accounts with fewer than 3. Every use case you help a customer launch is both a value delivery and a retention lever. Build a use case roadmap into every account plan and track progress quarterly.
+<Callout type="tip" title="The Suppression Payoff">
+The highest-ROI pattern in cross-channel orchestration is suppression, not activation. When a user converts after an email, immediately suppress them from the paid media retargeting segment. Customers who implement cross-channel suppression typically see 30-40% reduction in media waste with no impact on conversions.
 </Callout>
 
-Each use case in this library is designed to be self-contained. A TAM can pull any use case from this reference, assess whether the customer has the prerequisites, and guide them through implementation. The goal is not to launch all 12 use cases at once, but to build a steady cadence of use case adoption that deepens platform engagement and compounds value over time.
+<Expandable title="Implementation Blueprint" defaultOpen={false}>
+
+**Required connectors**: Zeotap SDKs (web + mobile), Braze or SFMC destination, Meta Conversions API destination, Google Ads Customer Match destination, Webhook destination (for custom channels)
+
+**Timeline**: 6-8 weeks
+- Week 1-2: Event taxonomy alignment across all channels; map engagement events back into Zeotap
+- Week 3-4: Channel preference model design and frequency cap rules
+- Week 5-6: Journey builder configuration for top 3 journeys (welcome, abandonment, re-engagement)
+- Week 7-8: Holdout group setup, A/B testing framework, and measurement baseline
+
+**Success metrics**:
+- Cross-channel conversion rate lift of 20-35% vs. single-channel
+- Reduction in message fatigue complaints by 50%+
+- Paid media spend reduction of 25-40% via suppression
+- Customer lifetime value (CLTV) increase of 10-15% over 6 months
+
+</Expandable>
+
+---
+
+## 3. Predictive Modeling with Ada AI
+
+Zeotap's Ada AI provides machine-learning-powered predictions directly within the CDP. These models operate on unified customer profiles, eliminating the data science team's typical bottleneck of assembling training data from disparate sources.
+
+### Available Model Types
+
+<ComparisonTable
+  headers={["Model Type", "What It Predicts", "Typical Accuracy", "Best Input Signals", "Activation Pattern"]}
+  rows={[
+    ["Churn Prediction", "Probability a customer will stop engaging in next 30/60/90 days", "70-80% AUC", "Recency, frequency, monetary (RFM); engagement decay; support tickets", "Trigger retention journey for high-churn-risk users"],
+    ["Next-Best-Action", "Which offer, content, or channel is most likely to drive a response", "65-75% precision", "Past purchase history; channel engagement; content affinity", "Power personalization engine or journey channel selection"],
+    ["Propensity Scoring", "Likelihood to purchase a specific product or category", "70-85% AUC", "Browse behavior; cart activity; similar-user purchases", "Prioritize high-propensity users for targeted campaigns"],
+    ["Lookalike Audiences", "Users who resemble a seed audience of high-value customers", "Varies by seed quality", "Full profile features; behavioral clusters", "Expand prospecting on paid media platforms"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Predictive Model Pipeline
+
+<MermaidDiagram
+  title="Ada AI Model Pipeline"
+  chart={`flowchart LR
+    subgraph Data Preparation
+      A["Unified Customer<br/>Profiles"]:::zeotap
+      B["Feature Engineering<br/>(Ada AI)"]:::zeotap
+      C["Training Data<br/>Assembly"]:::process
+    end
+    subgraph Model Training
+      D["Algorithm Selection<br/>(AutoML)"]:::process
+      E["Model Training &<br/>Validation"]:::process
+      F["Performance<br/>Evaluation"]:::process
+    end
+    subgraph Scoring & Activation
+      G["Batch Scoring<br/>(daily refresh)"]:::zeotap
+      H["Score Written to<br/>Profile Attribute"]:::zeotap
+      I["Segment Builder<br/>(score thresholds)"]:::zeotap
+      J["Activation<br/>Destinations"]:::dest
+    end
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px`}
+  caption="Ada AI assembles features from unified profiles, trains models via AutoML, and writes prediction scores back to profiles as attributes. Scores are then used in segment builder for activation."
+/>
+
+<Callout type="info" title="Model Refresh Cadence">
+Ada AI models are retrained on a configurable cadence, typically weekly. Prediction scores are refreshed daily via batch scoring. For customers requiring more frequent scoring, discuss the streaming scoring add-on which evaluates models on each new event in near real-time.
+</Callout>
+
+<Expandable title="Implementation Blueprint: Churn Prediction" defaultOpen={false}>
+
+**Required connectors**: All data sources feeding unified profiles (SDK events, CRM imports, purchase data from warehouse)
+
+**Timeline**: 3-5 weeks
+- Week 1: Define churn event (what constitutes churn for this customer: no login in 30 days? no purchase in 60 days?)
+- Week 2: Feature audit and data quality check; ensure sufficient historical data (minimum 6 months, ideally 12+)
+- Week 3: Model training and validation with Ada AI; review AUC, precision/recall curves with customer data science team
+- Week 4: Deploy scoring; create segments (high-risk, medium-risk, low-risk) with appropriate thresholds
+- Week 5: Connect churn-risk segments to retention journey and/or CSM alerting
+
+**Success metrics**:
+- AUC above 0.70 (good), above 0.80 (excellent)
+- Reduction in churn rate of 10-20% within the first quarter
+- Retention campaign cost per saved customer tracked and optimized
+- Model drift monitored monthly; retrain trigger if AUC drops below 0.65
+
+</Expandable>
+
+<Expandable title="Implementation Blueprint: Lookalike Audiences" defaultOpen={false}>
+
+**Required connectors**: Paid media destinations (Meta, Google Ads, The Trade Desk), unified profile data
+
+**Timeline**: 2-3 weeks
+- Week 1: Define and validate seed audience (e.g., top 5% customers by CLTV, recent converters, loyal subscribers)
+- Week 2: Run Ada AI lookalike expansion; review feature importance and similarity distribution
+- Week 3: Activate lookalike segments to paid media platforms; set up A/B test against platform-native lookalikes
+
+**Success metrics**:
+- CPA reduction of 15-25% vs. platform-native lookalikes
+- Reach expansion of 3-5x beyond seed audience
+- Conversion rate within 80% of seed audience conversion rate
+- Incremental ROAS measured via holdout test
+
+</Expandable>
+
+---
+
+## 4. Data Clean Rooms and Second-Party Data Collaboration
+
+Data clean rooms enable two parties to combine their first-party data for analysis and activation without either party exposing raw customer records to the other. This is increasingly critical as third-party cookies deprecate and brands seek privacy-safe ways to enrich their data.
+
+### Clean Room Architecture with Zeotap
+
+<MermaidDiagram
+  title="Data Clean Room Architecture"
+  chart={`flowchart LR
+    subgraph Brand Side
+      A["Zeotap CDP<br/>(Brand Profiles)"]:::zeotap
+      B["Hashed Identifiers<br/>(SHA-256 email)"]:::process
+    end
+    subgraph Clean Room Environment
+      C["Snowflake DCR /<br/>AWS Clean Rooms"]:::warehouse
+      D["Approved Queries<br/>Only"]:::process
+      E["Overlap Analysis &<br/>Audience Creation"]:::process
+    end
+    subgraph Partner Side
+      F["Partner Data<br/>(Retailer / Publisher)"]:::source
+      G["Hashed Identifiers<br/>(SHA-256 email)"]:::process
+    end
+    subgraph Activation
+      H["Enriched Segments<br/>in Zeotap"]:::zeotap
+      I["Media Activation"]:::dest
+    end
+    A --> B
+    B --> C
+    F --> G
+    G --> C
+    C --> D
+    D --> E
+    E --> H
+    H --> I
+    classDef source fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef warehouse fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px`}
+  caption="Both parties contribute hashed identifiers to a clean room. Only pre-approved queries run against the combined data. Results flow back to Zeotap as enriched segments for activation."
+/>
+
+### Common Clean Room Use Cases
+
+<Expandable title="Retailer-Brand Collaboration" defaultOpen={true}>
+
+A CPG brand wants to understand which of their website visitors have purchased their products at a major retailer. The brand contributes hashed email addresses from Zeotap; the retailer contributes purchase data with hashed emails. The clean room computes the overlap, and the brand receives aggregate insights (e.g., "35% of your website visitors bought your product in the last 90 days") plus an activatable segment of non-purchasers for targeted media.
+
+**Privacy safeguard**: The brand never sees the retailer's raw data. The retailer never sees the brand's behavioral data. Only aggregate statistics and opaque audience lists leave the clean room.
+
+</Expandable>
+
+<Expandable title="Publisher Audience Enrichment" defaultOpen={false}>
+
+A brand wants to target users on a premium publisher who match their high-value customer profile. The brand shares hashed identifiers and value scores from Zeotap; the publisher shares hashed identifiers and content consumption data. The clean room identifies overlap users and creates publisher-side targeting segments enriched with the brand's value signals.
+
+</Expandable>
+
+<Callout type="info" title="Zeotap's Clean Room Position">
+Zeotap integrates with Snowflake Data Clean Rooms, AWS Clean Rooms, and Google Ads Data Hub. Zeotap provides the identity resolution and profile enrichment layer that makes clean room collaboration more effective. The TAM's role is to help the customer define the collaboration terms, select the right clean room technology, and ensure the output segments flow back into Zeotap for activation.
+</Callout>
+
+<Expandable title="Implementation Blueprint" defaultOpen={false}>
+
+**Required connectors**: Snowflake Secure Data Share or AWS Clean Rooms connector, Zeotap identity export, partner data ingestion pipeline
+
+**Timeline**: 6-10 weeks (includes legal/commercial negotiation)
+- Week 1-2: Identify collaboration partner and define use case scope
+- Week 3-4: Legal and data governance review; sign data collaboration agreement
+- Week 5-6: Configure clean room environment; define approved query templates
+- Week 7-8: Run initial overlap analysis and validate match rates
+- Week 9-10: Activate enriched segments through Zeotap destinations
+
+**Success metrics**:
+- Match rate between brand and partner data above 20% (varies by industry)
+- Enriched audience ROAS improvement of 25-40% vs. non-enriched
+- Data governance compliance verified by both parties' legal teams
+- Time to insight under 48 hours for approved queries
+
+</Expandable>
+
+---
+
+## 5. Composable CDP Patterns with SignalSmith
+
+SignalSmith is Zeotap's warehouse-native activation capability that enables customers to keep their data in their own warehouse while using Zeotap's audience building and activation features on top of it. This is the composable CDP pattern: the warehouse provides storage and compute, Zeotap provides the audience intelligence and activation layer.
+
+### Composable CDP Architecture
+
+<MermaidDiagram
+  title="Composable CDP with SignalSmith"
+  chart={`flowchart LR
+    subgraph Customer Warehouse
+      A["Raw Event<br/>Tables"]:::warehouse
+      B["dbt Models<br/>(Transformations)"]:::process
+      C["Customer 360<br/>Table"]:::warehouse
+      D["SignalSmith<br/>Compute Pushdown"]:::zeotap
+    end
+    subgraph Zeotap Platform
+      E["Schema Mapping &<br/>Catalog"]:::zeotap
+      F["Audience Builder<br/>(Visual UI)"]:::zeotap
+      G["Identity Resolution"]:::zeotap
+    end
+    subgraph Activation
+      H["Ad Platforms"]:::dest
+      I["Marketing<br/>Automation"]:::dest
+      J["Analytics &<br/>Reporting"]:::dest
+    end
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    E --> G
+    F --> H
+    F --> I
+    G --> F
+    F --> J
+    classDef warehouse fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px`}
+  caption="SignalSmith pushes compute into the customer's warehouse. Data never leaves the warehouse for audience evaluation. Only the resulting audience lists are extracted for activation."
+/>
+
+### When to Use Composable CDP vs. Full CDP
+
+<ComparisonTable
+  headers={["Dimension", "Composable CDP (SignalSmith)", "Full CDP (Zeotap Platform)"]}
+  rows={[
+    ["Data residency", "Data stays in customer warehouse", "Data ingested into Zeotap platform"],
+    ["Best for", "Warehouse-first teams with strong data engineering", "Teams who want turnkey data collection and management"],
+    ["Engineering dependency", "High (warehouse must be well-modeled)", "Low-Medium (Zeotap handles modeling)"],
+    ["Real-time capability", "Limited (depends on warehouse streaming features)", "Full real-time via SDK streaming path"],
+    ["Identity resolution", "Zeotap resolves on warehouse-resident data", "Zeotap resolves on ingested data with full graph"],
+    ["Cost model", "Customer pays warehouse compute; Zeotap licenses activation", "Zeotap all-in-one pricing"],
+    ["Data freshness", "Depends on warehouse refresh cadence (hourly to daily)", "Real-time for streamed events, scheduled for batch"],
+    ["Governance", "Customer retains full control; data never copied", "Data governed by Zeotap DPA and security controls"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="tip" title="The Hybrid Composable Pattern">
+Many enterprise customers adopt a hybrid composable approach: SignalSmith for batch audiences built on warehouse data (CRM segments, purchase-based audiences), combined with the full Zeotap streaming path for real-time behavioral triggers. This gives the data engineering team control over their warehouse data while enabling marketing to act on real-time signals.
+</Callout>
+
+<Expandable title="Implementation Blueprint" defaultOpen={false}>
+
+**Required connectors**: Snowflake or BigQuery SignalSmith connector, destination connectors for activation platforms
+
+**Prerequisites**: Customer must have a well-modeled customer 360 table (or equivalent) in their warehouse with a stable primary key
+
+**Timeline**: 3-5 weeks
+- Week 1: Schema discovery and mapping; connect SignalSmith to warehouse tables
+- Week 2: Identity resolution configuration on warehouse-resident identifiers
+- Week 3: Audience builder setup; create first set of audiences using warehouse attributes
+- Week 4-5: Destination activation setup and end-to-end testing
+
+**Success metrics**:
+- Zero data copying: all audience evaluation runs in the customer's warehouse
+- Audience refresh latency within 1 hour of warehouse table update
+- Marketing team self-service rate above 80% for audience creation (no SQL required)
+- Activation to destinations within 30 minutes of audience computation
+
+</Expandable>
+
+---
+
+## 6. Multi-Brand / Multi-Region Identity Resolution
+
+Enterprise customers with multiple brands, business units, or regional operations face a unique identity resolution challenge: they need both a unified view of the customer across the enterprise and isolated views per brand or region for compliance and operational reasons.
+
+### Identity Architecture
+
+<MermaidDiagram
+  title="Multi-Brand Identity Resolution"
+  chart={`flowchart TD
+    subgraph Brand A
+      A1["Brand A<br/>Web SDK"]:::source
+      A2["Brand A<br/>CRM"]:::source
+      A3["Brand A<br/>Profile Store"]:::zeotap
+    end
+    subgraph Brand B
+      B1["Brand B<br/>Web SDK"]:::source
+      B2["Brand B<br/>CRM"]:::source
+      B3["Brand B<br/>Profile Store"]:::zeotap
+    end
+    subgraph Enterprise Identity Layer
+      C["Cross-Brand<br/>Identity Graph"]:::zeotap
+      D["Consent-Aware<br/>Merge Rules"]:::process
+      E["Enterprise<br/>Customer 360"]:::zeotap
+    end
+    subgraph Activation
+      F["Brand A<br/>Campaigns"]:::dest
+      G["Brand B<br/>Campaigns"]:::dest
+      H["Enterprise<br/>Analytics"]:::warehouse
+    end
+    A1 --> A3
+    A2 --> A3
+    B1 --> B3
+    B2 --> B3
+    A3 --> C
+    B3 --> C
+    C --> D
+    D --> E
+    E --> F
+    E --> G
+    E --> H
+    classDef source fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px
+    classDef warehouse fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px`}
+  caption="Each brand maintains its own profile store. A cross-brand identity graph links profiles across brands using consent-aware merge rules. Activation can happen at brand level or enterprise level."
+/>
+
+### Key Design Decisions
+
+<Expandable title="Merge Rules and Cross-Brand Linking" defaultOpen={true}>
+
+The most critical decision is the merge rule configuration:
+
+- **Strict merge**: Only link profiles across brands when the same verified email address or phone number appears in both. This produces fewer cross-brand links but higher confidence.
+- **Probabilistic merge**: Use device IDs, IP addresses, and behavioral signals to link profiles across brands. Higher coverage but risk of false positives.
+- **Consent-gated merge**: Only merge profiles across brands when the user has consented to cross-brand data sharing. This is required in GDPR jurisdictions and recommended everywhere.
+
+**TAM recommendation**: Start with strict, consent-gated merge rules. Expand to probabilistic only after the customer has validated the strict merge results and has a clear use case that requires higher coverage.
+
+</Expandable>
+
+<Expandable title="Multi-Region Compliance Patterns" defaultOpen={false}>
+
+For customers operating in multiple regulatory regions (EU, US, APAC):
+
+- **Data residency**: Configure separate Zeotap instances per region where required, or use region-aware processing rules within a single instance
+- **Consent mapping**: Map each region's consent framework (GDPR consent, CCPA opt-out, LGPD consent) to Zeotap's consent model
+- **Cross-region identity**: Define whether cross-region identity resolution is permitted based on consent. In many cases, EU data cannot be merged with US data without explicit consent for cross-border transfer
+- **Audience isolation**: Ensure audiences built on EU data can only be activated to EU-approved destinations
+
+</Expandable>
+
+<Expandable title="Implementation Blueprint" defaultOpen={false}>
+
+**Required connectors**: Per-brand SDKs, per-brand CRM connectors, shared enterprise warehouse connector
+
+**Timeline**: 8-12 weeks
+- Week 1-3: Brand-by-brand data audit; map identifiers, consent signals, and data schemas per brand
+- Week 4-5: Design merge rules and cross-brand linking strategy; legal review
+- Week 6-7: Configure brand-level profile stores and enterprise identity graph
+- Week 8-10: Test merge accuracy; validate cross-brand match rates; review edge cases
+- Week 11-12: Activate cross-brand use cases (e.g., suppress Brand A customers from Brand B acquisition campaigns)
+
+**Success metrics**:
+- Cross-brand match rate of 15-30% (varies by brand overlap)
+- False positive rate below 1% (verified via manual audit of sample merges)
+- Consent compliance audit passed with zero violations
+- Enterprise customer count (deduplicated) accuracy within 5% of manual estimate
+
+</Expandable>
+
+---
+
+## 7. Privacy-Preserving Analytics and Consent-Driven Personalization
+
+Privacy is not a constraint to work around; it is an architectural requirement to design for. This section covers patterns that deliver personalization and analytics value while fully respecting user consent and regulatory requirements.
+
+### Consent-Driven Personalization Framework
+
+<ArchDiagram
+  title="Consent-Driven Personalization Tiers"
+  steps={[
+    { label: "Full Consent", detail: "User has opted in to all data collection and personalization. Full profile available for 1:1 personalization, cross-channel orchestration, and predictive modeling.", icon: "✅" },
+    { label: "Partial Consent", detail: "User consents to functional personalization but not advertising. Use for on-site personalization and owned-channel messaging. Exclude from paid media activation.", icon: "⚠️" },
+    { label: "Analytics Only", detail: "User consents to analytics but not personalization. Include in aggregate reporting and cohort analysis. Do not target individually.", icon: "📊" },
+    { label: "No Consent", detail: "User has not consented or has opted out. Serve default experience. Exclude from all segments, analytics, and personalization.", icon: "🚫" }
+  ]}
+/>
+
+### Privacy-Preserving Analytics Techniques
+
+<ComparisonTable
+  headers={["Technique", "How It Works", "When to Use", "Zeotap Capability"]}
+  rows={[
+    ["Cohort-based analysis", "Group users into behavioral cohorts rather than tracking individuals", "When individual-level analytics is not consented", "Audience overlap reports and cohort comparison"],
+    ["Differential privacy", "Add mathematical noise to query results to prevent re-identification", "When sharing analytics with partners or publishing reports", "Supported in clean room integrations"],
+    ["K-anonymity enforcement", "Suppress segments smaller than K users (typically K=100)", "All audience activation to prevent micro-targeting", "Configurable minimum segment size in Zeotap"],
+    ["Consent-aware feature engineering", "Only use data points the user has consented to in model training", "All predictive modeling with Ada AI", "Consent signals as feature filters in model config"],
+    ["Server-side tracking", "Collect events server-side to reduce client-side tracking exposure", "When client-side consent rates are low", "Server-to-Server Events API"]
+  ]}
+  highlightColumn={3}
+/>
+
+<Callout type="important" title="Consent Is Not Binary">
+Design all implementations with a tiered consent model from day one. A user who consents to email marketing but not advertising cookies should receive email personalization but be excluded from paid media segments. Zeotap's consent framework supports granular consent purposes; use them. Retrofitting consent tiers into an existing implementation is far more expensive than building them in from the start.
+</Callout>
+
+---
+
+## 8. Integration Patterns: CDP + Ecosystem
+
+### CDP + Data Warehouse (Snowflake / BigQuery)
+
+<MermaidDiagram
+  title="CDP + Warehouse Bidirectional Integration"
+  chart={`flowchart LR
+    subgraph Warehouse
+      A["Raw Data<br/>Landing Zone"]:::warehouse
+      B["dbt<br/>Transformations"]:::process
+      C["Customer 360<br/>Model"]:::warehouse
+      D["ML Feature<br/>Store"]:::warehouse
+    end
+    subgraph Zeotap CDP
+      E["Profile<br/>Ingestion"]:::zeotap
+      F["Identity<br/>Resolution"]:::zeotap
+      G["Audience<br/>Builder"]:::zeotap
+      H["Ada AI<br/>Scoring"]:::zeotap
+    end
+    subgraph Outbound
+      I["Audience Export<br/>to Warehouse"]:::warehouse
+      J["Activation to<br/>Destinations"]:::dest
+    end
+    C --> E
+    D --> E
+    E --> F
+    F --> G
+    F --> H
+    G --> J
+    H --> G
+    G --> I
+    I --> A
+    classDef warehouse fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px`}
+  caption="Warehouse feeds modeled data into Zeotap for identity resolution and audience building. Zeotap writes audience membership back to the warehouse for BI reporting and model training."
+/>
+
+<Expandable title="Integration Design Checklist" defaultOpen={false}>
+
+**Warehouse to CDP**:
+- Define the source table(s): typically a customer 360 table with one row per customer
+- Map warehouse columns to Zeotap profile attributes (identifiers, traits, computed features)
+- Set sync cadence: hourly for active campaigns, daily for steady-state
+- Handle schema evolution: what happens when the warehouse schema changes?
+
+**CDP to Warehouse**:
+- Export audience membership as a table: user_id, audience_name, entry_timestamp, exit_timestamp
+- Export prediction scores from Ada AI back to the warehouse for BI dashboards
+- Export event data collected via SDKs back to the warehouse for analytics
+
+**Coordination**:
+- Use a shared identifier (typically an internal customer ID) as the join key
+- Align on data freshness SLAs: the warehouse export to the CDP and the CDP export to the warehouse should have documented latency expectations
+- Monitor sync health with alerting on row count drops, schema mismatches, or sync failures
+
+</Expandable>
+
+### CDP + Marketing Cloud
+
+<Expandable title="Integration Design: Zeotap + Braze / SFMC / Iterable" defaultOpen={false}>
+
+The CDP-to-marketing-cloud integration is the most common activation pattern. Key design considerations:
+
+**Data flow**: Zeotap pushes audience membership and profile attributes to the marketing cloud. The marketing cloud uses these for campaign targeting, message personalization, and triggered sends.
+
+**What to sync**:
+- Audience membership (add/remove from lists or segments)
+- Key profile attributes for personalization (first name, product affinity, loyalty tier)
+- Predictive scores (churn risk, propensity to purchase)
+- Do NOT sync raw event streams; the marketing cloud has its own event tracking
+
+**Sync mode**:
+- Differential sync (only changes) to minimize API calls and cost
+- Full sync on a scheduled cadence (weekly) to correct any drift
+- Real-time sync for triggered campaigns (e.g., segment entry triggers a welcome email)
+
+**Identity matching**: Align on the identifier used in both systems. Typically email address or an external customer ID. Ensure the identifier exists in both Zeotap profiles and marketing cloud contact records.
+
+</Expandable>
+
+### CDP + Analytics Platform
+
+<Expandable title="Integration Design: Zeotap + Amplitude / Mixpanel / Adobe Analytics" defaultOpen={false}>
+
+The CDP-to-analytics integration enables enriched behavioral analysis with unified customer profiles.
+
+**Enrichment pattern**: Zeotap sends profile attributes and audience membership to the analytics platform, enabling analysts to segment behavioral data by CDP-derived attributes (e.g., filter funnel analysis by "high-value customer" segment).
+
+**Reverse enrichment**: The analytics platform computes behavioral metrics (session count, feature adoption score) that flow back to Zeotap as profile attributes for audience building.
+
+**Implementation**:
+- Use Zeotap's webhook destination or cloud storage export to push enrichment data
+- Use the analytics platform's import API or warehouse integration to ingest
+- Align user identifiers across both systems
+- Set a daily or hourly enrichment cadence depending on analysis requirements
+
+</Expandable>
+
+---
+
+## 9. Advanced Segmentation Techniques
+
+Standard segment builder operations (filter by attribute, combine with AND/OR) cover 80% of use cases. The remaining 20% require advanced segmentation techniques that unlock significantly more value.
+
+### Behavioral Triggers
+
+Behavioral triggers fire when a user performs a specific action or sequence of actions, rather than matching a static profile attribute.
+
+<ComparisonTable
+  headers={["Trigger Type", "Example", "Implementation", "Latency"]}
+  rows={[
+    ["Single event trigger", "User adds item to cart", "Segment: event 'add_to_cart' occurred in last 30 minutes", "Real-time (streaming path)"],
+    ["Event threshold trigger", "User views 5+ products in a session", "Segment: count of 'product_view' events in current session >= 5", "Real-time"],
+    ["Absence trigger", "User has not opened app in 7 days", "Segment: last occurrence of 'app_open' event > 7 days ago", "Batch (daily evaluation)"],
+    ["Value threshold trigger", "User's cart value exceeds $200", "Segment: sum of 'cart_value' attribute > 200", "Real-time"],
+    ["Velocity trigger", "User's purchase frequency increased 2x in last 30 days vs. prior 30 days", "Computed attribute comparing two time windows", "Batch (daily computation)"]
+  ]}
+  highlightColumn={0}
+/>
+
+### Time-Windowed Segments
+
+Time-windowed segments evaluate user behavior within a specific time range, enabling recency-based targeting that static attributes cannot achieve.
+
+<Expandable title="Time Window Patterns" defaultOpen={true}>
+
+- **Rolling window**: "Purchased in the last 30 days" -- the window moves forward each day. Use for ongoing campaigns.
+- **Fixed window**: "Purchased between Black Friday and Cyber Monday 2025" -- the window is static. Use for campaign retrospectives and cohort analysis.
+- **Relative window comparison**: "Purchase frequency in last 30 days is 2x higher than the 30 days before that" -- compares two rolling windows. Use for trend detection (accelerating engagement, declining activity).
+- **Decay window**: Weight recent events more heavily than older ones. "Product affinity score with exponential decay (half-life: 14 days)." Use for recommendation inputs where recency matters more than frequency.
+
+</Expandable>
+
+### Suppression Logic
+
+Suppression segments prevent specific users from receiving messages or being included in paid media audiences. Proper suppression logic is essential for compliance, cost efficiency, and customer experience.
+
+<Expandable title="Suppression Patterns" defaultOpen={false}>
+
+- **Post-conversion suppression**: User purchased the product being advertised. Remove from retargeting audiences within 1 hour of purchase event.
+- **Recent communication suppression**: User received an email in the last 48 hours. Suppress from SMS and push to avoid fatigue.
+- **Complaint suppression**: User filed a support ticket in the last 7 days. Suppress from all promotional communications.
+- **Frequency cap suppression**: User has been exposed to 3+ paid media impressions in the last 7 days. Suppress from paid media to reduce waste.
+- **Cross-journey suppression**: User is already in an active retention journey. Suppress from acquisition and cross-sell journeys to avoid conflicting messages.
+- **Regulatory suppression**: User has opted out of a specific consent purpose. Suppress from all activations tied to that purpose. This is non-negotiable.
+
+</Expandable>
+
+### Sequential Segments
+
+Sequential segments define an ordered series of events that must occur in sequence, optionally within a time constraint. These are the most powerful and most complex segmentation capability.
+
+<MermaidDiagram
+  title="Sequential Segment Example: Consideration Funnel"
+  chart={`flowchart LR
+    A["Step 1:<br/>Category Page View"]:::source
+    B["Step 2:<br/>Product Detail View<br/>(within 7 days)"]:::process
+    C["Step 3:<br/>Add to Cart<br/>(within 3 days)"]:::process
+    D["Step 4:<br/>NOT Purchased<br/>(within 7 days)"]:::dest
+    E["Segment:<br/>High-Intent<br/>Abandoner"]:::zeotap
+    A -->|"then"| B
+    B -->|"then"| C
+    C -->|"then NOT"| D
+    D --> E
+    classDef source fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px
+    classDef dest fill:#1e293b,stroke:#ef4444,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px`}
+  caption="A sequential segment captures users who viewed a category, then a product, then added to cart, but did NOT purchase -- all within defined time windows. This identifies high-intent abandoners for targeted recovery."
+/>
+
+<Callout type="tip" title="Sequential Segment Performance">
+Sequential segments are computationally expensive because they require ordered event evaluation across potentially millions of user event histories. Limit the lookback window (e.g., last 30 days rather than all time) and limit the number of steps (3-5 is typical) to keep evaluation performant. For real-time sequential segments, consider using the streaming path only for the final step trigger and batch-compute eligibility for earlier steps.
+</Callout>
+
+---
+
+## 10. Implementation Blueprints: Summary Reference
+
+<ComparisonTable
+  headers={["Use Case", "Complexity", "Timeline", "Key Connectors", "Primary Success Metric"]}
+  rows={[
+    ["Real-time personalization", "High", "4-6 weeks", "Web/Mobile SDK, Webhook Destination", "P95 latency < 200ms"],
+    ["Cross-channel orchestration", "High", "6-8 weeks", "SDKs, Braze/SFMC, Meta, Google Ads", "Cross-channel conversion lift 20-35%"],
+    ["Churn prediction (Ada AI)", "Medium", "3-5 weeks", "All profile data sources", "AUC > 0.70, churn reduction 10-20%"],
+    ["Lookalike audiences (Ada AI)", "Low-Medium", "2-3 weeks", "Paid media destinations", "CPA reduction 15-25%"],
+    ["Data clean rooms", "High", "6-10 weeks", "Snowflake DCR / AWS Clean Rooms", "Match rate > 20%, ROAS lift 25-40%"],
+    ["Composable CDP (SignalSmith)", "Medium", "3-5 weeks", "Snowflake/BQ SignalSmith connector", "Zero data copy, audience refresh < 1hr"],
+    ["Multi-brand identity resolution", "Very High", "8-12 weeks", "Per-brand SDKs and CRM connectors", "Cross-brand match 15-30%, FP rate < 1%"],
+    ["Privacy-preserving analytics", "Medium", "2-4 weeks", "Consent management integration", "Consent compliance audit pass rate 100%"],
+    ["Advanced segmentation (sequential)", "Medium", "1-2 weeks", "SDK event data", "Segment precision > 95%, eval time < 5min"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="info" title="Using This Reference">
+Each blueprint in this library is a starting point, not a rigid prescription. Adapt timelines based on the customer's engineering capacity, data readiness, and organizational complexity. The TAM's value is in translating these patterns to the customer's specific context, not in applying them as templates. When scoping an advanced implementation, walk through the relevant blueprint with the customer's technical team, validate assumptions, and adjust the plan collaboratively.
+</Callout>
+
+This library will be updated as new patterns emerge and as Zeotap's platform capabilities expand. TAMs who encounter novel implementation patterns in the field should contribute them back to this reference to benefit the broader team.
