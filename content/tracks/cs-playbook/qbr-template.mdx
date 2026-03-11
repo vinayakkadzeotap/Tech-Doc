@@ -1,262 +1,332 @@
 ---
-title: QBR & Executive Review Template
-icon: 📋
-estimatedMinutes: 25
+title: QBR Template & Executive Reviews
+description: Quarterly Business Review frameworks, executive presentation templates, and strategic review processes for Zeotap CDP accounts
+icon: 📊
+estimatedMinutes: 30
 contentType: tutorial
 trackId: cs-playbook
 order: 10
 ---
 
-## 📋 QBR & Executive Review Template
+## 📊 QBR Template & Executive Reviews
 
-The Quarterly Business Review is your highest-leverage touchpoint with a customer. A great QBR reinforces value, deepens relationships, surfaces expansion opportunities, and resets expectations. A bad QBR feels like a sales pitch or a status update that could have been an email. This module gives you a complete, repeatable framework for QBRs that drive outcomes.
+The Quarterly Business Review is the single most important touchpoint in a CSM's calendar. A well-executed QBR reinforces value, aligns on strategy, uncovers expansion opportunities, and builds executive relationships. A poorly executed one accelerates churn. This guide provides battle-tested frameworks, presentation templates, and tactical advice to ensure every QBR moves the account forward.
 
-<KeyConcepts concepts={["QBR Structure", "Executive Summary", "Value Delivery", "Expansion Positioning", "Difficult QBRs", "Preparation Workflow", "Follow-Up Plan", "Stakeholder Engagement", "ROI Presentation", "Action Items"]} />
+<KeyConcepts concepts={["QBR Preparation", "Executive Presentation", "Business Outcomes Review", "Platform Adoption Metrics", "Roadmap Alignment", "Strategic Recommendations", "Action Item Tracking", "Account Planning", "Renewal Strategy", "Difficult QBR Handling", "QBR Formats", "Follow-Up Process"]} />
 
 ---
 
-### The QBR at a Glance
+### QBR at a Glance
 
 <StatCard stats={[
   { value: "60 min", label: "Standard QBR Duration", color: "#3b82f6" },
-  { value: "10", label: "Slide Deck Sections", color: "#10b981" },
-  { value: "5 days", label: "Prep Time Required", color: "#a855f7" },
-  { value: "24 hrs", label: "Follow-Up Deadline", color: "#f59e0b" }
+  { value: "4", label: "QBR Format Types", color: "#10b981" },
+  { value: "2 weeks", label: "Preparation Window", color: "#a855f7" },
+  { value: "48 hrs", label: "Follow-Up Deadline", color: "#f59e0b" }
 ]} />
 
 ---
 
-### QBR Preparation Workflow
+### QBR Preparation Checklist
 
-Preparation is where QBRs are won or lost. Follow this workflow starting 5 business days before the meeting.
+Preparation is where QBRs are won or lost. Rushing to build a deck the night before guarantees a mediocre review. Follow this phased timeline to ensure you walk in fully prepared.
 
 <MermaidDiagram
   title="QBR Preparation Timeline"
   chart={`flowchart LR
-    A[Day -5\nPull Data] --> B[Day -4\nAnalyze &\nIdentify Themes]
-    B --> C[Day -3\nBuild Deck &\nDraft Narrative]
-    C --> D[Day -2\nInternal Review\nwith Manager]
-    D --> E[Day -1\nSend Agenda\nto Customer]
-    E --> F[Day 0\nDeliver QBR]
-    F --> G[Day +1\nSend Summary\n& Action Items]
+    A[T-14 Days\nData Collection\n& Stakeholder Alignment] --> B[T-7 Days\nDeck Build\n& Internal Review]
+    B --> C[T-1 Day\nFinal Prep\n& Logistics]
+    C --> D[QBR Day\nExecution]
+    D --> E[T+2 Days\nFollow-Up\n& Action Items]
     style A fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
-    style B fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
-    style C fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
-    style D fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
-    style E fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
-    style F fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
-    style G fill:#1e293b,stroke:#3b82f6,color:#e2e8f0`}
-  caption="Never walk into a QBR without at least 3 days of preparation. Winging it destroys credibility."
+    style B fill:#1e293b,stroke:#a855f7,color:#e2e8f0
+    style C fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style D fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style E fill:#1e293b,stroke:#ef4444,color:#e2e8f0`}
+  caption="Start preparation a full two weeks before the QBR date. The final 48 hours should be reserved for rehearsal, not content creation."
+/>
+
+<Expandable title="T-14 Days: Data Collection & Stakeholder Alignment" defaultOpen={true}>
+
+**Data gathering:**
+- Pull platform usage metrics for the full quarter: daily active users, audiences created, destinations synced, data ingestion volumes
+- Export identity resolution match rates and trend data from the Identity+ dashboard
+- Collect Ada AI usage statistics: queries run, insights generated, actions taken
+- Gather support ticket summary: total tickets, average resolution time, open issues, CSAT scores
+- Review all CRM notes from the quarter: meeting notes, email threads, escalation history
+
+**Stakeholder alignment:**
+- Confirm QBR attendees with your champion. Push for executive sponsor attendance
+- Send a pre-QBR survey to the customer asking: What went well this quarter? What could improve? What are your priorities for next quarter?
+- Schedule a 30-minute internal prep meeting with your manager and solutions consultant
+- Identify any sensitive topics (budget pressure, competitive evaluation, unresolved escalations) and plan your approach
+
+**Account context:**
+- Review the current health score and note any dimension-level changes
+- Check renewal date and contract terms. If renewal is within 180 days, adjust the QBR to include renewal themes
+- Review the success plan: which use cases were planned? Which are delivered? Which are stalled?
+- Identify 2-3 expansion opportunities to weave into the conversation naturally
+
+</Expandable>
+
+<Expandable title="T-7 Days: Deck Build & Internal Review" defaultOpen={false}>
+
+**Deck construction:**
+- Build the QBR deck using the standard template (see agenda section below)
+- Populate all data slides with actual metrics. Never present placeholder data
+- Create comparison charts: this quarter vs. last quarter vs. account benchmarks
+- Prepare 2-3 strategic recommendations with clear business justifications
+- Draft next quarter goals with measurable success criteria
+
+**Internal review:**
+- Walk through the deck with your manager. Focus on the narrative, not just the data
+- Review strategic recommendations with your solutions consultant for technical feasibility
+- If expansion will be discussed, align with your sales counterpart on positioning and pricing
+- Rehearse your response to anticipated tough questions
+
+**Logistics:**
+- Send a calendar invite with agenda, attendee list, and any pre-read materials
+- Confirm AV setup or video conferencing details
+- Prepare a backup plan if key stakeholders cancel last minute
+
+</Expandable>
+
+<Expandable title="T-1 Day: Final Preparation" defaultOpen={false}>
+
+**Final checks:**
+- Review the deck one final time. Check for typos, stale data, and formatting issues
+- Verify all metrics are current as of the most recent data refresh
+- Prepare printed copies or a shareable PDF version of the deck
+- Review attendee LinkedIn profiles and recent company news for conversation starters
+- Prepare your opening statement: set the tone in the first 60 seconds
+
+**Mindset preparation:**
+- Identify your three key outcomes for the meeting. What must you leave with?
+- Anticipate the two hardest questions you might face and rehearse answers
+- Remind yourself: the QBR is about the customer's success, not a product demo
+
+</Expandable>
+
+<Callout type="tip" title="The Pre-QBR Survey is Non-Negotiable">
+Sending a brief 3-5 question survey two weeks before the QBR accomplishes three things: it signals that you care about their perspective, it surfaces issues you might not know about, and it gives you time to prepare thoughtful responses instead of being blindsided in the meeting. Even if only one person responds, the insights are invaluable.
+</Callout>
+
+---
+
+### QBR Agenda Template: 60-Minute Standard Format
+
+The 60-minute format is the workhorse of customer success reviews. It balances depth with respect for executive time. Every minute is accounted for.
+
+<ComparisonTable
+  headers={["Time Block", "Duration", "Topic", "Owner", "Key Deliverable"]}
+  rows={[
+    ["0:00 - 0:05", "5 min", "Welcome & Agenda Review", "CSM", "Set expectations, confirm priorities"],
+    ["0:05 - 0:15", "10 min", "Business Outcomes Review", "CSM + Customer", "ROI recap, use case progress"],
+    ["0:15 - 0:25", "10 min", "Platform Adoption Metrics", "CSM", "Usage data, trends, benchmarks"],
+    ["0:25 - 0:30", "5 min", "Support Review", "CSM", "Ticket summary, resolution quality"],
+    ["0:30 - 0:40", "10 min", "Roadmap Alignment", "CSM + Product", "Upcoming features, customer requests"],
+    ["0:40 - 0:50", "10 min", "Strategic Recommendations", "CSM", "2-3 actionable recommendations"],
+    ["0:50 - 0:57", "7 min", "Next Quarter Goals", "CSM + Customer", "Agreed targets and milestones"],
+    ["0:57 - 1:00", "3 min", "Wrap-Up & Next Steps", "CSM", "Action items with owners and dates"]
+  ]}
+  highlightColumn={2}
+/>
+
+<Callout type="warning" title="Time Discipline is Critical">
+Executives will judge the quality of your QBR by how well you manage their time. If you are running over on a section, acknowledge it and offer to take the topic offline. Never let the business outcomes or strategic recommendations sections get squeezed because you spent too long on platform metrics. Data is the foundation, but strategy is the value.
+</Callout>
+
+---
+
+### Section 1: Business Outcomes Review (10 minutes)
+
+This is the most important section of the QBR. Lead with business impact, not platform activity. Executives care about what the platform did for their business, not how many audiences were created.
+
+**Structure your outcomes review around these questions:**
+1. What were the agreed goals at the start of the quarter?
+2. Which goals were achieved, partially achieved, or missed?
+3. What measurable business impact was delivered?
+
+<ComparisonTable
+  headers={["Outcome Area", "Example Metric", "How to Present", "Source"]}
+  rows={[
+    ["Revenue impact", "Incremental revenue from CDP-powered campaigns", "Compare campaign performance with/without CDP segments", "Customer reporting + destination analytics"],
+    ["Audience reach", "Total addressable profiles activated", "Show growth in matched profiles across destinations", "Destination sync reports"],
+    ["Efficiency gains", "Time saved in audience creation", "Compare manual process vs. Audience Builder workflow", "Customer interviews + platform logs"],
+    ["Data unification", "Single customer view coverage", "Percentage of customer base resolved to unified profiles", "Identity+ dashboard"],
+    ["Personalization", "Campaign engagement lift", "A/B test results using CDP segments vs. control", "Customer campaign analytics"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="tip" title="Let the Customer Tell the Story">
+The most powerful QBR moments happen when the customer presents their own results. Before the meeting, ask your champion if they would be willing to share a specific win. When the customer articulates the value in their own words, it is far more credible and memorable than a CSM presenting the same data.
+</Callout>
+
+---
+
+### Section 2: Platform Adoption Metrics (10 minutes)
+
+Present adoption data as a narrative, not a data dump. Each metric should answer the question: "So what?"
+
+**Key metrics to present:**
+
+<ComparisonTable
+  headers={["Metric", "What It Measures", "Green Benchmark", "Where to Find It"]}
+  rows={[
+    ["Data ingestion volume", "Events/records ingested per day", "Stable or growing QoQ", "Ingestion pipeline dashboard"],
+    ["Identity resolution match rate", "% of events resolved to UCID", "70%+ resolution rate", "Identity+ analytics"],
+    ["Segment activation count", "Audiences pushed to destinations", "10+ active audiences", "Audience Builder activity log"],
+    ["Ada AI usage", "Queries, insights, actions per month", "Weekly active usage by 2+ users", "Ada AI analytics panel"],
+    ["Destination sync health", "Successful syncs / total syncs", "95%+ success rate", "Destination monitoring dashboard"],
+    ["Weekly active users", "Unique platform logins per week", "5+ users for Enterprise", "Auth logs / admin panel"],
+    ["Feature breadth", "Distinct modules used monthly", "4+ modules active", "Product telemetry"]
+  ]}
+  highlightColumn={2}
+/>
+
+**How to present the data effectively:**
+
+- **Show trends, not snapshots.** A match rate of 72% means nothing without context. A match rate that grew from 58% to 72% over the quarter tells a compelling story
+- **Benchmark against peers.** "Your identity resolution rate of 72% puts you in the top quartile of retail CDP customers" is more impactful than the number alone
+- **Connect metrics to outcomes.** "The increase in active destinations from 3 to 7 means your audiences are now reaching more channels, which contributed to the 15% lift in campaign reach"
+
+---
+
+### Section 3: Support Review (5 minutes)
+
+Keep the support section concise. Executives do not want a ticket-by-ticket walkthrough. They want confidence that issues are handled well.
+
+<StatCard stats={[
+  { value: "Total Tickets", label: "Volume This Quarter", color: "#3b82f6" },
+  { value: "Avg Resolution", label: "Time to Resolve", color: "#10b981" },
+  { value: "CSAT Score", label: "Satisfaction Rating", color: "#a855f7" },
+  { value: "Open Issues", label: "Currently Unresolved", color: "#f59e0b" }
+]} />
+
+**Present support data in three parts:**
+1. **Summary statistics:** Total tickets, resolution time, CSAT. Compare to last quarter
+2. **Notable incidents:** Briefly cover any P1/P2 issues, root cause, and resolution. Focus on what was learned and what changed
+3. **Open items:** List any unresolved issues with expected resolution dates. Never surprise an executive with an open issue they did not know about
+
+<Callout type="warning" title="Own the Negatives">
+If there were support failures this quarter, address them head-on. Do not hide bad data or skip the support slide. Acknowledge the issue, explain the root cause, describe the fix, and share what changed to prevent recurrence. Executives respect transparency far more than avoidance.
+</Callout>
+
+---
+
+### Section 4: Roadmap Alignment (10 minutes)
+
+Roadmap alignment is where you demonstrate that Zeotap is investing in the customer's future, not just serving their present needs.
+
+**Structure:**
+1. **Features delivered this quarter** that are relevant to the customer's use cases
+2. **Upcoming features** on the next quarter roadmap that align with their priorities
+3. **Customer feature requests:** status update on any requests they have submitted
+4. **Industry trends** that inform Zeotap's product direction
+
+<Callout type="important" title="Never Over-Promise on Roadmap">
+Share only features that are committed for the upcoming quarter. Do not share tentative plans as certainties. Use language like "We are actively working on..." or "This is on our roadmap for the second half of the year" rather than "This will be available next month." Broken roadmap promises erode trust faster than almost anything else.
+</Callout>
+
+---
+
+### Section 5: Strategic Recommendations (10 minutes)
+
+This section is where you earn your seat at the table. Strategic recommendations demonstrate that you understand the customer's business, not just their platform usage.
+
+**Every recommendation must follow this structure:**
+1. **Observation:** What did you see in the data or hear from the team?
+2. **Insight:** Why does it matter for their business?
+3. **Recommendation:** What specific action should they take?
+4. **Expected outcome:** What result can they expect?
+
+<Expandable title="Example Recommendation: Expand Identity Resolution Coverage" defaultOpen={true}>
+
+**Observation:** Your current identity resolution match rate is 68%, which means roughly one-third of your customer interactions are not being connected to unified profiles.
+
+**Insight:** Unresolved profiles cannot be activated in downstream destinations, which limits campaign reach and personalization effectiveness. For a retailer processing 2M events daily, this represents approximately 640K daily interactions that are not contributing to audience segments.
+
+**Recommendation:** Integrate your mobile app SDK and loyalty program data as additional identity signals into the Zeotap identity graph. Based on similar implementations, this typically increases match rates by 12-18 percentage points.
+
+**Expected outcome:** Improving match rates from 68% to 82% would increase your addressable audience by approximately 400K profiles, directly expanding campaign reach and enabling cross-device personalization.
+
+</Expandable>
+
+<Expandable title="Example Recommendation: Activate Ada AI for Self-Service Insights" defaultOpen={false}>
+
+**Observation:** Your team currently creates audience segments manually using the Audience Builder, averaging 45 minutes per segment. Ada AI usage is at zero this quarter.
+
+**Insight:** Manual segment creation limits the number of campaigns your team can run and creates a bottleneck around your two power users. Teams using Ada AI for natural language audience creation report 70% faster segment creation times.
+
+**Recommendation:** Schedule a 60-minute Ada AI enablement session with your marketing team. Start with three high-frequency segment types that your team builds repeatedly.
+
+**Expected outcome:** Reducing segment creation time from 45 minutes to 15 minutes per segment would free up approximately 10 hours per month of analyst time, enabling your team to run more campaigns without adding headcount.
+
+</Expandable>
+
+---
+
+### Section 6: Next Quarter Goals (7 minutes)
+
+Goals must be mutually agreed upon, specific, and measurable. Vague goals like "increase adoption" are useless. Every goal should pass the test: "At the next QBR, will we be able to objectively determine if this was achieved?"
+
+<ComparisonTable
+  headers={["Goal Category", "Bad Example", "Good Example", "Success Metric"]}
+  rows={[
+    ["Adoption", "Increase platform usage", "Onboard 3 new users from the analytics team by end of Q2", "3 new WAUs from analytics team"],
+    ["Data quality", "Improve data quality", "Increase identity resolution match rate from 68% to 78%", "Match rate >= 78% by quarter end"],
+    ["Activation", "Use more destinations", "Activate 2 new destinations (TikTok Ads, Salesforce Marketing Cloud)", "2 new destinations with successful syncs"],
+    ["Business outcome", "Demonstrate ROI", "Measure incremental revenue lift from CDP-powered lookalike campaigns", "Documented lift study with control group"],
+    ["Innovation", "Explore AI features", "Run 20+ Ada AI queries per week across 3 team members", "Ada AI WAU >= 3, weekly queries >= 20"]
+  ]}
+  highlightColumn={2}
 />
 
 ---
 
-### Data to Pull Before Every QBR
+### Executive Summary Template
 
-<Expandable title="Data Collection Checklist" defaultOpen={true}>
+For every QBR, prepare a one-page executive summary that can stand alone. Some executives will not attend the full meeting but will read the summary. Others will forward it to their leadership.
 
-**Platform Usage (from product telemetry):**
-- Weekly active users (trend over the quarter)
-- Features used and frequency (Audience Builder, Journeys, Ada AI, Destinations)
-- Audiences created this quarter (count, types, activation channels)
-- Active destinations and sync success rates
-- Event volume trend (monthly, with WoW granularity)
+<Expandable title="Executive Summary Template — Copy and Customize" defaultOpen={true}>
 
-**Health Score (from CS platform):**
-- Current overall score and per-dimension breakdown
-- Score trend over the quarter (improving, stable, declining)
-- Any alerts triggered during the quarter
+**[Customer Name] — Q[X] 20XX Business Review Summary**
 
-**Support Tickets (from ticketing system):**
-- Total tickets opened this quarter
-- Severity distribution (P1/P2/P3/P4)
-- Average resolution time vs. SLA
-- CSAT on closed tickets
-- Any unresolved tickets (list with status and expected resolution)
+**Relationship overview:**
+- Account tier: [Enterprise / Mid-Market / Growth]
+- Contract value: $[XXX]K ARR | Renewal date: [MM/YYYY]
+- Health score: [XX]/100 ([Green/Yellow/Red]) | Trend: [Improving/Stable/Declining]
+- Executive sponsor: [Name, Title] | Champion: [Name, Title]
 
-**ROI Metrics (from customer data + QBR conversations):**
-- Audience reach: total unique profiles activated this quarter
-- Destination match rates (average and per-destination)
-- Campaign performance: ROAS, conversion rate, or engagement lift attributed to Zeotap audiences
-- Time savings: estimated hours saved by the marketing team per week
-- Profile unification rate: % of profiles with cross-channel identity linkage
+**Quarter highlights:**
+- [Highlight 1: e.g., "Launched cross-device identity resolution, increasing match rates from 55% to 71%"]
+- [Highlight 2: e.g., "Activated 3 new advertising destinations, expanding campaign reach by 40%"]
+- [Highlight 3: e.g., "Onboarded 5 new users from the data science team"]
 
-**Business Context (from CRM + your notes):**
-- Renewal date and contract terms
-- Open expansion opportunities
-- Stakeholder changes (new hires, departures, reorgs)
-- Strategic priorities the customer shared last quarter
-- Action items from the previous QBR (completed vs. outstanding)
+**Key metrics:**
+- Data ingestion: [X]M events/day (QoQ change: [+/-X%])
+- Identity resolution rate: [X%] (QoQ change: [+/-X pp])
+- Active audiences: [X] (QoQ change: [+/-X])
+- Active destinations: [X] with [X%] sync success rate
+- Ada AI usage: [X] queries/month by [X] users
+- Support: [X] tickets | [X] avg resolution hours | [X]/5 CSAT
 
-</Expandable>
+**Risks and mitigations:**
+- [Risk 1 with mitigation plan]
+- [Risk 2 with mitigation plan]
 
----
+**Next quarter goals:**
+1. [Goal 1 with success metric]
+2. [Goal 2 with success metric]
+3. [Goal 3 with success metric]
 
-### Complete QBR Deck Structure: 10 Slides
-
-<Expandable title="Slide 1: Title & Agenda (1 minute)" defaultOpen={true}>
-
-**Purpose:** Set the stage, confirm the agenda, and establish a professional tone.
-
-**Content:**
-- Customer logo + Zeotap logo
-- QBR date and quarter covered
-- Attendee names and roles (from both sides)
-- Agenda overview (time-boxed sections)
-- "Anything you want to add to the agenda before we begin?"
-
-**Tip:** Always ask if they want to add agenda items. This shows you value their time and surfaces hidden concerns early.
+**Open action items:** [X] items | See attached tracker
 
 </Expandable>
-
-<Expandable title="Slide 2: Executive Summary (3 minutes)" defaultOpen={true}>
-
-**Purpose:** Give the senior stakeholders the headlines so they get value even if they drop off early.
-
-**Content:**
-- 3-4 bullet point summary of the quarter: what went well, what needs attention, and what is next
-- Overall health score with color indicator
-- One sentence on ROI delivered
-- One sentence on the key recommendation for next quarter
-
-**Template:**
-
-> "This quarter, [Customer Name] achieved [key outcome]. Platform adoption is [strong/growing/needs attention], with [X] audiences activated across [Y] channels. We delivered an estimated [ROI metric]. Looking ahead, we recommend [key initiative] to drive [expected outcome]."
-
-</Expandable>
-
-<Expandable title="Slide 3: Goals Review — Last Quarter (5 minutes)" defaultOpen={false}>
-
-**Purpose:** Accountability. Review the goals set in the previous QBR and report on progress.
-
-**Content:**
-- Table with 3-5 goals from last QBR
-- Status for each: Completed, In Progress, Blocked, Not Started
-- Brief explanation for any goal not completed
-- Link to action items from the previous QBR follow-up email
-
-**Important:** Never skip this slide. If you set goals last quarter and never follow up, the customer learns that QBR commitments are empty. Always close the loop.
-
-</Expandable>
-
-<Expandable title="Slide 4: Value Delivered — Metrics (7 minutes)" defaultOpen={false}>
-
-**Purpose:** This is the most important slide in the deck. Prove the platform is delivering value.
-
-**Content:**
-- Key metrics with quarter-over-quarter trends
-- Visualize: audiences created, profiles unified, campaigns activated, match rates
-- If possible, tie platform metrics to business outcomes: "Your Zeotap-powered audiences drove a 28% higher ROAS than non-CDP audiences in Q3."
-- Include a before/after comparison if this is the first full quarter of usage
-
-**Presentation approach:**
-- Lead with the metric the customer cares about most (ask yourself: what would their CMO want to see?)
-- Use absolute numbers, not just percentages: "2.3M unique profiles activated" is more impressive than "12% increase"
-- If a metric declined, acknowledge it proactively and explain why
-
-</Expandable>
-
-<Expandable title="Slide 5: Platform Usage Review (5 minutes)" defaultOpen={false}>
-
-**Purpose:** Show what features are being used, who is using them, and where there are adoption gaps.
-
-**Content:**
-- Feature usage heatmap: which modules are heavily used, lightly used, or unused
-- User activity: active users by team/role
-- Highlight "power users" and suggest they could train others
-- Identify unused features and recommend specific use cases
-
-**Why this matters for expansion:** If the customer sees they are only using 3 of 6 available modules, you can naturally ask: "Would it be helpful if we did a workshop on Journeys? Customers in your industry are seeing strong results with automated re-engagement."
-
-</Expandable>
-
-<Expandable title="Slide 6: Data Health & Quality (3 minutes)" defaultOpen={false}>
-
-**Purpose:** Ensure the foundation is solid. Data issues undermine everything else.
-
-**Content:**
-- Event volume trend (chart showing monthly volume)
-- Identity resolution rate (current vs. last quarter)
-- Schema compliance rate
-- Any data incidents during the quarter and their resolution
-
-**Keep it brief.** Unless there are issues, this slide should take 2-3 minutes. If there are data quality problems, allocate more time and bring a solutions consultant.
-
-</Expandable>
-
-<Expandable title="Slide 7: Support Summary (3 minutes)" defaultOpen={false}>
-
-**Purpose:** Demonstrate that issues are being resolved and the experience is improving.
-
-**Content:**
-- Tickets opened vs. resolved this quarter
-- Average resolution time vs. SLA
-- CSAT trend
-- Any outstanding tickets with expected resolution timeline
-
-**If support was rough this quarter:** Do not hide it. Acknowledge the issues, explain root causes, and present what has been done to prevent recurrence. Customers respect honesty far more than spin.
-
-</Expandable>
-
-<Expandable title="Slide 8: Roadmap Preview (5 minutes)" defaultOpen={false}>
-
-**Purpose:** Get the customer excited about what is coming and show that Zeotap is investing in their success.
-
-**Content:**
-- 3-5 upcoming features or enhancements relevant to this customer's use cases
-- Expected availability timelines (quarter-level, not specific dates)
-- How each feature connects to their goals
-
-**Rules:**
-- Only show roadmap items relevant to this customer. A generic product roadmap is a wasted slide.
-- Never promise dates you cannot keep. Use "targeted for Q3" rather than "shipping in July."
-- If a customer requested a feature that is now on the roadmap, call it out: "You asked for this in our last QBR — it is coming in Q2."
-
-</Expandable>
-
-<Expandable title="Slide 9: Strategic Recommendations (5 minutes)" defaultOpen={false}>
-
-**Purpose:** Position yourself as a strategic advisor. This is where expansion opportunities live.
-
-**Content:**
-- 2-3 recommendations for next quarter, each tied to a specific business outcome
-- For each recommendation: what to do, why it matters, and expected impact
-- One recommendation can be an expansion opportunity, but frame it as advice, not a pitch
-
-**Example recommendations:**
-1. "Launch a cart abandonment journey to recover an estimated $200K in lost revenue per quarter."
-2. "Onboard your analytics team (3 additional seats) so they can self-serve audience insights instead of waiting for marketing."
-3. "Upgrade to the next volume tier before you hit your cap in 6 weeks — this reduces your per-profile cost by 28%."
-
-</Expandable>
-
-<Expandable title="Slide 10: Next Quarter Goals & Action Items (3 minutes)" defaultOpen={false}>
-
-**Purpose:** Close with clear commitments from both sides.
-
-**Content:**
-- 3-5 goals for next quarter (specific, measurable, with owners)
-- Action items from this QBR with owners and due dates
-- Next QBR date (schedule it before leaving the meeting)
-
-**Template:**
-
-| Goal | Owner | Due Date | Success Metric |
-|------|-------|----------|----------------|
-| Launch abandoned cart journey | Customer marketing + Zeotap SE | End of Q2 | Journey live, 500+ triggers/week |
-| Onboard analytics team | Zeotap CSM | Mid-Q2 | 3 analysts trained and active |
-| Achieve 75%+ identity resolution | Zeotap SE + Customer data eng | End of Q2 | Resolution rate in dashboard |
-
-</Expandable>
-
----
-
-### Presenting Value Delivered vs. Investment
-
-This is the slide that justifies the contract and makes renewal a foregone conclusion. Here is how to structure the value argument.
 
 <ArchDiagram
-  title="Value Presentation Framework"
+  title="Value Presentation Framework for Executive Summary"
   steps={[
     { label: "Investment", detail: "State the annual contract value clearly. Do not avoid the number.", icon: "💰" },
     { label: "Value Delivered", detail: "Quantify: revenue generated, costs saved, time recovered, risks mitigated.", icon: "📊" },
@@ -270,249 +340,341 @@ This is the slide that justifies the contract and makes renewal a foregone concl
 Even if the customer has not explicitly asked for ROI justification, present it anyway. The executive sponsor needs ammunition to defend the budget internally. Give them a slide they can forward to their CFO. Make it simple: "For every $1 invested in Zeotap, you generated $X in measurable value."
 </Callout>
 
-**If ROI is hard to quantify:**
-- Use efficiency metrics: "Your team saves 12 hours per week on audience building, equivalent to $X/year in labor."
-- Use competitive benchmarks: "Your match rates are 15 points above the industry average, translating to broader reach at the same ad spend."
-- Use risk avoidance: "Consent management through Zeotap has prevented an estimated $X in potential regulatory fines."
-
----
-
-### Surfacing Expansion Without Being Salesy
-
-<ComparisonTable
-  headers={["Approach", "How It Sounds", "Customer Perception", "Effectiveness"]}
-  rows={[
-    ["Direct pitch", "We think you should buy Journeys.", "They are selling to me.", "Low — triggers defensiveness"],
-    ["Observation + question", "I noticed your team is manually coordinating campaigns across 4 channels. What if that was automated?", "They understand my problem.", "High — customer pulls toward solution"],
-    ["Peer benchmark", "Other retail customers at your stage are using Journeys and seeing 25% lift. Want me to share a case study?", "They have relevant expertise.", "High — social proof is compelling"],
-    ["Data-driven alert", "You are at 82% of your volume cap and growing 8% monthly. Let me show you the tier options before you hit overages.", "They are looking out for me.", "Very high — urgency + customer interest aligned"]
-  ]}
-  highlightColumn={3}
-/>
-
-<Callout type="important" title="The 80/20 Rule">
-80% of QBR time should be about the customer's success. 20% can be forward-looking. If the customer leaves feeling the meeting was about them, they will be open to your recommendations. If they leave feeling it was about your revenue targets, trust erodes.
-</Callout>
-
 ---
 
 ### Handling Difficult QBRs
 
-Not every QBR goes smoothly. Here are playbooks for the three most common difficult scenarios.
+Not every QBR is a celebration. Some of the most important QBRs happen when things are not going well. How you handle adversity defines the customer relationship.
 
-<Expandable title="Scenario 1: Declining Usage" defaultOpen={true}>
+<Expandable title="Scenario: Declining Usage" defaultOpen={true}>
 
-**The situation:** Platform usage has dropped significantly. Fewer logins, fewer audiences, fewer syncs.
+**Signals:** WAU dropping, fewer audiences created, feature breadth narrowing, login frequency declining.
 
-**Do not:** Gloss over it, blame the customer, or pretend the data does not exist.
+**Approach:**
+1. **Acknowledge it directly.** Open with: "We have noticed a decline in platform activity this quarter, and we want to understand why so we can help."
+2. **Listen before prescribing.** The decline might be due to internal reorganization, budget cuts, seasonal patterns, or a strategic shift. Ask open-ended questions
+3. **Avoid being defensive.** Do not immediately jump to "here are all the features you are not using." That feels like a guilt trip
+4. **Propose a re-engagement plan.** Offer a structured 30-day plan: refresher training, new use case workshop, dedicated SE support
+5. **Escalate internally.** Brief your manager and update the health score immediately after the QBR
 
-**Do:**
-1. **Acknowledge it directly:** "Usage declined this quarter, and I want to understand why."
-2. **Present the data honestly:** Show the usage trend and ask what changed on their side.
-3. **Listen for root causes:** Common reasons include staff turnover, budget cuts, competing priorities, or product frustration.
-4. **Propose a recovery plan:** "Here is what I recommend to get back on track: a 2-hour workshop to retrain the team, a simplified use case to rebuild momentum, and bi-weekly check-ins for the next 6 weeks."
-5. **Get commitment:** "Can we agree on these 3 actions and revisit in 30 days?"
-
-**Key mindset:** Declining usage is a symptom, not the disease. Your job is to diagnose the root cause, not just present the numbers.
+**Key phrase:** "Our goal is to make sure you are getting maximum value from your investment. Let us work together to identify what is getting in the way."
 
 </Expandable>
 
-<Expandable title="Scenario 2: Unresolved Support Issues" defaultOpen={false}>
+<Expandable title="Scenario: Active Escalation" defaultOpen={false}>
 
-**The situation:** The customer has had persistent support issues that were not fully resolved.
+**Signals:** Unresolved P1/P2 tickets, frustrated stakeholders, executive complaints, formal escalation filed.
 
-**Do not:** Deflect blame to other teams or minimize the impact.
+**Approach:**
+1. **Lead the QBR with the escalation.** Do not bury it at the end. Address it in the first 5 minutes
+2. **Present a clear timeline:** What happened, when, what was done, current status, and path to resolution
+3. **Bring reinforcements.** Have your engineering or product leader join the call to demonstrate seriousness
+4. **Own the failure.** Even if the root cause was partially on the customer's side, lead with what Zeotap could have done better
+5. **Offer concrete remediation.** This might include dedicated support hours, SLA credits, or an accelerated fix timeline
 
-**Do:**
-1. **Lead with accountability:** "I know support has not met your expectations this quarter. Let me walk through what happened and what we are doing about it."
-2. **Present a ticket-by-ticket summary:** For each unresolved or delayed ticket, show the current status, root cause, and expected resolution.
-3. **Explain systemic changes:** If changes were made (e.g., dedicated support engineer assigned, escalation path updated), present them as concrete actions.
-4. **Ask what "good" looks like:** "What would need to be true for you to feel confident in our support going forward?"
-5. **Follow through:** Whatever you commit to in this conversation, deliver it. Broken promises after a difficult QBR are relationship-ending.
+**Key phrase:** "We take this seriously, and I want to walk you through exactly what happened, what we have done about it, and what we are putting in place to prevent it from happening again."
+
+</Expandable>
+
+<Expandable title="Scenario: Budget Review or Cost Pressure" defaultOpen={false}>
+
+**Signals:** Customer mentions budget cuts, asks for pricing review, finance team joins the QBR, procurement asks for competitive bids.
+
+**Approach:**
+1. **Shift from cost to value.** Reframe the conversation: "Let us look at the return you are getting on this investment before we discuss the investment itself"
+2. **Quantify ROI relentlessly.** Show specific dollar values: revenue generated, time saved, campaigns enabled, headcount avoided
+3. **Present tier options.** If a downgrade is necessary, present it as an option alongside the recommendation to maintain current investment
+4. **Introduce multi-year incentives.** Offer a multi-year commitment in exchange for improved pricing, but only with sales alignment
+5. **Never negotiate live in a QBR.** If pricing comes up, say: "I want to give this the attention it deserves. Let me take this back to our team and schedule a focused conversation this week"
+
+**Key phrase:** "I understand budget pressure is real. Let me make sure we have a clear picture of the value being delivered so we can make the best decision together."
 
 </Expandable>
 
-<Expandable title="Scenario 3: Competitive Threat" defaultOpen={false}>
+<Expandable title="Scenario: Competitive Threat" defaultOpen={false}>
 
-**The situation:** The customer mentions they are evaluating a competitor or have been approached by one.
+**Signals:** Customer mentions other CDPs, asks about specific competitor features, shares an RFP, or requests a feature comparison.
 
-**Do not:** Panic, badmouth the competitor, or immediately offer discounts.
+**Approach:**
+1. **Do not panic or bash competitors.** Stay confident and professional
+2. **Ask what is driving the evaluation.** Is it a genuine gap, a procurement requirement, or an internal champion for another vendor?
+3. **Focus on switching costs.** Highlight the integrations, data pipelines, identity graphs, and team training that are already in place
+4. **Address gaps honestly.** If a competitor has a feature you lack, acknowledge it and share the roadmap timeline if applicable
+5. **Activate your executive sponsor.** Request an exec-to-exec conversation to reinforce the strategic partnership
+6. **Engage your competitive intelligence team internally.** Get the latest battlecards and win/loss data
 
-**Do:**
-1. **Stay calm and curious:** "That is helpful to know. What prompted the evaluation? Is there something specific they are offering that interests you?"
-2. **Understand the gap:** Is this about price, features, service, or just a procurement process requirement?
-3. **Quantify switching costs:** "Migrating your identity graph, re-implementing integrations, and retraining your team typically takes 6-9 months. During that time, your marketing operations are disrupted."
-4. **Reinforce value delivered:** Point back to your ROI slide. "You are generating $X in value today. What is the risk of losing that during a transition?"
-5. **Offer to address gaps:** If there is a genuine feature gap, share roadmap plans. If it is about price, loop in your account executive for commercial discussion.
-6. **Escalate internally:** After the QBR, brief your manager and account executive on the competitive threat. Develop a joint retention strategy.
+**Key phrase:** "We welcome the comparison. Let us make sure any evaluation includes the full picture: the integrations already built, the team expertise developed, and the roadmap ahead."
 
 </Expandable>
+
+<Callout type="important" title="Difficult QBRs Require Pre-Alignment">
+Never walk into a difficult QBR without first aligning with your champion. A 15-minute pre-call to understand the room dynamics, who is driving the concern, and what outcome the customer is looking for will prevent surprises and help you tailor your approach. If your champion is unwilling to pre-align, that itself is a red flag worth noting.
+</Callout>
 
 ---
 
-### Executive Summary Template
+### Strategic Account Planning Integration
 
-Use this template for the written executive summary you send before and after the QBR.
+The QBR should not exist in isolation. It is one touchpoint in a continuous strategic account planning cycle.
 
-<Expandable title="Pre-QBR Executive Summary (Send Day -1)" defaultOpen={false}>
+<MermaidDiagram
+  title="QBR in the Strategic Account Planning Cycle"
+  chart={`flowchart TD
+    A[Annual Account Plan\nSet yearly objectives & strategy] --> B[Q1 QBR\nEstablish baselines & Q1 goals]
+    B --> C[Monthly Check-ins\nTrack progress, remove blockers]
+    C --> D[Q2 QBR\nMid-year review & course correct]
+    D --> E[Monthly Check-ins\nAccelerate toward H1 targets]
+    E --> F[Q3 QBR\nPre-renewal strategy if applicable]
+    F --> G[Monthly Check-ins\nRenewal preparation begins]
+    G --> H[Q4 QBR\nAnnual review & renewal/expansion]
+    H --> A
+    style A fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style B fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style C fill:#1e293b,stroke:#64748b,color:#e2e8f0
+    style D fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style E fill:#1e293b,stroke:#64748b,color:#e2e8f0
+    style F fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style G fill:#1e293b,stroke:#64748b,color:#e2e8f0
+    style H fill:#1e293b,stroke:#a855f7,color:#e2e8f0`}
+  caption="QBRs are quarterly anchors in a continuous planning cycle. Monthly check-ins ensure progress between reviews."
+/>
 
-**Subject line:** [Customer Name] Q[X] Business Review — Executive Summary
+**How to connect QBR outputs to your account plan:**
+- Update the account plan within 48 hours of every QBR
+- Map QBR goals to account plan objectives. Every QBR goal should ladder up to an annual objective
+- Use QBR action items as the basis for your monthly check-in agendas
+- Review the account plan during your internal prep for the next QBR to ensure continuity
 
-> **Quarter in Review: Q[X] 2026**
->
-> **Overall Health: [Green/Yellow/Red]**
->
-> **Key Highlights:**
-> - [Highlight 1: e.g., "2.4M unique profiles activated across 6 destinations"]
-> - [Highlight 2: e.g., "Campaign ROAS improved 32% vs. pre-Zeotap baseline"]
-> - [Highlight 3: e.g., "3 new team members onboarded and actively using the platform"]
->
-> **Areas of Focus:**
-> - [Focus 1: e.g., "Identity resolution rate declined to 58% — investigation underway"]
-> - [Focus 2: e.g., "Journey module remains unused — proposing a workshop"]
->
-> **Agenda for Tomorrow's Review:**
-> 1. Goals review from last quarter
-> 2. Value delivered and platform metrics
-> 3. Data health and support summary
-> 4. Product roadmap preview
-> 5. Strategic recommendations for Q[X+1]
->
-> Please let me know if you would like to add anything to the agenda.
+---
 
-</Expandable>
+### QBR Follow-Up Process
 
-<Expandable title="Post-QBR Follow-Up (Send Day +1)" defaultOpen={true}>
+The follow-up is where QBR value is either captured or lost. Most QBR action items die within two weeks if there is no structured tracking process.
+
+<ComparisonTable
+  headers={["Timeline", "Action", "Owner", "Output"]}
+  rows={[
+    ["Same day", "Send thank-you email to all attendees", "CSM", "Appreciation + confirmation of next steps"],
+    ["Within 24 hours", "Share QBR deck and recording (if applicable)", "CSM", "Accessible reference for non-attendees"],
+    ["Within 48 hours", "Send formal follow-up with action item tracker", "CSM", "Action items with owners, due dates, status column"],
+    ["Week 1", "Begin executing on CSM-owned action items", "CSM", "Demonstrate immediate momentum"],
+    ["Week 2", "First progress check-in on all action items", "CSM + Customer", "Updated tracker, blockers identified"],
+    ["Week 4", "Formal status review at monthly check-in", "CSM + Customer", "All items on track or re-scoped"],
+    ["Ongoing", "Include action item status in every monthly meeting", "CSM", "Continuous visibility until complete"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Expandable title="Post-QBR Follow-Up Email Template" defaultOpen={false}>
 
 **Subject line:** [Customer Name] Q[X] QBR — Summary & Action Items
 
 > Thank you for your time in today's review. Below is a summary of what we discussed and the commitments we made.
 >
 > **Key Takeaways:**
-> - [Takeaway 1]
-> - [Takeaway 2]
-> - [Takeaway 3]
+> - [Takeaway 1: e.g., "Identity resolution rates improved from 55% to 71%, putting you in the top quartile"]
+> - [Takeaway 2: e.g., "Ada AI adoption is a key opportunity for Q2 — enablement session scheduled for March 20"]
+> - [Takeaway 3: e.g., "Renewal discussion to begin in April — initial scoping call scheduled"]
 >
 > **Action Items:**
 >
-> | Action | Owner | Due Date |
-> |--------|-------|----------|
-> | [Action 1] | [Owner] | [Date] |
-> | [Action 2] | [Owner] | [Date] |
-> | [Action 3] | [Owner] | [Date] |
+> | Action | Owner | Due Date | Status |
+> |--------|-------|----------|--------|
+> | [Action 1] | [Owner] | [Date] | Open |
+> | [Action 2] | [Owner] | [Date] | Open |
+> | [Action 3] | [Owner] | [Date] | Open |
 >
-> **Next QBR:** Scheduled for [Date]
+> **Next Quarter Goals (Agreed):**
+> 1. [Goal 1 with success metric]
+> 2. [Goal 2 with success metric]
+> 3. [Goal 3 with success metric]
+>
+> **Next check-in:** [Date] | **Next QBR:** [Date]
 >
 > I will follow up on each action item by its due date. Please reach out if anything changes on your end.
 
 </Expandable>
 
----
-
-### QBR Cadence and Variations
-
-<ComparisonTable
-  headers={["Customer Tier", "QBR Frequency", "Duration", "Attendees (Zeotap Side)", "Attendees (Customer Side)"]}
-  rows={[
-    ["Enterprise", "Quarterly", "60-90 minutes", "CSM + Manager + SE (optional)", "Executive sponsor + Champion + Users"],
-    ["Mid-Market", "Quarterly", "45-60 minutes", "CSM + SE (as needed)", "Champion + Key users"],
-    ["Growth", "Semi-annual", "30-45 minutes", "CSM", "Champion"],
-    ["At-Risk (any tier)", "Monthly until stabilized", "30-45 minutes", "CSM + Manager", "Champion + Decision maker"]
-  ]}
-  highlightColumn={0}
-/>
-
-<Callout type="warning" title="Never Cancel a QBR">
-If the customer tries to cancel, reschedule rather than skip. If you skip one quarter, it becomes easier to skip the next, and suddenly you have not had a strategic conversation in 6 months. If time is tight, offer a 30-minute condensed version instead of canceling.
+<Callout type="tip" title="The 48-Hour Rule">
+If a customer does not receive a formal follow-up within 48 hours, the QBR might as well not have happened. The follow-up email is the single most important artifact from the meeting. It should include: a summary of key discussion points, the agreed-upon goals, the action item tracker, and the date of the next check-in. Send it even if you have not finalized every detail. A fast, imperfect follow-up beats a slow, polished one.
 </Callout>
 
 ---
 
-### Follow-Up Action Plan Template
+### QBR Formats by Purpose
 
-After every QBR, create an internal action plan that tracks not just customer-facing items but also internal follow-ups.
+Not all QBRs should follow the same format. Tailor the structure to the audience, the account situation, and the strategic objective.
 
-<Expandable title="Internal Action Plan Template" defaultOpen={false}>
+<Expandable title="Format 1: Standard QBR (60 minutes)" defaultOpen={true}>
 
-**Account:** [Customer Name]
-**QBR Date:** [Date]
-**Next QBR:** [Date]
-**Overall Health Score:** [Score / Color]
+**When to use:** Regular quarterly cadence for healthy or at-risk accounts. The default format.
 
-**Customer-Facing Action Items:**
-1. [Action] — Owner: [Name] — Due: [Date] — Status: [Open]
-2. [Action] — Owner: [Name] — Due: [Date] — Status: [Open]
-3. [Action] — Owner: [Name] — Due: [Date] — Status: [Open]
+**Audience:** Champion, key stakeholders, executive sponsor (optional but encouraged).
 
-**Internal Action Items:**
-1. [Escalation / Feature request / Internal briefing] — Owner: [Name] — Due: [Date]
-2. [Expansion opportunity to log in CRM] — Owner: [Name] — Due: [Date]
-3. [Manager follow-up if at-risk signals detected] — Owner: [Name] — Due: [Date]
+**Focus areas:** Balanced review across all six agenda sections. Equal weight to retrospective and forward-looking content.
 
-**Expansion Opportunities Identified:**
-- [Opportunity 1: description, estimated ARR, next step]
-- [Opportunity 2: description, estimated ARR, next step]
+**Preparation effort:** Standard (2-week prep cycle).
 
-**Competitive Intelligence:**
-- [Any competitive mentions, alternative tools discussed, budget concerns]
+**Agenda:** Follow the 60-minute template outlined above.
 
-**CSM Notes:**
-- [Qualitative observations: sentiment, body language, engagement level, off-record comments]
+</Expandable>
+
+<Expandable title="Format 2: Executive Sponsor QBR (45 minutes)" defaultOpen={false}>
+
+**When to use:** When the executive sponsor has confirmed attendance or when you need to re-engage a disengaged sponsor. Shorter format respects executive time.
+
+**Audience:** Executive sponsor, VP/Director-level Zeotap leader, champion (for context).
+
+**Focus areas:** Business outcomes and strategic alignment only. Skip granular platform metrics. Lead with the executive summary and spend most of the time on strategic recommendations and partnership vision.
+
+**Preparation effort:** High. Requires Zeotap executive briefing and custom talking points.
+
+**Agenda:**
+- 0:00-0:05 — Introductions and context setting
+- 0:05-0:15 — Executive summary and business impact review
+- 0:15-0:25 — Strategic partnership vision and roadmap highlights
+- 0:25-0:35 — Customer priorities and alignment discussion
+- 0:35-0:42 — Next quarter strategic objectives
+- 0:42-0:45 — Wrap-up and commitments
+
+<Callout type="tip" title="Executive Sponsor Engagement Rule">
+Never present more than 5 slides to an executive sponsor. Use a conversational format with a one-page summary as a leave-behind. Executives want dialogue, not a presentation. Prepare your CSM or champion to handle any detailed questions that arise by having the full deck available as backup.
+</Callout>
+
+</Expandable>
+
+<Expandable title="Format 3: Technical Deep Dive QBR (90 minutes)" defaultOpen={false}>
+
+**When to use:** When the account has significant technical complexity, is implementing new integrations, or has unresolved technical issues. Often run mid-quarter as a supplement to the standard QBR.
+
+**Audience:** Customer data engineering team, solutions architect, Zeotap solutions consultant, CSM.
+
+**Focus areas:** Data pipeline health, integration architecture, identity resolution configuration, destination sync performance, API usage, and technical roadmap.
+
+**Preparation effort:** High. Requires solutions consultant involvement and technical data pull.
+
+**Agenda:**
+- 0:00-0:05 — Objectives and scope
+- 0:05-0:20 — Data ingestion architecture review (volumes, latency, error rates)
+- 0:20-0:35 — Identity resolution deep dive (match rates by source, graph quality, merge rules)
+- 0:35-0:50 — Destination sync performance (success rates, latency, error patterns by destination)
+- 0:50-1:05 — Ada AI and API usage patterns
+- 1:05-1:20 — Technical roadmap and upcoming platform changes
+- 1:20-1:30 — Action items and technical priorities for next quarter
+
+</Expandable>
+
+<Expandable title="Format 4: Renewal-Focused QBR (75 minutes)" defaultOpen={false}>
+
+**When to use:** When the account's renewal is within 120 days. This format blends value reinforcement with renewal positioning.
+
+**Audience:** Champion, executive sponsor, procurement/finance (if invited), Zeotap sales lead, CSM.
+
+**Focus areas:** Cumulative ROI over the contract period, total value delivered, forward-looking business case, and partnership continuation plan.
+
+**Preparation effort:** Very high. Requires sales alignment, pricing review, and potentially custom ROI analysis.
+
+**Agenda:**
+- 0:00-0:05 — Welcome and partnership timeline recap
+- 0:05-0:20 — Cumulative business outcomes: value delivered over the full contract period
+- 0:20-0:30 — Platform adoption maturity: where they started vs. where they are now
+- 0:30-0:40 — Forward-looking business case: what additional value can be unlocked in the next contract period
+- 0:40-0:50 — Product roadmap alignment: what is coming that reinforces their investment
+- 0:50-1:00 — Next steps on renewal: timeline, process, key decisions
+- 1:00-1:10 — Customer feedback and open discussion
+- 1:10-1:15 — Commitments and follow-up
+
+<Callout type="important" title="Renewal QBR Coordination with Sales">
+The renewal-focused QBR must be jointly planned with your sales counterpart. Agree in advance on: who presents the commercial section, what pricing or packaging options to reference, and how to handle objections. Misalignment between CS and Sales in front of a customer is one of the fastest ways to undermine trust.
+</Callout>
 
 </Expandable>
 
 ---
 
-### QBR Anti-Patterns to Avoid
+### QBR Format Selection Guide
 
 <ComparisonTable
-  headers={["Anti-Pattern", "Why It Fails", "What to Do Instead"]}
+  headers={["Factor", "Standard", "Executive Sponsor", "Technical Deep Dive", "Renewal-Focused"]}
   rows={[
-    ["Reading slides verbatim", "Disrespects the audience's time and intelligence", "Use slides as visual anchors; narrate the story conversationally"],
-    ["Generic product roadmap dump", "Customers only care about features relevant to them", "Curate 3-5 roadmap items specific to their use cases"],
-    ["Skipping the goals review", "Signals you do not take commitments seriously", "Always close the loop on last quarter's goals"],
-    ["No follow-up email", "Action items are forgotten within 48 hours", "Send summary within 24 hours, always"],
-    ["CSM presents alone for enterprise", "Lacks strategic weight for senior stakeholders", "Bring your manager for enterprise QBRs"],
-    ["All good news, no honesty", "Feels like spin; erodes trust when issues surface later", "Acknowledge challenges proactively and present remediation"]
+    ["Duration", "60 min", "45 min", "90 min", "75 min"],
+    ["Frequency", "Quarterly", "Bi-annually or as needed", "Mid-quarter supplement", "120 days pre-renewal"],
+    ["Primary audience", "Champion + stakeholders", "C-level / VP sponsor", "Data/engineering team", "Champion + procurement"],
+    ["Slides", "15-20", "3-5", "20-25 (technical)", "15-20 + ROI analysis"],
+    ["Sales involvement", "Optional", "Zeotap exec attends", "None", "Required"],
+    ["Preparation time", "2 weeks", "2 weeks + exec prep", "2 weeks + SC prep", "3 weeks + sales alignment"],
+    ["Key outcome", "Alignment + goals", "Executive buy-in", "Technical roadmap", "Renewal commitment"]
   ]}
-  highlightColumn={2}
+  highlightColumn={0}
 />
 
 ---
 
-### Final Checklist
+### QBR Anti-Patterns to Avoid
 
-Use this checklist before every QBR to ensure nothing is missed.
+<Expandable title="Anti-Pattern 1: The Data Dump" defaultOpen={false}>
 
-**5 days out:**
-- [ ] Platform usage data pulled and analyzed
-- [ ] Health score reviewed and dimension breakdown documented
-- [ ] Support ticket summary prepared
-- [ ] ROI metrics calculated
-- [ ] Previous QBR action items reviewed
+**What it looks like:** 30 slides of charts and metrics with no narrative. The CSM reads numbers off the screen while the customer checks their phone.
 
-**3 days out:**
-- [ ] Deck built with all 10 slides
-- [ ] Narrative rehearsed (can you present without reading slides?)
-- [ ] Internal review with manager completed
-- [ ] Expansion opportunity identified and positioned in recommendations slide
+**Why it fails:** Data without interpretation is noise. Executives do not want to do the analysis themselves. They want your perspective on what the data means.
 
-**1 day out:**
-- [ ] Agenda sent to customer with executive summary
-- [ ] Calendar confirmed with all attendees
-- [ ] Backup plan if executive sponsor drops (condensed agenda for remaining attendees)
+**Fix:** For every data point, answer "so what?" If you cannot explain why a metric matters, remove the slide.
 
-**Day of:**
-- [ ] Join 5 minutes early to test screen share and audio
-- [ ] Record the meeting (with permission) for internal reference
-- [ ] Take notes on action items in real time
+</Expandable>
 
-**Day after:**
-- [ ] Follow-up email sent within 24 hours
-- [ ] Action items logged in CRM with owners and due dates
-- [ ] Internal action plan created
-- [ ] Next QBR scheduled
+<Expandable title="Anti-Pattern 2: The Product Demo" defaultOpen={false}>
+
+**What it looks like:** The CSM spends 20 minutes demoing new features that the customer did not ask about. The QBR becomes a sales pitch.
+
+**Why it fails:** QBRs are about the customer's business, not your product. Feature demos belong in separate enablement sessions.
+
+**Fix:** Limit product content to the roadmap section. Only highlight features that directly map to the customer's stated priorities.
+
+</Expandable>
+
+<Expandable title="Anti-Pattern 3: The Surprise Attack" defaultOpen={false}>
+
+**What it looks like:** The CSM brings up expansion, renewal pricing, or a contract change without pre-aligning with the champion or sales team.
+
+**Why it fails:** It erodes trust and puts the champion in an awkward position in front of their leadership.
+
+**Fix:** Always pre-align commercial topics with your champion and sales counterpart. The QBR should confirm what has already been discussed, not introduce new commercial surprises.
+
+</Expandable>
+
+<Expandable title="Anti-Pattern 4: The Monologue" defaultOpen={false}>
+
+**What it looks like:** The CSM talks for 55 of the 60 minutes. The customer barely speaks.
+
+**Why it fails:** A QBR without customer dialogue is a missed opportunity. You learn nothing, and the customer feels talked at, not engaged.
+
+**Fix:** Target a 60/40 split: 60% CSM presentation, 40% customer discussion. Build discussion prompts into every section. Pause after each section and ask: "Does this match your experience? What are we missing?"
+
+</Expandable>
 
 ---
 
-**Next up:** Continue building your CS expertise with vertical-specific strategies and advanced playbooks →
+### Measuring QBR Effectiveness
+
+Track these metrics to continuously improve your QBR practice:
+
+<ComparisonTable
+  headers={["Metric", "Target", "How to Measure"]}
+  rows={[
+    ["Executive sponsor attendance rate", "50%+ of QBRs", "CRM meeting records"],
+    ["Action item completion rate", "80%+ completed on time", "Action item tracker"],
+    ["Post-QBR NPS or satisfaction", "8+ out of 10", "Post-QBR survey (2 questions max)"],
+    ["Goal achievement rate", "70%+ of goals met next quarter", "QBR-over-QBR comparison"],
+    ["Follow-up sent within 48 hours", "100%", "Email timestamp tracking"],
+    ["Renewal rate for QBR-active accounts", "90%+", "CRM renewal data"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="info" title="Continuous Improvement">
+After every QBR, spend 10 minutes on a personal retrospective. Ask yourself: What went well? What would I do differently? Did I achieve my three key outcomes? Keep a running log of these reflections. Over time, patterns will emerge that sharpen your QBR skills faster than any training program.
+</Callout>
+
+---
+
+**Next up:** Escalation Path & Crisis Management — handling critical situations when they arise →

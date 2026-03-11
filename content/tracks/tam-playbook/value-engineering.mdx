@@ -1,285 +1,581 @@
 ---
-title: "Value Engineering & ROI Tracking"
-icon: 💎
+title: Value Engineering & ROI Tracking
+description: Quantify and communicate technical value, build ROI dashboards, and create compelling business cases from the TAM perspective
+icon: 📈
 estimatedMinutes: 30
-contentType: concept
+contentType: tutorial
 trackId: tam-playbook
 order: 5
 ---
 
 # Value Engineering & ROI Tracking
 
-Value engineering is the discipline of systematically measuring, documenting, and communicating the value a customer receives from Zeotap. Without it, renewals become price negotiations instead of strategic conversations. TAMs who master value engineering protect revenue, accelerate expansion, and build executive-level relationships that competitors cannot displace.
+Value engineering for a TAM is fundamentally different from sales-stage value selling. Sales quantifies the promise. TAMs quantify the proof. Your job is to instrument, measure, and communicate the actual value a customer is extracting from the Zeotap CDP — and to identify the gaps between what they are using and what they could be using. This is the single most important lever for renewals, expansions, and executive trust.
 
-<KeyConcepts concepts={["Value Framework", "Technical Value", "Business Value", "Strategic Value", "ROI Calculation", "Value Dashboards", "Executive Business Reviews", "Renewal Readiness"]} />
+<KeyConcepts concepts={["Value Realization", "ROI Dashboards", "Technical KPI Mapping", "Business Outcome Alignment", "Value Reports", "Case Study Development", "Expansion Signals", "Renewal Risk Prediction", "Success Milestones"]} />
 
 <StatCard stats={[
-  { value: "92%", label: "Renewal rate when value is quantified and presented", color: "green" },
-  { value: "2.1x", label: "Higher expansion rate with documented ROI", color: "blue" },
-  { value: "58%", label: "Customers cannot articulate their own ROI without TAM help", color: "orange" }
+  { value: "3.2x", label: "Average ROI customers achieve when TAMs actively track value", color: "green" },
+  { value: "68%", label: "Renewal rate without structured value tracking", color: "orange" },
+  { value: "94%", label: "Renewal rate with quarterly value reviews", color: "green" }
 ]} />
 
 ---
 
-## The Value Framework
+## Value Engineering Methodology for TAMs
 
-Value does not materialize at the moment of renewal. It builds over time across three layers. The TAM's job is to track value at each layer and connect them into a coherent story that resonates with both technical and executive stakeholders.
-
-<MermaidDiagram
-  title="Value Realization Lifecycle"
-  chart={`flowchart LR
-    subgraph Layer1["Technical Value (Months 1-3)"]
-      A["Data Integration<br/>Completed"]:::tech
-      B["Identity Graph<br/>Operational"]:::tech
-      C["Platform Adopted<br/>by Users"]:::tech
-    end
-    subgraph Layer2["Business Value (Months 3-6)"]
-      D["Campaigns Using<br/>Zeotap Audiences"]:::biz
-      E["Performance Metrics<br/>Improving"]:::biz
-      F["Operational Efficiency<br/>Gained"]:::biz
-    end
-    subgraph Layer3["Strategic Value (Months 6-12)"]
-      G["Customer Data<br/>Strategy Enabled"]:::strat
-      H["Competitive<br/>Advantage Achieved"]:::strat
-      I["Executive Alignment<br/>on Platform"]:::strat
-    end
-    A --> D
-    B --> D
-    C --> E
-    D --> G
-    E --> H
-    F --> I
-    classDef tech fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
-    classDef biz fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:2px
-    classDef strat fill:#1e293b,stroke:#a855f7,color:#e2e8f0,stroke-width:2px`}
-  caption="Value builds in layers. Technical Value is the foundation, Business Value proves ROI, and Strategic Value locks in long-term partnership."
-/>
-
-### Layer 1: Technical Value (Months 1-3)
-
-Technical value is the foundation. It answers the question: "Is the platform working, and is the customer's team using it?"
-
-<Expandable title="Technical Value Metrics" defaultOpen={true}>
-
-| Metric | What It Measures | How to Capture |
-|--------|------------------|----------------|
-| Integration completeness | % of planned data sources connected and ingesting | Onboarding tracker |
-| Identity match rate | % of events resolved to a unified profile | Platform dashboard |
-| Platform adoption | Number of active users, login frequency, features used | Usage analytics |
-| Data quality score | Composite of completeness, accuracy, freshness, consistency | Data quality dashboard |
-| Time to first audience | Days from contract signing to first audience activated | Onboarding timeline |
-| Destinations connected | Number of activation destinations configured and syncing | Platform configuration |
-
-**How to communicate technical value**: Technical value resonates with the customer's data engineering and marketing operations teams. Present it in terms of operational outcomes: "Your identity graph is resolving 78% of web traffic to known profiles, up from 0% before Zeotap. Your team built and activated 15 audiences in the first 90 days without writing any code."
-</Expandable>
-
-### Layer 2: Business Value (Months 3-6)
-
-Business value translates technical capabilities into measurable business outcomes. It answers the question: "Is the platform making the customer money or saving them money?"
-
-<Expandable title="Business Value Metrics" defaultOpen={true}>
-
-| Metric | What It Measures | How to Calculate |
-|--------|------------------|------------------|
-| ROAS improvement | Return on ad spend for campaigns using Zeotap audiences vs. control | (Revenue from Zeotap audiences / Ad spend) vs. (Revenue from control / Ad spend) |
-| Customer acquisition cost reduction | Cost per acquisition using Zeotap audiences vs. legacy targeting | (Total acquisition spend / New customers) before vs. after |
-| Wasted ad spend eliminated | Dollar value of impressions saved by suppressing existing customers | Suppressed audience size x CPM x estimated impressions |
-| Conversion rate lift | Improvement in conversion for Zeotap-powered campaigns | A/B test: Zeotap audience conversion rate vs. control |
-| Time saved | Hours saved by marketing team using Zeotap vs. manual processes | Survey marketing team: hours per week before vs. after |
-| Speed to activation | Time from segment idea to live campaign | Measure: segment creation to destination sync completion |
-</Expandable>
-
-### Layer 3: Strategic Value (Months 6-12)
-
-Strategic value is the hardest to quantify but the most powerful at renewal. It answers the question: "Is Zeotap a commodity tool or a strategic platform that enables the customer's data strategy?"
-
-<Expandable title="Strategic Value Indicators" defaultOpen={false}>
-
-| Indicator | What It Signals | How to Assess |
-|-----------|----------------|---------------|
-| Multi-team adoption | Platform is embedded across the organization, not siloed | Count distinct teams/departments using the platform |
-| Executive sponsorship | C-level stakeholder actively advocates for the platform | Executive mentions Zeotap in internal communications or external presentations |
-| Roadmap alignment | Customer's product roadmap depends on Zeotap capabilities | Customer requests specific features or integrations |
-| Competitive displacement | Customer has consolidated from multiple point solutions to Zeotap | Number of tools replaced or deprecated |
-| Data strategy enablement | Zeotap is the backbone of the customer's customer data strategy | Customer references Zeotap in their data strategy documents |
-| Innovation partnership | Customer participates in beta programs, co-development, or case studies | Active engagement in product feedback loops |
-</Expandable>
-
----
-
-## How to Track and Quantify Value Delivered
-
-Value tracking is an ongoing discipline, not a one-time exercise before renewal. Build value evidence throughout the engagement so that when renewal comes, the story tells itself.
+Value engineering in the post-implementation phase follows a different rhythm than pre-sales. You are not projecting hypothetical gains — you are measuring real outcomes, attributing them to platform usage, and translating technical metrics into business language that stakeholders care about.
 
 <ArchDiagram
-  title="Value Tracking Process"
+  title="TAM Value Engineering Lifecycle"
   steps={[
-    { label: "Baseline", detail: "Document the customer's starting metrics before Zeotap (ROAS, CAC, manual hours, match rate)", icon: "📏" },
-    { label: "Instrument", detail: "Set up measurement for each value metric (A/B tests, dashboards, surveys)", icon: "⚙️" },
-    { label: "Capture", detail: "Record value evidence monthly in the value log (screenshots, data exports, customer quotes)", icon: "📸" },
-    { label: "Calculate", detail: "Compute dollar-value impact for each business value metric quarterly", icon: "🧮" },
-    { label: "Narrate", detail: "Build the value story that connects technical, business, and strategic value", icon: "📖" },
-    { label: "Present", detail: "Deliver the value story at QBRs and renewal conversations", icon: "🎤" }
+    { label: "Baseline", detail: "Capture pre-Zeotap metrics during onboarding: data latency, match rates, campaign setup time, audience reach", icon: "📏" },
+    { label: "Instrument", detail: "Set up tracking for all technical KPIs that map to business outcomes within the platform", icon: "⚙️" },
+    { label: "Measure", detail: "Collect data continuously and compare against baseline at defined intervals", icon: "📊" },
+    { label: "Attribute", detail: "Tie platform metrics to business results: revenue lift, cost savings, time savings, risk reduction", icon: "🔗" },
+    { label: "Communicate", detail: "Deliver value reports monthly and comprehensive ROI reviews quarterly", icon: "📣" },
+    { label: "Expand", detail: "Use value data to identify new use cases, upsell opportunities, and deeper adoption paths", icon: "🚀" }
   ]}
 />
 
-### The Value Log
+<Callout type="warning" title="Baseline or It Did Not Happen">
+If you do not capture baseline metrics during onboarding, you cannot prove value later. The single biggest mistake TAMs make is skipping the baseline step because onboarding feels urgent. Block 30 minutes in your onboarding kickoff to document the customer's current-state metrics. Without a before, there is no measurable after.
+</Callout>
 
-Maintain a running document for each account that captures value evidence as it happens. Do not wait until QBR prep to remember what value was delivered. The value log should contain:
+### How TAM Value Engineering Differs from Sales Value Selling
 
-- **Date**: When the value was realized
-- **Value type**: Technical, Business, or Strategic
-- **Description**: What happened (e.g., "Launched lookalike audience that outperformed legacy targeting by 35%")
-- **Evidence**: Data, screenshot, or customer quote that supports the claim
-- **Dollar impact**: Estimated financial impact (if applicable)
-- **Attribution**: How much of this outcome is attributable to Zeotap (be honest; shared credit builds more trust than overclaiming)
+<ComparisonTable
+  headers={["Dimension", "Sales Value Selling", "TAM Value Engineering"]}
+  rows={[
+    ["Timing", "Pre-purchase: projecting future value", "Post-implementation: measuring actual value"],
+    ["Data Source", "Industry benchmarks, case studies from other customers", "Customer's own platform data, their baseline metrics"],
+    ["Audience", "Economic buyer (CFO, VP Marketing)", "Technical lead, marketing ops, AND executive sponsor"],
+    ["Credibility Risk", "Over-promising creates expectation gap", "Under-measuring creates perception gap"],
+    ["Attribution", "Can be aspirational (\"customers like you see 3x ROI\")", "Must be honest and defensible (shared credit, A/B test data)"],
+    ["Cadence", "One-time: part of the sales cycle", "Continuous: monthly snapshots, quarterly deep dives, annual reviews"],
+    ["Goal", "Win the deal", "Prove the investment, protect the renewal, unlock expansion"]
+  ]}
+  highlightColumn={2}
+/>
 
-<Callout type="warning" title="The Attribution Trap">
-Never claim 100% attribution for a business outcome unless you can prove it with an A/B test. Marketing outcomes are always multi-causal. A credible TAM says: "Zeotap audiences contributed to a 25% ROAS improvement alongside creative optimizations and seasonal trends." An incredible TAM who overclaims gets caught and loses trust permanently.
+### Baseline Metrics to Capture at Onboarding
+
+Collect these from the customer's team during the first two weeks. This is non-negotiable.
+
+| Category | Metric to Baseline | Who to Ask | Why It Matters |
+|----------|-------------------|------------|----------------|
+| Data Integration | Time to onboard a new data source | Data engineering lead | Proves Zeotap reduces integration effort |
+| Data Latency | Time from event occurrence to availability for segmentation | Data engineering lead | Proves real-time value |
+| Identity | Customer match rate before Zeotap (cross-device, cross-channel) | Marketing analytics | Proves identity resolution value |
+| Audience Building | Time to create and activate a new segment | Campaign manager | Proves self-service and speed gains |
+| Campaign Reach | Addressable audience size across channels | Media team | Proves enrichment and match value |
+| Manual Effort | Hours per week spent on data wrangling | Marketing ops | Proves operational efficiency |
+| Compliance | Time to respond to a data subject request | Privacy/legal team | Proves consent management value |
+| Tool Sprawl | Number of point solutions used for audience management | Marketing ops lead | Proves consolidation value |
+
+---
+
+## Technical KPIs That Map to Business Outcomes
+
+The bridge between what the platform does and what the business cares about is the KPI mapping table. Every technical metric must have a clear line to a business outcome, or it is noise in your value report.
+
+<ComparisonTable
+  headers={["Technical KPI", "What It Measures", "Business Outcome", "Executive Translation", "Target Direction"]}
+  rows={[
+    ["Ingestion Throughput", "Events processed per second and batch load completion time", "Faster time-to-insight", "\"Your teams can act on customer behavior within minutes instead of days\"", "Higher is better"],
+    ["Identity Match Rate", "% of profiles successfully unified across sources", "Better personalization and reduced ad waste", "\"You are reaching 92% of your customers with a unified view vs 64% before\"", "Higher is better"],
+    ["Segment Refresh Latency", "Time between data update and audience membership recalculation", "Campaign timeliness and relevance", "\"Your audiences reflect customer behavior from the last hour, not last week\"", "Lower is better"],
+    ["Activation Sync Rate", "% of destination syncs completing successfully within SLA", "Campaign reliability and operational trust", "\"99.7% of your audience pushes to Google, Meta, and Salesforce completed on time\"", "Higher is better"],
+    ["Profile Completeness", "Average % of key attributes populated per profile", "Richer segmentation and personalization", "\"Your customer profiles are 40% more complete, enabling segments you could not build before\"", "Higher is better"],
+    ["Consent Coverage", "% of profiles with valid, current consent records", "Regulatory compliance and risk reduction", "\"98% of activated profiles have auditable consent, reducing your compliance exposure\"", "Higher is better"],
+    ["Data Source Uptime", "% of time all configured data sources are actively ingesting", "Operational reliability", "\"Your data infrastructure has maintained 99.9% uptime this quarter\"", "Higher is better"]
+  ]}
+  highlightColumn={2}
+/>
+
+<Callout type="info" title="Speak Their Language, Not Yours">
+A customer VP does not care that ingestion throughput increased by 15,000 events per second. They care that their marketing team can now react to cart abandonment in real time instead of next-day batch. Always translate technical KPIs into the business impact the stakeholder experiences. The "Executive Translation" column above is your cheat sheet for every customer conversation.
 </Callout>
 
 ---
 
-## Building the Customer's ROI Story
+## Building ROI Dashboards for Customers
 
-The ROI story is a narrative that connects the investment in Zeotap to measurable returns. It should be compelling enough that your champion can retell it to their CFO without you in the room.
+Every managed account should have a living ROI dashboard that the TAM maintains and reviews with the customer. This dashboard is your most powerful renewal and expansion tool.
 
-### ROI Calculation Framework
+<MermaidDiagram
+  title="ROI Dashboard Architecture"
+  chart={`flowchart LR
+    subgraph Sources["Platform Metrics"]
+      A["Ingestion Stats"]:::source
+      B["Identity Resolution"]:::source
+      C["Audience Engine"]:::source
+      D["Activation Logs"]:::source
+      E["Consent Manager"]:::source
+    end
+    subgraph Transform["Value Calculations"]
+      F["Time Savings<br/>Calculator"]:::calc
+      G["Efficiency Gain<br/>Calculator"]:::calc
+      H["Risk Reduction<br/>Calculator"]:::calc
+      I["Revenue Impact<br/>Estimator"]:::calc
+    end
+    subgraph Dashboard["Customer ROI Dashboard"]
+      J["Executive Summary"]:::dash
+      K["KPI Trends"]:::dash
+      L["Value Realized<br/>vs Baseline"]:::dash
+      M["Expansion<br/>Opportunities"]:::dash
+    end
+    A --> F
+    B --> G
+    C --> I
+    D --> G
+    E --> H
+    F --> J
+    G --> K
+    H --> L
+    I --> M
+    classDef source fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef calc fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef dash fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:2px`}
+  caption="Pull platform metrics, run them through value calculators that apply customer-specific context, and present the results in a dashboard the customer can access."
+/>
 
-<Expandable title="Revenue Impact ROI" defaultOpen={true}>
+### Dashboard Sections
 
-**Formula**: ROI = (Incremental Revenue Attributable to Zeotap - Zeotap Annual Cost) / Zeotap Annual Cost x 100
+<Expandable title="Section 1: Executive Summary" defaultOpen={true}>
 
-**Example**:
-- Zeotap annual cost: $200,000
-- Incremental revenue from Zeotap-powered campaigns: $1,200,000 (measured via A/B test lift)
-- Attribution factor: 40% (Zeotap was one of several contributing factors)
-- Attributable incremental revenue: $480,000
-- ROI: ($480,000 - $200,000) / $200,000 x 100 = **140% ROI**
+The top of the dashboard should answer one question in 10 seconds: "Is the platform delivering value?"
+
+Include these elements:
+- **Overall ROI ratio**: Total quantified value divided by total platform cost (license + implementation + ongoing)
+- **Value realized this period**: Sum of time savings, efficiency gains, revenue impact, and risk reduction in dollar terms
+- **Cumulative value since go-live**: Running total to reinforce the long-term investment narrative
+- **Health score**: A composite 0-100 score based on adoption, data quality, and activation breadth
+
+Format the executive summary as a single row of four large stat cards. Executives scan, they do not read.
 </Expandable>
 
-<Expandable title="Cost Savings ROI" defaultOpen={false}>
+<Expandable title="Section 2: KPI Trends Over Time" defaultOpen={false}>
 
-**Formula**: ROI = (Annual Cost Savings from Zeotap) / Zeotap Annual Cost x 100
+Line charts showing month-over-month trends for each technical KPI mapped to business outcomes. Always include the baseline as a reference line so the improvement is visually obvious.
 
-**Components of cost savings**:
-- Wasted ad spend eliminated via suppression: Calculate suppressed audience size x CPM x impression frequency
-- Tools consolidated or replaced: Sum of annual cost of displaced tools
-- Team time saved: Hours saved per week x loaded hourly cost x 52 weeks
-- Reduced agency dependency: Decrease in agency hours for audience management
+Key charts to include:
+- **Identity match rate trend** with baseline marker
+- **Ingestion throughput trend** with SLA threshold line
+- **Segment refresh latency trend** showing improvement over time
+- **Activation success rate** with 99.5% target line
+- **Profile completeness trend** with target threshold
 
-**Example**:
-- Zeotap annual cost: $200,000
-- Suppression savings: $150,000/year
-- Replaced tools (legacy DMP + manual segment builder): $120,000/year
-- Team time saved (10 hrs/week x $75/hr): $39,000/year
-- Total savings: $309,000/year
-- ROI: ($309,000 - $200,000) / $200,000 x 100 = **54.5% ROI**
+Each chart should have a one-sentence annotation explaining what changed when there is a visible inflection point (e.g., "Match rate jumped 8% after adding email hashing in May").
 </Expandable>
 
-<Expandable title="Combined ROI Story" defaultOpen={false}>
+<Expandable title="Section 3: Value Realized vs Baseline" defaultOpen={false}>
 
-The most compelling ROI story combines revenue impact and cost savings:
+A before-and-after comparison table that quantifies the difference between the customer's pre-Zeotap state and their current state:
 
-| Value Category | Annual Impact |
-|---|---|
-| Incremental revenue (attributable) | $480,000 |
-| Wasted ad spend eliminated | $150,000 |
-| Tools consolidated | $120,000 |
-| Team efficiency gains | $39,000 |
-| **Total value delivered** | **$789,000** |
-| **Zeotap annual cost** | **$200,000** |
-| **Net value** | **$589,000** |
-| **ROI** | **294.5%** |
+| Metric | Baseline (Pre-Zeotap) | Current | Improvement | Annualized Value |
+|--------|----------------------|---------|-------------|-----------------|
+| Time to onboard new data source | 3 weeks | 2 days | 89% faster | $48,000 saved (engineering time) |
+| Audience creation time | 2 days | 15 minutes | 99% faster | $36,000 saved (marketing ops time) |
+| Cross-channel match rate | 34% | 78% | +44 percentage points | $220,000 incremental reach value |
+| Campaign setup to launch | 5 days | 4 hours | 96% faster | $62,000 saved (time-to-market) |
+| Data subject request response | 14 days | 2 hours | 99% faster | Risk reduction (compliance) |
 
-This is the table your champion brings to the CFO. Make it easy for them.
+The annualized value column is what makes this table powerful. Work with the customer to agree on the dollar value of each improvement — use their internal cost rates, not assumptions.
+</Expandable>
+
+<Expandable title="Section 4: Adoption and Utilization" defaultOpen={false}>
+
+Track what percentage of the platform's capabilities the customer is actually using. Low utilization is both a risk signal and an expansion opportunity.
+
+| Capability | Status | Utilization | Opportunity |
+|-----------|--------|------------|-------------|
+| Batch Ingestion | Active | 100% of contracted sources | Fully utilized |
+| Real-Time Streaming | Active | 3 of 8 potential event types | Add cart, search, and video events |
+| Identity Resolution | Active | 2 of 4 identifier types configured | Add phone and MAID matching |
+| Audience Builder | Active | 12 active segments | Train more team members on self-service |
+| Computed Attributes | Partial | 5 attributes defined, 20+ possible | Workshop to define LTV and engagement scores |
+| Destination Connectors | Active | 4 of 12 available connectors | Activate email and CRM connectors |
+| Consent Management | Inactive | Not configured | High-priority gap — regulatory risk |
+
+This table directly feeds your expansion motion and your QBR recommendations.
 </Expandable>
 
 ---
 
-## Value Dashboards and Reporting Templates
+## Monthly and Quarterly Value Reports Framework
 
-### The Value Dashboard
-
-Build a living dashboard that tracks value metrics in real time. This dashboard should be accessible to both the TAM and the customer's key stakeholders.
+Consistent reporting builds cumulative trust. Sporadic reporting gets ignored. Establish a cadence and never miss it.
 
 <ComparisonTable
-  headers={["Dashboard Section", "Metrics Shown", "Update Frequency", "Primary Audience"]}
+  headers={["Report Type", "Audience", "Cadence", "Length", "Key Content", "Delivery Method"]}
   rows={[
-    ["Platform Health", "Ingestion volume, match rate, active users, data quality score", "Real-time / Daily", "TAM + Customer tech lead"],
-    ["Audience Performance", "Audience sizes, activation volume, destination sync status", "Daily", "TAM + Marketing ops"],
-    ["Campaign Impact", "ROAS by audience, conversion lift, suppression savings", "Weekly / Per campaign", "Marketing leadership"],
-    ["Business Value Summary", "Total value delivered, ROI calculation, value trend", "Monthly", "Executive sponsors"],
-    ["Strategic Scorecard", "Multi-team adoption, feature utilization, roadmap alignment", "Quarterly", "VP / C-level"]
+    ["Monthly Value Snapshot", "Customer technical lead + marketing lead", "First week of each month", "1 page / 5 minutes", "KPI trends, notable wins, issues resolved, upcoming recommendations", "Email with PDF attachment and 15-minute walkthrough call"],
+    ["Quarterly Business Review (QBR)", "Customer VP/Director + technical lead + marketing lead", "End of each quarter", "10-15 slides / 45 minutes", "ROI summary, value realized vs baseline, adoption analysis, roadmap alignment, expansion proposals", "Scheduled presentation with pre-read sent 3 days in advance"],
+    ["Annual Value Assessment", "Customer C-suite sponsor", "Contract anniversary month", "5 slides / 20 minutes", "Total ROI delivered, strategic alignment, year-ahead vision, renewal justification", "Executive briefing co-presented with your account executive"]
   ]}
-  highlightColumn={1}
+  highlightColumn={4}
 />
 
-### QBR Value Presentation Template
+### Monthly Value Snapshot Template
 
-<Expandable title="Executive Business Review Deck Structure" defaultOpen={true}>
+Structure every monthly snapshot identically so customers can compare across months:
+
+1. **Value Delivered This Month**: Top 3 quantified outcomes (e.g., "Activated 2.4M profiles to Meta with 94% match rate, up from 78% at baseline")
+2. **KPI Dashboard**: 4-6 key metrics with trend arrows (up/down/stable vs last month)
+3. **Issues Resolved**: Any data quality incidents, support tickets, or configuration changes completed
+4. **Proactive Recommendations**: 1-2 actions the customer should take next month to increase value
+5. **Looking Ahead**: Any platform updates, new features, or upcoming milestones relevant to this account
+
+<Callout type="tip" title="The 48-Hour Rule for Monthly Reports">
+Send the monthly value snapshot within the first 48 hours of the new month. Customers notice when reports are late, and late reports signal that their account is not a priority. Block time on the last day of each month to prepare the report so it is ready to send on the 1st or 2nd.
+</Callout>
+
+### QBR Value Presentation Structure
+
+<Expandable title="Quarterly Business Review Deck Template" defaultOpen={true}>
 
 **Slide 1: Executive Summary**
 - One-sentence value statement: "In Q[X], Zeotap delivered $[X] in measurable value across revenue lift, cost savings, and operational efficiency."
-- Three key metrics in large font
+- Three key metrics in large font with trend indicators
 
 **Slide 2: Value Delivered This Quarter**
-- Value log highlights organized by Technical, Business, Strategic
+- Value log highlights organized by category: Revenue Impact, Cost Savings, Time Savings, Risk Reduction
 - Dollar values where available, qualitative evidence where not
 
-**Slide 3: Platform Adoption & Health**
-- Active users trend, feature adoption heatmap, data quality scorecard
-- Comparison to previous quarter
+**Slide 3: Technical KPI Performance**
+- All mapped KPIs with baseline reference, current value, and trend
+- Annotations on any significant changes
 
-**Slide 4: Campaign Performance**
-- Top-performing audiences and their business outcomes
-- A/B test results with lift percentages
-- Suppression impact analysis
+**Slide 4: Platform Adoption and Utilization**
+- Feature utilization table with expansion opportunities highlighted
+- Active users trend and team adoption metrics
 
 **Slide 5: ROI Summary**
 - Running total of value delivered since engagement started
-- ROI calculation (revenue impact + cost savings vs. investment)
-- Trend showing ROI improving over time
+- ROI calculation: (Total Value Delivered - Platform Cost) / Platform Cost
+- Trend showing ROI improving over time as adoption deepens
 
-**Slide 6: Roadmap & Next Quarter Plan**
-- What is coming on the Zeotap product roadmap that benefits this customer
-- Proposed objectives and use cases for next quarter
-- Resources needed from the customer
+**Slide 6: Case Study Highlight**
+- One detailed win story from this quarter with specific numbers
+- Customer quote if available
 
-**Slide 7: Ask / Call to Action**
-- Specific request: expand to new team, add new data source, approve next use case, renew
+**Slide 7: Roadmap and Next Quarter Plan**
+- Upcoming platform features relevant to this customer
+- Proposed new use cases with projected value
+- Required actions from the customer's team
+
+**Slide 8: Ask / Call to Action**
+- Specific, concrete request: approve a new use case, expand to a new team, add a data source, renew
 - Clear next steps with owners and dates
 </Expandable>
 
 ---
 
-## Presenting Value at Executive Reviews
+## Tracking and Communicating Incremental Value Over Time
 
-The way you present value matters as much as the value itself. Executives have limited attention and strong pattern recognition for vendor spin.
+Value is not a point-in-time measurement. The most compelling value narrative is one that shows acceleration: the platform becomes more valuable over time as data accumulates, models mature, and adoption deepens.
 
-<Callout type="tip" title="The 3-Minute Rule">
-If your executive sponsor leaves the room after 3 minutes, they should have heard the most important number, the biggest win, and the one thing you need from them. Front-load your presentation with impact. Save the details for the appendix.
-</Callout>
-
-### Do's and Don'ts of Executive Value Presentations
-
-<ComparisonTable
-  headers={["Do", "Don't"]}
-  rows={[
-    ["Lead with the customer's business outcomes", "Lead with your product features"],
-    ["Use the customer's own language and KPIs", "Use Zeotap-specific jargon"],
-    ["Show trends over time (improving trajectory)", "Show a single snapshot with no context"],
-    ["Be honest about attribution (shared credit)", "Claim 100% credit for multi-factor outcomes"],
-    ["Include customer quotes and testimonials", "Only show your own data and charts"],
-    ["End with a specific, reasonable ask", "End with a generic 'any questions?'"],
-    ["Prepare a 1-page executive summary", "Send a 40-page deck in advance"],
-    ["Bring data that the customer cannot generate themselves", "Repeat data the customer already has"]
-  ]}
-  highlightColumn={0}
+<MermaidDiagram
+  title="Value Realization Curve"
+  chart={`graph LR
+    subgraph Timeline["Value Realization Over Time"]
+      direction LR
+      M1["Month 1-2<br/>Foundation"]:::phase1
+      M2["Month 3-4<br/>Initial Value"]:::phase2
+      M3["Month 5-8<br/>Accelerating Value"]:::phase3
+      M4["Month 9-12<br/>Full Value"]:::phase4
+      M5["Year 2+<br/>Compounding Value"]:::phase5
+    end
+    M1 -->|"Data onboarded<br/>Identity resolved"| M2
+    M2 -->|"First audiences<br/>activated"| M3
+    M3 -->|"Use cases expand<br/>Team adopts"| M4
+    M4 -->|"Optimization<br/>New channels"| M5
+    classDef phase1 fill:#1e293b,stroke:#94a3b8,color:#e2e8f0,stroke-width:2px
+    classDef phase2 fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef phase3 fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px
+    classDef phase4 fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:2px
+    classDef phase5 fill:#1e293b,stroke:#f59e0b,color:#e2e8f0,stroke-width:2px`}
+  caption="Communicate that the platform follows a compounding value curve. Early months are about foundation; value accelerates as data density and team adoption increase."
 />
 
-<Callout type="important" title="Value Engineering Is Renewal Insurance">
-Start building the value story in month one, not month eleven. By the time renewal conversations begin, you should have 9-12 months of documented value evidence that makes the renewal decision obvious. If you are scrambling to find value proof at renewal time, you have already lost the strategic position.
+### The Value Log: Your Most Important Document
+
+Maintain a running document for each account that captures value evidence as it happens. Do not wait until QBR prep to remember what value was delivered.
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| Date | When the value was realized | 2026-02-14 |
+| Value Type | Technical, Business, or Strategic | Business |
+| Description | What happened | Launched suppression audience that eliminated ad waste to 340K existing customers |
+| Evidence | Data, screenshot, or customer quote | Platform export showing 340K profiles suppressed; customer confirmed $42K monthly savings |
+| Dollar Impact | Estimated financial impact | $42,000/month = $504,000/year |
+| Attribution | How much is attributable to Zeotap | 90% — suppression was not possible before Zeotap |
+
+<Callout type="warning" title="The Attribution Trap">
+Never claim 100% attribution for a business outcome unless you can prove it with an A/B test. Marketing outcomes are always multi-causal. A credible TAM says: "Zeotap audiences contributed to a 25% ROAS improvement alongside creative optimizations and seasonal trends." Overclaiming gets caught and destroys trust permanently. Shared credit builds more trust than sole credit ever could.
 </Callout>
 
-Value engineering transforms the TAM role from technical support to strategic partnership. When you can walk into a room and show a CFO that their $200K investment generated $789K in measurable returns, the conversation shifts from "Should we renew?" to "Where else can we apply this?" That is the goal. Build your value practice with discipline, maintain your value log with rigor, and present your findings with confidence and honesty.
+### Building the Incremental Value Narrative
+
+When presenting value over time, use this five-part framework:
+
+1. **Anchor to baseline**: Always start with where the customer was before Zeotap
+2. **Show the trajectory**: Month-over-month improvements, not just current state
+3. **Highlight inflection points**: Call out specific moments when value accelerated (new data source added, new use case launched, team training completed)
+4. **Project forward**: Based on current trajectory, show what value will look like in 6-12 months if the customer continues to expand usage
+5. **Quantify the gap**: Show the difference between current value and potential value if underutilized capabilities are activated
+
+---
+
+## Case Study Development from Customer Implementations
+
+Every successful customer implementation contains a case study. TAMs are uniquely positioned to capture these because you have the data, the context, and the relationship.
+
+<ArchDiagram
+  title="Case Study Development Process"
+  steps={[
+    { label: "Identify the Story", detail: "Look for accounts with clear before/after metrics and a compelling use case", icon: "🔎" },
+    { label: "Gather the Data", detail: "Pull platform metrics, baseline comparisons, and business outcome data from your ROI dashboard", icon: "📋" },
+    { label: "Get Customer Buy-In", detail: "Approach your champion with a draft outline and ask for permission and quotes", icon: "🤝" },
+    { label: "Draft the Narrative", detail: "Structure as Challenge, Solution, Results with specific numbers", icon: "✍️" },
+    { label: "Internal Review", detail: "Share with marketing for polish, legal for approval, and your manager for strategic alignment", icon: "✅" },
+    { label: "Activate the Asset", detail: "Use in QBRs for other accounts, on the website, at events, and in sales enablement", icon: "📢" }
+  ]}
+/>
+
+### Case Study Data Points to Capture
+
+<Expandable title="Metrics That Make Case Studies Compelling" defaultOpen={true}>
+
+Every case study needs hard numbers. Capture these from your ROI dashboard and customer conversations:
+
+**Efficiency Metrics**:
+- Time saved on audience creation (hours per week)
+- Reduction in data onboarding time (weeks to days or hours)
+- Decrease in manual data wrangling effort (FTE hours saved per month)
+- Number of point solutions consolidated
+
+**Performance Metrics**:
+- Improvement in campaign match rates (percentage points gained)
+- Increase in addressable audience size (absolute number or percentage)
+- Improvement in segment precision (conversion rate lift from A/B tests)
+- Reduction in wasted ad spend via suppression
+
+**Business Outcome Metrics**:
+- Revenue attributed to Zeotap-powered campaigns (with attribution methodology)
+- Cost reduction from eliminated tools or manual processes (annual dollar savings)
+- Time-to-market improvement for new campaigns or audiences
+- Compliance risk reduction (quantified in faster DSR response time or audit readiness)
+
+**Scale Metrics**:
+- Total profiles managed in the platform
+- Events processed per day
+- Number of active destination connectors
+- Number of team members using the platform regularly
+- Number of active audience segments
+</Expandable>
+
+### Case Study Narrative Structure
+
+Use this framework for every case study:
+
+| Section | Content | Length |
+|---------|---------|--------|
+| Challenge | What was the customer struggling with before Zeotap? Use their words. | 2-3 sentences |
+| Solution | What specific Zeotap capabilities addressed the challenge? Be technical but accessible. | 3-4 sentences |
+| Implementation | How long did it take? What was the TAM's role? What was surprising? | 2-3 sentences |
+| Results | Hard numbers: before vs after for each key metric. Use the value log. | 4-6 bullet points with numbers |
+| Customer Quote | A direct quote from your champion about the impact. | 1-2 sentences |
+| What is Next | What additional value is the customer planning to unlock? | 1-2 sentences |
+
+<Callout type="info" title="The Best Time to Ask for a Case Study">
+Ask for case study participation immediately after a successful QBR where the customer is visibly pleased with the results. Do not wait. The emotional high from a great QBR is the moment when customers are most likely to say yes. Prepare a one-paragraph email template you can send within 24 hours of the QBR.
+</Callout>
+
+---
+
+## Expansion Opportunity Identification Through Value Data
+
+Your ROI dashboard and utilization tracking are not just retention tools — they are your most reliable source of expansion signals. Every underutilized capability is a potential upsell. Every successful use case in one department is a potential cross-sell to another.
+
+<ComparisonTable
+  headers={["Signal in Your Data", "What It Indicates", "Expansion Opportunity", "How to Position It"]}
+  rows={[
+    ["High activation volume but only 2-3 destinations", "Customer is getting value but limiting their reach", "Additional destination connectors (CRM, email, emerging channels)", "\"You are activating 1.2M profiles to Meta and Google. Adding Salesforce and Braze would let your CRM and email teams use the same audiences.\""],
+    ["Identity match rate plateau despite growing data", "Customer has hit the ceiling of their current identifier set", "Additional identity resolution (phone, MAID, enrichment)", "\"Your match rate has stabilized at 72%. Adding phone number matching and third-party enrichment could push this above 85%.\""],
+    ["Marketing team building segments but data team not using APIs", "Platform adoption is siloed to one department", "API access, data science workbench, or analytics add-ons", "\"Your marketing team is building 15 segments per month. Your data science team could build predictive models on the same data with API access.\""],
+    ["Consent manager not configured despite GDPR exposure", "Compliance gap that represents both risk and opportunity", "Consent management module activation and configuration", "\"You are activating profiles across the EU without centralized consent tracking. This is a compliance risk we can solve with the consent module.\""],
+    ["Event volume growing 20%+ month over month", "Customer's business is scaling and will hit tier limits", "Volume tier upgrade, proactive capacity planning", "\"Your event volume has grown 22% per month for 3 months. At this rate you will exceed your current tier by Q3. Let us plan the upgrade now to avoid disruption.\""],
+    ["Multiple teams requesting access to the platform", "Organic demand spreading across the organization", "Enterprise license expansion, additional seats, training packages", "\"Three new teams have requested access this quarter. An enterprise license would give all teams unlimited access at a lower per-seat cost.\""]
+  ]}
+  highlightColumn={2}
+/>
+
+<Callout type="tip" title="Lead with Value, Not with Quota">
+Never position an expansion conversation as a sales pitch. Position it as a logical next step based on the value data you are already tracking together. The sentence structure is always: "Based on the results we are seeing in [metric], activating [capability] would unlock [specific additional value]." Let the data make the case. Share expansion signals with your account executive so they can run the commercial conversation while you maintain your trusted advisor position.
+</Callout>
+
+### Expansion Readiness Scoring
+
+Before bringing an expansion opportunity to the account executive, score the account's readiness:
+
+<Expandable title="Expansion Readiness Checklist" defaultOpen={false}>
+
+| Criteria | Weight | Score (1-5) | Notes |
+|----------|--------|-------------|-------|
+| Current ROI exceeds 2x platform cost | 25% | _ | Hard to justify more spend if current spend is not paying off |
+| Champion is engaged and responsive | 20% | _ | No champion = no internal advocate for expansion |
+| Platform adoption is growing (users, segments, activations) | 15% | _ | Growing usage signals organic demand |
+| Data quality is healthy (no unresolved P1/P2 issues) | 15% | _ | Cannot expand on a shaky foundation |
+| Customer has expressed interest in additional capabilities | 10% | _ | Inbound interest is the strongest signal |
+| Budget cycle timing is favorable | 10% | _ | Know when budgets are set; align your proposal |
+| No active competitive evaluation | 5% | _ | Expansion during a competitive eval is risky |
+
+**Scoring**: 4.0+ = Ready, bring to AE immediately. 3.0-3.9 = Warm, nurture for 1-2 months. Below 3.0 = Focus on proving value with current capabilities first.
+</Expandable>
+
+---
+
+## Technical Health Metrics That Predict Renewal Risk
+
+Not every risk is visible in a customer's words. Most renewal risk shows up in the platform data months before the customer voices dissatisfaction. Train yourself to read these signals early.
+
+<MermaidDiagram
+  title="Renewal Risk Detection Framework"
+  chart={`flowchart TD
+    A["Platform Health<br/>Metrics"]:::monitor --> B{"Risk Assessment<br/>Engine"}
+    B -->|All Green| C["Low Risk<br/>Renewal Confident"]:::green
+    B -->|Yellow Signals| D["Medium Risk<br/>Investigate and Act"]:::yellow
+    B -->|Red Signals| E["High Risk<br/>Escalate Immediately"]:::red
+    C --> F["Continue value<br/>reporting cadence"]:::action
+    D --> G["Schedule extra touchpoint<br/>with champion"]:::action
+    D --> H["Create 30-day value<br/>acceleration plan"]:::action
+    E --> I["Executive sponsor<br/>engagement"]:::action
+    E --> J["Rapid value<br/>demonstration sprint"]:::action
+    classDef monitor fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef green fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:2px
+    classDef yellow fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef red fill:#1e293b,stroke:#ef4444,color:#e2e8f0,stroke-width:2px
+    classDef action fill:#1e293b,stroke:#94a3b8,color:#e2e8f0,stroke-width:2px`}
+  caption="Monitor platform health metrics continuously. Yellow signals trigger proactive investigation. Red signals trigger immediate executive engagement."
+/>
+
+### Risk Signal Reference Table
+
+<Expandable title="Early Warning Indicators — Detect 3-6 Months Before Renewal" defaultOpen={true}>
+
+| Risk Signal | Measurement | Yellow Threshold | Red Threshold | Recommended Action |
+|------------|-------------|-----------------|---------------|-------------------|
+| Login frequency declining | Unique users per week | 30% drop from 90-day average | 60% drop from 90-day average | Reach out to champion, offer training refresher |
+| Audience creation rate dropping | New segments created per month | 40% decline over 2 months | No new segments in 30 days | Investigate if team had turnover, offer use case workshop |
+| Ingestion volume flat or declining | Events per day trend | Flat for 60 days | Declining for 30 days | Check if data sources were disconnected, review data strategy |
+| Support ticket sentiment | Tone and frequency of tickets | Increasing frustration in ticket language | Multiple escalations in 30 days | Proactive outreach, offer dedicated support sprint |
+| Champion engagement declining | Response time to TAM communications | Response time doubles | No response for 2+ weeks | Multi-thread to other contacts, escalate internally |
+| Feature utilization narrowing | Number of platform features used monthly | Usage concentrating to 1-2 features only | Only using basic segmentation | Build and present a value acceleration plan |
+| QBR attendance declining | Seniority level of attendees | VP stops attending | Only junior analyst attending | Re-engage executive sponsor with a tailored value brief |
+| Competitive evaluation signals | Customer asking about competitor features | Questions about specific competitor capabilities | Formal RFP or proof of concept with competitor | Engage product team for competitive response, accelerate value delivery |
+</Expandable>
+
+<Callout type="warning" title="The Silent Churn Pattern">
+The most dangerous at-risk accounts are not the ones filing angry support tickets. They are the ones that go quiet. Declining logins, fewer questions, shorter email responses, skipped QBRs — these are the signals of a customer who has mentally moved on. If you see three or more yellow signals simultaneously, treat the account as red regardless of individual thresholds.
+</Callout>
+
+### Renewal Risk Response Playbook
+
+<Expandable title="Actions by Risk Level" defaultOpen={false}>
+
+**Low Risk (All Green)**:
+- Continue standard value reporting cadence
+- Focus on expansion opportunities
+- Prepare renewal proposal 90 days before contract end
+- Position renewal as a formality backed by data
+
+**Medium Risk (Yellow Signals)**:
+- Increase touchpoint frequency (weekly instead of bi-weekly)
+- Schedule a dedicated value acceleration session with the customer's team
+- Identify and address the root cause of declining engagement
+- Prepare a 30-day plan to demonstrate quick wins
+- Brief your account executive on the risk and your mitigation plan
+
+**High Risk (Red Signals)**:
+- Escalate to your TAM manager and account executive within 24 hours
+- Request executive sponsor engagement (your VP to their VP)
+- Launch a rapid value demonstration sprint: 2-week focused effort to deliver a visible win
+- Prepare a competitive defense brief if competitor evaluation is suspected
+- Document all value delivered to date for the save conversation
+- Consider offering professional services or training at no cost to re-engage the team
+</Expandable>
+
+---
+
+## Value Realization Milestones and Success Criteria
+
+Define clear milestones that mark the customer's journey from onboarding to full value realization. These milestones give the customer a sense of progress, give you a framework for proactive recommendations, and give your leadership visibility into account maturity.
+
+<ComparisonTable
+  headers={["Milestone", "Typical Timeline", "Success Criteria", "TAM Actions", "Value Unlocked"]}
+  rows={[
+    ["M1: Data Foundation", "Week 1-4", "All contracted data sources ingesting, schema validated, error rate < 2%", "Monitor ingestion daily, resolve schema issues, document baseline metrics", "Foundation is solid — no business value yet but platform is receiving data"],
+    ["M2: Identity Established", "Week 3-6", "Identity resolution configured, match rate > 60%, dedup rules active", "Tune matching rules, validate match quality with sample profiles, share initial match rate report", "Customer has a unified view of their users for the first time"],
+    ["M3: First Audience Activated", "Week 5-8", "At least one audience built and synced to a live destination", "Guide segment creation, validate destination sync, confirm audience in downstream platform", "First tangible use case delivering value — critical psychological milestone for the customer"],
+    ["M4: Team Adoption", "Month 2-4", "3+ team members active, self-service segment creation happening", "Conduct training, create account-specific docs, set up role-based access", "Platform is no longer dependent on one person — key-person risk eliminated"],
+    ["M5: Multi-Channel Activation", "Month 3-6", "3+ destinations active, audiences syncing on automated schedules", "Configure connectors, set up sync monitoring, review cross-channel strategy", "Customer is orchestrating audiences across their marketing stack"],
+    ["M6: Advanced Use Cases", "Month 4-8", "Computed attributes in use, predictive segments active, real-time activation running", "Workshop advanced features, build computed attribute templates, optimize pipelines", "Differentiated value that competitors cannot easily replicate"],
+    ["M7: Full Value Realization", "Month 6-12", "ROI exceeds platform cost, all contracted capabilities utilized, team self-sufficient", "Shift to strategic advisory, focus on optimization and expansion, prepare annual review", "Customer is a reference candidate and expansion opportunity"]
+  ]}
+  highlightColumn={2}
+/>
+
+### Milestone Tracking Process
+
+For each account, maintain a milestone tracker that records:
+
+1. **Target date**: When you expect the customer to reach each milestone based on their implementation plan
+2. **Actual date**: When they actually reached it
+3. **Variance**: Days ahead or behind schedule
+4. **Blockers**: What slowed them down (if delayed) — categorize as customer-side, platform-side, or external
+5. **Accelerators**: What helped them move faster (if ahead of schedule)
+6. **Value evidence**: Specific metrics that prove the milestone was achieved
+
+<Expandable title="Milestone Review Cadence" defaultOpen={false}>
+
+- **Weekly (internal)**: Review milestone progress for all accounts. Identify any accounts stalled between milestones for more than 2 weeks and investigate the blocker.
+- **Bi-weekly (with customer)**: During regular syncs, reference the next milestone and discuss what is needed to reach it. This frames every conversation around forward progress rather than reactive problem-solving.
+- **Quarterly (QBR)**: Present the full milestone map showing achieved milestones, current position, and the path forward. This visual narrative of structured progress is especially powerful for executive audiences.
+- **At renewal**: Present the complete milestone journey from M1 through current state. A visual timeline showing consistent progress is more compelling than any single ROI number because it demonstrates the depth of the partnership.
+</Expandable>
+
+---
+
+## Putting It All Together: The Value-Driven TAM Operating Model
+
+Value engineering is not a project with a start and end date. It is an operating model that shapes every interaction you have with a customer.
+
+<MermaidDiagram
+  title="The TAM Value Flywheel"
+  chart={`flowchart LR
+    A["Measure Value"]:::step --> B["Communicate Value"]:::step
+    B --> C["Customer Trust<br/>Deepens"]:::step
+    C --> D["Customer Adopts<br/>More Features"]:::step
+    D --> E["More Value<br/>Is Created"]:::step
+    E --> A
+    classDef step fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:2px`}
+  caption="The value flywheel: measure, communicate, build trust, drive adoption, create more value, repeat. Once spinning, renewals and expansions become natural outcomes."
+/>
+
+<Callout type="tip" title="The TAM Value Flywheel in Practice">
+Measure value, then communicate value. When customers see proof, they trust you more. When they trust you more, they adopt more features. When they adopt more features, more value is created. Measure that value, communicate it, and the flywheel accelerates. This is what separates transactional support relationships from strategic partnerships. Once the flywheel is spinning, renewals and expansions become natural outcomes rather than stressful negotiations.
+</Callout>
+
+### Weekly Operating Rhythm for Value-Driven TAMs
+
+| Day | Activity | Time Investment | Output |
+|-----|---------|----------------|--------|
+| Monday | Review ROI dashboards and health metrics for all accounts | 45 min | Flagged accounts with declining metrics or risk signals |
+| Tuesday-Thursday | Customer calls and syncs — reference value data in every conversation | Ongoing | Value-informed conversations, not reactive status updates |
+| Friday | Update milestone trackers, draft any monthly snapshots due next week | 30 min | Current milestone status, draft reports ready for review |
+| Last day of month | Finalize and send monthly value snapshots for all accounts | 60 min | Monthly reports delivered within 48 hours of month end |
+| End of quarter | Prepare and deliver QBR presentations | 2-3 hours per account | Comprehensive value review with expansion recommendations |
+
+The TAMs who consistently execute this operating model are the ones whose accounts renew at the highest rates, expand the fastest, and generate the most customer advocacy. Value engineering is not an optional add-on to the TAM role — it is the core of the role. Build your value practice with discipline, maintain your value log with rigor, and present your findings with confidence and honesty. The data will do the persuading for you.
