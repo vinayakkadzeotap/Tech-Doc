@@ -125,6 +125,55 @@ const SCENARIOS: { label: string; desc: string; report: HealthReport }[] = [
 ];
 
 /* ------------------------------------------------------------------ */
+/*  DB mapping helper                                                  */
+/* ------------------------------------------------------------------ */
+
+function mapDbScenario(row: Record<string, unknown>): { label: string; desc: string; report: HealthReport } {
+  const data = (row.data || row) as Record<string, unknown>;
+
+  const services = ((data.services || []) as Record<string, unknown>[]).map((s) => ({
+    name: s.name as string,
+    status: (s.status ?? 'healthy') as ServiceStatus,
+    lastActivity: (s.last_activity ?? s.lastActivity ?? 'unknown') as string,
+    eventsToday: (s.events_today ?? s.eventsToday ?? 0) as number,
+    description: (s.description ?? '') as string,
+  }));
+
+  const destinations = ((data.destinations || []) as Record<string, unknown>[]).map((d) => ({
+    name: d.name as string,
+    successful: (d.successful ?? 0) as number,
+    failed: (d.failed ?? 0) as number,
+    successRate: (d.success_rate ?? d.successRate ?? 0) as number,
+    lastError: (d.last_error ?? d.lastError) as string | undefined,
+    lastErrorTime: (d.last_error_time ?? d.lastErrorTime) as string | undefined,
+  }));
+
+  // Compute totalUploads/totalFailures from destinations array
+  const totalUploads = destinations.reduce((sum, d) => sum + d.successful, 0);
+  const totalFailures = destinations.reduce((sum, d) => sum + d.failed, 0);
+  const total = totalUploads + totalFailures;
+  const overallSuccessRate = total > 0
+    ? parseFloat(((totalUploads / total) * 100).toFixed(1))
+    : ((data.overall_success_rate ?? data.overallSuccessRate ?? 0) as number);
+
+  return {
+    label: (row.label ?? data.label ?? 'Scenario') as string,
+    desc: (row.desc ?? row.description ?? data.desc ?? '') as string,
+    report: {
+      globalStatus: (data.global_status ?? data.globalStatus ?? 'OPERATIONAL') as HealthReport['globalStatus'],
+      orgName: (data.org_name ?? data.orgName ?? 'Unknown Org') as string,
+      orgId: (data.org_id ?? data.orgId ?? 'org_unknown') as string,
+      services,
+      destinations,
+      recentDates: (data.recent_dates ?? data.recentDates ?? []) as string[],
+      overallSuccessRate,
+      totalUploads,
+      totalFailures,
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -133,15 +182,64 @@ export default function DataHealthDashboard() {
   const [scenario, setScenario] = useState<number | null>(null);
   const [checkStep, setCheckStep] = useState(0);
   const [expandedDest, setExpandedDest] = useState<string | null>(null);
+  const [isLiveData, setIsLiveData] = useState(false);
+  const [dbScenarios, setDbScenarios] = useState<typeof SCENARIOS | null>(null);
+  const [liveReport, setLiveReport] = useState<HealthReport | null>(null);
 
-  const report = scenario !== null ? SCENARIOS[scenario].report : null;
+  const activeScenarios = dbScenarios || SCENARIOS;
+
+  // Check DB availability on mount
+  useEffect(() => {
+    async function checkDbAvailability() {
+      try {
+        const res = await fetch('/api/simulators?type=health');
+        if (!res.ok) throw new Error('API returned non-OK status');
+        const data = await res.json();
+
+        if (data.scenarios && Array.isArray(data.scenarios) && data.scenarios.length > 0) {
+          const mapped = data.scenarios.map((row: Record<string, unknown>) => mapDbScenario(row));
+          setDbScenarios(mapped);
+          setIsLiveData(true);
+        }
+      } catch {
+        // Fall back to SCENARIOS
+        setDbScenarios(null);
+        setIsLiveData(false);
+      }
+    }
+
+    checkDbAvailability();
+  }, []);
+
+  const report = liveReport || (scenario !== null ? activeScenarios[scenario].report : null);
+
+  const fetchScenarioData = useCallback(async (scenarioName: string) => {
+    try {
+      const res = await fetch(`/api/simulators?type=health&scenario=${encodeURIComponent(scenarioName)}`);
+      if (!res.ok) throw new Error('API returned non-OK status');
+      const data = await res.json();
+
+      if (data.scenario) {
+        const mapped = mapDbScenario(data.scenario as Record<string, unknown>);
+        setLiveReport(mapped.report);
+        setIsLiveData(true);
+      }
+    } catch {
+      // Fall back — report already set from activeScenarios
+      setLiveReport(null);
+    }
+  }, []);
 
   const runDiagnostic = useCallback((idx: number) => {
     setScenario(idx);
     setPhase('checking');
     setCheckStep(0);
     setExpandedDest(null);
-  }, []);
+    setLiveReport(null);
+
+    const scenarioLabel = activeScenarios[idx].label;
+    fetchScenarioData(scenarioLabel);
+  }, [activeScenarios, fetchScenarioData]);
 
   // Simulate diagnostic phases
   useEffect(() => {
@@ -159,6 +257,7 @@ export default function DataHealthDashboard() {
     setScenario(null);
     setCheckStep(0);
     setExpandedDest(null);
+    setLiveReport(null);
   }, []);
 
   const DIAGNOSTIC_STEPS = [
@@ -177,6 +276,9 @@ export default function DataHealthDashboard() {
           <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-500/15 border border-green-500/25 text-lg">🏥</span>
             Data Health Dashboard
+            <span className={`ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${isLiveData ? 'bg-green-500/15 text-green-400 border border-green-500/25' : 'bg-blue-500/15 text-blue-400 border border-blue-500/25'}`}>
+              {isLiveData ? 'Live Data' : 'Sample Data'}
+            </span>
           </h2>
           <p className="text-sm text-text-muted mt-1">
             Follow the cdp-health-diagnostics workflow: Health Check → Service Scan → Destination Health → Error Drill-Down
@@ -194,7 +296,7 @@ export default function DataHealthDashboard() {
         <div className="space-y-4 animate-fade-in">
           <h3 className="text-sm font-semibold text-text-secondary">Select a scenario to diagnose</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {SCENARIOS.map((s, i) => {
+            {activeScenarios.map((s, i) => {
               const style = GLOBAL_STYLES[s.report.globalStatus];
               return (
                 <button

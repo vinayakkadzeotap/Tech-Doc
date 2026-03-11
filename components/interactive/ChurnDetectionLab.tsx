@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 /* ------------------------------------------------------------------ */
 /*  Types & Constants                                                  */
@@ -118,12 +118,12 @@ const TIER_INTERVENTIONS: Record<string, { action: string; channel: string; timi
 };
 
 /* ------------------------------------------------------------------ */
-/*  Data generation (deterministic per vertical)                       */
+/*  Data generation (deterministic per vertical) — fallback            */
 /* ------------------------------------------------------------------ */
 
 const NAMES = ['Alex Kim', 'Jordan Lee', 'Sam Patel', 'Taylor Chen', 'Morgan Walsh', 'Jamie Ortiz', 'Robin Das', 'Casey Nakamura', 'Avery Singh', 'Quinn Murphy', 'Drew Fischer', 'Riley Tanaka', 'Blake Torres', 'Skyler Rao', 'Sage Petrov'];
 
-function generateCustomers(vertical: Vertical): CustomerProfile[] {
+function generateFallbackCustomers(vertical: Vertical): CustomerProfile[] {
   const seed = vertical.split('').reduce((s, c) => s + c.charCodeAt(0), 0);
   let x = seed;
   const rand = () => { x = (x * 16807) % 2147483647; return (x - 1) / 2147483646; };
@@ -174,6 +174,38 @@ function generateCustomers(vertical: Vertical): CustomerProfile[] {
   });
 }
 
+/* ------------------------------------------------------------------ */
+/*  DB mapping helper                                                  */
+/* ------------------------------------------------------------------ */
+
+function mapDbCustomer(row: Record<string, unknown>): CustomerProfile {
+  const metrics = (row.metrics || {}) as Record<string, unknown>;
+  const baselinePurchases = (metrics.baseline_purchases ?? metrics.baselinePurchases ?? 0) as number;
+  const recentPurchases = (metrics.recent_purchases ?? metrics.recentPurchases ?? 0) as number;
+  const baselineSpend = (metrics.baseline_spend ?? metrics.baselineSpend ?? 0) as number;
+  const recentSpend = (metrics.recent_spend ?? metrics.recentSpend ?? 0) as number;
+  const baselineLogins = (metrics.baseline_logins ?? metrics.baselineLogins ?? 0) as number;
+  const recentLogins = (metrics.recent_logins ?? metrics.recentLogins ?? 0) as number;
+  const supportTickets = (metrics.support_tickets ?? metrics.supportTickets ?? 0) as number;
+
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    segment: (row.segment ?? 'Standard') as string,
+    baselinePurchases,
+    recentPurchases,
+    baselineSpend,
+    recentSpend,
+    baselineLogins,
+    recentLogins,
+    supportTickets,
+    riskScore: (row.risk_score ?? row.riskScore ?? 0) as number,
+    tier: (row.tier ?? 'STABLE') as CustomerProfile['tier'],
+    daysToChurn: (row.days_to_churn ?? row.daysToChurn ?? 'N/A') as string,
+    ltv: (row.ltv ?? 0) as number,
+  };
+}
+
 function fmt(n: number): string { return n.toLocaleString('en-US'); }
 
 /* ------------------------------------------------------------------ */
@@ -184,8 +216,62 @@ export default function ChurnDetectionLab() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [vertical, setVertical] = useState<Vertical | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
+  const [isLiveData, setIsLiveData] = useState(false);
+  const [activeVerticalInfo, setActiveVerticalInfo] = useState<VerticalInfo | null>(null);
+  const [liveCustomers, setLiveCustomers] = useState<CustomerProfile[] | null>(null);
+  const [verticalsData, setVerticalsData] = useState<Record<Vertical, VerticalInfo>>(VERTICALS);
 
-  const customers = useMemo(() => vertical ? generateCustomers(vertical) : [], [vertical]);
+  // Fetch verticals list on mount
+  useEffect(() => {
+    async function fetchVerticals() {
+      try {
+        const res = await fetch('/api/simulators?type=churn');
+        if (!res.ok) throw new Error('API returned non-OK status');
+        const data = await res.json();
+
+        if (data.verticals && typeof data.verticals === 'object') {
+          setVerticalsData(data.verticals as Record<Vertical, VerticalInfo>);
+          setIsLiveData(true);
+        }
+      } catch {
+        // Fall back to hardcoded VERTICALS
+        setVerticalsData(VERTICALS);
+        setIsLiveData(false);
+      }
+    }
+
+    fetchVerticals();
+  }, []);
+
+  // Fetch customers when vertical is selected
+  const fetchCustomersForVertical = useCallback(async (v: Vertical) => {
+    try {
+      const res = await fetch(`/api/simulators?type=churn&vertical=${v}`);
+      if (!res.ok) throw new Error('API returned non-OK status');
+      const data = await res.json();
+
+      if (data.customers && Array.isArray(data.customers) && data.customers.length > 0) {
+        const mapped = data.customers.map((row: Record<string, unknown>) => mapDbCustomer(row));
+        setLiveCustomers(mapped);
+        setIsLiveData(true);
+      } else {
+        setLiveCustomers(null);
+      }
+
+      if (data.verticalInfo) {
+        setActiveVerticalInfo(data.verticalInfo as VerticalInfo);
+      }
+    } catch {
+      // Fall back to generated data
+      setLiveCustomers(null);
+    }
+  }, []);
+
+  const customers = useMemo(() => {
+    if (liveCustomers && liveCustomers.length > 0) return liveCustomers;
+    return vertical ? generateFallbackCustomers(vertical) : [];
+  }, [vertical, liveCustomers]);
+
   const sortedCustomers = useMemo(() => [...customers].sort((a, b) => b.riskScore - a.riskScore), [customers]);
 
   const tierCounts = useMemo(() => {
@@ -201,15 +287,23 @@ export default function ChurnDetectionLab() {
     setVertical(v);
     setStep(2);
     setSelectedCustomer(null);
-  }, []);
+    setLiveCustomers(null);
+    setActiveVerticalInfo(null);
+    fetchCustomersForVertical(v);
+  }, [fetchCustomersForVertical]);
 
   const handleReset = useCallback(() => {
     setStep(1);
     setVertical(null);
     setSelectedCustomer(null);
+    setLiveCustomers(null);
+    setActiveVerticalInfo(null);
   }, []);
 
   const detail = selectedCustomer ? customers.find((c) => c.id === selectedCustomer) : null;
+
+  // Use activeVerticalInfo for signal weights display if available, otherwise fall back to VERTICALS
+  const displayVerticalInfo = vertical ? (activeVerticalInfo || verticalsData[vertical]) : null;
 
   return (
     <div className="w-full space-y-6">
@@ -219,6 +313,9 @@ export default function ChurnDetectionLab() {
           <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-500/15 border border-red-500/25 text-lg">⚠️</span>
             Churn Detection Lab
+            <span className={`ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${isLiveData ? 'bg-green-500/15 text-green-400 border border-green-500/25' : 'bg-blue-500/15 text-blue-400 border border-blue-500/25'}`}>
+              {isLiveData ? 'Live Data' : 'Sample Data'}
+            </span>
           </h2>
           <p className="text-sm text-text-muted mt-1">
             Follow the cdp-churn-finder workflow: Baseline → Recent Behavior → Risk Scoring → Interventions
@@ -234,7 +331,7 @@ export default function ChurnDetectionLab() {
         <div className="space-y-4 animate-fade-in">
           <h3 className="text-sm font-semibold text-text-secondary">Step 1: Select your industry to apply vertical-specific churn signals</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {(Object.entries(VERTICALS) as [Vertical, VerticalInfo][]).map(([v, info]) => (
+            {(Object.entries(verticalsData) as [Vertical, VerticalInfo][]).map(([v, info]) => (
               <button
                 key={v}
                 onClick={() => handleVerticalSelect(v)}
@@ -256,12 +353,12 @@ export default function ChurnDetectionLab() {
       )}
 
       {/* Step 2: Analysis Dashboard */}
-      {step >= 2 && vertical && (
+      {step >= 2 && vertical && displayVerticalInfo && (
         <div className="space-y-5 animate-fade-in">
           {/* Vertical badge */}
           <div className="flex items-center gap-2">
-            <span className="text-lg">{VERTICALS[vertical].icon}</span>
-            <span className="text-sm font-semibold text-text-primary">{VERTICALS[vertical].label}</span>
+            <span className="text-lg">{displayVerticalInfo.icon}</span>
+            <span className="text-sm font-semibold text-text-primary">{displayVerticalInfo.label}</span>
             <button onClick={() => setStep(3)} className="ml-auto text-xs text-brand-blue hover:underline">View Signal Weights →</button>
           </div>
 
@@ -383,14 +480,14 @@ export default function ChurnDetectionLab() {
       )}
 
       {/* Step 3: Signal weights modal */}
-      {step === 3 && vertical && (
+      {step === 3 && vertical && displayVerticalInfo && (
         <div className="rounded-2xl border border-border bg-bg-surface/50 p-5 space-y-4 animate-fade-in">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-text-secondary">{VERTICALS[vertical].label} Churn Signal Weights</h3>
+            <h3 className="text-sm font-semibold text-text-secondary">{displayVerticalInfo.label} Churn Signal Weights</h3>
             <button onClick={() => setStep(2)} className="text-xs text-brand-blue hover:underline">← Back to dashboard</button>
           </div>
           <div className="space-y-3">
-            {VERTICALS[vertical].signals.map((signal) => (
+            {displayVerticalInfo.signals.map((signal) => (
               <div key={signal.name} className="flex items-center gap-3 p-3 rounded-xl bg-bg-elevated/60 border border-border">
                 <div className="w-12 text-center">
                   <div className="text-lg font-bold text-text-primary">{Math.round(signal.weight * 100)}%</div>

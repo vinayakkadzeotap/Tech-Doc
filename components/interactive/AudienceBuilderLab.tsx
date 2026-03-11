@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 /* ------------------------------------------------------------------ */
 /*  Types & Constants                                                  */
@@ -33,6 +33,13 @@ interface AudienceResult {
   confidence: 'HIGH' | 'MEDIUM' | 'LOW';
   channels: string[];
   avgSpend: number;
+}
+
+interface CampaignPreset {
+  name: string;
+  campaign_type: string;
+  description: string;
+  criteria: SegmentCriteria[];
 }
 
 const TOTAL_BASE = 2_500_000;
@@ -90,11 +97,11 @@ const PRESET_AUDIENCES: Record<CampaignType, { name: string; criteria: SegmentCr
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-function estimateSize(criteria: SegmentCriteria[]): number {
+function estimateSize(criteria: SegmentCriteria[], fields: SchemaField[]): number {
   if (criteria.length === 0) return TOTAL_BASE;
   let fraction = 1;
   for (const c of criteria) {
-    const field = SCHEMA_FIELDS.find((f) => f.name === c.field);
+    const field = fields.find((f) => f.name === c.field);
     if (!field) { fraction *= 0.5; continue; }
     const val = parseFloat(c.value);
     if (field.type === 'numeric' && field.percentiles && !isNaN(val)) {
@@ -119,16 +126,16 @@ function estimateSize(criteria: SegmentCriteria[]): number {
       fraction *= 0.3;
     }
   }
-  return Math.max(50, Math.round(fraction * TOTAL_BASE * (field_fill_avg(criteria) / 100)));
+  return Math.max(50, Math.round(fraction * TOTAL_BASE * (field_fill_avg(criteria, fields) / 100)));
 }
 
-function field_fill_avg(criteria: SegmentCriteria[]): number {
-  const rates = criteria.map((c) => SCHEMA_FIELDS.find((f) => f.name === c.field)?.fillRate || 80);
+function field_fill_avg(criteria: SegmentCriteria[], fields: SchemaField[]): number {
+  const rates = criteria.map((c) => fields.find((f) => f.name === c.field)?.fillRate || 80);
   return rates.reduce((a, b) => a + b, 0) / rates.length;
 }
 
-function getConfidence(criteria: SegmentCriteria[]): 'HIGH' | 'MEDIUM' | 'LOW' {
-  const avgFill = field_fill_avg(criteria);
+function getConfidence(criteria: SegmentCriteria[], fields: SchemaField[]): 'HIGH' | 'MEDIUM' | 'LOW' {
+  const avgFill = field_fill_avg(criteria, fields);
   if (avgFill > 90) return 'HIGH';
   if (avgFill > 75) return 'MEDIUM';
   return 'LOW';
@@ -158,15 +165,63 @@ export default function AudienceBuilderLab() {
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [criteria, setCriteria] = useState<SegmentCriteria[]>([]);
   const [result, setResult] = useState<AudienceResult | null>(null);
+  const [isLiveData, setIsLiveData] = useState(false);
+  const [schemaFields, setSchemaFields] = useState<SchemaField[]>(SCHEMA_FIELDS);
+  const [campaignPresets, setCampaignPresets] = useState<Record<CampaignType, { name: string; criteria: SegmentCriteria[]; desc: string }[]>>(PRESET_AUDIENCES);
+
+  // Fetch live data from Supabase on mount
+  useEffect(() => {
+    async function fetchLiveData() {
+      try {
+        const res = await fetch('/api/simulators?type=audience');
+        if (!res.ok) throw new Error('API returned non-OK status');
+        const data = await res.json();
+
+        if (data.fields && Array.isArray(data.fields) && data.fields.length > 0) {
+          const mappedFields: SchemaField[] = data.fields.map((row: Record<string, unknown>) => ({
+            name: row.name as string,
+            category: row.category as SchemaField['category'],
+            type: row.type as SchemaField['type'],
+            fillRate: (row.fill_rate ?? row.fillRate) as number,
+            distinctValues: (row.distinct_values ?? row.distinctValues) as number,
+            percentiles: row.percentiles as SchemaField['percentiles'] | undefined,
+            sampleValues: (row.sample_values ?? row.sampleValues) as string[] | undefined,
+          }));
+          setSchemaFields(mappedFields);
+        }
+
+        if (data.presets && typeof data.presets === 'object') {
+          const mappedPresets: Record<CampaignType, { name: string; criteria: SegmentCriteria[]; desc: string }[]> = {} as Record<CampaignType, { name: string; criteria: SegmentCriteria[]; desc: string }[]>;
+          for (const [key, presetList] of Object.entries(data.presets)) {
+            mappedPresets[key as CampaignType] = (presetList as CampaignPreset[]).map((p) => ({
+              name: p.name,
+              criteria: p.criteria,
+              desc: p.description ?? (p as unknown as { desc: string }).desc,
+            }));
+          }
+          setCampaignPresets(mappedPresets);
+        }
+
+        setIsLiveData(true);
+      } catch {
+        // Fall back to hardcoded data
+        setSchemaFields(SCHEMA_FIELDS);
+        setCampaignPresets(PRESET_AUDIENCES);
+        setIsLiveData(false);
+      }
+    }
+
+    fetchLiveData();
+  }, []);
 
   const fieldsByCategory = useMemo(() => {
     const groups: Record<string, SchemaField[]> = {};
-    for (const f of SCHEMA_FIELDS) {
+    for (const f of schemaFields) {
       if (!groups[f.category]) groups[f.category] = [];
       groups[f.category].push(f);
     }
     return groups;
-  }, []);
+  }, [schemaFields]);
 
   const handleCampaignSelect = useCallback((type: CampaignType) => {
     setCampaign(type);
@@ -199,18 +254,35 @@ export default function AudienceBuilderLab() {
 
   const handleEstimate = useCallback(() => {
     if (!campaign) return;
-    const size = estimateSize(criteria);
-    setResult({
+    const size = estimateSize(criteria, schemaFields);
+    const audienceResult: AudienceResult = {
       name: `${CAMPAIGN_INFO[campaign].label} Audience`,
       criteria,
       estimatedSize: size,
       percentOfBase: parseFloat(((size / TOTAL_BASE) * 100).toFixed(2)),
-      confidence: getConfidence(criteria),
+      confidence: getConfidence(criteria, schemaFields),
       channels: getChannels(campaign),
       avgSpend: Math.round(120 + Math.random() * 380),
-    });
+    };
+    setResult(audienceResult);
     setStep(4);
-  }, [campaign, criteria]);
+
+    // Fire and forget: POST result to API
+    fetch('/api/simulators', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'audience',
+        campaign,
+        criteria,
+        estimatedSize: size,
+        percentOfBase: audienceResult.percentOfBase,
+        confidence: audienceResult.confidence,
+      }),
+    }).catch(() => {
+      // Silently ignore errors
+    });
+  }, [campaign, criteria, schemaFields]);
 
   const handleReset = useCallback(() => {
     setStep(1);
@@ -230,6 +302,9 @@ export default function AudienceBuilderLab() {
               🎯
             </span>
             Audience Builder Lab
+            <span className={`ml-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${isLiveData ? 'bg-green-500/15 text-green-400 border border-green-500/25' : 'bg-blue-500/15 text-blue-400 border border-blue-500/25'}`}>
+              {isLiveData ? 'Live Data' : 'Sample Data'}
+            </span>
           </h2>
           <p className="text-sm text-text-muted mt-1">
             Follow the CDP audience-finder workflow: Campaign Intent → Schema Discovery → Segmentation → Estimation
@@ -290,7 +365,7 @@ export default function AudienceBuilderLab() {
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">Quick Presets</p>
             <div className="flex flex-wrap gap-2">
-              {PRESET_AUDIENCES[campaign].map((preset) => (
+              {campaignPresets[campaign].map((preset) => (
                 <button
                   key={preset.name}
                   onClick={() => handlePreset(preset)}
@@ -356,7 +431,7 @@ export default function AudienceBuilderLab() {
           <h3 className="text-sm font-semibold text-text-secondary">Step 3: Define segment criteria</h3>
           <div className="rounded-2xl border border-border bg-bg-surface/50 p-5 space-y-3">
             {criteria.map((c, idx) => {
-              const field = SCHEMA_FIELDS.find((f) => f.name === c.field);
+              const field = schemaFields.find((f) => f.name === c.field);
               return (
                 <div key={idx} className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-bg-elevated/60 border border-border">
                   <span className="text-sm font-medium text-brand-blue min-w-[140px]">{c.field}</span>
