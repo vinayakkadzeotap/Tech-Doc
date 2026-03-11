@@ -49,7 +49,7 @@ export default async function ModulePage({ params }: Props) {
   let mdxSource = null;
   if (moduleContent) {
     try {
-      mdxSource = await serialize(moduleContent.content);
+      mdxSource = await serialize(moduleContent.content, { blockJS: false });
     } catch {
       // MDX parse error - leave mdxSource as null to show fallback UI
     }
