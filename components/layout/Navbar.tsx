@@ -81,11 +81,9 @@ export default function Navbar({ user }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/home" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center">
-              <span className="text-white text-xs font-black">Z</span>
-            </div>
-            <span className="text-lg font-extrabold text-gradient">Zeotap</span>
+          <Link href="/home" className="flex items-center gap-2.5 group">
+            <img src="/zeotap-logo.svg" alt="Zeotap" className="w-7 h-7" />
+            <span className="text-lg font-extrabold" style={{ color: '#2563EB' }}>Zeotap</span>
             <span className="text-text-muted text-sm">/</span>
             <span className="text-text-secondary text-sm font-medium">Learning</span>
           </Link>

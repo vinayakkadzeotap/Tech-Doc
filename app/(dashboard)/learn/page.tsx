@@ -6,8 +6,7 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import ProgressBar from '@/components/ui/ProgressBar';
 import Icon from '@/components/ui/Icon';
-import EngineerPOCTable from '@/components/learning/EngineerPOCTable';
-import AccountPOCTable from '@/components/learning/AccountPOCTable';
+
 
 function TrackDetail({ track, completedModules }: { track: Track; completedModules: Set<string> }) {
   const pct = Math.round(
@@ -145,8 +144,7 @@ export default async function LearnPage() {
         {recommendedTracks.map((track) => (
           <Card key={track.id} className="!p-6">
             <TrackDetail track={track} completedModules={completedModules} />
-            {track.id === 'engineering' && <EngineerPOCTable />}
-            {['cs-playbook', 'sales-enablement', 'business-essentials'].includes(track.id) && <AccountPOCTable />}
+
           </Card>
         ))}
       </div>
@@ -160,8 +158,6 @@ export default async function LearnPage() {
           {otherTracks.map((track) => (
             <Card key={track.id} className="!p-6 opacity-75 hover:opacity-100 transition-opacity">
               <TrackDetail track={track} completedModules={completedModules} />
-              {track.id === 'engineering' && <EngineerPOCTable />}
-              {['cs-playbook', 'sales-enablement', 'business-essentials'].includes(track.id) && <AccountPOCTable />}
             </Card>
           ))}
         </div>

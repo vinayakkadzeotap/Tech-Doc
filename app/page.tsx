@@ -23,10 +23,8 @@ export default async function LandingPage() {
       <nav className="sticky top-0 z-50 bg-bg-primary/95 backdrop-blur-xl border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center">
-              <span className="text-white text-xs font-black">Z</span>
-            </div>
-            <span className="text-lg font-extrabold text-gradient">Zeotap Learning</span>
+            <img src="/zeotap-logo.svg" alt="Zeotap" className="w-7 h-7" />
+            <span className="text-lg font-extrabold" style={{ color: '#2563EB' }}>Zeotap Learning</span>
           </div>
           <div className="flex items-center gap-3">
             <Link

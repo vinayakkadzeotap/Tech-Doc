@@ -76,9 +76,7 @@ export default function SignupPage() {
 
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-blue to-brand-purple mb-4">
-            <span className="text-white text-lg font-black">Z</span>
-          </div>
+          <img src="/zeotap-logo.svg" alt="Zeotap" className="w-12 h-12 mb-4" />
           <div>
             <Link href="/" className="text-2xl font-extrabold text-gradient">
               Zeotap Learning
