@@ -221,10 +221,10 @@ class ProfileServiceConsumerTest {
 **Pact Coverage at Zeotap:**
 
 Contract tests cover the critical service boundaries:
-- Audience Engine <-> Profile Service
-- Collect Service <-> ID Graph Service
-- Dashboard API <-> Backend APIs (audiences, destinations, reports)
-- Destination Service <-> Partner APIs (via WireMock provider stubs)
+- Audience Engine {'<->'} Profile Service
+- Collect Service {'<->'} ID Graph Service
+- Dashboard API {'<->'} Backend APIs (audiences, destinations, reports)
+- Destination Service {'<->'} Partner APIs (via WireMock provider stubs)
 
 ### End-to-End Testing
 

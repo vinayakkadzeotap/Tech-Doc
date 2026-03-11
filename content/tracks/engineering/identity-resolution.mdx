@@ -155,7 +155,7 @@ flowchart TD
 | `{orgId}#ucid#{ucidValue}` | `members` | All identifiers in cluster |
 | `{orgId}#ucid#{ucidValue}` | `meta` | Cluster size, created_at, updated_at |
 
-- BigTable chosen for low-latency random reads (<10ms p99)
+- BigTable chosen for low-latency random reads ({'<'}10ms p99)
 - Row key design enables efficient lookups by identifier or UCID
 - Automatic compaction and TTL for stale edges (configurable, default 90 days)
 
@@ -168,7 +168,7 @@ The identity resolution service (`id-graph-lib-v2-go`) is written in Go because:
 - Easy deployment as a single binary on GKE
 
 <Callout type="info" title="Performance at Scale">
-The Go-based identity service handles 500K identity resolution requests per second with <50ms p99 latency. It runs as a horizontally scaled deployment on GKE with 20-50 pods depending on load.
+The Go-based identity service handles 500K identity resolution requests per second with {'<'}50ms p99 latency. It runs as a horizontally scaled deployment on GKE with 20-50 pods depending on load.
 </Callout>
 
 ### ID+ Universal Identity Solution
@@ -192,7 +192,7 @@ The identity graph has undergone significant migrations:
 |-----|---------|---------|------------|
 | Pre-2020 | JanusGraph on ScyllaDB (AWS) | ~600ms | World's largest native JanusGraph database |
 | 2020-2022 | Direct ScyllaDB via CQL | ~30ms | Removed JanusGraph layer, used CQL directly |
-| 2024+ | Google BigTable | <10ms | Cloud-native, reduced operational footprint by 20% |
+| 2024+ | Google BigTable | {'<'}10ms | Cloud-native, reduced operational footprint by 20% |
 
 ### Privacy Considerations
 

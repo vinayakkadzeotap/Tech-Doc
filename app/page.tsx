@@ -106,8 +106,8 @@ export default async function LandingPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-16 max-w-3xl mx-auto w-full">
           {[
-            { n: '5', label: 'Learning Tracks' },
-            { n: '42', label: 'Modules' },
+            { n: '6', label: 'Learning Tracks' },
+            { n: '56', label: 'Modules' },
             { n: '10+', label: 'Quizzes' },
             { n: '10', label: 'Badges to Earn' },
           ].map((stat) => (
