@@ -57,6 +57,7 @@ export type TrackId =
   | 'product-mastery'
   | 'sales-enablement'
   | 'cs-playbook'
+  | 'tam-playbook'
   | 'engineering';
 
 export interface Track {
@@ -126,8 +127,8 @@ export const TRACKS: Track[] = [
     subtitle: 'Pitch, demo, handle objections, and close deals',
     icon: '💼',
     color: '#f59e0b',
-    totalModules: 6,
-    estimatedHours: 3,
+    totalModules: 10,
+    estimatedHours: 5.5,
     targetRoles: ['sales', 'leadership'],
     mandatory: false,
     modules: [
@@ -137,6 +138,10 @@ export const TRACKS: Track[] = [
       { id: 'objection-handling', title: 'Objection Handling', description: 'Common objections and how to respond', icon: '🛡️', estimatedMinutes: 25, contentType: 'reference' },
       { id: 'case-studies', title: 'Case Studies', description: 'Customer success stories by vertical', icon: '📋', estimatedMinutes: 20, contentType: 'concept' },
       { id: 'battle-cards', title: 'Competitive Battle Cards', description: 'Head-to-head comparisons', icon: '⚔️', estimatedMinutes: 30, contentType: 'reference' },
+      { id: 'vertical-retail', title: 'Vertical: Retail & E-Commerce', description: 'Retail-specific use cases, demo flows, and KPIs', icon: '🛍️', estimatedMinutes: 30, contentType: 'reference' },
+      { id: 'vertical-finance', title: 'Vertical: Banking & Financial Services', description: 'BFSI regulatory landscape, compliance-first selling', icon: '🏦', estimatedMinutes: 30, contentType: 'reference' },
+      { id: 'vertical-telco', title: 'Vertical: Telecommunications', description: 'Telco data landscape, churn prediction, ARPU optimization', icon: '📡', estimatedMinutes: 30, contentType: 'reference' },
+      { id: 'roi-calculator', title: 'ROI & Business Case Builder', description: 'Build compelling business cases for CFOs', icon: '💰', estimatedMinutes: 25, contentType: 'reference' },
     ],
   },
   {
@@ -145,8 +150,8 @@ export const TRACKS: Track[] = [
     subtitle: 'Onboard, support, and grow customer accounts',
     icon: '🤝',
     color: '#10b981',
-    totalModules: 6,
-    estimatedHours: 3.5,
+    totalModules: 10,
+    estimatedHours: 5.5,
     targetRoles: ['cs', 'product', 'leadership'],
     mandatory: false,
     modules: [
@@ -156,6 +161,29 @@ export const TRACKS: Track[] = [
       { id: 'escalation-path', title: 'Escalation Path', description: 'When and how to escalate issues', icon: '📢', estimatedMinutes: 20, contentType: 'reference' },
       { id: 'renewal-expansion', title: 'Renewal & Expansion', description: 'Growing accounts and preventing churn', icon: '📈', estimatedMinutes: 30, contentType: 'concept' },
       { id: 'integration-guides', title: 'Integration Guides', description: 'Step-by-step setup for top destinations', icon: '🔌', estimatedMinutes: 35, contentType: 'tutorial' },
+      { id: 'health-score-deep-dive', title: 'Health Score Deep Dive', description: 'Weighted scoring methodology and intervention playbooks', icon: '📊', estimatedMinutes: 30, contentType: 'reference' },
+      { id: 'expansion-playbook', title: 'Expansion & Upsell Playbook', description: 'Signals, frameworks, and plays for growing accounts', icon: '📈', estimatedMinutes: 35, contentType: 'tutorial' },
+      { id: 'vertical-success-guides', title: 'Vertical Success Guides', description: 'Industry-specific success criteria and onboarding priorities', icon: '🏭', estimatedMinutes: 35, contentType: 'reference' },
+      { id: 'qbr-template', title: 'QBR & Executive Review Template', description: 'Complete QBR structure and data preparation guide', icon: '📋', estimatedMinutes: 25, contentType: 'tutorial' },
+    ],
+  },
+  {
+    id: 'tam-playbook',
+    title: 'Technical Account Management',
+    subtitle: 'Strategic account planning, technical onboarding, and value engineering',
+    icon: '🔧',
+    color: '#06b6d4',
+    totalModules: 6,
+    estimatedHours: 3,
+    targetRoles: ['cs', 'engineering', 'product', 'leadership'],
+    mandatory: false,
+    modules: [
+      { id: 'account-planning', title: 'Strategic Account Planning', description: 'Tier classification, stakeholder mapping, adoption roadmaps', icon: '🎯', estimatedMinutes: 30, contentType: 'tutorial' },
+      { id: 'technical-onboarding', title: 'Technical Onboarding Mastery', description: '8-week implementation from SDK to activation', icon: '🔧', estimatedMinutes: 35, contentType: 'tutorial' },
+      { id: 'architecture-review', title: 'Customer Architecture Reviews', description: 'Data architecture patterns and integration approaches', icon: '🏗️', estimatedMinutes: 30, contentType: 'reference' },
+      { id: 'data-quality-ops', title: 'Data Quality Operations', description: 'Monitoring, diagnostics, and proactive quality management', icon: '🔍', estimatedMinutes: 25, contentType: 'reference' },
+      { id: 'value-engineering', title: 'Value Engineering & ROI Tracking', description: 'Quantify and present value delivered to customers', icon: '💎', estimatedMinutes: 30, contentType: 'concept' },
+      { id: 'advanced-use-cases', title: 'Advanced Use Case Library', description: '12+ advanced identity, audience, journey, and activation use cases', icon: '🚀', estimatedMinutes: 35, contentType: 'reference' },
     ],
   },
   {

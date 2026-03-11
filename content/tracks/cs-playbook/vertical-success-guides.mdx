@@ -1,0 +1,385 @@
+---
+title: Vertical Success Guides
+icon: 🏭
+estimatedMinutes: 35
+contentType: reference
+trackId: cs-playbook
+order: 9
+---
+
+## 🏭 Vertical Success Guides
+
+Every industry has distinct data challenges, regulatory constraints, seasonal patterns, and definitions of success. This reference guide equips you with vertical-specific knowledge for the six industries Zeotap serves most frequently: Retail, BFSI, Telco, Media, Gaming, and SaaS.
+
+<KeyConcepts concepts={["Vertical Strategy", "Retail CDP", "BFSI Compliance", "Telco Churn", "Media Monetization", "Gaming Engagement", "SaaS Product-Led Growth", "Seasonal Calendars", "Stakeholder Mapping", "Industry KPIs", "Time-to-Value"]} />
+
+---
+
+### Why Vertical Expertise Matters
+
+<StatCard stats={[
+  { value: "40%", label: "Faster Onboarding with Vertical Playbooks", color: "#10b981" },
+  { value: "2.3x", label: "Higher NPS from Industry-Tailored CSMs", color: "#3b82f6" },
+  { value: "25%", label: "Better Retention with Vertical Use Cases", color: "#a855f7" },
+  { value: "6", label: "Core Verticals Covered", color: "#f59e0b" }
+]} />
+
+Generic onboarding wastes time. When you understand a customer's industry, you can recommend the right use cases on day one, anticipate their seasonal pressures, speak their KPI language, and earn credibility as a strategic advisor rather than a product support agent.
+
+---
+
+### Vertical-Specific Onboarding Sequences
+
+<MermaidDiagram
+  title="Onboarding Priorities by Vertical"
+  chart={`flowchart TD
+    A[Customer Signed] --> B{Vertical?}
+    B -->|Retail| C[Identity unification across\nonline + offline + POS]
+    B -->|BFSI| D[Consent management +\ncompliance configuration]
+    B -->|Telco| E[Subscriber data ingestion\n+ churn model setup]
+    B -->|Media| F[Publisher audience\ntaxonomy setup]
+    B -->|Gaming| G[In-game event SDK\n+ player profile unification]
+    B -->|SaaS| H[Product usage event\ningestion + account mapping]
+    C --> I[Retail: Audience Builder\nfor seasonal campaigns]
+    D --> J[BFSI: Secure segment\nactivation to walled gardens]
+    E --> K[Telco: Predictive churn\naudiences + win-back journeys]
+    F --> L[Media: Advertiser-ready\nsegment packaging]
+    G --> M[Gaming: Player lifecycle\njourneys + lapse prevention]
+    H --> N[SaaS: PQL scoring\n+ expansion signal audiences]
+    style A fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style B fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style C fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style D fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style E fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style F fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style G fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style H fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style I fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style J fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style K fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style L fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style M fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style N fill:#1e293b,stroke:#3b82f6,color:#e2e8f0`}
+  caption="The first use case you drive to value should be the one most relevant to the customer's vertical, not the one that is easiest to implement."
+/>
+
+---
+
+### Retail
+
+<Expandable title="Retail: Key Use Cases" defaultOpen={true}>
+
+1. **Omnichannel identity unification:** Merge online browsing, app activity, POS transactions, and loyalty program data into a single customer view.
+2. **Seasonal campaign audiences:** Build high-intent audiences for Black Friday, holiday season, back-to-school, and clearance events.
+3. **Loyalty program segmentation:** Segment by loyalty tier, purchase frequency, average basket size, and churn risk.
+4. **Lookalike expansion:** Find new customers who resemble your best buyers using Zeotap's lookalike modeling.
+5. **Abandoned cart journeys:** Trigger multi-channel win-back journeys for cart abandoners within 1-4 hours.
+
+</Expandable>
+
+<Expandable title="Retail: Onboarding Priorities" defaultOpen={false}>
+
+**Week 1-2:** Connect POS data, e-commerce event stream, and loyalty database. Configure identity resolution across email, phone, and device ID.
+
+**Week 3-4:** Build the first 5 audiences: high-value customers, lapsed buyers (90+ days), cart abandoners, loyalty tier upgrades, and seasonal shoppers.
+
+**Week 5-6:** Activate audiences to Google Ads, Meta, email platform, and push notifications. Validate match rates.
+
+**Week 7-8:** Launch first automated journey (abandoned cart or loyalty win-back). Measure initial results.
+
+</Expandable>
+
+<Expandable title="Retail: Common Pitfalls" defaultOpen={false}>
+
+- **POS data quality:** In-store transaction data is often messy. Expect 2-3 iterations to get the schema and identity matching right.
+- **Consent fragmentation:** Retail customers may have separate consent records across web, app, and in-store. Ensure unified consent management before activation.
+- **Seasonal urgency:** Retail stakeholders expect the CDP to be fully operational before their peak season. If you miss the setup window, the customer may not see value for 6-12 months.
+
+</Expandable>
+
+<Expandable title="Retail: Success Metrics & KPI Dashboard" defaultOpen={false}>
+
+Configure these KPIs in the customer's dashboard:
+- **Unified profile rate:** % of known customers with cross-channel identity linkage
+- **Audience activation reach:** Total unique customers reached across all channels
+- **Campaign ROAS:** Return on ad spend for CDP-powered audiences vs. control
+- **Cart abandonment recovery rate:** % of abandoned carts recovered via journey
+- **Loyalty program engagement:** % of loyalty members in an active CDP segment
+
+</Expandable>
+
+---
+
+### BFSI (Banking, Financial Services, Insurance)
+
+<Expandable title="BFSI: Key Use Cases" defaultOpen={true}>
+
+1. **Consent-first activation:** Activate customer segments while maintaining strict GDPR/CCPA/local regulatory compliance with full audit trails.
+2. **Product cross-sell modeling:** Identify customers likely to adopt a new financial product (credit card, mortgage, insurance policy) based on behavioral and transactional signals.
+3. **Churn prevention for high-value accounts:** Build predictive audiences of customers showing early signs of attrition (reduced transaction frequency, balance decline).
+4. **KYC-enriched profiles:** Unify CRM, transactional, and digital behavior data while respecting KYC and data residency requirements.
+5. **Lifecycle marketing automation:** Automate onboarding journeys for new account holders, annual review reminders, and product maturity notifications.
+
+</Expandable>
+
+<Expandable title="BFSI: Onboarding Priorities" defaultOpen={false}>
+
+**Week 1-2:** Compliance configuration first. Set up data residency, consent management rules, and encryption. Engage the customer's legal/compliance team early.
+
+**Week 3-4:** Ingest CRM and transactional data. Identity resolution using email, phone, and account ID. Validate no PII leaks in event payloads.
+
+**Week 5-8:** Build initial segments: high-value customers, cross-sell candidates, at-risk accounts. Activate to approved channels only (typically email, mobile banking notifications).
+
+**Week 9-12:** Launch first journey (onboarding or cross-sell). Present compliance audit report to the customer's legal team.
+
+</Expandable>
+
+<Expandable title="BFSI: Common Pitfalls" defaultOpen={false}>
+
+- **Compliance paralysis:** BFSI stakeholders may delay implementation indefinitely due to compliance concerns. Get their legal team involved in week 1, not week 6.
+- **Data residency misconfiguration:** Ensure the Zeotap instance is deployed in the correct region. Moving data after the fact is extremely painful.
+- **Slow approvals:** Every audience activation may require internal approval. Build approval workflows into the journey design so the customer does not blame Zeotap for delays.
+
+</Expandable>
+
+<Expandable title="BFSI: Success Metrics & KPI Dashboard" defaultOpen={false}>
+
+- **Compliance audit pass rate:** 100% of activated audiences compliant with consent rules
+- **Cross-sell conversion rate:** % of targeted customers who adopted a new product
+- **Customer lifetime value growth:** Average CLV change for CDP-managed segments
+- **Onboarding journey completion rate:** % of new customers completing the welcome journey
+- **Data residency compliance:** 100% of data stored in approved regions
+
+</Expandable>
+
+---
+
+### Telco
+
+<Expandable title="Telco: Key Use Cases" defaultOpen={true}>
+
+1. **Predictive churn prevention:** Identify subscribers at risk of churning based on usage decline, support call patterns, and contract end dates.
+2. **Plan upgrade targeting:** Build audiences of subscribers likely to benefit from (and accept) a plan upgrade based on usage patterns that exceed their current tier.
+3. **Win-back campaigns:** Re-engage former subscribers with tailored offers based on their historical usage profile and reason for leaving.
+4. **Household-level unification:** Link individual subscriber lines to household accounts for family plan and bundle opportunities.
+5. **Network experience correlation:** Connect network quality data (coverage complaints, speed tests) with subscriber behavior to identify experience-driven churn risk.
+
+</Expandable>
+
+<Expandable title="Telco: Onboarding Priorities" defaultOpen={false}>
+
+**Week 1-2:** Ingest subscriber data (CRM, billing, usage logs). Identity resolution across subscriber ID, device ID, and household.
+
+**Week 3-4:** Build churn risk model using Zeotap's predictive traits. Validate against historical churn data.
+
+**Week 5-6:** Create first audiences: churn risk (high/medium/low), upgrade candidates, win-back pool. Activate to email, SMS, and call center platforms.
+
+**Week 7-8:** Launch automated win-back journey. Set up proactive retention triggers for high-value subscribers showing early churn signals.
+
+</Expandable>
+
+<Expandable title="Telco: Common Pitfalls" defaultOpen={false}>
+
+- **Massive data volumes:** Telco event streams are enormous (network events, call records). Work with the customer to filter to behavioral events that matter for marketing, not raw network telemetry.
+- **Siloed departments:** Marketing, network ops, and customer care often have separate data stores. The CDP integration needs buy-in from multiple teams.
+- **Contract timing blindness:** If you do not ingest contract end dates, you miss the most important churn predictor. Make this a day-1 data requirement.
+
+</Expandable>
+
+<Expandable title="Telco: Success Metrics & KPI Dashboard" defaultOpen={false}>
+
+- **Churn rate reduction:** % decrease in monthly subscriber churn for targeted segments
+- **Win-back conversion rate:** % of former subscribers who reactivate
+- **Plan upgrade acceptance rate:** % of targeted subscribers who accept upgrade offers
+- **Subscriber lifetime value:** Average revenue per subscriber for CDP-managed cohorts
+- **Time to intervention:** Average days between churn signal detection and first outreach
+
+</Expandable>
+
+---
+
+### Media
+
+<Expandable title="Media: Key Use Cases" defaultOpen={true}>
+
+1. **First-party audience monetization:** Package first-party reader/viewer segments for direct-sold advertising deals.
+2. **Content personalization audiences:** Build segments based on content consumption patterns (topic affinity, reading depth, frequency) for editorial personalization.
+3. **Subscription conversion modeling:** Identify anonymous visitors most likely to convert to paid subscribers based on engagement behavior.
+4. **Advertiser-ready segment packaging:** Create standardized audience taxonomies (demographics, interests, purchase intent) that advertisers can activate programmatically.
+5. **Cross-property unification:** Unify audience data across multiple media properties (web, app, newsletter, podcast) into a single identity graph.
+
+</Expandable>
+
+<Expandable title="Media: Onboarding Priorities" defaultOpen={false}>
+
+**Week 1-2:** Implement event tracking across all digital properties. Configure identity resolution for authenticated (subscriber) and anonymous (cookie/device ID) users.
+
+**Week 3-4:** Build content affinity taxonomy. Create initial audience segments: subscriber lookalikes, high-engagement readers, topic-based cohorts.
+
+**Week 5-6:** Package advertiser-ready segments. Connect to programmatic platforms (DV360, The Trade Desk) and validate delivery.
+
+**Week 7-8:** Launch subscription conversion journey for high-propensity anonymous visitors.
+
+</Expandable>
+
+<Expandable title="Media: Common Pitfalls" defaultOpen={false}>
+
+- **Cookie deprecation anxiety:** Media customers are especially sensitive to identity changes. Position Zeotap's first-party approach and ID+ as the solution, not the problem.
+- **Low authenticated rates:** Many media properties have less than 15% authenticated traffic. Focus on progressive identity collection strategies alongside CDP implementation.
+- **Revenue attribution complexity:** Tying CDP-powered audiences to ad revenue is hard. Work with the customer's ad ops team to set up A/B tests from day one.
+
+</Expandable>
+
+---
+
+### Gaming
+
+<Expandable title="Gaming: Key Use Cases" defaultOpen={true}>
+
+1. **Player lifecycle management:** Segment players by lifecycle stage (new, active, whale, lapsing, churned) and trigger stage-appropriate engagement.
+2. **In-game event monetization:** Build audiences based on in-game behavior (level reached, items purchased, time played) for targeted offers.
+3. **Lapse prevention journeys:** Detect players whose session frequency or duration is declining and trigger re-engagement via push, email, or in-game messaging.
+4. **Cross-title unification:** For publishers with multiple games, unify player identities across titles to understand total engagement and cross-promote.
+5. **Whale identification and nurturing:** Identify high-spending players early and create VIP engagement programs to maximize lifetime value.
+
+</Expandable>
+
+<Expandable title="Gaming: Onboarding Priorities" defaultOpen={false}>
+
+**Week 1-2:** Integrate game client SDK for event streaming. Configure player identity resolution (game account ID, device ID, platform account).
+
+**Week 3-4:** Build lifecycle stage segments. Define "active," "lapsing," and "churned" thresholds based on the game's natural engagement cadence.
+
+**Week 5-6:** Activate player segments to push notification service, email, and in-game messaging system.
+
+**Week 7-8:** Launch lapse prevention journey. A/B test different re-engagement offers (bonus currency, limited-time event, social challenge).
+
+</Expandable>
+
+<Expandable title="Gaming: Common Pitfalls" defaultOpen={false}>
+
+- **Event volume spikes:** Game launches and live events create massive event volume spikes. Ensure the contracted volume accommodates these peaks.
+- **Privacy regulations for minors:** Many games have underage players. COPPA and similar regulations require careful consent management and data handling.
+- **Fast engagement cycles:** Gamers churn much faster than other verticals. A "lapsing" player in gaming might be someone who has not played in 3 days, not 30 days. Calibrate thresholds accordingly.
+
+</Expandable>
+
+---
+
+### SaaS
+
+<Expandable title="SaaS: Key Use Cases" defaultOpen={true}>
+
+1. **Product-qualified lead (PQL) scoring:** Build audiences of trial or freemium users whose product usage signals readiness for a sales conversation.
+2. **Expansion signal audiences:** Identify accounts whose usage is growing beyond their current plan for upsell targeting.
+3. **Churn risk segmentation:** Detect accounts with declining product engagement and trigger CS or automated outreach.
+4. **Account-level unification:** Unify individual user behavior into account-level profiles for B2B targeting.
+5. **Onboarding completion optimization:** Build journeys that nudge new users through the activation milestones that correlate with long-term retention.
+
+</Expandable>
+
+<Expandable title="SaaS: Onboarding Priorities" defaultOpen={false}>
+
+**Week 1-2:** Ingest product usage events from the customer's application (API calls, feature usage, login events). Configure account-level identity resolution.
+
+**Week 3-4:** Build PQL scoring model based on activation milestones. Create segments: trial users, activated users, at-risk accounts, expansion candidates.
+
+**Week 5-6:** Activate segments to CRM (Salesforce/HubSpot), email platform, and sales engagement tools.
+
+**Week 7-8:** Launch onboarding nudge journey for new trial users. Measure activation rate improvement.
+
+</Expandable>
+
+<Expandable title="SaaS: Common Pitfalls" defaultOpen={false}>
+
+- **Account vs. user confusion:** SaaS customers think in accounts (companies), not individuals. Ensure the CDP is configured for account-level aggregation from day one.
+- **Product data complexity:** SaaS product event schemas can be deeply nested and high-volume. Work with the customer's engineering team to define the minimum viable event set for marketing use cases.
+- **Attribution to pipeline:** SaaS customers want to see CDP impact on pipeline and revenue. Set up CRM integration early so you can track audience-to-pipeline attribution.
+
+</Expandable>
+
+---
+
+### Seasonal Calendars by Vertical
+
+Understanding seasonal pressures helps you time your outreach, QBRs, and expansion conversations for maximum impact.
+
+<ComparisonTable
+  headers={["Quarter", "Retail", "BFSI", "Telco", "Media", "Gaming"]}
+  rows={[
+    ["Q1 (Jan-Mar)", "Post-holiday clearance, Valentine's Day, spring planning", "Tax season, annual policy renewals, new year financial planning", "Contract renewals (many annual plans start Jan 1)", "New year content push, advertiser budget allocation", "Post-holiday player retention, new title launches"],
+    ["Q2 (Apr-Jun)", "Mother's/Father's Day, summer prep", "Mid-year reviews, mortgage season", "Summer travel plan promotions", "Upfront season (ad budget planning)", "E3 announcements, summer events"],
+    ["Q3 (Jul-Sep)", "Back-to-school, early holiday planning", "Back-to-school (student accounts), Q3 portfolio review", "Back-to-school device promotions, family plan pushes", "Fall TV premiere season, political ad spend", "Gamescom, fall release window"],
+    ["Q4 (Oct-Dec)", "Black Friday, Cyber Monday, holiday season (peak)", "Open enrollment, year-end tax planning, annual budget", "Holiday device sales, Black Friday plan deals", "Holiday ad spend (peak), year-end content wrap", "Holiday releases, in-game seasonal events (peak)"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="tip" title="Plan QBRs Around Seasonal Peaks">
+Schedule QBRs 4-6 weeks before a customer's peak season, not during it. This gives you time to help them prepare campaigns and audiences, and it positions you as proactive rather than reactive. A QBR in early October for a retail customer is far more valuable than one in late November.
+</Callout>
+
+---
+
+### Typical Time-to-Value by Vertical
+
+<ComparisonTable
+  headers={["Vertical", "Time to First Audience", "Time to First Campaign", "Time to Measurable ROI", "Key Bottleneck"]}
+  rows={[
+    ["Retail", "2-3 weeks", "4-5 weeks", "6-8 weeks", "POS data integration"],
+    ["BFSI", "4-6 weeks", "8-10 weeks", "12-16 weeks", "Compliance approvals"],
+    ["Telco", "3-4 weeks", "6-8 weeks", "10-14 weeks", "Cross-department data access"],
+    ["Media", "2-3 weeks", "4-6 weeks", "8-10 weeks", "Low authenticated traffic rates"],
+    ["Gaming", "1-2 weeks", "3-4 weeks", "4-6 weeks", "SDK integration into game client"],
+    ["SaaS", "2-3 weeks", "4-6 weeks", "8-12 weeks", "Product event schema definition"]
+  ]}
+  highlightColumn={3}
+/>
+
+---
+
+### Stakeholder Mapping by Vertical
+
+<Expandable title="Who to Engage and Their Motivations" defaultOpen={true}>
+
+**Retail:**
+- **CMO/VP Marketing:** Wants revenue attribution and campaign performance. Speak in ROAS and conversion rate.
+- **Head of CRM/Loyalty:** Wants unified customer view and personalization. Speak in engagement lift and retention.
+- **E-commerce Director:** Wants on-site personalization and audience reach. Speak in traffic quality and conversion.
+- **IT/Data Engineering:** Wants clean integration and low maintenance. Speak in API reliability and data quality.
+
+**BFSI:**
+- **Chief Data Officer:** Wants compliant data unification. Speak in data governance and regulatory audit readiness.
+- **VP Digital Marketing:** Wants customer acquisition and cross-sell. Speak in cost per acquisition and product adoption rate.
+- **Compliance Officer:** Wants zero regulatory risk. Speak in consent management, audit trails, and data residency.
+- **Head of Customer Experience:** Wants journey personalization. Speak in NPS and customer effort score.
+
+**Telco:**
+- **VP Customer Value Management:** Wants reduced churn and increased ARPU. Speak in churn rate reduction and plan upgrade conversion.
+- **Head of Marketing Ops:** Wants campaign efficiency. Speak in audience reach and campaign execution speed.
+- **Network Quality Team:** Wants experience-driven insights. Speak in network satisfaction correlation.
+- **Digital Transformation Lead:** Wants data modernization. Speak in time-to-insight and operational efficiency.
+
+**Media:**
+- **Chief Revenue Officer:** Wants ad revenue growth. Speak in CPM lift and sell-through rate.
+- **VP Audience Development:** Wants subscriber growth. Speak in conversion rate and engaged reader metrics.
+- **Head of Ad Operations:** Wants audience packaging and delivery. Speak in fill rate and audience addressability.
+- **Editor-in-Chief:** Wants content personalization. Speak in engagement depth and return visit rate.
+
+**Gaming:**
+- **Head of Live Ops:** Wants player engagement and monetization. Speak in DAU/MAU, session length, and ARPDAU.
+- **VP Marketing:** Wants user acquisition and re-engagement. Speak in CPI, retention curves, and reactivation rate.
+- **Product Manager:** Wants behavioral insights. Speak in feature adoption and player progression.
+- **Analytics Lead:** Wants data infrastructure. Speak in event pipeline reliability and query speed.
+
+**SaaS:**
+- **VP Growth/Marketing:** Wants pipeline and revenue. Speak in PQL conversion and pipeline attribution.
+- **VP Customer Success:** Wants retention and expansion. Speak in NRR and health scores.
+- **Head of Product:** Wants usage insights. Speak in feature adoption and activation rates.
+- **RevOps Leader:** Wants system integration and data flow. Speak in CRM sync reliability and data quality.
+
+</Expandable>
+
+---
+
+**Next up:** QBR and Executive Review Template — the playbook for your most important customer touchpoint →

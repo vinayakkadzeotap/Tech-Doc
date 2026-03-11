@@ -8,6 +8,8 @@ import ArchDiagram from './ArchDiagram';
 import ComparisonTable from './ComparisonTable';
 import StatCard from './StatCard';
 import Expandable from './Expandable';
+import MermaidDiagram from './MermaidDiagram';
+import FlowDiagram from './FlowDiagram';
 
 const components = {
   Callout,
@@ -17,6 +19,8 @@ const components = {
   ComparisonTable,
   StatCard,
   Expandable,
+  MermaidDiagram,
+  FlowDiagram,
   // Override default elements for better styling
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h1 className="text-3xl font-extrabold mt-10 mb-4 text-text-primary" {...props} />

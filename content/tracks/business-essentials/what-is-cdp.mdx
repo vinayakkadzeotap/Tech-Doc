@@ -28,7 +28,40 @@ Before CDPs, companies faced this reality:
 
 **Nobody has the complete picture.** A customer might get a promotional email for a product they already bought, or a support agent might not know the customer's recent website activity.
 
-A CDP solves this by:
+A CDP solves this by unifying all data into a single customer view:
+
+<MermaidDiagram
+  title="How a CDP Unifies Customer Data"
+  chart={`
+graph LR
+    subgraph SOURCES["Data Sources"]
+        A["📧 Email Platform"]
+        B["🛒 E-Commerce"]
+        C["📱 Mobile App"]
+        D["☎️ CRM"]
+        E["🎫 Support Desk"]
+    end
+
+    A --> CDP["🔗 Customer\nData Platform"]
+    B --> CDP
+    C --> CDP
+    D --> CDP
+    E --> CDP
+
+    CDP --> P["👤 Unified\nCustomer Profile"]
+
+    P --> X1["📊 Analytics"]
+    P --> X2["📧 Marketing"]
+    P --> X3["💼 Sales"]
+    P --> X4["🎯 Personalization"]
+
+    style SOURCES fill:#0f172a,stroke:#334155,color:#e2e8f0
+    style CDP fill:#2563eb,stroke:#3b82f6,color:#ffffff
+    style P fill:#1e293b,stroke:#10b981,color:#e2e8f0
+  `}
+  caption="Ingest from everywhere → Unify into one profile → Activate across all channels"
+/>
+
 1. **Ingesting data** from all these sources
 2. **Resolving identity** — figuring out that `user123@gmail.com`, `device_xyz`, and `CRM_lead_456` are all the same person
 3. **Building a unified profile** with all their data in one place

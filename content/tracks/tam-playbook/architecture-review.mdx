@@ -1,0 +1,294 @@
+---
+title: "Customer Architecture Reviews"
+icon: 🏗️
+estimatedMinutes: 30
+contentType: reference
+trackId: tam-playbook
+order: 3
+---
+
+# Customer Architecture Reviews
+
+Understanding a customer's data architecture is essential for designing integrations that are reliable, performant, and aligned with their engineering team's preferences. A well-conducted architecture review positions the TAM as a strategic technical advisor and prevents costly re-architecture later. This module covers how to run an architecture review, the most common patterns you will encounter, and how Zeotap fits into each one.
+
+<KeyConcepts concepts={["Data Architecture Patterns", "Warehouse-First", "CDP-First", "Hybrid Architecture", "ETL", "Reverse ETL", "Streaming", "Integration Design", "Reference Architectures"]} />
+
+<StatCard stats={[
+  { value: "85%", label: "Customers use a hybrid data architecture", color: "blue" },
+  { value: "3x", label: "Faster integration when architecture is reviewed upfront", color: "green" },
+  { value: "60%", label: "Integration rework caused by skipping architecture review", color: "red" }
+]} />
+
+---
+
+## How to Conduct an Architecture Review
+
+An architecture review is not a product demo. It is a structured discovery session where you learn how the customer's data flows today, identify gaps and friction, and propose how Zeotap integrates into their ecosystem.
+
+<ArchDiagram
+  title="Architecture Review Process"
+  steps={[
+    { label: "Preparation", detail: "Gather context from sales handoff, public tech blog posts, and job listings to infer stack", icon: "📋" },
+    { label: "Discovery Session", detail: "60-90 minute whiteboard session with customer's data engineering and architecture teams", icon: "🔍" },
+    { label: "Documentation", detail: "Produce an architecture diagram capturing current state and data flows", icon: "📝" },
+    { label: "Gap Analysis", detail: "Identify where data is siloed, duplicated, or missing", icon: "🔬" },
+    { label: "Integration Design", detail: "Propose how Zeotap connects, which connectors to use, and data flow direction", icon: "🏗️" },
+    { label: "Review & Align", detail: "Walk the customer through the proposed design and get engineering sign-off", icon: "✅" }
+  ]}
+/>
+
+### Discovery Session Question Framework
+
+Use these questions to map the customer's architecture in the discovery session:
+
+<Expandable title="Data Sources & Collection" defaultOpen={true}>
+
+- What are your primary digital properties (websites, mobile apps, connected TV)?
+- What tag management system do you use (GTM, Tealium, Segment)?
+- How do you collect first-party data from offline channels (POS, call center, in-store)?
+- Where does your CRM data live (Salesforce, HubSpot, custom)?
+- Do you have a data warehouse, and if so, which one (Snowflake, BigQuery, Redshift, Databricks)?
+- What is your current consent management setup and how do consent signals flow through the stack?
+</Expandable>
+
+<Expandable title="Data Processing & Storage" defaultOpen={false}>
+
+- How does data move from collection points to your warehouse or lake (Fivetran, Stitch, Airbyte, custom pipelines)?
+- Do you use a transformation layer (dbt, Dataform, custom SQL)?
+- Where is your "golden record" customer profile built and maintained?
+- What is the latency requirement: batch (daily/hourly) or real-time (sub-second)?
+- How large is your customer data set (total profiles, events per day)?
+- What data governance or cataloging tools do you use (Collibra, Atlan, DataHub)?
+</Expandable>
+
+<Expandable title="Activation & Destinations" defaultOpen={false}>
+
+- What advertising platforms do you activate audiences to (Google, Meta, TTD, Amazon)?
+- What marketing automation tools are in your stack (Braze, Iterable, SFMC, Marketo)?
+- Do you use a reverse ETL tool today (Census, Hightouch)?
+- How do you currently build and manage audience segments?
+- What personalization tools do you use on-site or in-app?
+- Are you using or evaluating data clean rooms (Google ADH, AWS Clean Rooms, Snowflake DCR)?
+</Expandable>
+
+---
+
+## Common Data Architecture Patterns
+
+Most customers fit into one of three architectural patterns. Understanding which pattern a customer uses determines the optimal integration approach with Zeotap.
+
+### Pattern 1: Warehouse-First Architecture
+
+In a warehouse-first architecture, the data warehouse (Snowflake, BigQuery, or Redshift) is the system of record. All raw data lands there first, is transformed, and then pushed to downstream tools including CDPs, marketing platforms, and analytics.
+
+<MermaidDiagram
+  title="Warehouse-First Architecture"
+  chart={`flowchart LR
+    subgraph Collection
+      A["Web/Mobile SDKs"]:::source
+      B["CRM / ERP"]:::source
+      C["POS / Offline"]:::source
+    end
+    subgraph Ingestion
+      D["Fivetran / Stitch"]:::process
+    end
+    subgraph Warehouse
+      E["Snowflake / BigQuery"]:::warehouse
+      F["dbt Transformations"]:::process
+    end
+    subgraph Activation
+      G["Zeotap CDP"]:::zeotap
+      H["Reverse ETL<br/>(Census/Hightouch)"]:::process
+      I["Ad Platforms"]:::dest
+      J["Email / CRM"]:::dest
+    end
+    A --> D
+    B --> D
+    C --> D
+    D --> E
+    E --> F
+    F --> E
+    E --> G
+    E --> H
+    G --> I
+    H --> J
+    classDef source fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px
+    classDef warehouse fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px`}
+  caption="In a warehouse-first architecture, the warehouse is the source of truth. Zeotap ingests from the warehouse via connectors or reverse ETL."
+/>
+
+<Callout type="info" title="Zeotap's Role in Warehouse-First">
+Zeotap acts as the identity resolution and audience activation layer. Data flows from the warehouse into Zeotap for identity stitching, segmentation, and activation to media and marketing destinations. The warehouse remains the canonical data store; Zeotap adds the audience intelligence and activation capability the warehouse lacks natively.
+</Callout>
+
+### Pattern 2: CDP-First Architecture
+
+In a CDP-first architecture, the CDP (Zeotap) is the primary collection and activation layer. Raw event data flows directly into Zeotap from SDKs and APIs, is unified into profiles, and is activated to destinations. The warehouse receives a processed copy for analytics and reporting.
+
+<MermaidDiagram
+  title="CDP-First Architecture"
+  chart={`flowchart LR
+    subgraph Collection
+      A["Web/Mobile SDKs"]:::source
+      B["Server-to-Server API"]:::source
+      C["CRM Connector"]:::source
+    end
+    subgraph CDP
+      D["Zeotap CDP"]:::zeotap
+      E["Identity Resolution"]:::zeotap
+      F["Audience Engine"]:::zeotap
+    end
+    subgraph Activation
+      G["Ad Platforms"]:::dest
+      H["Marketing Automation"]:::dest
+      I["Personalization"]:::dest
+    end
+    subgraph Analytics
+      J["Warehouse<br/>(Snowflake/BQ)"]:::warehouse
+      K["BI Tools"]:::dest
+    end
+    A --> D
+    B --> D
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    F --> H
+    F --> I
+    D --> J
+    J --> K
+    classDef source fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px
+    classDef warehouse fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px`}
+  caption="In a CDP-first architecture, Zeotap is the primary data collection and activation hub. The warehouse receives a processed feed for analytics."
+/>
+
+### Pattern 3: Hybrid Architecture
+
+Most enterprise customers use a hybrid pattern where some data flows through the warehouse and some flows directly through the CDP. This is the most common and most complex pattern.
+
+<MermaidDiagram
+  title="Hybrid Architecture"
+  chart={`flowchart LR
+    subgraph Real-Time Path
+      A["Web/Mobile SDKs"]:::source
+      B["Zeotap CDP<br/>(Real-Time)"]:::zeotap
+      C["Real-Time<br/>Personalization"]:::dest
+    end
+    subgraph Batch Path
+      D["CRM / ERP"]:::source
+      E["Fivetran"]:::process
+      F["Snowflake"]:::warehouse
+      G["dbt"]:::process
+    end
+    subgraph Shared Activation
+      H["Zeotap CDP<br/>(Audiences)"]:::zeotap
+      I["Ad Platforms"]:::dest
+      J["Marketing<br/>Automation"]:::dest
+    end
+    A --> B
+    B --> C
+    B --> H
+    D --> E
+    E --> F
+    F --> G
+    G --> F
+    F --> H
+    H --> I
+    H --> J
+    classDef source fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef process fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0,stroke-width:2px
+    classDef warehouse fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef zeotap fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:3px
+    classDef dest fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px`}
+  caption="Hybrid architectures split real-time event data (direct to CDP) from batch data (through the warehouse). Zeotap serves as the convergence point for activation."
+/>
+
+---
+
+## Integration Approach Comparison
+
+Choosing the right integration pattern depends on the customer's architecture, latency requirements, engineering team capacity, and data volume.
+
+<ComparisonTable
+  headers={["Dimension", "ETL (Batch)", "Reverse ETL", "Streaming (Real-Time)", "SDK (Client-Side)"]}
+  rows={[
+    ["Data Direction", "Source → Warehouse → CDP", "Warehouse → CDP/Destinations", "Source → CDP (real-time)", "Browser/App → CDP"],
+    ["Latency", "Hours (scheduled jobs)", "Minutes to hours", "Seconds to milliseconds", "Near real-time"],
+    ["Best For", "Historical data, CRM syncs", "Warehouse-first customers", "Real-time personalization, triggers", "Behavioral event collection"],
+    ["Engineering Effort", "Medium (pipeline setup)", "Low (config in reverse ETL tool)", "High (stream processing setup)", "Low-Medium (tag implementation)"],
+    ["Data Volume Handling", "Excellent (batch processing)", "Good (incremental syncs)", "Good (with proper scaling)", "Moderate (client-side limits)"],
+    ["Zeotap Connector", "SFTP / Cloud Storage", "Snowflake/BQ Connector, Census, Hightouch", "Server-to-Server API", "Web SDK, Mobile SDK"],
+    ["Common Tools", "Fivetran, Stitch, Airbyte", "Census, Hightouch, Polytomic", "Kafka, Kinesis, Pub/Sub", "Zeotap SDK, GTM"],
+    ["Maintenance Burden", "Moderate (schema changes, job monitoring)", "Low (managed syncs)", "High (stream reliability)", "Low (SDK auto-updates)"]
+  ]}
+  highlightColumn={3}
+/>
+
+<Callout type="tip" title="The Right Answer Is Usually 'Both'">
+Most customers need a combination of integration approaches. The pattern is typically: SDK for real-time behavioral data, plus a warehouse connector for enriched batch data. Do not force a customer into a single pattern. Design the integration around their architecture, not the other way around.
+</Callout>
+
+---
+
+## Zeotap's Role in Each Architecture Pattern
+
+<Expandable title="Warehouse-First: Zeotap as Activation Layer" defaultOpen={true}>
+
+**How Zeotap fits**: Zeotap ingests pre-processed data from the warehouse via connectors or reverse ETL. Zeotap provides identity resolution that the warehouse cannot perform natively, builds audiences with a business-user-friendly interface, and activates to media and marketing destinations.
+
+**Key integration points**:
+- Snowflake Secure Data Share or BigQuery authorized views for ingestion
+- Reverse ETL tool (Census or Hightouch) pushing modeled data to Zeotap
+- Zeotap pushing activated audiences to ad platforms and marketing tools
+
+**TAM guidance**: Position Zeotap as the bridge between the data team (warehouse) and the marketing team (activation). Emphasize that Zeotap does not replace the warehouse but adds capabilities the warehouse lacks: identity resolution, audience management UI, and pre-built destination connectors.
+</Expandable>
+
+<Expandable title="CDP-First: Zeotap as the Core Platform" defaultOpen={false}>
+
+**How Zeotap fits**: Zeotap is the primary data collection and activation hub. All event data flows directly into Zeotap via SDKs and APIs. Zeotap handles identity resolution, profile management, segmentation, and activation.
+
+**Key integration points**:
+- Zeotap Web and Mobile SDKs for event collection
+- Server-to-server API for backend events
+- Warehouse export for analytics (Zeotap sends processed data to the warehouse)
+- All destination connections managed through Zeotap
+
+**TAM guidance**: This is the ideal architecture for maximum Zeotap value. The customer relies on Zeotap as the system of record for customer data. Ensure the customer's analytics team has access to the warehouse export so they are not dependent on the CDP UI for reporting.
+</Expandable>
+
+<Expandable title="Hybrid: Zeotap as the Convergence Point" defaultOpen={false}>
+
+**How Zeotap fits**: Zeotap receives data from two paths: real-time events via SDK and enriched batch data from the warehouse. Zeotap merges these into unified profiles, resolves identity across both streams, and activates to all destinations.
+
+**Key integration points**:
+- SDK for real-time behavioral data
+- Warehouse connector for CRM data, purchase history, and computed features
+- Zeotap identity resolution merges both streams into a single profile
+- Activation to destinations with audiences that combine real-time and batch signals
+
+**TAM guidance**: The hybrid pattern requires careful data deduplication. Work with the customer's data engineering team to ensure the same event is not ingested through both paths. Define clear ownership: which data comes from the SDK and which comes from the warehouse.
+</Expandable>
+
+---
+
+## Delivering the Architecture Review
+
+After the discovery session, produce a deliverable that the customer's engineering team can reference throughout the integration. This deliverable should include:
+
+1. **Current-state architecture diagram**: What exists today, drawn from the discovery session
+2. **Proposed integration diagram**: Where Zeotap fits, which connectors to use, data flow direction and frequency
+3. **Data contract**: What data Zeotap expects (schema, volume, frequency) and what Zeotap will deliver (profiles, audiences, events)
+4. **Risk register**: Technical risks identified during the review (e.g., no consent signal in the event stream, warehouse refresh only happens weekly)
+5. **Recommendation summary**: A concise written summary of the proposed approach and rationale
+
+<Callout type="important" title="Architecture Review Is Not a One-Time Event">
+Revisit the architecture review annually for Strategic accounts and whenever a customer undergoes a major infrastructure change (warehouse migration, new marketing stack, merger/acquisition). Architectures evolve, and your integration design must evolve with them.
+</Callout>
+
+A thorough architecture review takes investment upfront but prevents the most expensive problems in any integration: re-architecture, data duplication, and misaligned expectations. TAMs who master this skill become indispensable technical partners to their customers' engineering teams.

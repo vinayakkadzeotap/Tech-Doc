@@ -25,6 +25,35 @@ Data Activation is the final mile — delivering audiences, events, and profile 
 />
 
 **Plugin Model:**
+
+<MermaidDiagram
+  title="Destination Connector Lifecycle"
+  chart={`
+sequenceDiagram
+    participant AE as Audience Engine
+    participant TL as Transform Layer
+    participant DC as Destination Connector
+    participant EXT as External Platform
+
+    AE->>TL: Audience change event
+    TL->>TL: mapFields(profile → payload)
+    TL->>TL: Hash PII, filter consented
+    TL->>DC: deliver(payload)
+    DC->>DC: authenticate()
+    DC->>EXT: API call (batch or stream)
+    EXT-->>DC: 200 OK / Error
+    alt Success
+        DC-->>AE: delivery confirmed
+    else Failure (retryable)
+        DC->>DC: exponential backoff
+        DC->>EXT: retry (max 5)
+    else Permanent failure
+        DC-->>AE: route to DLQ
+    end
+  `}
+  caption="At-least-once delivery with retry logic and dead letter queue fallback"
+/>
+
 Each destination is a self-contained plugin implementing a standard interface:
 
 - `authenticate()` — OAuth flow, API key validation

@@ -1,0 +1,395 @@
+---
+title: Health Score Deep Dive
+icon: 📊
+estimatedMinutes: 30
+contentType: reference
+trackId: cs-playbook
+order: 7
+---
+
+## 📊 Health Score Deep Dive
+
+Health scores are the foundation of proactive customer success. This module goes beyond the basics, walking you through the exact calculation methodology, dimension-level thresholds, early warning systems, and intervention playbooks that separate reactive firefighting from strategic account management.
+
+<KeyConcepts concepts={["Health Score Methodology", "Weighted Scoring", "Product Adoption", "Data Quality", "Engagement Metrics", "Business Outcomes", "Support Health", "Relationship Strength", "Leading Indicators", "Lagging Indicators", "Intervention Playbook", "Health Review Cadence"]} />
+
+---
+
+### Health Score Calculation Methodology
+
+The Zeotap Customer Health Score is a composite metric calculated across six weighted dimensions. Each dimension is scored 0-100 independently, then combined using the weights below to produce an overall score.
+
+<StatCard stats={[
+  { value: "6", label: "Scoring Dimensions", color: "#3b82f6" },
+  { value: "0-100", label: "Score Range", color: "#10b981" },
+  { value: "Weekly", label: "Recalculation Cadence", color: "#a855f7" },
+  { value: "14", label: "Underlying Metrics", color: "#f59e0b" }
+]} />
+
+The overall health score formula is:
+
+**Health Score = (Product Adoption x 0.30) + (Data Quality x 0.20) + (Engagement x 0.15) + (Business Outcomes x 0.15) + (Support Health x 0.10) + (Relationship Strength x 0.10)**
+
+<MermaidDiagram
+  title="Health Score Calculation Flow"
+  chart={`flowchart TD
+    A[Raw Platform Telemetry] --> B[Product Adoption Score\n30% Weight]
+    C[Pipeline Metrics] --> D[Data Quality Score\n20% Weight]
+    E[Interaction Logs] --> F[Engagement Score\n15% Weight]
+    G[Customer-Reported KPIs] --> H[Business Outcomes Score\n15% Weight]
+    I[Ticketing System] --> J[Support Health Score\n10% Weight]
+    K[CSM Assessment] --> L[Relationship Strength Score\n10% Weight]
+    B --> M[Weighted Aggregation Engine]
+    D --> M
+    F --> M
+    H --> M
+    J --> M
+    L --> M
+    M --> N{Overall Health Score}
+    N -->|80-100| O[🟢 Healthy]
+    N -->|50-79| P[🟡 At-Risk]
+    N -->|0-49| Q[🔴 Critical]
+    style A fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style B fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style C fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style D fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style E fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style F fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style G fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style H fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style I fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style J fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style K fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style L fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style M fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style N fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style O fill:#065f46,stroke:#10b981,color:#e2e8f0
+    style P fill:#713f12,stroke:#f59e0b,color:#e2e8f0
+    style Q fill:#7f1d1d,stroke:#ef4444,color:#e2e8f0`}
+  caption="Health score is recalculated weekly. Automated dimensions update in real time; CSM-assessed dimensions update monthly or after significant events."
+/>
+
+---
+
+### Dimension 1: Product Adoption (30%)
+
+Product Adoption is the single most predictive dimension. Customers who actively use the platform renew at 3x the rate of those who do not.
+
+**Metrics and data sources:**
+- **Weekly Active Users (WAU):** Unique users logging in per week. Source: platform auth logs.
+- **Feature breadth:** Number of distinct product modules used (Audience Builder, Journeys, Destinations, Ada AI, Identity+). Source: product telemetry.
+- **Audiences created (last 30 days):** Volume of new audience segments built. Source: audience service.
+- **Active destinations:** Number of destinations with a successful sync in the last 7 days. Source: sync logs.
+
+<ComparisonTable
+  headers={["Metric", "Green (80-100)", "Yellow (40-79)", "Red (0-39)", "Data Source"]}
+  rows={[
+    ["Weekly active users", "5+ unique users", "2-4 unique users", "0-1 unique users", "Auth logs"],
+    ["Feature breadth", "4+ modules used", "2-3 modules used", "0-1 modules used", "Product telemetry"],
+    ["Audiences created (30d)", "10+ audiences", "3-9 audiences", "0-2 audiences", "Audience service"],
+    ["Active destinations", "4+ syncing", "2-3 syncing", "0-1 syncing", "Sync logs"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="tip" title="Breadth vs. Depth">
+A customer creating 50 audiences a month but using only the Audience Builder scores high on volume but low on breadth. Both matter. Breadth signals sticky adoption across the organization, while depth signals power-user engagement. Weight breadth slightly higher in your assessment because it correlates more strongly with retention.
+</Callout>
+
+---
+
+### Dimension 2: Data Quality (20%)
+
+Data quality determines whether the platform can deliver value. Even a highly engaged team will struggle if the underlying data is unreliable.
+
+**Metrics and data sources:**
+- **Event volume trend:** Week-over-week change in ingested events. Source: ingestion pipeline.
+- **Identity resolution rate:** Percentage of events that resolve to a Unified Customer ID (UCID). Source: identity service.
+- **Schema compliance:** Percentage of events matching the configured schema without errors. Source: data validation layer.
+
+<ComparisonTable
+  headers={["Metric", "Green (80-100)", "Yellow (40-79)", "Red (0-39)", "Data Source"]}
+  rows={[
+    ["Event volume trend (WoW)", "Stable or growing", "Declined 10-30%", "Declined 30%+", "Ingestion pipeline"],
+    ["Identity resolution rate", "70%+ resolved to UCID", "40-69% resolved", "Below 40% resolved", "Identity service"],
+    ["Schema compliance", "95%+ events valid", "80-94% events valid", "Below 80% valid", "Validation layer"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="warning" title="Silent Data Degradation">
+Data quality issues are insidious because the customer often does not notice them. A broken SDK tag, a schema change on their end, or a third-party data feed going offline can quietly degrade results for weeks before anyone raises a flag. Build automated alerts for any drop exceeding 20% on any data quality metric.
+</Callout>
+
+---
+
+### Dimension 3: Engagement (15%)
+
+Engagement measures how actively the customer interacts with Zeotap as a company, not just the product.
+
+**Metrics and data sources:**
+- **Meeting attendance rate:** Percentage of scheduled CSM meetings actually attended. Source: calendar data / CRM.
+- **Email responsiveness:** Average time to respond to CSM outreach. Source: email / CRM.
+- **Training participation:** Number of team members who attended webinars, training sessions, or certification programs. Source: LMS / event tracking.
+
+<ComparisonTable
+  headers={["Metric", "Green (80-100)", "Yellow (40-79)", "Red (0-39)", "Data Source"]}
+  rows={[
+    ["Meeting attendance rate", "80%+ meetings attended", "50-79% attended", "Below 50% attended", "CRM / calendar"],
+    ["Email responsiveness", "Replies within 2 business days", "Replies within 5 business days", "No reply in 5+ business days", "CRM / email"],
+    ["Training participation", "3+ team members trained", "1-2 team members trained", "No participation", "LMS / events"]
+  ]}
+  highlightColumn={1}
+/>
+
+---
+
+### Dimension 4: Business Outcomes (15%)
+
+Business outcomes are the ultimate measure of whether the customer is achieving their goals. This dimension is partially automated and partially CSM-assessed based on QBR conversations.
+
+**Metrics and data sources:**
+- **Use cases delivered:** Number of contracted use cases that are live and producing results. Source: success plan / CRM.
+- **Match rates in destinations:** Percentage of audience profiles that match in downstream ad platforms. Source: destination sync reports.
+- **Customer-reported ROI:** Revenue lift, ROAS improvement, or efficiency gain attributed to Zeotap. Source: QBR feedback / CRM.
+
+<ComparisonTable
+  headers={["Metric", "Green (80-100)", "Yellow (40-79)", "Red (0-39)", "Data Source"]}
+  rows={[
+    ["Use cases delivered", "100% of contracted use cases live", "50-99% of use cases live", "Below 50% live", "Success plan"],
+    ["Destination match rates", "65%+ average match rate", "40-64% match rate", "Below 40% match rate", "Sync reports"],
+    ["Customer-reported ROI", "Exceeds expectations", "Meets expectations partially", "No measurable ROI identified", "QBR / CRM"]
+  ]}
+  highlightColumn={1}
+/>
+
+---
+
+### Dimension 5: Support Health (10%)
+
+Support health captures the reliability of the customer's experience and the effectiveness of issue resolution.
+
+**Metrics and data sources:**
+- **Open ticket count:** Number of unresolved support tickets. Source: ticketing system.
+- **Average resolution time:** Mean time to resolve tickets (measured against SLA). Source: ticketing system.
+- **CSAT on closed tickets:** Customer satisfaction score on resolved tickets. Source: ticketing system surveys.
+
+<ComparisonTable
+  headers={["Metric", "Green (80-100)", "Yellow (40-79)", "Red (0-39)", "Data Source"]}
+  rows={[
+    ["Open ticket count", "0-2 open tickets", "3-5 open tickets", "6+ open tickets", "Ticketing system"],
+    ["Avg resolution time", "Within SLA for 90%+ tickets", "Within SLA for 60-89%", "Below 60% within SLA", "Ticketing system"],
+    ["CSAT on closed tickets", "4.5+ out of 5", "3.5-4.4 out of 5", "Below 3.5 out of 5", "Survey responses"]
+  ]}
+  highlightColumn={1}
+/>
+
+---
+
+### Dimension 6: Relationship Strength (10%)
+
+This is the only fully qualitative dimension. The CSM updates it monthly based on their judgment.
+
+**Assessment criteria:**
+- **Executive sponsor engagement:** Does the sponsor attend QBRs, respond to strategic outreach, and advocate for the partnership internally?
+- **Multi-threading depth:** How many distinct contacts are actively engaged? Is the relationship dependent on a single champion?
+- **Sentiment:** Overall tone of interactions. Enthusiastic and proactive? Or distant and transactional?
+
+<ComparisonTable
+  headers={["Criteria", "Green (80-100)", "Yellow (40-79)", "Red (0-39)", "Data Source"]}
+  rows={[
+    ["Executive sponsor engagement", "Sponsor actively involved, attends QBRs", "Sponsor responsive but passive", "Sponsor disengaged or unknown", "CSM assessment"],
+    ["Multi-threading depth", "4+ active contacts across teams", "2-3 contacts, mostly one team", "Single-threaded (one contact)", "CRM contact records"],
+    ["Sentiment", "Proactive, enthusiastic, references us positively", "Neutral, responsive but not proactive", "Unresponsive, frustrated, or evaluating alternatives", "CSM assessment"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="important" title="Update Relationship Scores After Key Events">
+Do not wait for the monthly cycle to update relationship strength. If a champion leaves, an executive escalation occurs, or sentiment shifts dramatically during a call, update the score immediately. Stale relationship data is worse than no data because it creates a false sense of security.
+</Callout>
+
+---
+
+### Early Warning Indicators: Leading vs. Lagging
+
+Understanding the difference between leading and lagging indicators is essential for proactive CS. Leading indicators give you time to intervene. Lagging indicators tell you it is already too late.
+
+<ComparisonTable
+  headers={["Indicator Type", "Example", "Lead Time", "Action Window"]}
+  rows={[
+    ["Leading", "Login frequency declining over 3 weeks", "60-90 days before impact", "Schedule check-in, drive re-engagement"],
+    ["Leading", "Feature breadth narrowing (dropped modules)", "45-60 days before impact", "Product training, use case workshop"],
+    ["Leading", "Meeting cancellations increasing", "30-60 days before impact", "Escalate to manager, exec outreach"],
+    ["Leading", "Event volume dropping without explanation", "30-45 days before impact", "Proactive data health review"],
+    ["Lagging", "Customer asks about contract termination", "0-30 days", "Emergency save play, exec engagement"],
+    ["Lagging", "Formal RFP issued to competitors", "0-14 days", "All-hands save effort, likely too late"],
+    ["Lagging", "Invoice payment delayed or disputed", "0-30 days", "Finance + CS joint outreach"],
+    ["Lagging", "NPS score drops below 5", "Already impacted", "Root cause analysis, remediation plan"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="tip" title="Build Your Early Warning System">
+Configure automated alerts for these leading indicator thresholds: WAU drops below 2 for any account, event volume declines more than 20% WoW, no audience created in 21+ days, two consecutive meeting cancellations. Each alert should trigger a specific playbook, not just a notification.
+</Callout>
+
+---
+
+### Intervention Playbooks by Health Tier
+
+<Expandable title="Tier 1: Healthy (Score 80-100) — Grow and Advocate" defaultOpen={true}>
+
+Healthy accounts are your growth engine. The goal is expansion, not maintenance.
+
+**Weekly actions:**
+- Monitor for expansion signals (volume growth, new use case requests, new team interest)
+- Ensure training resources are available for new users
+
+**Monthly actions:**
+- Review usage trends for upsell timing
+- Identify case study and referral candidates
+- Introduce new features relevant to their use cases
+
+**Quarterly actions:**
+- Conduct full QBR with executive sponsor
+- Present ROI summary and next-quarter success plan
+- Propose expansion where appropriate
+
+**Key metrics to watch:** Feature breadth (are they using everything they pay for?), team growth (new users onboarding?), event volume trend (growing = expansion ready).
+
+</Expandable>
+
+<Expandable title="Tier 2: At-Risk (Score 50-79) — Diagnose and Stabilize" defaultOpen={false}>
+
+At-risk accounts require focused attention to prevent further decline. The goal is to identify the root cause and build a recovery plan within 2 weeks.
+
+**Immediate actions (within 48 hours of score entering this tier):**
+- Review all six dimensions to identify which are dragging the score down
+- Pull the last 30 days of activity logs and support tickets
+- Schedule a call with your primary contact to discuss the state of the partnership
+
+**Week 1 actions:**
+- Document root causes for each underperforming dimension
+- Create a 30/60/90-day recovery plan with specific milestones
+- Share the plan with the customer and get their buy-in
+
+**Week 2-4 actions:**
+- Increase meeting cadence to bi-weekly
+- Execute the recovery plan: training sessions, data health audits, use case workshops
+- Provide weekly progress updates to the customer
+
+**Ongoing until restored to Healthy:**
+- Review health score weekly with your manager
+- Flag any further decline immediately
+- Consider involving a solutions consultant for technical issues
+
+</Expandable>
+
+<Expandable title="Tier 3: Critical (Score 0-49) — Escalate and Save" defaultOpen={false}>
+
+Critical accounts are at immediate churn risk. Every day without action increases the probability of loss.
+
+**Immediate actions (within 24 hours):**
+- Escalate to CS leadership (VP or Director level)
+- Schedule an emergency internal review: CSM + manager + solutions consultant
+- Draft an executive-to-executive outreach email for your leader to send
+
+**Week 1 actions:**
+- Conduct a joint call with customer leadership and Zeotap leadership
+- Present a "Get Well" plan with aggressive timelines and Zeotap investment (dedicated SE time, training, data audit)
+- Address all open support tickets as P1 priority
+
+**Week 2-4 actions:**
+- Assign a dedicated solutions consultant for hands-on support
+- Run daily standups internally until the account stabilizes
+- Deliver quick wins to rebuild confidence (fix a broken integration, launch a new audience, improve match rates)
+
+**If renewal is within 90 days:**
+- Engage sales leadership and finance for potential concession strategy
+- Prepare competitive defense materials if applicable
+- Consider a short-term contract extension to buy time for recovery
+
+</Expandable>
+
+---
+
+### Weekly and Monthly Health Review Cadence
+
+<Expandable title="Weekly Health Review (CSM, 30 minutes)" defaultOpen={true}>
+
+**Every Monday morning, review your full portfolio:**
+
+1. **Sort by score, ascending.** Start with your most critical accounts.
+2. **Check score changes.** Any account that moved more than 10 points in either direction needs investigation.
+3. **Review automated alerts.** Clear or act on any triggered alerts from the early warning system.
+4. **Update relationship scores.** If you had meaningful interactions last week, update the qualitative assessment.
+5. **Plan the week.** Identify the 3-5 most important customer actions for the week based on health data.
+
+**Output:** Updated health notes in CRM, weekly priorities documented.
+
+</Expandable>
+
+<Expandable title="Monthly Health Review (CSM + Manager, 45 minutes)" defaultOpen={false}>
+
+**First week of every month, hold a portfolio review with your manager:**
+
+1. **Portfolio snapshot.** Total accounts by health tier (green/yellow/red), changes from last month.
+2. **Deep-dive on at-risk and critical accounts.** Review recovery plans, timeline, and progress.
+3. **Expansion pipeline.** Which healthy accounts are expansion-ready? What is the estimated expansion value?
+4. **Renewal forecast.** For renewals in the next 120 days: health score, risk assessment, and confidence level (high/medium/low).
+5. **Resource requests.** Does any account need a solutions consultant, executive engagement, or additional training investment?
+
+**Output:** Updated forecast in CRM, action items with owners and due dates, escalations raised.
+
+</Expandable>
+
+---
+
+### Health Score Benchmarks by Customer Tier
+
+Different customer tiers have different baseline expectations. Enterprise accounts typically have more stakeholders and longer implementation cycles, while Growth accounts move faster but may have less executive engagement.
+
+<ComparisonTable
+  headers={["Dimension", "Enterprise Benchmark", "Mid-Market Benchmark", "Growth Benchmark"]}
+  rows={[
+    ["Product Adoption", "75+ (complex rollout, slower ramp)", "80+ (faster adoption expected)", "85+ (self-serve adoption expected)"],
+    ["Data Quality", "80+ (dedicated data team)", "75+ (shared resources)", "70+ (may need more guidance)"],
+    ["Engagement", "70+ (harder to get exec time)", "80+ (more accessible)", "75+ (may lack dedicated owner)"],
+    ["Business Outcomes", "70+ (longer time to measurable ROI)", "75+ (mid-cycle ROI expected)", "80+ (fast ROI or churn risk)"],
+    ["Support Health", "85+ (premium SLA)", "80+ (standard SLA)", "80+ (standard SLA)"],
+    ["Relationship Strength", "65+ (multi-layered org)", "75+ (fewer stakeholders)", "70+ (often single-threaded)"],
+    ["Overall Target", "75+", "78+", "80+"]
+  ]}
+  highlightColumn={0}
+/>
+
+<Callout type="info" title="Benchmark Calibration">
+These benchmarks should be recalibrated quarterly based on actual portfolio data. If the median health score across your Mid-Market book is 72, a score of 75 is actually above average even though it falls below the benchmark target. Use benchmarks as aspirational targets, not rigid pass/fail thresholds.
+</Callout>
+
+---
+
+### Common Health Score Pitfalls
+
+<Expandable title="Pitfall 1: Over-Reliance on Automated Scores" defaultOpen={false}>
+
+Automated scores can miss context. A customer migrating to a new website will have temporarily low event volumes. A customer in a seasonal business will have cyclical usage patterns. Always pair quantitative scores with qualitative context. Build a "context notes" field in your health tracking to capture these nuances.
+
+</Expandable>
+
+<Expandable title="Pitfall 2: Gaming the Relationship Score" defaultOpen={false}>
+
+CSMs sometimes inflate the relationship score because it feels subjective and there is no automated check. Combat this by requiring specific evidence for each rating: "Score is 80 because the executive sponsor attended the last 2 QBRs and proactively shared their Q3 priorities." Vague justifications like "things feel fine" should trigger a manager conversation.
+
+</Expandable>
+
+<Expandable title="Pitfall 3: Ignoring Healthy Accounts" defaultOpen={false}>
+
+It is tempting to spend all your time on red and yellow accounts. But neglecting green accounts creates future reds. Allocate at least 20% of your weekly time to proactive engagement with healthy accounts: feature introductions, expansion conversations, and relationship deepening. The best time to grow an account is when everything is going well.
+
+</Expandable>
+
+---
+
+**Next up:** Expansion and Upsell Playbook — turning healthy accounts into growing accounts →

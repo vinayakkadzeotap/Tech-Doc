@@ -24,6 +24,41 @@ After events pass through the Collect Service, they enter the ingestion pipeline
   ]}
 />
 
+### Real-Time vs Batch Architecture
+
+<MermaidDiagram
+  title="Dual Ingestion Pipelines"
+  chart={`
+graph TB
+    subgraph RT["⚡ Real-Time Path"]
+        A["Web/Mobile SDK"] -->|POST /collect| B["Collect Service"]
+        B -->|Validated| C["Kafka Topics"]
+        C --> D["id-graph-consumer"]
+        C --> E["profile-consumer"]
+        C --> F["audience-consumer"]
+        C --> G["activation-consumer"]
+    end
+
+    subgraph BATCH["📦 Batch Path"]
+        H["CSV/JSON Upload"] -->|GCS/SFTP| I["File Watcher"]
+        I --> J["CDAP Pipeline"]
+        J --> K["Spark Validation"]
+        K -->|Valid| C
+        K -->|Invalid| L["Error Report"]
+    end
+
+    D --> M["Identity Graph"]
+    E --> N["Profile Store"]
+    F --> O["Audience Engine"]
+    G --> P["Destinations"]
+
+    style RT fill:#0f172a,stroke:#10b981,color:#e2e8f0
+    style BATCH fill:#0f172a,stroke:#f59e0b,color:#e2e8f0
+    style C fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+  `}
+  caption="Both real-time and batch paths converge at Kafka for unified downstream processing"
+/>
+
 ### Real-Time Ingestion (Kafka)
 
 <TechStack
@@ -37,6 +72,23 @@ After events pass through the Collect Service, they enter the ingestion pipeline
 />
 
 **Topic Design:**
+
+<MermaidDiagram
+  title="Kafka Topic Flow"
+  chart={`
+graph LR
+    A["events.raw.{orgId}"] -->|Schema Registry| B["events.validated.{orgId}"]
+    B -->|ID Resolution| C["events.enriched.{orgId}"]
+    A -.->|Failed validation| D["events.dlq.{orgId}"]
+    B -.->|Failed enrichment| D
+
+    style A fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style B fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style C fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style D fill:#1e293b,stroke:#ef4444,color:#e2e8f0
+  `}
+/>
+
 - `events.raw.{orgId}` — Raw events from Collect Service
 - `events.validated.{orgId}` — Schema-validated events
 - `events.enriched.{orgId}` — Events with identity resolution applied

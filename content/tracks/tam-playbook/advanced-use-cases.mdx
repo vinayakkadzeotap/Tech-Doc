@@ -1,0 +1,422 @@
+---
+title: "Advanced Use Case Library"
+icon: 🚀
+estimatedMinutes: 35
+contentType: reference
+trackId: tam-playbook
+order: 6
+---
+
+# Advanced Use Case Library
+
+Once a customer has completed onboarding and established foundational audiences, the TAM's role shifts to driving deeper adoption through advanced use cases. Each use case in this library expands the customer's reliance on the platform, increases the value delivered, and strengthens the renewal and expansion story. This module organizes 12+ advanced use cases by capability area, with implementation guidance for each.
+
+<KeyConcepts concepts={["Cross-Device Matching", "Household Graphs", "B2B Account Matching", "Predictive Audiences", "Lookalike Expansion", "Dynamic Suppression", "Multi-Channel Orchestration", "A/B Testing", "Lifecycle Automation", "Real-Time Personalization", "Data Clean Rooms", "Programmatic Activation"]} />
+
+<StatCard stats={[
+  { value: "4.7", label: "Average use cases per retained account", color: "blue" },
+  { value: "1.8", label: "Average use cases per churned account", color: "red" },
+  { value: "35%", label: "Higher NRR for accounts with 5+ active use cases", color: "green" }
+]} />
+
+---
+
+## Use Case Maturity Model
+
+Customers progress through use case maturity in a predictable pattern. Understanding where a customer sits on this curve helps the TAM recommend the right next use case at the right time.
+
+<MermaidDiagram
+  title="Use Case Maturity Model"
+  chart={`flowchart LR
+    subgraph Stage1["Level 1: Foundation"]
+      A["Basic Audience<br/>Segmentation"]:::l1
+      B["Single-Channel<br/>Activation"]:::l1
+      C["Manual Suppression<br/>Lists"]:::l1
+    end
+    subgraph Stage2["Level 2: Optimization"]
+      D["Behavioral<br/>Audiences"]:::l2
+      E["Multi-Destination<br/>Activation"]:::l2
+      F["Dynamic<br/>Suppression"]:::l2
+    end
+    subgraph Stage3["Level 3: Advanced"]
+      G["Predictive<br/>Audiences"]:::l3
+      H["Cross-Device<br/>Matching"]:::l3
+      I["Multi-Channel<br/>Orchestration"]:::l3
+    end
+    subgraph Stage4["Level 4: Strategic"]
+      J["Data Clean<br/>Rooms"]:::l4
+      K["Lifecycle<br/>Automation"]:::l4
+      L["Real-Time<br/>Personalization"]:::l4
+    end
+    A --> D
+    B --> E
+    C --> F
+    D --> G
+    E --> H
+    F --> I
+    G --> J
+    H --> K
+    I --> L
+    classDef l1 fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef l2 fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:2px
+    classDef l3 fill:#1e293b,stroke:#a855f7,color:#e2e8f0,stroke-width:2px
+    classDef l4 fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px`}
+  caption="Customers should master Level 1 before attempting Level 3. Skipping stages leads to poor outcomes and frustration."
+/>
+
+<Callout type="tip" title="The Next Best Use Case">
+When deciding which use case to recommend next, consider three factors: (1) business impact for the customer, (2) technical readiness (do they have the data and integrations needed?), and (3) team capacity (does the customer have the people to execute?). The highest-impact use case is useless if the customer is not ready for it.
+</Callout>
+
+---
+
+## Identity Use Cases
+
+### 1. Cross-Device Matching
+
+<Expandable title="Cross-Device Matching" defaultOpen={true}>
+
+**Description**: Unify a single user's activity across desktop web, mobile web, and mobile app into one profile. This enables frequency capping across devices, consistent messaging, and accurate attribution.
+
+**Prerequisites**:
+- Web SDK and Mobile SDK both deployed and ingesting
+- Identity strategy configured with deterministic matching (email or phone as anchor)
+- At least one authenticated touchpoint per device (login, checkout, newsletter signup)
+
+**Implementation Steps**:
+1. Verify that identify calls fire on all authenticated touchpoints across all platforms
+2. Configure cross-device matching rules in the identity graph settings
+3. Set the device ID namespace for each platform (cookie ID for web, IDFA/GAID for mobile)
+4. Run the identity graph and review the cross-device match report
+5. Validate with sample profiles: does the same user show both web and app activity?
+6. Activate a cross-device audience to test frequency capping in the ad platform
+
+**Expected Outcomes**:
+- 20-40% increase in addressable audience through device linking
+- 15-25% reduction in wasted ad spend through cross-device frequency capping
+- More accurate attribution and conversion path analysis
+</Expandable>
+
+### 2. Household Graph
+
+<Expandable title="Household Graph" defaultOpen={false}>
+
+**Description**: Link individual profiles that share a household based on shared identifiers (IP address, physical address, Wi-Fi network). Enables household-level targeting for products bought by families (insurance, streaming, groceries).
+
+**Prerequisites**:
+- Physical address or IP address data available in profiles
+- Identity graph with deterministic matching operational
+- Customer has compliance clearance for household-level targeting in their market
+
+**Implementation Steps**:
+1. Ingest address data (hashed or standardized) from CRM or purchase records
+2. Configure household matching rules: same standardized address = same household
+3. Optionally add IP clustering for households without shared address data
+4. Set household size limits (cap at 6-8 members to prevent apartment building false matches)
+5. Create household-level computed attributes: household total spend, number of members, product coverage
+6. Build a household audience: "Households with high total spend but only one member using the product"
+
+**Expected Outcomes**:
+- 10-30% audience expansion through household-level reach
+- New upsell and cross-sell opportunities within existing customer households
+- More accurate lifetime value modeling at the household level
+</Expandable>
+
+### 3. B2B Account Matching
+
+<Expandable title="B2B Account Matching" defaultOpen={false}>
+
+**Description**: Roll up individual user profiles to company-level accounts for B2B marketing. Map website visitors and product users to their employer or company, enabling account-based marketing (ABM) workflows.
+
+**Prerequisites**:
+- Company domain or company name data on at least a subset of profiles
+- Email domain mapping table (free email domains excluded)
+- IP-to-company enrichment data (optional, for anonymous visitor matching)
+
+**Implementation Steps**:
+1. Create a company namespace in the identity graph
+2. Map user email domains to company accounts (exclude free email domains: gmail, yahoo, hotmail)
+3. Optionally enrich with IP-to-company data for anonymous visitors
+4. Build company-level computed attributes: number of users, total engagement, product adoption score
+5. Create ABM audiences: "Target accounts with 3+ users but no enterprise license"
+6. Activate to LinkedIn Ads, Demandbase, or 6sense for account-based campaigns
+
+**Expected Outcomes**:
+- 60-80% of known users mapped to company accounts
+- ABM campaigns with 2-3x higher conversion rates than non-ABM
+- Sales team receives account-level engagement intelligence for prioritization
+</Expandable>
+
+---
+
+## Audience Use Cases
+
+### 4. Predictive Audiences
+
+<Expandable title="Predictive Audiences" defaultOpen={true}>
+
+**Description**: Use machine learning models to predict future behavior (likely to purchase, likely to churn, likely to upgrade) and build audiences from those predictions. Predictive audiences outperform rule-based segments because they capture non-obvious behavioral patterns.
+
+**Prerequisites**:
+- 90+ days of behavioral event history
+- Sufficient conversion volume for model training (minimum 500 positive events)
+- Profile attributes and behavioral features available for model input
+
+**Implementation Steps**:
+1. Define the prediction target: what event are you predicting (purchase, churn, upgrade)?
+2. Configure the prediction model: select input features (recency, frequency, monetary, page views, email opens)
+3. Set the prediction window: "likely to purchase within the next 30 days"
+4. Train the model on historical data and review the performance metrics (AUC, precision, recall)
+5. Generate prediction scores for all eligible profiles
+6. Build audience segments by prediction score tier: top 10% (high intent), top 10-30% (medium intent)
+7. Activate predictive audiences to paid media and CRM
+
+**Expected Outcomes**:
+- 2-4x higher conversion rate compared to demographic-based targeting
+- 20-30% improvement in campaign efficiency (lower cost per conversion)
+- Proactive churn prevention for at-risk customers identified by the model
+</Expandable>
+
+### 5. Lookalike Expansion
+
+<Expandable title="Lookalike Expansion" defaultOpen={false}>
+
+**Description**: Take a seed audience of best customers and find statistically similar profiles in the broader population. Lookalike audiences are the primary engine for scaling acquisition campaigns beyond first-party data limits.
+
+**Prerequisites**:
+- A high-quality seed audience (top customers by revenue, engagement, or LTV)
+- Sufficient seed size (minimum 1,000 profiles, ideally 5,000+)
+- Third-party data enrichment or large first-party data footprint for expansion
+
+**Implementation Steps**:
+1. Build the seed audience from top-performing customers (use RFM scoring or LTV model)
+2. Configure lookalike expansion with similarity threshold (start at 90% similarity, then broaden)
+3. Choose expansion source: first-party data only, or include Zeotap's third-party data graph
+4. Generate the lookalike audience and review the overlap analysis with the seed
+5. A/B test the lookalike audience against the platform's native lookalike (Google Similar Audiences, Meta Lookalike) and against broad targeting
+6. Iterate: adjust similarity threshold based on performance vs. scale tradeoff
+
+**Expected Outcomes**:
+- 5-10x audience scale compared to first-party seed alone
+- 30-50% lower CPA compared to broad demographic targeting
+- Consistent source of high-quality acquisition audiences across platforms
+</Expandable>
+
+### 6. Dynamic Suppression
+
+<Expandable title="Dynamic Suppression" defaultOpen={false}>
+
+**Description**: Automatically suppress users from campaigns when they complete a desired action (purchase, sign-up, renewal). Dynamic suppression eliminates wasted ad spend in near real-time.
+
+**Prerequisites**:
+- Conversion events ingested with low latency (ideally real-time via SDK or server-to-server)
+- Audiences syncing to destinations at least daily (ideally hourly or real-time)
+- Suppression audience configured as a negative targeting list in destination platforms
+
+**Implementation Steps**:
+1. Create a suppression audience with criteria: "Completed [conversion event] within last [N] days"
+2. Configure audience refresh frequency to match the customer's latency needs
+3. Push the suppression audience to all acquisition destinations as a negative targeting list
+4. Validate suppression is working: sample recent converters and confirm they are excluded from active campaigns
+5. Measure wasted spend reduction by comparing pre-suppression and post-suppression CPM and frequency
+
+**Expected Outcomes**:
+- 10-25% reduction in acquisition media spend (by eliminating impressions wasted on existing customers)
+- Improved customer experience (no ads for products they already bought)
+- Measurable ROI contribution to the value story
+</Expandable>
+
+---
+
+## Journey Use Cases
+
+### 7. Multi-Channel Orchestration
+
+<Expandable title="Multi-Channel Orchestration" defaultOpen={true}>
+
+**Description**: Coordinate messaging across email, push notification, SMS, paid media, and on-site personalization based on a unified customer journey. The right message on the right channel at the right time.
+
+**Prerequisites**:
+- At least 3 destination channels configured (email, push, paid media)
+- Journey builder with channel action nodes for each destination
+- Customer consent captured for each channel (email opt-in, push permission, SMS consent)
+
+**Implementation Steps**:
+1. Map the customer journey for a specific use case (e.g., cart abandonment recovery)
+2. Design the journey flow: trigger event → wait period → first channel attempt → decision node → fallback channel
+3. Configure channel priority: try email first (lowest cost), then push, then SMS, then paid retargeting
+4. Add decision nodes: if user opened email, do not send push; if user converted, exit journey
+5. Set frequency caps: maximum 3 touches across all channels in a 7-day window
+6. Launch the journey and monitor channel-level and journey-level metrics
+7. Optimize based on results: adjust wait times, channel priority, and content per channel
+
+**Expected Outcomes**:
+- 25-40% higher recovery rate compared to single-channel approach
+- Lower overall channel cost by prioritizing cheaper channels first
+- Consistent brand experience across touchpoints
+</Expandable>
+
+### 8. A/B Testing in Journeys
+
+<Expandable title="A/B Testing in Journeys" defaultOpen={false}>
+
+**Description**: Split journey participants into test groups to compare different strategies: messaging variants, channel sequences, timing, or offer types. Systematic testing turns intuition into data-driven decisions.
+
+**Prerequisites**:
+- Journey builder with A/B split nodes
+- Sufficient audience volume for statistical significance (minimum 1,000 per variant)
+- Clear success metric defined before the test starts (conversion rate, revenue per user, engagement rate)
+
+**Implementation Steps**:
+1. Define the hypothesis: "Sending a 10% discount email 2 hours after cart abandonment will convert better than waiting 24 hours"
+2. Configure A/B split in the journey: 50/50 random split (or 80/20 if the variant is risky)
+3. Ensure both paths lead to the same measurement point (conversion event)
+4. Run the test for a statistically significant duration (use a sample size calculator before launching)
+5. Analyze results: compare conversion rate, revenue per user, and cost per conversion between variants
+6. Implement the winner as the default path; design the next test
+
+**Expected Outcomes**:
+- Continuous improvement in journey performance (5-15% lift per winning test)
+- Data-backed evidence for marketing strategy decisions
+- A culture of experimentation that deepens platform engagement
+</Expandable>
+
+### 9. Lifecycle Automation
+
+<Expandable title="Lifecycle Automation" defaultOpen={false}>
+
+**Description**: Automate the entire customer lifecycle from acquisition to retention to win-back with interconnected journeys that hand off users between lifecycle stages automatically.
+
+**Prerequisites**:
+- Lifecycle stage definitions agreed with the customer (prospect, new customer, active, at-risk, churned)
+- Computed attribute for lifecycle stage based on behavioral signals
+- Journey templates for each lifecycle transition
+
+**Implementation Steps**:
+1. Define lifecycle stages and the rules that move a user between stages
+2. Build a computed attribute that calculates each profile's current lifecycle stage daily
+3. Create journeys for each lifecycle transition:
+   - Prospect → New Customer: welcome series (email + push + in-app tour)
+   - New Customer → Active: onboarding milestones and engagement nudges
+   - Active → At-Risk: re-engagement campaign triggered by declining activity
+   - At-Risk → Churned: win-back campaign with incentive escalation
+   - Churned → Reactivated: special return offer and streamlined re-onboarding
+4. Connect journeys via exit criteria: when a user exits "welcome," they enter "active engagement" monitoring
+5. Set up lifecycle stage transition dashboards to track flow between stages
+6. Review and optimize quarterly based on stage duration and transition rates
+
+**Expected Outcomes**:
+- 15-30% improvement in customer retention through proactive lifecycle management
+- Reduced manual campaign management (automated triggers replace manual sends)
+- Clear visibility into where customers are in their lifecycle and where they get stuck
+</Expandable>
+
+---
+
+## Activation Use Cases
+
+### 10. Real-Time Personalization
+
+<Expandable title="Real-Time Personalization" defaultOpen={true}>
+
+**Description**: Use Zeotap audience membership and profile attributes to personalize website or app experiences in real time. Show different content, offers, or product recommendations based on who the visitor is.
+
+**Prerequisites**:
+- Zeotap Web SDK deployed with real-time audience evaluation
+- Personalization engine or CMS that can consume audience signals (Optimizely, Dynamic Yield, custom)
+- Integration between Zeotap and the personalization layer (API or edge-side)
+
+**Implementation Steps**:
+1. Define personalization use cases: hero banner by audience, product recommendations by lifecycle stage, CTA by purchase history
+2. Configure real-time audience evaluation in Zeotap for the segments that will drive personalization
+3. Integrate Zeotap's audience API with the personalization engine (REST API call on page load or edge-side decision)
+4. Build personalization rules in the customer's CMS/personalization tool using Zeotap audience membership as the trigger
+5. Set up A/B tests to measure personalization impact vs. default experience
+6. Launch, monitor, and iterate
+
+**Expected Outcomes**:
+- 10-25% increase in on-site conversion rate
+- Higher engagement metrics (time on site, pages per session, click-through rate)
+- Revenue attribution from personalization that strengthens the ROI story
+</Expandable>
+
+### 11. Data Clean Rooms
+
+<Expandable title="Data Clean Rooms" defaultOpen={false}>
+
+**Description**: Enable privacy-safe data collaboration between the customer and their partners (publishers, retailers, walled gardens) without raw data sharing. Data clean rooms allow audience overlap analysis, measurement, and activation on matched audiences.
+
+**Prerequisites**:
+- Customer has a clean room use case with a specific partner (retailer media network, publisher, or walled garden)
+- Clean room infrastructure available (Snowflake DCR, AWS Clean Rooms, Google ADH, or Zeotap's native clean room)
+- Legal and privacy team approval for the data collaboration
+
+**Implementation Steps**:
+1. Define the clean room use case: audience overlap analysis, campaign measurement, or joint audience activation
+2. Determine the clean room technology: customer's preference or partner's requirement
+3. Configure Zeotap's data export to the clean room environment (hashed identifiers, audience membership, aggregated attributes)
+4. Define the query templates: what analyses are permitted within the clean room
+5. Run the first collaboration: measure audience overlap with the partner and identify joint audience opportunities
+6. Activate matched audiences through the partner's media platform
+
+**Expected Outcomes**:
+- Privacy-compliant data collaboration that opens new activation channels
+- Audience overlap insights that inform media planning and partnership value
+- Future-proofed activation strategy for a post-third-party-cookie world
+</Expandable>
+
+### 12. Programmatic Activation at Scale
+
+<Expandable title="Programmatic Activation at Scale" defaultOpen={false}>
+
+**Description**: Push Zeotap audiences to programmatic advertising platforms (The Trade Desk, DV360, Xandr) for precision targeting at scale. Combine first-party data with Zeotap's identity graph for maximum addressable reach.
+
+**Prerequisites**:
+- Programmatic platform accounts configured and connected to Zeotap as destinations
+- Audiences built and validated in Zeotap
+- Media buying team trained on receiving and activating Zeotap audiences in their DSP
+
+**Implementation Steps**:
+1. Connect programmatic destinations in Zeotap (The Trade Desk, DV360, Amazon DSP)
+2. Map Zeotap identity spaces to programmatic IDs (UID2, RampID, or platform-specific IDs)
+3. Push core audiences: high-value customers, lookalikes, retargeting, suppression lists
+4. Configure sync frequency based on campaign needs (daily for always-on, hourly for time-sensitive)
+5. Coordinate with the media buying team to set up campaigns using Zeotap audiences
+6. Measure programmatic campaign performance and compare Zeotap audiences vs. other data sources
+
+**Expected Outcomes**:
+- 30-50% improvement in programmatic campaign ROAS compared to third-party data segments
+- Scalable activation across multiple DSPs from a single audience definition
+- First-party data strategy that reduces dependency on depreciating third-party cookies
+</Expandable>
+
+---
+
+## Use Case Implementation Priority Matrix
+
+Use this matrix to help customers prioritize which advanced use cases to tackle next based on their current maturity and business priorities.
+
+<ComparisonTable
+  headers={["Use Case", "Business Impact", "Implementation Effort", "Data Readiness Required", "Recommended Stage"]}
+  rows={[
+    ["Cross-Device Matching", "High", "Medium", "Web + Mobile SDK", "Level 2"],
+    ["Household Graph", "Medium", "Medium", "Address data in profiles", "Level 3"],
+    ["B2B Account Matching", "High (B2B only)", "Medium", "Email domain + company data", "Level 2"],
+    ["Predictive Audiences", "Very High", "High", "90+ days of event history", "Level 3"],
+    ["Lookalike Expansion", "High", "Low", "High-quality seed audience", "Level 2"],
+    ["Dynamic Suppression", "High", "Low", "Real-time conversion events", "Level 2"],
+    ["Multi-Channel Orchestration", "Very High", "High", "3+ channels configured", "Level 3"],
+    ["A/B Testing", "Medium", "Low", "Journey builder operational", "Level 2"],
+    ["Lifecycle Automation", "Very High", "Very High", "Lifecycle stage computed attribute", "Level 4"],
+    ["Real-Time Personalization", "Very High", "High", "Real-time audience API integration", "Level 4"],
+    ["Data Clean Rooms", "High", "Very High", "Clean room infrastructure + partner", "Level 4"],
+    ["Programmatic Activation", "High", "Medium", "DSP accounts + ID mapping", "Level 2"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="important" title="Use Cases Drive Retention">
+The data is clear: accounts with 5 or more active use cases retain at dramatically higher rates than accounts with fewer than 3. Every use case you help a customer launch is both a value delivery and a retention lever. Build a use case roadmap into every account plan and track progress quarterly.
+</Callout>
+
+Each use case in this library is designed to be self-contained. A TAM can pull any use case from this reference, assess whether the customer has the prerequisites, and guide them through implementation. The goal is not to launch all 12 use cases at once, but to build a steady cadence of use case adoption that deepens platform engagement and compounds value over time.

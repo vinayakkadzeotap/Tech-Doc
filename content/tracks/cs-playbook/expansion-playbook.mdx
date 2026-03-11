@@ -1,0 +1,387 @@
+---
+title: Expansion & Upsell Playbook
+icon: 📈
+estimatedMinutes: 35
+contentType: tutorial
+trackId: cs-playbook
+order: 8
+---
+
+## 📈 Expansion & Upsell Playbook
+
+Expansion revenue is the lifeblood of a world-class CS organization. This module provides a complete framework for identifying expansion opportunities, positioning value without selling, executing upsell and cross-sell motions, and defending accounts against competitive threats.
+
+<KeyConcepts concepts={["Net Dollar Retention", "Expansion Signals", "Upsell", "Cross-sell", "QBR Expansion", "Competitive Defense", "Value Positioning", "ROI Proof Points", "Expansion Lifecycle", "Customer Maturity"]} />
+
+---
+
+### The Expansion Imperative
+
+<StatCard stats={[
+  { value: "120%+", label: "Target Net Dollar Retention", color: "#10b981" },
+  { value: "3x", label: "Expansion vs. New Biz Efficiency", color: "#3b82f6" },
+  { value: "68%", label: "Revenue from Existing Customers (Best-in-Class)", color: "#a855f7" },
+  { value: "15%", label: "Avg Annual Expansion per Account (Target)", color: "#f59e0b" }
+]} />
+
+Expanding existing accounts is three times more cost-efficient than acquiring new logos. A CSM who consistently drives expansion revenue demonstrates strategic business impact far beyond retention. This playbook gives you the tools to do it systematically.
+
+---
+
+### Expansion Signals: Recognizing Readiness
+
+Expansion does not start with a pitch. It starts with recognizing the right signals from your customer's behavior. These signals fall into two categories: product-usage signals (automated) and relationship signals (observed).
+
+#### Product-Usage Signals
+
+<ComparisonTable
+  headers={["Signal", "What It Looks Like", "Expansion Play", "Confidence Level"]}
+  rows={[
+    ["Volume ceiling approaching", "Event or profile count at 80%+ of contracted limit", "Volume tier upgrade", "High"],
+    ["New feature exploration", "Users clicking into modules they have not purchased (Journeys, Ada AI)", "Feature upsell", "Medium"],
+    ["Audience complexity growing", "Audiences using advanced segmentation, lookalikes, or predictive traits", "Advanced analytics upsell", "Medium"],
+    ["Destination count growing", "Customer activating 5+ destinations, requesting new integrations", "Activation module expansion", "High"],
+    ["New user signups", "Users from new departments requesting access", "Seat expansion", "High"],
+    ["API usage increasing", "Programmatic access growing beyond current rate limits", "API tier upgrade", "High"],
+    ["Cross-region data appearing", "Events arriving from new geographic regions", "Multi-region deployment", "Medium"]
+  ]}
+  highlightColumn={2}
+/>
+
+#### Relationship Signals
+
+These are signals you pick up during conversations, QBRs, and day-to-day interactions:
+
+- **"Can the platform do X?"** — Unprompted feature questions indicate unmet needs that may map to upsell modules.
+- **"Other teams are interested"** — New department interest signals seat and use-case expansion.
+- **"We are expanding to new markets"** — Geographic expansion maps to multi-region deployments.
+- **"Our data volumes are going to increase significantly"** — Proactive volume growth warning signals tier upgrade.
+- **"We want to consolidate vendors"** — Consolidation signals cross-sell opportunity for ID+, Fuel, or Ada.
+
+<Callout type="tip" title="Document Every Signal">
+Maintain an "expansion signals" log in your CRM for each account. Even signals that are not immediately actionable build a pattern over time. When you have 3+ signals from the same account in a quarter, it is time to have the expansion conversation.
+</Callout>
+
+---
+
+### The Expansion Lifecycle
+
+Every expansion opportunity follows a predictable lifecycle. Understanding where you are in this cycle prevents premature pitches and missed timing.
+
+<MermaidDiagram
+  title="Expansion Lifecycle"
+  chart={`flowchart LR
+    A[Detect Signal] --> B[Qualify Opportunity]
+    B --> C[Build Business Case]
+    C --> D[Propose to Customer]
+    D --> E[Negotiate & Close]
+    E --> F[Onboard New Capability]
+    F --> G[Measure & Report Value]
+    G -->|New signals| A
+    style A fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style B fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style C fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style D fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style E fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style F fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style G fill:#1e293b,stroke:#3b82f6,color:#e2e8f0`}
+  caption="The expansion lifecycle is continuous. Successfully delivering value on one expansion creates the signals for the next."
+/>
+
+<Expandable title="Stage 1: Detect Signal" defaultOpen={false}>
+
+**Duration:** Ongoing (always-on monitoring)
+
+**CSM actions:**
+- Review weekly health dashboards for product-usage signals
+- Log relationship signals from every customer interaction
+- Set automated alerts for volume thresholds (80% of contracted limit)
+- Review QBR notes for unmet needs or feature requests
+
+**Output:** Signal logged in CRM with date, type, and initial assessment.
+
+</Expandable>
+
+<Expandable title="Stage 2: Qualify Opportunity" defaultOpen={false}>
+
+**Duration:** 1-2 weeks
+
+**CSM actions:**
+- Validate the signal: Is this a genuine need or a passing curiosity?
+- Assess customer readiness: Is their current deployment healthy? (Do not upsell into a struggling account.)
+- Identify the economic buyer: Who controls budget for this type of expansion?
+- Estimate deal size: What is the likely ARR impact?
+
+**Qualification criteria (must meet at least 3 of 5):**
+1. Customer health score is 70+ (at least yellow-green)
+2. Clear business need articulated by the customer
+3. Budget authority identified
+4. Timeline within the next 1-2 quarters
+5. Current platform adoption is strong in existing modules
+
+**Output:** Qualified or disqualified, with reasoning documented.
+
+</Expandable>
+
+<Expandable title="Stage 3: Build Business Case" defaultOpen={false}>
+
+**Duration:** 1-2 weeks
+
+**CSM actions:**
+- Gather ROI data from the customer's current deployment
+- Research peer benchmarks (how do similar customers benefit from this module?)
+- Build a value narrative: "You are achieving X today. With Y, you could achieve Z."
+- Prepare a 1-page business case with projected outcomes, investment, and timeline
+
+**Output:** Internal business case reviewed with your manager and the account executive.
+
+</Expandable>
+
+<Expandable title="Stage 4: Propose to Customer" defaultOpen={false}>
+
+**Duration:** 1-2 weeks
+
+**CSM actions:**
+- Present the expansion opportunity in the context of a QBR or strategic review (not a standalone sales meeting)
+- Lead with value delivered, then bridge to value possible
+- Use the conversation frameworks below to position the opportunity
+- Invite the account executive to join for commercial details if the customer expresses interest
+
+**Output:** Customer interest confirmed (or objections documented for future follow-up).
+
+</Expandable>
+
+<Expandable title="Stages 5-7: Negotiate, Onboard, Measure" defaultOpen={false}>
+
+**Negotiate and Close (1-4 weeks):**
+- Hand commercial negotiation to the account executive
+- CSM supports with value justification and technical scoping
+- Ensure the SOW includes success criteria for the new capability
+
+**Onboard New Capability (2-6 weeks):**
+- Treat expansion onboarding with the same rigor as initial implementation
+- Assign a solutions consultant if technical setup is required
+- Set 30/60/90-day milestones for the new capability
+
+**Measure and Report Value (Ongoing):**
+- Track the new capability's performance against projected outcomes
+- Report results in the next QBR
+- Use successful expansion as a proof point for future opportunities
+
+</Expandable>
+
+---
+
+### Upsell Paths
+
+<Expandable title="Path 1: Add Modules — Journeys" defaultOpen={true}>
+
+**Target customer:** Currently using Audience Builder and Destinations but activating audiences manually in downstream platforms.
+
+**Value proposition:** "You are building great audiences. Journeys lets you orchestrate multi-step, multi-channel campaigns directly from Zeotap, eliminating the manual handoff to your email, push, and ad platforms."
+
+**Proof point:** Customers using Journeys see an average 25% lift in conversion rates compared to single-channel activation.
+
+**Positioning conversation:**
+- "I noticed you are syncing audiences to 4 different destinations. How much time does your team spend coordinating the timing and messaging across those channels?"
+- "What if you could set up a journey once and have Zeotap automatically sequence the touchpoints?"
+
+</Expandable>
+
+<Expandable title="Path 2: Add Modules — Audiences (Advanced)" defaultOpen={false}>
+
+**Target customer:** Using basic audience segmentation but not leveraging predictive traits, lookalike modeling, or AI-powered segment recommendations.
+
+**Value proposition:** "Your segmentation is solid. Advanced Audiences adds predictive scoring, lookalike expansion, and Ada AI recommendations so your team can find high-value segments they would never discover manually."
+
+**Proof point:** Predictive audiences outperform rule-based audiences by 40% on average in campaign response rate.
+
+</Expandable>
+
+<Expandable title="Path 3: Add Data Volume" defaultOpen={false}>
+
+**Target customer:** Approaching or exceeding their contracted event or profile volume.
+
+**Value proposition:** "Your data growth is a great sign — it means more teams and touchpoints are feeding the CDP. Let us right-size your plan so you get better per-unit economics and avoid overage charges."
+
+**Positioning conversation:**
+- "You are currently at 82% of your contracted volume, and your growth rate suggests you will exceed it within 6 weeks."
+- "Moving to the next tier reduces your cost per profile by 28% and gives you room to grow without worrying about caps."
+
+</Expandable>
+
+<Expandable title="Path 4: Add Regions" defaultOpen={false}>
+
+**Target customer:** Operating in one region but expanding internationally.
+
+**Value proposition:** "Multi-region deployment ensures data residency compliance and gives you localized identity resolution in each market. Customers expanding with Zeotap see 30% faster time-to-market in new regions compared to standing up a new CDP instance."
+
+</Expandable>
+
+<Expandable title="Path 5: Add Seats" defaultOpen={false}>
+
+**Target customer:** Other departments (analytics, CRM, product) want access to the CDP.
+
+**Value proposition:** "Adding seats for your analytics team means they can build their own audiences and access unified customer data without waiting for marketing to pull reports. This reduces your team's workload and gives analytics self-serve access."
+
+</Expandable>
+
+---
+
+### Cross-Sell Opportunities
+
+Cross-sell involves introducing products from the broader Zeotap ecosystem that the customer does not currently use.
+
+<ComparisonTable
+  headers={["Product", "What It Does", "Ideal Cross-Sell Target", "Positioning"]}
+  rows={[
+    ["ID+ (Universal Identity)", "Deterministic identity resolution across devices and channels", "Customers struggling with match rates or cross-device tracking", "Improve your destination match rates from 55% to 80%+ with deterministic identity"],
+    ["Zeotap Fuel (Data Enrichment)", "Third-party data enrichment to fill gaps in first-party profiles", "Customers with limited first-party data or narrow audience reach", "Enrich your profiles with 200+ attributes to build richer segments without collecting more data"],
+    ["Ada AI Copilot", "Natural language interface for audience building, insights, and recommendations", "Customers with non-technical marketing users or high audience volume", "Let your marketers build audiences in plain English and get AI-powered segment recommendations"]
+  ]}
+  highlightColumn={0}
+/>
+
+---
+
+### Expansion Conversation Frameworks
+
+<Callout type="important" title="You Are Not Selling — You Are Advising">
+The CSM's role in expansion is to surface opportunities and position value. You are a trusted advisor, not a salesperson. The moment a customer feels "sold to," trust erodes. Lead with their goals, bridge to capabilities, and let them pull toward the solution.
+</Callout>
+
+**Framework 1: The "What If" Bridge**
+
+Use after presenting QBR results:
+1. "Your audiences are performing well — 35% lift in campaign response rate."
+2. "What if you could extend that across the entire customer journey, not just the initial targeting?"
+3. "Journeys would let you do that. Want me to set up a 30-minute walkthrough with our solutions team?"
+
+**Framework 2: The Peer Benchmark**
+
+Use when the customer is not aware of what is possible:
+1. "I work with several [industry] customers at a similar stage."
+2. "The ones seeing the strongest results are using [module/product] to [specific outcome]."
+3. "Would it be helpful if I shared a case study and walked through how it might apply to your setup?"
+
+**Framework 3: The Proactive Alert**
+
+Use when you spot a data-driven signal:
+1. "I was reviewing your account and noticed [specific data point — volume growth, feature exploration, etc.]."
+2. "This usually means you are ready for [capability]."
+3. "I would hate for you to hit a ceiling. Can we discuss options during our next call?"
+
+---
+
+### QBR Structure for Surfacing Expansion
+
+The QBR is your most natural venue for expansion conversations because you are already presenting value.
+
+**Recommended QBR flow for expansion:**
+
+1. **Value delivered** (15 min) — Present metrics, ROI, achievements. Build confidence.
+2. **Usage review** (10 min) — Show what they use, what they do not use, and what is growing.
+3. **Gap analysis** (10 min) — "Here is what you could be doing but are not yet." This is where expansion lives.
+4. **Roadmap preview** (10 min) — Show upcoming features that align with their goals.
+5. **Strategic discussion** (15 min) — "Based on everything we have discussed, here is what I recommend for next quarter."
+
+<Callout type="tip" title="The 80/20 Rule for QBR Expansion">
+Spend 80% of the QBR on value delivered and customer success. Spend only 20% on forward-looking expansion. If the customer feels the meeting was a sales pitch, you have lost. If they feel it was a strategic review that happened to surface a smart next step, you have won.
+</Callout>
+
+---
+
+### Competitive Defensive Plays
+
+When a competitor approaches your customer, the instinct is to panic. Instead, follow a structured response.
+
+<ArchDiagram
+  title="Competitive Defense Protocol"
+  steps={[
+    { label: "Detect", detail: "Customer mentions competitor, RFI appears, or new vendor shows up in tech stack", icon: "🔍" },
+    { label: "Assess", detail: "Determine threat level: exploratory, active evaluation, or decision imminent", icon: "⚖️" },
+    { label: "Engage", detail: "Schedule strategic review, bring executive sponsor, present switching costs", icon: "🤝" },
+    { label: "Differentiate", detail: "Present capabilities the competitor cannot match: ID+, data quality, speed", icon: "🏆" },
+    { label: "Commit", detail: "Lock in with multi-year deal, expanded scope, or roadmap commitments", icon: "🔒" }
+  ]}
+/>
+
+<Expandable title="What to Say When a Customer Mentions a Competitor" defaultOpen={true}>
+
+**Do not:**
+- Badmouth the competitor
+- Panic and immediately offer discounts
+- Dismiss the competitor as irrelevant
+
+**Do:**
+- Ask what prompted the evaluation: "What problem are you trying to solve that you feel is not being addressed today?"
+- Listen carefully: the answer reveals either a genuine product gap or a perception gap
+- If it is a perception gap, address it with data and demos
+- If it is a genuine gap, acknowledge it honestly and share your roadmap timeline
+- Quantify switching costs: "Migrating your identity graph, re-implementing data pipelines, and retraining your team typically takes 6-9 months. Here is what you would lose during that transition."
+
+</Expandable>
+
+---
+
+### ROI Proof Points for Expansion Justification
+
+When asking a customer to invest more, you must prove the current investment is working. Keep a library of proof points organized by category.
+
+<ComparisonTable
+  headers={["Category", "Metric", "Benchmark", "How to Calculate"]}
+  rows={[
+    ["Audience Quality", "Campaign response rate lift", "20-40% lift vs. non-CDP audiences", "Compare Zeotap-sourced audience performance vs. control"],
+    ["Match Rates", "Destination match rate", "65-80% average", "Pull from destination sync reports"],
+    ["Efficiency", "Time saved on audience building", "8-15 hours/week", "Customer self-report in QBR"],
+    ["Data Unification", "Profile unification rate", "70-85%", "Unified profiles / total profiles in CDP"],
+    ["Speed to Market", "Campaign launch time reduction", "50-70% faster", "Compare pre-Zeotap vs. post-Zeotap timelines"],
+    ["Revenue Impact", "ROAS improvement", "1.5-3x lift", "Customer-reported from ad platform dashboards"]
+  ]}
+  highlightColumn={2}
+/>
+
+---
+
+### Expansion Plays by Customer Maturity Stage
+
+Not every customer is ready for every expansion play. Match your approach to the customer's maturity.
+
+<ComparisonTable
+  headers={["Maturity Stage", "Timeline", "Characteristics", "Recommended Expansion Play", "Avoid"]}
+  rows={[
+    ["Onboarding (0-3 months)", "Month 1-3", "Still implementing, learning the platform", "None — focus on adoption", "Any expansion pitch (too early)"],
+    ["Adopting (3-6 months)", "Month 3-6", "Core use cases live, team trained", "Training add-ons, additional seats", "Complex module upsells"],
+    ["Optimizing (6-12 months)", "Month 6-12", "Seeing results, exploring advanced features", "Feature upsells (Journeys, Ada AI), volume tier", "Multi-year commits (wait for stronger proof)"],
+    ["Scaling (12-18 months)", "Month 12-18", "Strong ROI proven, multiple teams engaged", "Cross-sell (ID+, Fuel), multi-region, multi-year", "Nothing — this is the prime expansion window"],
+    ["Strategic (18+ months)", "Month 18+", "Platform is embedded in operations", "Enterprise agreements, new business units, global rollout", "Letting the account coast without growth"]
+  ]}
+  highlightColumn={3}
+/>
+
+<Callout type="warning" title="Timing Matters More Than Pitch Quality">
+The best expansion pitch delivered at the wrong maturity stage will fail. A customer in month 2 of onboarding does not want to hear about adding modules. A customer in month 14 with proven ROI is waiting for you to suggest the next step. Read the stage, then choose the play.
+</Callout>
+
+---
+
+### Expansion Metrics for CSMs
+
+Track these metrics to measure your expansion effectiveness:
+
+<StatCard stats={[
+  { value: "15%+", label: "Annual Expansion Rate Target", color: "#10b981" },
+  { value: "90 days", label: "Avg Signal-to-Close Cycle", color: "#3b82f6" },
+  { value: "60%+", label: "Expansion Pipeline Conversion", color: "#a855f7" },
+  { value: "3+", label: "Qualified Opportunities per Quarter", color: "#f59e0b" }
+]} />
+
+**Monthly self-assessment:**
+- How many expansion signals did I detect this month?
+- How many qualified opportunities are in my pipeline?
+- What is my average cycle time from signal to close?
+- Am I distributing expansion efforts across my portfolio or focusing on the same few accounts?
+
+---
+
+**Next up:** Vertical Success Guides — tailoring your approach by industry →

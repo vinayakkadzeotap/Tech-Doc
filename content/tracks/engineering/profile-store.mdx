@@ -49,6 +49,29 @@ The Profile Store is a **Maven multi-module project** (`com.zeotap:profile-store
 
 ### Storage Architecture
 
+<MermaidDiagram
+  title="Multi-Tier Profile Storage"
+  chart={`
+graph TB
+    EVENT["📨 Profile Update Event"] --> BT["🔥 BigTable\n< 10ms p99\nReal-time reads/writes"]
+    EVENT --> DL["📦 Delta Lake\nACID transactions\nBatch merge (Spark)"]
+    DL -->|"Streaming inserts"| BQ["📊 BigQuery\nAnalytical queries\nReports & insights"]
+    DL -->|"Archival"| GCS["❄️ GCS\nData lake\nCold storage"]
+    BT -->|"Top 10% profiles"| REDIS["⚡ Redis Cache\nTTL: 15min\n~40% read reduction"]
+
+    REDIS -.->|"Cache miss"| BT
+    BQ -.->|"Ad-hoc analysis"| ANALYST["👩‍💻 Analyst"]
+    BT -.->|"Real-time API"| APP["🌐 Applications"]
+
+    style BT fill:#1e293b,stroke:#ef4444,color:#e2e8f0
+    style DL fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style BQ fill:#1e293b,stroke:#a855f7,color:#e2e8f0
+    style REDIS fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style GCS fill:#1e293b,stroke:#64748b,color:#e2e8f0
+  `}
+  caption="Hot (BigTable) → Warm (BigQuery) → Cold (GCS) tiered storage with Redis caching"
+/>
+
 <ArchDiagram
   title="Profile Storage Layers"
   steps={[

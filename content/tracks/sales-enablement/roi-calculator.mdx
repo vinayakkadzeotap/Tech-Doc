@@ -1,0 +1,452 @@
+---
+title: "ROI & Business Case Builder"
+description: How to build a compelling CDP business case for CFOs with ROI calculation frameworks, benchmark data by vertical, and a ready-to-use one-page proposal template
+icon: 💰
+estimatedMinutes: 25
+contentType: reference
+trackId: sales-enablement
+order: 10
+---
+
+## 💰 ROI & Business Case Builder
+
+The most common reason CDP deals stall is not lack of interest from marketing — it is inability to justify the investment to finance. This module gives you the frameworks, benchmarks, and templates to help your champion build a business case that survives CFO scrutiny. A strong business case transforms the CDP from a "marketing wish" into a "business imperative" by quantifying value in the language that finance teams speak: revenue uplift, cost reduction, and risk mitigation.
+
+<KeyConcepts concepts={["ROI Framework", "Revenue Uplift", "Cost Savings", "Risk Reduction", "Business Case Template", "CFO Language", "Vertical Benchmarks", "Payback Period"]} />
+
+---
+
+## The CFO's Perspective
+
+<Callout type="important" title="Why Business Cases Fail">
+Most CDP business cases fail because they are written by marketers for marketers. They emphasize capabilities ("unified customer view," "real-time segmentation") instead of outcomes ("revenue growth," "cost reduction," "regulatory risk mitigation"). The CFO does not care what a CDP does — they care what it is worth.
+</Callout>
+
+### What CFOs Need to See
+
+1. **Clear financial impact** — revenue gains, cost savings, and risk reduction quantified in euros with defensible assumptions
+2. **Payback period** — how quickly does the investment pay for itself? CFOs want to see payback within 12-18 months
+3. **Sensitivity analysis** — what happens if results are 50% of what you project? Is the investment still justified?
+4. **Opportunity cost** — what happens if they do not invest? What is the cost of inaction?
+5. **Comparable evidence** — what have other companies in their industry achieved?
+
+---
+
+## The ROI Calculation Framework
+
+<StatCard stats={[
+  { value: "Revenue Uplift", label: "Better targeting → Higher conversion → More revenue", color: "#10b981" },
+  { value: "Cost Savings", label: "Consolidation + Efficiency + Waste Reduction", color: "#3b82f6" },
+  { value: "Risk Reduction", label: "Compliance + Audit Readiness + Breach Prevention", color: "#a855f7" },
+  { value: "Total Investment", label: "Platform + Implementation + Operations", color: "#f59e0b" }
+]} />
+
+### The Master Formula
+
+```
+CDP ROI = (Revenue Uplift + Cost Savings + Risk Reduction) / Total Investment
+```
+
+A strong business case achieves an ROI of 3-5x in year one and 5-10x by year three. Below, we break down each component with calculation methods and benchmark data.
+
+<MermaidDiagram
+  title="ROI Calculation Flow"
+  chart={`
+graph TD
+    A[Total Investment\nPlatform + Implementation + Operations] --> B[ROI Analysis]
+
+    C[Revenue Uplift\nMatch Rate Improvement\nConversion Increase\nLTV Growth] --> B
+    D[Cost Savings\nMartech Consolidation\nEngineering Time\nAd Waste Reduction] --> B
+    E[Risk Reduction\nGDPR Compliance\nAudit Readiness\nBreach Prevention] --> B
+
+    B --> F{ROI Calculation\nBenefits / Investment}
+    F -->|3-5x Year 1| G[Strong Business Case\nCFO Approval]
+    F -->|5-10x Year 3| H[Strategic Investment\nMulti-Year Commitment]
+
+    style A fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style B fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style C fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style D fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style E fill:#1e293b,stroke:#a855f7,color:#e2e8f0
+    style F fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style G fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style H fill:#1e293b,stroke:#10b981,color:#e2e8f0
+  `}
+  caption="The business case rests on three pillars: revenue uplift, cost savings, and risk reduction, weighed against total investment including platform, implementation, and ongoing operations."
+/>
+
+---
+
+## Pillar 1: Revenue Uplift Model
+
+Revenue uplift comes from the CDP's ability to improve targeting accuracy, which drives higher conversion rates across acquisition and retention campaigns.
+
+### The Revenue Uplift Chain
+
+<ArchDiagram
+  title="Revenue Uplift: From Match Rates to Revenue"
+  steps={[
+    { label: "Improved Match Rates", detail: "UCID resolves more identities across channels — typical improvement from 35-45% to 65-80%", icon: "🔗" },
+    { label: "Better Targeting", detail: "Unified profiles enable micro-segmentation based on complete customer behavior, not partial data", icon: "🎯" },
+    { label: "Higher Conversion", detail: "Relevant offers to the right people at the right time — conversion rates improve 25-40%", icon: "📈" },
+    { label: "Increased LTV", detail: "Personalized cross-sell and retention programs grow customer lifetime value by 20-35%", icon: "💎" },
+    { label: "Revenue Growth", detail: "Combined impact: 8-15% revenue uplift on marketing-influenced revenue within 12 months", icon: "💰" }
+  ]}
+/>
+
+### How to Calculate Revenue Uplift
+
+<Expandable title="Step-by-Step Revenue Calculation" defaultOpen={true}>
+
+**Step 1: Determine the marketing-influenced revenue base.**
+This is the total revenue that is directly influenced by marketing campaigns — typically 30-60% of total revenue depending on the business model.
+
+*Example: A retailer with €200M annual revenue estimates that €100M is marketing-influenced.*
+
+**Step 2: Estimate the conversion rate improvement.**
+Based on Zeotap benchmarks, unified customer data typically improves campaign conversion rates by 25-40%. Use the conservative end for the business case.
+
+*Example: Current conversion rate is 2.5%. With CDP, projected improvement is 25%, bringing it to 3.125%.*
+
+**Step 3: Calculate the incremental revenue.**
+Multiply the marketing-influenced revenue by the percentage improvement.
+
+*Example: €100M x (3.125% - 2.5%) / 2.5% = €100M x 25% improvement = €25M in incremental marketing-influenced revenue? No — this is the conversion rate improvement, not total revenue improvement. The actual calculation is: if 2.5% of marketing-touched prospects convert at current rates, and that produces €100M, then a 25% improvement in conversion means €25M incremental revenue.*
+
+**Step 4: Apply a confidence discount.**
+For the business case, discount the projected uplift by 40-50% to account for implementation ramp-up and variable results.
+
+*Example: €25M x 50% confidence = €12.5M projected revenue uplift.*
+
+**Step 5: Add LTV improvement.**
+Better personalization and retention increase customer lifetime value. Apply a 15-25% LTV increase to the existing customer base value.
+
+*Example: Existing customer base contributes €150M annually. LTV improvement of 15% on retained customers (85% retention) = €150M x 85% x 15% = €19.1M additional lifetime value contribution (amortized over 3 years = €6.4M per year).*
+
+**Total Revenue Uplift: €12.5M + €6.4M = €18.9M annually (conservative estimate).**
+
+</Expandable>
+
+---
+
+## Pillar 2: Cost Savings Model
+
+Cost savings come from three sources: martech stack consolidation, reduced engineering time for data integration, and elimination of wasted advertising spend.
+
+### Cost Saving Categories
+
+<Expandable title="Martech Stack Consolidation" defaultOpen={true}>
+
+**The Opportunity:** Most enterprises run 15-30 marketing technology tools, many with overlapping capabilities. A CDP often replaces or reduces the need for standalone tools: separate audience builders, data management platforms (DMPs), customer data integration tools, identity resolution point solutions, and basic analytics platforms.
+
+**How to Calculate:**
+1. List all current marketing data tools and their annual costs
+2. Identify tools that the CDP replaces entirely (full cost saving)
+3. Identify tools where the CDP reduces usage (partial cost saving)
+4. Sum the savings
+
+**Typical Savings:**
+- 3-5 tools fully replaced: €100K-500K per year depending on tool cost
+- 2-4 tools with reduced usage: €50K-200K per year
+- **Total typical martech consolidation savings: €150K-700K per year**
+
+</Expandable>
+
+<Expandable title="Engineering Time Reduction" defaultOpen={false}>
+
+**The Opportunity:** Data engineering teams spend significant time building and maintaining custom data pipelines, identity matching logic, and integrations between marketing tools. A CDP with pre-built connectors and native identity resolution reduces this burden.
+
+**How to Calculate:**
+1. Estimate FTE hours currently spent on marketing data infrastructure (pipeline maintenance, integration debugging, custom segment queries, ad-hoc data pulls for marketing)
+2. Estimate the percentage of that time the CDP eliminates (typically 40-60%)
+3. Multiply by fully loaded engineering cost
+
+**Typical Savings:**
+- 2-4 FTE equivalents freed from marketing data work: €200K-600K per year
+- These engineers are not laid off — they are redirected to higher-value product and infrastructure work
+- **Total typical engineering time savings: €200K-600K per year**
+
+</Expandable>
+
+<Expandable title="Wasted Ad Spend Reduction" defaultOpen={false}>
+
+**The Opportunity:** Without unified suppression lists, companies serve acquisition ads to existing customers. Without accurate targeting, campaigns reach irrelevant audiences. Without proper attribution, budget flows to underperforming channels.
+
+**How to Calculate:**
+1. Determine total annual paid media spend
+2. Estimate the percentage of spend wasted on existing customers (typically 20-35%)
+3. Estimate the percentage of spend on irrelevant audiences beyond existing customers (typically 10-20%)
+4. Calculate the total waste and estimate what percentage the CDP can eliminate (typically 60-80% of identified waste)
+
+**Typical Savings:**
+- Company spending €10M on paid media with 25% waste = €2.5M wasted
+- CDP eliminates 70% of waste = €1.75M saved
+- **Total typical ad waste savings: 10-20% of total paid media budget**
+
+</Expandable>
+
+<StatCard stats={[
+  { value: "€150-700K", label: "Annual Martech Consolidation Savings", color: "#3b82f6" },
+  { value: "€200-600K", label: "Annual Engineering Time Savings", color: "#10b981" },
+  { value: "10-20%", label: "Paid Media Waste Reduction", color: "#a855f7" },
+  { value: "6-14 months", label: "Typical Payback Period", color: "#f59e0b" }
+]} />
+
+---
+
+## Pillar 3: Risk Reduction Model
+
+Risk reduction is the hardest pillar to quantify but often the most compelling for CFOs in regulated industries. The value is calculated as the reduction in expected loss from regulatory fines, data breaches, and operational disruptions.
+
+<Expandable title="GDPR Compliance Risk" defaultOpen={true}>
+
+**The Risk:** GDPR fines can reach €20M or 4% of global annual turnover, whichever is higher. The average GDPR fine in 2024-2025 was €1.5M, but several exceeded €100M. Beyond fines, enforcement actions require costly remediation programs.
+
+**How to Calculate Risk Reduction:**
+1. Estimate the probability of a material GDPR enforcement action per year (for companies without centralized consent management: 3-8%)
+2. Estimate the expected cost of an enforcement action (fine + remediation + legal costs + reputational damage): €2-20M depending on company size
+3. Calculate the expected annual loss: probability x cost
+4. Estimate the risk reduction from implementing a CDP with proper consent orchestration (typically reduces probability by 60-80%)
+
+**Example:**
+- Probability without CDP: 5%. Expected cost: €5M. Expected annual loss: €250K.
+- With CDP: probability reduced to 1.5%. Expected annual loss: €75K.
+- **Risk reduction value: €175K per year.**
+
+*Note: For heavily regulated industries (BFSI, healthcare), these numbers can be 3-5x higher.*
+
+</Expandable>
+
+<Expandable title="Audit Readiness Value" defaultOpen={false}>
+
+**The Risk:** Regulatory audits and internal compliance reviews consume significant staff time when data processing records are distributed across multiple systems.
+
+**How to Calculate:**
+1. Estimate annual time spent on audit preparation and response for customer data processing (typically 200-500 hours across compliance, legal, and IT teams)
+2. Multiply by blended fully loaded cost per hour
+3. Estimate the reduction with centralized CDP audit trails (typically 60-70%)
+
+**Example:**
+- 400 hours per year at €150/hour fully loaded = €60K annual audit cost
+- 65% reduction with CDP = **€39K saved annually**
+
+</Expandable>
+
+<Expandable title="Data Breach Impact Mitigation" defaultOpen={false}>
+
+**The Risk:** Data breaches cost an average of €4.3M per incident globally (IBM Cost of a Data Breach Report). A CDP does not prevent breaches, but it reduces exposure by centralizing data governance, minimizing unnecessary data copies across systems, and enabling faster response (you can identify exactly what data was affected because it is in one place).
+
+**How to Calculate:**
+1. Estimate breach probability (industry average: 2-5% per year for significant breaches)
+2. Estimate the cost reduction from having centralized data governance (typically 15-25% reduction in breach impact through faster response, reduced data sprawl, and better access controls)
+3. Calculate expected annual benefit
+
+**Example:**
+- Breach probability: 3%. Average cost: €4M. Expected annual loss: €120K.
+- 20% impact reduction with CDP = **€24K expected annual benefit.**
+
+</Expandable>
+
+---
+
+## Total Investment Calculation
+
+<Expandable title="What to Include in Total Investment" defaultOpen={true}>
+
+**Year 1:**
+- Zeotap platform license: varies by profile volume (request current pricing from sales ops)
+- Implementation services: typically 15-25% of license cost for standard deployment
+- Internal resources: 0.5-1 FTE for project management and data team involvement during implementation (3-4 months)
+- Training: included in Zeotap implementation but budget for internal time
+
+**Year 2+:**
+- Zeotap platform license (annual renewal)
+- Internal operations: 0.25-0.5 FTE for ongoing CDP management
+- Optimization and expansion: budget for new use cases, additional data sources, or destinations
+
+**What NOT to Include:**
+- Do not include existing data infrastructure costs that would be paid regardless
+- Do not include sunk costs from prior projects
+- Do not include opportunity costs of the evaluation process itself
+
+</Expandable>
+
+---
+
+## Benchmark Data by Vertical
+
+<ComparisonTable
+  headers={["Metric", "Retail", "Banking/Financial Services", "Telecommunications", "Media/Publishing"]}
+  rows={[
+    ["Typical Year 1 ROI", "3-5x", "2-4x", "3-6x", "2-4x"],
+    ["Payback Period", "6-10 months", "8-14 months", "6-10 months", "8-12 months"],
+    ["Revenue Uplift", "8-15%", "5-12%", "10-18%", "6-12%"],
+    ["Ad Spend Savings", "15-25%", "8-15%", "10-20%", "12-22%"],
+    ["Martech Consolidation", "3-5 tools", "2-4 tools", "3-5 tools", "2-4 tools"],
+    ["Engineering FTE Freed", "2-3 FTE", "1-3 FTE", "2-4 FTE", "1-3 FTE"],
+    ["Churn Reduction", "10-20%", "8-15%", "25-40%", "15-25%"],
+    ["Primary ROI Driver", "Ad efficiency + LTV", "Cross-sell + compliance", "Churn reduction + ARPU", "Subscription retention"],
+    ["Typical Deal Size (Annual)", "€150-400K", "€200-600K", "€200-500K", "€100-300K"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="info" title="Using Benchmark Data">
+These benchmarks represent aggregated results from Zeotap deployments and industry analyst data. Use them as directional guidance, not guarantees. Always customize the ROI model with the prospect's actual numbers — their revenue, their ad spend, their team size, their current tools. A business case built on their data is 10x more credible than one built on industry averages.
+</Callout>
+
+---
+
+## The 1-Page Business Case Template
+
+<Callout type="tip" title="Why One Page Matters">
+CFOs review dozens of investment proposals. The proposals that get approved are the ones that communicate value clearly and concisely. Your champion needs a single page they can put in front of the CFO that answers three questions: What is it? What is it worth? What does it cost?
+</Callout>
+
+<Expandable title="Template: The 1-Page CDP Business Case" defaultOpen={true}>
+
+**Use this structure when helping your champion write their internal business case. Fill in the brackets with the prospect's actual data.**
+
+---
+
+**BUSINESS CASE: Customer Data Platform Investment**
+
+**The Problem:**
+We currently operate [X] disconnected customer data systems. This fragmentation causes [quantified problem 1: e.g., €X in wasted ad spend on existing customers], [quantified problem 2: e.g., X days to create and activate a customer segment], and [quantified problem 3: e.g., X hours per month on manual DSAR fulfillment]. Our customer data infrastructure limits our ability to [strategic goal: e.g., deliver personalized omnichannel experiences / reduce churn / increase cross-sell].
+
+**The Solution:**
+A Customer Data Platform (CDP) that unifies all customer data sources into a single, privacy-compliant profile and enables real-time segmentation and activation across marketing channels. Following a competitive evaluation, we recommend Zeotap based on [2-3 differentiators relevant to this buyer].
+
+**Financial Impact (Year 1):**
+
+| Category | Conservative Estimate | Aggressive Estimate |
+|----------|----------------------|---------------------|
+| Revenue Uplift | €[X] | €[X] |
+| Ad Spend Savings | €[X] | €[X] |
+| Martech Consolidation | €[X] | €[X] |
+| Engineering Time Savings | €[X] | €[X] |
+| Risk Reduction | €[X] | €[X] |
+| **Total Benefits** | **€[X]** | **€[X]** |
+| Total Investment | €[X] | €[X] |
+| **Net Value** | **€[X]** | **€[X]** |
+| **ROI** | **[X]x** | **[X]x** |
+| **Payback Period** | **[X] months** | **[X] months** |
+
+**Sensitivity:**
+Even at 50% of the conservative estimate, the investment pays back within [X] months and delivers [X]x ROI.
+
+**Cost of Inaction:**
+Every month without a CDP costs approximately €[X] in wasted ad spend, €[X] in lost revenue from poor targeting, and maintains regulatory exposure of €[X] in expected annual compliance risk.
+
+**Recommendation:**
+Approve a [X]-month Proof of Concept focused on [primary use case] with [measurable success criterion]. Total POC investment: €[X]. If the POC meets success criteria, proceed with full deployment targeting [go-live date].
+
+---
+
+</Expandable>
+
+---
+
+## Building the Business Case: Step by Step
+
+<ArchDiagram
+  title="Business Case Development Process"
+  steps={[
+    { label: "Discovery Data", detail: "Collect the prospect's actual numbers: revenue, ad spend, martech costs, team sizes, churn rates, current tools", icon: "🔍" },
+    { label: "Pain Quantification", detail: "Work with your champion to put euro values on each pain point they identified in discovery", icon: "💶" },
+    { label: "ROI Modeling", detail: "Apply the framework with their numbers. Use conservative estimates. Show sensitivity at 50% of projections", icon: "📊" },
+    { label: "Template Completion", detail: "Help your champion fill in the 1-page template with their specific data and language", icon: "📝" },
+    { label: "Champion Coaching", detail: "Prepare your champion to present the case — anticipate CFO questions and prepare answers", icon: "🎯" },
+    { label: "CFO Meeting Support", detail: "Offer to join the CFO meeting as a technical resource, or provide a recorded walkthrough", icon: "🤝" }
+  ]}
+/>
+
+---
+
+## How to Present ROI to Different Stakeholders
+
+<Expandable title="For the CFO" defaultOpen={true}>
+
+**Lead with:** Net financial impact and payback period.
+
+**Emphasize:** Conservative estimates, sensitivity analysis, cost of inaction, comparison to alternative investments.
+
+**Avoid:** Marketing jargon, feature descriptions, technology architecture. The CFO does not need to know what a UCID is — they need to know that it saves €2M in ad waste.
+
+**Sample opening:** "This investment delivers a conservative 3.2x ROI in the first year with an 8-month payback period. Even if we achieve only half of the projected benefits, the investment pays back within 14 months. Meanwhile, every month of delay costs us approximately €180K in quantifiable waste."
+
+</Expandable>
+
+<Expandable title="For the CMO" defaultOpen={false}>
+
+**Lead with:** Capability unlocks and competitive advantage.
+
+**Emphasize:** What becomes possible that is currently impossible — real-time personalization, true omnichannel orchestration, AI-driven insights. Connect each capability to a revenue or efficiency outcome.
+
+**Avoid:** Overly technical implementation details. The CMO cares about what the team can achieve, not how the data pipelines work.
+
+**Sample opening:** "This platform gives your team the ability to build and activate a customer segment in minutes instead of weeks, personalize across every channel based on the complete customer profile, and predict which customers are about to churn before they show obvious signs. Based on benchmark data from similar companies, this translates to a 12% improvement in marketing-driven revenue."
+
+</Expandable>
+
+<Expandable title="For the CTO" defaultOpen={false}>
+
+**Lead with:** Engineering efficiency and architecture simplification.
+
+**Emphasize:** Reduction in custom pipeline maintenance, pre-built connectors that eliminate integration work, data governance that reduces compliance engineering burden. Show the total cost of ownership comparison between building internally and buying the CDP.
+
+**Avoid:** Oversimplifying the technology. CTOs appreciate honest technical detail and will respect you more for acknowledging complexity than for hiding it.
+
+**Sample opening:** "Your data engineering team currently spends an estimated 3 FTE-equivalents maintaining marketing data pipelines and custom integrations. This platform replaces those custom pipelines with managed connectors, gives marketing self-service segmentation so they stop filing engineering tickets, and centralizes identity resolution that your team currently maintains across three different systems."
+
+</Expandable>
+
+---
+
+## Common Business Case Objections
+
+<Expandable title="'These ROI numbers seem too good to be true'" defaultOpen={true}>
+
+**Response:** "I understand the skepticism — and I would be concerned if you were not skeptical. Let me address this directly. First, these are conservative estimates — we applied a 50% discount to the benchmark data. Second, I have built the sensitivity analysis to show that even at half of these conservative projections, the investment still pays back within [X] months. Third, I would recommend we structure a Proof of Concept with specific, measurable success criteria so you can validate these projections with your own data before committing to a full deployment. Would you like to define the success metrics together?"
+
+</Expandable>
+
+<Expandable title="'We cannot justify this spend right now — budgets are tight'" defaultOpen={false}>
+
+**Response:** "I hear you, and I want to reframe the conversation slightly. This is not discretionary spending — it is an investment that reduces existing costs. You are currently spending €[X] on ad waste that the CDP eliminates, €[X] on engineering time maintaining custom pipelines, and €[X] on tools that the CDP consolidates. The net cost of the CDP after accounting for these savings is actually €[X], not the sticker price. In a tight budget environment, investments that pay for themselves within months are exactly the kind of spend that should get approved. The question is not 'can we afford this?' — it is 'can we afford not to do this while competitors gain an advantage?'"
+
+</Expandable>
+
+<Expandable title="'Can we build this ourselves?'" defaultOpen={false}>
+
+**Response:** "You absolutely could build a CDP internally, and some companies have tried. Let me share what we have seen from those efforts. A typical internal CDP build requires 6-10 engineers for 12-18 months — that is €1.5-3M in fully loaded cost before you have a functioning system. Then you need ongoing maintenance: 3-5 FTEs permanently dedicated to the platform. You also miss the pre-built connectors, the identity resolution algorithms, and the AI models that Zeotap has developed over years with dozens of enterprise customers. Most companies that attempt an internal build either abandon it after 18 months or end up with a system that is significantly less capable than a commercial CDP. We have actually won several deals from companies that tried to build internally and realized the TCO was 3-4x higher than buying."
+
+</Expandable>
+
+---
+
+## ROI Tracking Post-Implementation
+
+<Callout type="success" title="Proving ROI After Purchase">
+The business case does not end at purchase. Track and report actual ROI quarterly to build internal champions, justify renewal, and expand the deployment. Use these metrics to demonstrate ongoing value.
+</Callout>
+
+**Metrics to Track Quarterly:**
+
+1. **Match rate improvement** — baseline vs. current identity resolution rate
+2. **Segment activation speed** — time from segment creation to activation (before vs. after)
+3. **Campaign performance lift** — conversion rates on CDP-powered campaigns vs. pre-CDP baseline
+4. **Ad spend efficiency** — suppression savings and targeting improvement
+5. **Engineering hours saved** — tickets and pipeline maintenance hours redirected
+6. **Compliance metrics** — DSAR fulfillment time, consent propagation speed
+7. **Tool consolidation** — tools decommissioned and costs saved
+
+---
+
+## Key Takeaways for Business Case Conversations
+
+1. **Start collecting numbers early** — during discovery, capture the data you need for the business case: revenue, ad spend, team sizes, tool costs, churn rates. Every number you collect in discovery makes the business case stronger.
+2. **Build the case with the champion, not for them** — the champion must own the business case internally. Your role is to provide the framework, benchmarks, and guidance. They fill in their numbers and present in their language.
+3. **Always include sensitivity** — showing that the investment works even at 50% of projections builds more credibility than optimistic projections.
+4. **Quantify the cost of inaction** — the most powerful number in any business case is the monthly cost of doing nothing. Frame delay as a measurable loss.
+5. **Propose a POC as the bridge** — if the full investment is too large to approve at once, propose a time-boxed POC with success criteria that, when met, trigger full deployment approval.

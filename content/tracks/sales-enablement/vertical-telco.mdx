@@ -1,0 +1,327 @@
+---
+title: "Vertical: Telecommunications"
+description: Telco-specific data landscape, use cases, demo flows, KPIs, discovery questions, and competitive positioning for selling Zeotap to telecommunications buyers
+icon: 📡
+estimatedMinutes: 30
+contentType: reference
+trackId: sales-enablement
+order: 9
+---
+
+## 📡 Vertical: Telecommunications
+
+Telecommunications is a uniquely data-rich vertical. Telcos sit on a goldmine of behavioral, transactional, and network data — yet most struggle to convert this data into customer intelligence that drives retention, upsell, and lifetime value. The industry faces structural challenges: commoditized products, thin margins, high churn, and regulatory complexity. A CDP that can unify telco data assets and convert them into actionable segments offers transformative value. This module equips you to navigate the telco landscape and position Zeotap as the intelligence layer that modern operators need.
+
+<KeyConcepts concepts={["Churn Prediction", "ARPU Optimization", "Plan Migration", "Bundle Recommendations", "Prepaid-to-Postpaid Conversion", "Network Data", "Subscriber Lifecycle"]} />
+
+---
+
+## The Telco Data Landscape
+
+Telcos possess one of the richest data ecosystems of any industry. Understanding these data sources — and why they remain siloed — is critical to having credible conversations with telco buyers.
+
+<Expandable title="Network Data" defaultOpen={true}>
+
+**What It Includes:** Cell tower connections, data usage volumes, voice call patterns, SMS activity, roaming events, network quality metrics (latency, dropped calls, coverage gaps), device type and OS.
+
+**Why It Matters:** Network data reveals actual usage behavior in granular detail. A customer who consistently hits their data cap by day 20 of the billing cycle is a prime candidate for a plan upgrade. A customer whose network quality has degraded (perhaps due to a tower issue in their area) is at elevated churn risk — not because of the product, but because of the experience. Network data is the richest behavioral signal a telco has, but it is almost always locked in the network engineering team's systems with no connection to marketing.
+
+**Zeotap's Role:** Ingest aggregated network usage data (not raw traffic — that raises privacy concerns) into the CDP, enriching customer profiles with usage patterns, device information, and experience quality indicators.
+
+</Expandable>
+
+<Expandable title="Billing and Financial Data" defaultOpen={false}>
+
+**What It Includes:** Monthly bill amounts, payment history, overdue status, plan type, add-on subscriptions, top-up frequency (prepaid), international calling spend, roaming charges.
+
+**Why It Matters:** Billing data reveals financial relationship health. Customers who call to dispute charges are showing friction. Customers who consistently pay late may be on a plan they cannot afford — a targeted downgrade offer might retain them. Prepaid customers with high top-up frequency and consistent usage are prime candidates for postpaid conversion.
+
+**Zeotap's Role:** Ingest billing data to enrich profiles with financial behavior attributes. Combine with usage data to identify plan optimization opportunities and churn risk indicators.
+
+</Expandable>
+
+<Expandable title="CRM and Customer Service Data" defaultOpen={false}>
+
+**What It Includes:** Contact center interactions (call logs, chat transcripts, complaint records), NPS survey responses, store visit records, contract status (tenure, renewal date, early termination fee), customer tier.
+
+**Why It Matters:** Customer service interactions are the strongest leading indicator of churn. A customer who has called twice about the same issue in 30 days is far more likely to churn than one who has never contacted support. Contract renewal dates are critical trigger points — customers are most receptive to offers (and most vulnerable to competitor poaching) in the 90 days before contract expiration.
+
+**Zeotap's Role:** Ingest CRM events as real-time signals. Combine service interactions with usage and billing data to build comprehensive churn risk scores. Trigger proactive retention campaigns based on service sentiment changes.
+
+</Expandable>
+
+<Expandable title="App Usage and Digital Behavior" defaultOpen={false}>
+
+**What It Includes:** Self-service app sessions, feature usage (bill check, data usage monitor, plan comparison, store locator), website browsing behavior (especially plan comparison pages), email and push notification engagement.
+
+**Why It Matters:** Digital behavior signals intent. A customer who repeatedly visits the plan comparison page on the app is actively considering a change — whether that is an upgrade, a downgrade, or a switch to a competitor. A customer who stopped opening the app after years of regular usage may have psychologically disengaged. These signals are available in real time but are typically siloed in the app analytics platform with no connection to CRM or marketing systems.
+
+**Zeotap's Role:** Capture app and web events in real time, enrich the unified profile with digital engagement patterns, and trigger automated campaigns based on intent signals.
+
+</Expandable>
+
+<Expandable title="Store Visit and Retail Data" defaultOpen={false}>
+
+**What It Includes:** Physical store visits, device trade-in history, accessory purchases, in-store support interactions, new line activations.
+
+**Why It Matters:** Store visits represent high-intent moments. A customer who walks into a store is actively seeking something — information, a device upgrade, or help with a problem. Connecting store visit data to the digital and network profile creates a complete picture of the customer's relationship with the operator.
+
+**Zeotap's Role:** Ingest store visit data alongside all other sources. Enable store associates to access the unified profile (with appropriate access controls) for informed, personalized in-store interactions.
+
+</Expandable>
+
+<StatCard stats={[
+  { value: "5-7", label: "Average Data Silos in a Telco", color: "#3b82f6" },
+  { value: "TB+", label: "Monthly Data Generated per Operator", color: "#a855f7" },
+  { value: "<15%", label: "Data Actually Used for Marketing", color: "#ef4444" },
+  { value: "30-60 days", label: "Typical Segment Creation Time Without CDP", color: "#f59e0b" }
+]} />
+
+---
+
+## Telco-Specific Use Cases
+
+<Expandable title="Use Case 1: Churn Prediction and Proactive Retention" defaultOpen={true}>
+
+**The Problem:** A European mobile operator has a monthly churn rate of 1.8%, representing approximately 90,000 lost subscribers per month. Their current churn model uses only billing data and contract status, catching customers too late — often after they have already ported their number to a competitor.
+
+**The Zeotap Solution:** Build a multi-signal churn model by unifying network data (degraded experience, reduced usage), billing data (payment issues, plan changes), CRM data (complaint frequency, negative NPS), and digital behavior (reduced app usage, competitor website visits detected via referral patterns). Ada AI scores every subscriber with a churn probability, updated daily. High-risk subscribers are automatically enrolled in retention campaigns through their preferred channel: a personalized offer via app notification, a proactive call from retention team, or a targeted email with a loyalty incentive.
+
+**The Business Impact:**
+- Churn prediction accuracy improves from 40% (billing-only model) to 75-85% (multi-signal model)
+- Early intervention catches at-risk subscribers 30-45 days earlier
+- Monthly churn rate decreases from 1.8% to 1.2-1.4%
+- Retention campaign ROI improves 3x because offers are targeted at genuinely at-risk subscribers, not sprayed at the entire base
+
+</Expandable>
+
+<Expandable title="Use Case 2: ARPU Optimization Through Plan Migration" defaultOpen={false}>
+
+**The Problem:** The operator's average revenue per user (ARPU) has been flat for three years at approximately 22 euros. Many customers are on legacy plans that do not match their current usage patterns — some are overpaying (and at risk of switching to a cheaper competitor), while others are underpaying (consistently exceeding their plan limits but tolerating overage charges instead of upgrading).
+
+**The Zeotap Solution:** Analyze usage data against plan entitlements for every subscriber. Identify four segments: (1) customers who consistently under-use their plan and would respond to a right-sized offer, (2) customers who consistently exceed their plan and should upgrade, (3) customers on legacy plans who would benefit from a modern plan, and (4) customers on competitor-matched plans who need a differentiated value proposition. Build personalized migration campaigns for each segment, activated through the optimal channel with the right message.
+
+**The Business Impact:**
+- ARPU increases by 8-12% as customers move to plans that match their actual usage
+- Customer satisfaction improves because customers feel they are on the right plan
+- Overage complaint volume decreases by 40%+
+- Revenue per campaign euro spent improves because offers are data-driven, not generic
+
+</Expandable>
+
+<Expandable title="Use Case 3: Prepaid-to-Postpaid Conversion" defaultOpen={false}>
+
+**The Problem:** The operator has 2 million prepaid subscribers representing their lowest ARPU segment. Industry data shows that converting a prepaid customer to postpaid increases their lifetime value by 3-5x. But current conversion campaigns target all prepaid subscribers equally, achieving a conversion rate below 1%.
+
+**The Zeotap Solution:** Score prepaid subscribers on conversion readiness using multiple signals: top-up frequency and consistency (indicates willingness to commit to regular payments), data usage trends (growing usage indicates unmet needs), device type (flagship device owners are more likely to convert), and digital engagement (customers who use the self-service app regularly show higher digital maturity). Build micro-segments of high-propensity converters and design tailored offers: device financing bundles for device upgraders, unlimited data plans for heavy users, family plans for customers with multiple prepaid lines.
+
+**The Business Impact:**
+- Conversion rate increases from sub-1% to 4-7%
+- Each converted subscriber generates 3-5x higher lifetime value
+- Prepaid base becomes a growth pipeline rather than a static low-value segment
+- Subscriber acquisition cost for postpaid effectively drops to near zero for converted customers
+
+</Expandable>
+
+<Expandable title="Use Case 4: Intelligent Bundle Recommendations" defaultOpen={false}>
+
+**The Problem:** The operator offers bundles combining mobile, broadband, TV, and home phone services. Cross-sell campaigns for bundles achieve poor response rates because they are based on product ownership alone — every mobile-only customer receives the same broadband cross-sell offer regardless of their likelihood to respond.
+
+**The Zeotap Solution:** Unify mobile usage data with broadband availability (does the customer live in a serviceable area?), household composition signals, content consumption patterns, and competitive intelligence (is the customer searching for broadband providers?). Build propensity models for each bundle component. Sequence offers based on the component with the highest conversion probability. For example, a mobile customer showing high streaming data usage who lives in a fiber-serviceable area receives a TV + broadband bundle offer, while a customer with multiple mobile lines in the same household receives a family plan consolidation offer.
+
+**The Business Impact:**
+- Bundle attach rate increases from 15% to 28-35%
+- Blended ARPU increases by 20-30% for bundled customers
+- Competitive insulation improves — bundled customers churn at less than half the rate of single-product customers
+- Marketing efficiency improves because offers match customer propensity
+
+</Expandable>
+
+<Expandable title="Use Case 5: Contract Renewal Lifecycle Management" defaultOpen={false}>
+
+**The Problem:** The operator loses 25% of customers at contract renewal. The current retention approach is reactive — a generic offer is presented when the customer calls to cancel. By that point, the customer has often already decided to leave.
+
+**The Zeotap Solution:** Build a 90-day pre-renewal engagement program. At 90 days before renewal, score the customer's retention risk based on their full profile (satisfaction, usage trends, service issues, competitive exposure). Segment into three tracks: (1) loyal customers who need a simple thank-you and a modest loyalty reward, (2) at-risk customers who need a compelling retention offer, (3) high-risk customers who need proactive outreach from a retention specialist. Execute the program across channels, with escalation triggers if engagement signals worsen during the 90-day window.
+
+**The Business Impact:**
+- Renewal retention rate improves from 75% to 85-90%
+- Retention cost decreases because loyal customers receive smaller incentives instead of everyone getting the maximum offer
+- Customer experience improves because engagement starts before frustration peaks
+
+</Expandable>
+
+---
+
+## Prepaid Churn Detection and Intervention Flow
+
+<MermaidDiagram
+  title="Prepaid Churn Detection and Intervention"
+  chart={`
+graph TD
+    A[Subscriber Behavior Signals\nTop-up Frequency / Data Usage / App Activity] -->|Real-Time Ingestion| B[Zeotap CDP\nUnified Subscriber Profile]
+    B -->|Ada AI Scoring| C{Churn Risk\nAssessment}
+    C -->|Low Risk| D[Standard Engagement\nRegular Offers and Content]
+    C -->|Medium Risk| E[Targeted Intervention\nPersonalized Bonus Data or Discount]
+    C -->|High Risk| F[Urgent Retention\nDirect Outreach + Premium Offer]
+    E -->|Engagement Monitored| G{Response\nDetected?}
+    F -->|Engagement Monitored| G
+    G -->|Yes - Positive| H[Conversion Opportunity\nPrepaid to Postpaid Offer]
+    G -->|No Response| I[Escalation\nRetention Specialist Call]
+    H -->|Accepted| J[Postpaid Subscriber\n3-5x LTV Increase]
+    I -->|Retained| D
+    I -->|Churned| K[Win-Back Queue\n30-60 Day Re-engagement]
+
+    style A fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style B fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style C fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style D fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style E fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style F fill:#1e293b,stroke:#ef4444,color:#e2e8f0
+    style G fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style H fill:#1e293b,stroke:#a855f7,color:#e2e8f0
+    style I fill:#1e293b,stroke:#ef4444,color:#e2e8f0
+    style J fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style K fill:#1e293b,stroke:#6366f1,color:#e2e8f0
+  `}
+  caption="Zeotap enables a multi-stage intervention flow that detects churn risk early, intervenes through the optimal channel, and converts retention moments into upsell opportunities."
+/>
+
+---
+
+## Demo Flow for Telco Prospects
+
+<ArchDiagram
+  title="Telco Demo Flow (50 Minutes)"
+  steps={[
+    { label: "Industry Context", detail: "5 min — Acknowledge the telco data challenge: rich data, deep silos, limited activation", icon: "📡" },
+    { label: "Data Ingestion", detail: "7 min — Show ingestion of network usage data, billing records, CRM events, and app behavior", icon: "📥" },
+    { label: "Identity Resolution", detail: "5 min — Demonstrate UCID linking a prepaid MSISDN to app profile to store visit to email subscriber", icon: "🔗" },
+    { label: "Churn Model", detail: "8 min — Show Ada AI churn scoring in action: multi-signal risk assessment with explanation of contributing factors", icon: "⚠️" },
+    { label: "Micro-Segmentation", detail: "7 min — Build a segment live: 'high-value subscribers with rising churn risk and contract renewal in 90 days'", icon: "🧠" },
+    { label: "Real-Time Triggers", detail: "5 min — Demonstrate an event-triggered campaign: subscriber hits data cap → instant upgrade offer via push notification", icon: "⚡" },
+    { label: "Activation", detail: "5 min — Push segments to CRM for retention team, to marketing automation for campaigns, and to ad platforms for win-back", icon: "🚀" },
+    { label: "KPI Dashboard", detail: "5 min — Show churn rate trends, ARPU movement, and segment performance metrics", icon: "📊" },
+    { label: "Q&A and Next Steps", detail: "3 min — Propose a POC focused on churn reduction", icon: "💬" }
+  ]}
+/>
+
+### Demo Data Preparation
+
+<Callout type="tip" title="Telco Demo Dataset">
+Load the telco demo dataset with 40,000 sample subscriber profiles including: mobile plan type and tier, monthly data/voice/SMS usage for past 6 months, billing amounts and payment history, customer service interaction logs, app session data, device type and age, contract start and renewal dates, and NPS survey responses. The dataset should show clear churn patterns: subscribers with declining usage, increasing service calls, and approaching contract end dates.
+</Callout>
+
+**Key moments to nail in the demo:**
+
+1. **The Churn Signal Stack** — Pick a single subscriber profile and walk through the churn indicators: "This subscriber's data usage dropped 40% last month, they called support twice about coverage issues, their contract expires in 45 days, and they visited the plan comparison page on the app three times this week. Our model scores them at 87% churn risk. Without the CDP, your retention team would not see this customer until they called to cancel."
+
+2. **The Real-Time Trigger** — Demonstrate a trigger-based campaign: "When this subscriber hits 90% of their data cap, they automatically receive a push notification offering a one-time 5GB data boost or an upgrade to the next plan tier. No manual campaign needed — the CDP detected the event and activated the response in under 60 seconds."
+
+3. **The ARPU Opportunity** — Show a segment of subscribers who consistently exceed their plan limits. "These 12,000 subscribers are paying for a 10GB plan but using 15-20GB every month. They are absorbing overage charges or throttling. A targeted upgrade campaign to this segment alone could increase ARPU by 3-4 euros per subscriber per month — that is over half a million euros in annual recurring revenue."
+
+---
+
+## Telco KPIs and Benchmarks
+
+<ComparisonTable
+  headers={["KPI", "Industry Average", "With CDP (Zeotap)", "Improvement"]}
+  rows={[
+    ["Monthly Churn Rate", "1.5-2.2%", "0.9-1.3%", "35-45% reduction"],
+    ["ARPU", "€20-28", "€24-34", "15-25% increase"],
+    ["Net Promoter Score (NPS)", "15-30", "35-50", "15-25 point improvement"],
+    ["Retention Campaign ROI", "2-3x", "6-9x", "3x improvement"],
+    ["Subscriber Acquisition Cost", "€80-150", "€55-100", "25-35% reduction"],
+    ["Prepaid-to-Postpaid Conversion", "0.5-1.0%", "4-7%", "5-8x improvement"],
+    ["Bundle Attach Rate", "12-18%", "28-35%", "2x+ improvement"],
+    ["Time to Segment Activation", "2-6 weeks", "Hours to 1 day", "90%+ faster"]
+  ]}
+  highlightColumn={2}
+/>
+
+---
+
+## Discovery Questions for Telco Buyers
+
+<Expandable title="Questions for the CTO / VP Technology" defaultOpen={true}>
+
+1. "How many separate systems hold customer data today? Can you trace a single subscriber's journey from acquisition through their entire lifecycle in one view?"
+2. "How does your network engineering team's data connect to your marketing systems? Is there any flow of network quality or usage data into customer engagement platforms?"
+3. "What is your current data latency from event detection to marketing activation? If a subscriber hits their data cap right now, how quickly can you reach them with a relevant offer?"
+4. "How much engineering time per quarter is dedicated to building and maintaining data pipelines between your BSS/OSS systems and marketing platforms?"
+5. "What is your strategy for first-party data in a cookieless future? How are you evolving your data assets for digital advertising without third-party identifiers?"
+
+</Expandable>
+
+<Expandable title="Questions for the CMO / VP Marketing" defaultOpen={false}>
+
+1. "What is your current churn prediction model based on? How far in advance can you identify at-risk subscribers, and what is the model's accuracy?"
+2. "When you run a retention campaign, how do you decide which offer goes to which subscriber? Is it the same offer for everyone, or is it personalized based on subscriber value and behavior?"
+3. "How do you currently identify prepaid subscribers who are good candidates for postpaid conversion? What conversion rate are you achieving?"
+4. "What percentage of your marketing campaigns are triggered by real-time events versus batch-scheduled? Where would real-time activation have the most impact?"
+5. "How do you measure the effectiveness of your marketing spend across channels? Can you attribute a subscriber's action back to a specific campaign touchpoint?"
+6. "What is the biggest gap between the customer insights you wish you had and what your current tools actually provide?"
+
+</Expandable>
+
+<Expandable title="Questions for the CFO / VP Finance" defaultOpen={false}>
+
+1. "What is the fully loaded cost of subscriber churn — not just lost revenue, but acquisition cost to replace, number portability processing, and win-back spend?"
+2. "How do you currently allocate marketing budget across acquisition versus retention? What data informs that split?"
+3. "If you could reduce churn by 0.5 percentage points, what would that mean in annual revenue preservation?"
+4. "How many marketing technology vendors are you paying today, and what is the total annual spend? How much of that could be consolidated?"
+5. "What is the cost of your current data infrastructure for marketing use cases — internal engineering, cloud compute, vendor licenses?"
+
+</Expandable>
+
+---
+
+## Competitive Landscape in Telco CDP
+
+<ComparisonTable
+  headers={["Capability", "SAS CI 360", "Salesforce CDP", "Adobe CDP", "Zeotap"]}
+  rows={[
+    ["Telco data model", "Strong — telco heritage", "Generic — requires customization", "Generic — requires customization", "Pre-built telco data models and connectors"],
+    ["Real-time activation", "Batch-oriented", "Near real-time with limitations", "Real-time with complex setup", "Real-time event triggers out of the box"],
+    ["AI/ML for churn", "Strong analytics heritage", "Einstein limited for telco", "Sensei requires configuration", "Ada AI with pre-trained telco models"],
+    ["Identity resolution", "Limited native capability", "Salesforce ecosystem only", "ECID-based, complex setup", "UCID cross-ecosystem matching"],
+    ["Privacy/GDPR", "European presence but legacy architecture", "US-born, GDPR adapted", "US-born, GDPR adapted", "European-born, GDPR-native"],
+    ["Implementation speed", "6-12 months", "4-8 months", "6-12 months", "6-10 weeks for core use cases"],
+    ["BSS/OSS integration", "Strong legacy connectors", "Limited native connectors", "Limited native connectors", "Pre-built connectors for major BSS/OSS vendors"],
+    ["Total cost of ownership", "High — legacy pricing model", "Medium-high with add-ons", "High — enterprise only", "Competitive — profile-based, predictable"]
+  ]}
+  highlightColumn={4}
+/>
+
+<Callout type="info" title="SAS Is the Incumbent to Beat">
+In telco, the most common incumbent is SAS (particularly SAS Customer Intelligence 360 and SAS Marketing Automation). Many telcos have been SAS customers for 10-20 years. The key argument against SAS is speed and modernity: SAS is powerful but slow to implement, batch-oriented in an industry that needs real-time, and expensive relative to the value delivered for marketing-specific use cases. Zeotap is not replacing SAS analytics — it is providing the real-time activation layer that SAS was never designed to be.
+</Callout>
+
+---
+
+## Common Telco Objections
+
+<Expandable title="Objection: 'We have a data warehouse / data lake that already holds all this data'" defaultOpen={false}>
+
+**Response Framework:**
+
+"You are absolutely right — and that data warehouse is valuable. But a data warehouse is designed for analytics and reporting, not for real-time marketing activation. The question is not whether you have the data, but whether you can act on it in the moments that matter. When a subscriber hits their data cap at 9 PM on a Tuesday, can your data warehouse push a personalized upgrade offer to their phone within 60 seconds? When a high-value subscriber calls support for the third time this month, can your data warehouse update their churn risk score in real time and alert the retention team? A CDP sits between your data warehouse and your activation channels, turning stored data into real-time intelligence."
+
+</Expandable>
+
+<Expandable title="Objection: 'Our BSS vendor is adding marketing capabilities'" defaultOpen={false}>
+
+**Response Framework:**
+
+"BSS vendors are excellent at what they do — managing billing, provisioning, and subscriber management. Some are adding marketing modules, and that makes sense for basic use cases. But a BSS-embedded marketing module will always be limited to BSS data — billing and subscription information. It cannot ingest and unify app behavior, website interactions, network usage patterns, and customer service sentiment in real time. It also cannot activate audiences across the full range of digital channels — paid media, email, push, and web personalization — with the speed and flexibility that modern marketing requires. The CDP complements your BSS investment by unlocking the marketing value of data that your BSS was never designed to handle."
+
+</Expandable>
+
+---
+
+## Key Takeaways for Telco Conversations
+
+1. **Lead with churn** — churn is the existential challenge for every telco. Open conversations with the financial impact of churn reduction and work backward to the data capabilities required.
+2. **Quantify the data waste** — telcos generate massive data volumes but use less than 15% for marketing. Frame the CDP as the tool that unlocks the other 85%.
+3. **Emphasize real-time** — telcos operate in a real-time business (network events, usage thresholds, service interactions happen continuously). Batch-oriented solutions are fundamentally mismatched to telco needs.
+4. **Respect the BSS/OSS ecosystem** — never position the CDP as replacing BSS/OSS. Position it as the marketing intelligence layer that sits alongside and enriches the existing infrastructure.
+5. **Speak their language** — use terms like ARPU, MSISDN, MNO, MVNO, subscriber base, postpaid/prepaid mix, SAC, and contract renewal alongside CDP terminology.

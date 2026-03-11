@@ -49,11 +49,29 @@ You don't need to install the SDK yourself! The setup wizard generates code that
 
 ### Step 2: Identity Resolution in Action
 
-Once data flows in, Zeotap's identity resolution engine works automatically. Here's what happens behind the scenes:
+Once data flows in, Zeotap's identity resolution engine works automatically:
 
-1. A user visits your website → Web SDK captures `cookie_id_123`
-2. Same user logs into your app → Mobile SDK captures `device_id_456` + `email@customer.com`
-3. Same user makes a purchase → CRM sends `crm_id_789` + `email@customer.com`
+<MermaidDiagram
+  title="How Identity Resolution Works"
+  chart={`
+graph LR
+    subgraph TOUCH["Customer Touchpoints"]
+        A["🌐 Website Visit\ncookie_id_123"]
+        B["📱 App Login\ndevice_id_456 + email"]
+        C["🛒 Purchase\ncrm_id_789 + email"]
+    end
+
+    A --> ID["🔗 Zeotap\nIdentity Graph"]
+    B --> ID
+    C --> ID
+    ID --> UCID["👤 Single UCID\nUnified Profile"]
+
+    style TOUCH fill:#0f172a,stroke:#334155,color:#e2e8f0
+    style ID fill:#1e293b,stroke:#a855f7,color:#e2e8f0
+    style UCID fill:#2563eb,stroke:#3b82f6,color:#ffffff
+  `}
+  caption="3 separate interactions → automatically linked into 1 unified customer profile"
+/>
 
 **Zeotap automatically links all these identifiers** to create a single **UCID** (Unified Customer Identity). In the Unity Dashboard, you can see the identity graph for any profile — all the linked identifiers and when they were connected.
 
@@ -101,12 +119,24 @@ The **Journey Canvas** is a visual drag-and-drop tool for building automated, mu
 - **A/B Splits** — Test different paths with different groups
 
 **Example Journey: Cart Abandonment Recovery**
-1. **Trigger:** User enters "Cart Abandoners" segment
-2. **Wait:** 1 hour
-3. **Action:** Send reminder email
-4. **Condition:** Did they purchase?
-5. **If no → Wait:** 24 hours → Send push notification with 10% discount
-6. **If yes → End** journey
+
+<MermaidDiagram
+  title="Cart Recovery Journey Flow"
+  chart={`
+flowchart LR
+    A["🛒 Cart\nAbandoned"] --> B["⏰ Wait\n1 hour"]
+    B --> C["📧 Send\nReminder"]
+    C --> D{"Purchased?"}
+    D -->|Yes| E["✅ Done"]
+    D -->|No| F["⏰ Wait\n24 hours"]
+    F --> G["📱 Push\n10% Off"]
+
+    style A fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style D fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style E fill:#1e293b,stroke:#10b981,color:#e2e8f0
+  `}
+  caption="Visual journey: trigger → wait → action → condition → action"
+/>
 
 ### Step 6: Activating Data to Destinations
 

@@ -1,0 +1,222 @@
+---
+title: "Data Quality Operations"
+icon: 🔍
+estimatedMinutes: 25
+contentType: reference
+trackId: tam-playbook
+order: 4
+---
+
+# Data Quality Operations
+
+Data quality is the invisible foundation of every successful customer engagement. When data quality is high, audiences are accurate, personalization is relevant, and campaign performance improves. When data quality degrades, everything downstream breaks and the customer loses trust in the platform. TAMs must own data quality monitoring as a core operational discipline, not an afterthought.
+
+<KeyConcepts concepts={["Data Completeness", "Data Accuracy", "Data Freshness", "Data Consistency", "Monitoring Dashboards", "Anomaly Detection", "Root Cause Analysis", "Escalation Procedures"]} />
+
+<StatCard stats={[
+  { value: "30%", label: "Average revenue impact of poor data quality", color: "red" },
+  { value: "4.2 hrs", label: "Mean time to detect quality issues without monitoring", color: "orange" },
+  { value: "15 min", label: "Mean time to detect with proactive monitoring", color: "green" }
+]} />
+
+---
+
+## Data Quality Dimensions
+
+Data quality is not a single metric. It is measured across four dimensions, each of which can degrade independently. A TAM must monitor all four to maintain a complete picture of account health.
+
+<ComparisonTable
+  headers={["Dimension", "Definition", "How to Measure", "Acceptable Threshold", "Red Flag"]}
+  rows={[
+    ["Completeness", "What % of expected fields are populated on profiles and events", "Null rate per field, profiles with all required fields", "> 90% for required fields", "Required field drops below 80%"],
+    ["Accuracy", "Do the values in fields reflect reality", "Spot checks, cross-reference with customer's source systems, format validation", "< 2% format violations", "Invalid emails > 5%, impossible values appear"],
+    ["Freshness", "How recently was the data updated", "Time since last ingestion, profile attribute last-updated timestamps", "Daily data updated within 24 hours", "Batch loads delayed > 48 hours"],
+    ["Consistency", "Does the same data mean the same thing across sources", "Schema drift detection, enum value audits, deduplication rate", "< 1% schema violations", "New unrecognized values in enum fields, duplicate profiles spiking"]
+  ]}
+  highlightColumn={4}
+/>
+
+<Callout type="info" title="The 1-10-100 Rule of Data Quality">
+It costs $1 to prevent a data quality issue at the point of collection, $10 to fix it after it has been ingested, and $100 to fix it after it has been activated to downstream systems. Always invest in prevention over remediation.
+</Callout>
+
+---
+
+## Monitoring Dashboard Setup
+
+Every customer account should have a data quality monitoring dashboard configured during onboarding. This dashboard is the TAM's early warning system and should be reviewed at least weekly for Enterprise accounts and daily for Strategic accounts.
+
+<ArchDiagram
+  title="Data Quality Monitoring Stack"
+  steps={[
+    { label: "Ingestion Monitors", detail: "Track event volume, error rates, and latency per data source", icon: "📡" },
+    { label: "Schema Validators", detail: "Detect schema drift, unexpected field values, and format violations", icon: "🔒" },
+    { label: "Profile Quality Checks", detail: "Monitor completeness, match rates, and identity graph health", icon: "👤" },
+    { label: "Audience Health Checks", detail: "Track audience size trends, refresh success, and destination sync status", icon: "👥" },
+    { label: "Alerting Layer", detail: "Automated alerts for anomalies that exceed defined thresholds", icon: "🚨" }
+  ]}
+/>
+
+### Key Metrics to Track Per Customer
+
+<Expandable title="Ingestion Metrics" defaultOpen={true}>
+
+| Metric | Cadence | Alert Threshold |
+|--------|---------|-----------------|
+| Daily event volume (per source) | Hourly | > 25% deviation from 7-day rolling average |
+| Ingestion error rate | Hourly | > 2% of events rejected |
+| Ingestion latency | Hourly | > 2x normal processing time |
+| Batch load completion time | Per load | Exceeds SLA window |
+| New event types detected | Daily | Any unexpected event type |
+
+Set up a volume anomaly chart that overlays today's hourly volume against the 7-day average. A sudden drop or spike is almost always a signal that something changed on the customer's side (deployment, outage, traffic surge).
+</Expandable>
+
+<Expandable title="Profile Quality Metrics" defaultOpen={false}>
+
+| Metric | Cadence | Alert Threshold |
+|--------|---------|-----------------|
+| Identity match rate | Daily | > 5% decline from baseline |
+| Profile completeness score | Daily | Average drops below 85% |
+| Duplicate profile rate | Weekly | > 3% duplicate ratio |
+| Orphan profile count | Weekly | Growing trend over 3+ weeks |
+| Computed attribute freshness | Daily | Attributes older than expected refresh cycle |
+
+Profile quality metrics are the best leading indicator of downstream problems. If match rates decline, audiences shrink. If completeness drops, personalization becomes less relevant. Monitor these aggressively.
+</Expandable>
+
+<Expandable title="Audience & Activation Metrics" defaultOpen={false}>
+
+| Metric | Cadence | Alert Threshold |
+|--------|---------|-----------------|
+| Audience size trend | Daily | > 20% change in 24 hours without known cause |
+| Audience refresh success rate | Per sync | Any failed refresh |
+| Destination sync status | Per sync | Sync failure or > 2x normal duration |
+| Audience overlap analysis | Weekly | Unexpected high overlap between segments meant to be distinct |
+| Suppression list accuracy | Weekly | Known converters appearing in acquisition audiences |
+
+Audience metric anomalies are often the first symptom of an upstream data quality issue. A shrinking audience can signal a drop in ingestion volume, a change in identity matching, or a schema issue that invalidates segment criteria.
+</Expandable>
+
+---
+
+## Common Data Quality Issues and Root Causes
+
+<MermaidDiagram
+  title="Data Quality Issue Diagnosis Workflow"
+  chart={`flowchart TD
+    A["Alert: Data Quality<br/>Anomaly Detected"]:::alert --> B{"Which dimension<br/>is affected?"}
+    B -->|Volume Drop| C["Check: Did customer<br/>deploy code changes?"]:::check
+    B -->|Schema Error| D["Check: Did event<br/>schema change?"]:::check
+    B -->|Match Rate Drop| E["Check: Did identify<br/>calls stop firing?"]:::check
+    B -->|Freshness Delay| F["Check: Did batch<br/>job fail?"]:::check
+    C -->|Yes| C1["Root Cause:<br/>SDK removed or broken"]:::root
+    C -->|No| C2["Check: Ad blocker<br/>rate increase?"]:::check
+    D -->|Yes| D1["Root Cause:<br/>Unannounced schema change"]:::root
+    D -->|No| D2["Check: New data source<br/>with different schema?"]:::check
+    E -->|Yes| E1["Root Cause:<br/>Login flow changed"]:::root
+    E -->|No| E2["Check: Consent<br/>rate changed?"]:::check
+    F -->|Yes| F1["Root Cause:<br/>Pipeline failure"]:::root
+    F -->|No| F2["Check: Source system<br/>outage?"]:::check
+    C1 --> G["Action: Engage customer<br/>engineering team"]:::action
+    D1 --> G
+    E1 --> G
+    F1 --> G
+    classDef alert fill:#1e293b,stroke:#ef4444,color:#e2e8f0,stroke-width:2px
+    classDef check fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef root fill:#1e293b,stroke:#f97316,color:#e2e8f0,stroke-width:2px
+    classDef action fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:2px`}
+  caption="Follow this decision tree when a data quality alert fires. Start with the affected dimension and trace to the root cause before engaging the customer."
+/>
+
+### Top 10 Root Causes
+
+<Expandable title="Root Cause Reference Table" defaultOpen={true}>
+
+| # | Issue | Root Cause | Detection Method | Resolution |
+|---|-------|-----------|------------------|------------|
+| 1 | Event volume drops 50%+ overnight | Customer deployed a new website version that removed or broke the SDK | Volume anomaly alert | Re-install SDK; add SDK health check to customer's CI/CD |
+| 2 | Spike in schema validation errors | Customer's engineering team changed event property names or types | Schema drift alert | Update schema mapping; establish data contract process |
+| 3 | Identity match rate declines steadily | Consent rate dropped due to CMP configuration change | Match rate trend alert | Audit CMP settings; identify events now missing consent |
+| 4 | Batch load fails repeatedly | Source file format changed (new columns, different delimiter) | Batch job failure alert | Update file parser configuration; validate sample file |
+| 5 | Profile completeness drops | A previously reliable data source stopped sending a key field | Field null-rate alert | Trace null field back to source; engage customer data team |
+| 6 | Duplicate profiles increase | Customer changed their login flow, causing identity fragmentation | Dedup rate alert | Review identify call placement; adjust matching rules |
+| 7 | Audience sizes fluctuate wildly | Computed attribute used in segment criteria is failing to refresh | Audience size trend alert | Fix computed attribute pipeline; add attribute freshness monitor |
+| 8 | Destination sync failures | API token expired or destination platform changed their API | Sync status alert | Rotate credentials; update connector to new API version |
+| 9 | Stale real-time events | Streaming pipeline bottleneck or consumer lag | Latency alert | Scale streaming consumers; investigate backpressure |
+| 10 | Inconsistent values across sources | Two sources define "active customer" differently | Cross-source audit | Align definitions in data contract; add transformation rules |
+</Expandable>
+
+---
+
+## Proactive Data Quality Review Process
+
+Reactive data quality management is not enough. TAMs should conduct proactive reviews on a regular cadence to catch issues before they impact business outcomes.
+
+### Weekly Review (15 minutes)
+
+Perform every Monday morning before your first customer call:
+
+1. Open the data quality dashboard for each account
+2. Review volume trends for the past 7 days: any anomalies?
+3. Check ingestion error rates: anything above 2%?
+4. Review identity match rate trend: stable, improving, or declining?
+5. Check audience sync status: any failures in the past week?
+6. Flag any accounts that need immediate attention
+
+### Monthly Deep Dive (60 minutes per Strategic account)
+
+1. Pull a profile completeness report and compare to previous month
+2. Run a duplicate profile analysis
+3. Review audience size trends over 30 days and investigate anomalies
+4. Cross-reference ingestion volume with customer's reported traffic numbers
+5. Audit computed attributes for freshness and accuracy
+6. Document findings in the account health report
+
+### Quarterly Data Quality Review with Customer (scheduled as part of QBR)
+
+1. Present data quality scorecard: completeness, accuracy, freshness, consistency
+2. Highlight improvements since last quarter
+3. Identify areas for improvement with specific recommendations
+4. Agree on data quality objectives for next quarter
+5. Review and update the data contract if needed
+
+<Callout type="tip" title="Automate Before You Scale">
+If you manage more than 8 accounts, manual weekly reviews become unsustainable. Work with your platform team to automate alerting for the top 5 metrics: volume anomaly, error rate spike, match rate decline, sync failure, and audience size deviation. Manual review should supplement automated monitoring, not replace it.
+</Callout>
+
+---
+
+## Escalation Procedures for Quality Degradation
+
+When a data quality issue is detected, the response depends on the severity and the account tier. Use this escalation framework to ensure issues are resolved with appropriate urgency.
+
+<ComparisonTable
+  headers={["Severity", "Definition", "Examples", "Response Time", "Escalation Path"]}
+  rows={[
+    ["P1 - Critical", "Data pipeline is down or corrupted data is being activated", "Total ingestion failure, wrong audiences pushed to ad platforms", "< 1 hour", "TAM → Engineering On-Call → VP Engineering + Customer VP notified"],
+    ["P2 - High", "Significant quality degradation affecting business outcomes", "50%+ volume drop, match rate below minimum threshold", "< 4 hours", "TAM → Support Engineering → TAM Manager + Customer tech lead notified"],
+    ["P3 - Medium", "Quality issue detected but not yet impacting live campaigns", "Schema drift, batch load delayed, completeness declining", "< 24 hours", "TAM files ticket → Support Engineering triages → Customer notified at next sync"],
+    ["P4 - Low", "Minor quality issue, no immediate business impact", "Small uptick in null rates, cosmetic schema inconsistency", "< 1 week", "TAM documents in account notes → Addresses at next monthly review"]
+  ]}
+  highlightColumn={3}
+/>
+
+<Callout type="warning" title="Never Let a P1 Go Unacknowledged">
+When a critical data quality issue is detected, acknowledge it to the customer within 30 minutes, even if you do not yet have a root cause. Silence during an outage erodes trust faster than the outage itself. Send a brief message: "We've detected an issue with [specific description]. We are actively investigating and will update you within [timeframe]."
+</Callout>
+
+### Escalation Communication Template
+
+When escalating a data quality issue, include these elements in your communication:
+
+1. **Issue summary**: One sentence describing what is happening
+2. **Impact assessment**: What is affected (which audiences, campaigns, or downstream systems)
+3. **Detection time**: When the issue was first detected
+4. **Estimated start time**: When the issue likely began (may differ from detection time)
+5. **Root cause status**: Known, suspected, or under investigation
+6. **Actions taken**: What has been done so far
+7. **Next steps**: What will happen next and when the next update will be provided
+8. **Customer communication status**: Has the customer been notified, and who was notified
+
+Data quality is not glamorous work, but it is the work that separates a competent TAM from an exceptional one. Customers who trust that their data is accurate and that their TAM is watching for problems are the customers who renew, expand, and advocate. Build your data quality practice with the same rigor you bring to account planning and value engineering.

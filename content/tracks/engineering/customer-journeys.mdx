@@ -29,7 +29,34 @@ The journey engine is a **distributed state machine**:
 
 ### Journey DAG Representation
 
-Each journey is stored as a Directed Acyclic Graph (DAG):
+Each journey is stored as a Directed Acyclic Graph (DAG). Here's a visual example of a cart recovery journey:
+
+<MermaidDiagram
+  title="Cart Abandonment Recovery Journey"
+  chart={`
+flowchart TD
+    T["🎯 Trigger: Cart Abandoned"] --> W1["⏰ Wait 1 hour"]
+    W1 --> E1["📧 Send Reminder Email"]
+    E1 --> C1{"🔀 Purchased?"}
+    C1 -->|Yes| EXIT1["✅ Exit Journey"]
+    C1 -->|No| W2["⏰ Wait 24 hours"]
+    W2 --> AB{"🔀 A/B Split\n50/50"}
+    AB -->|Variant A| P1["📱 Push: 10% Discount"]
+    AB -->|Variant B| P2["📱 Push: Free Shipping"]
+    P1 --> C2{"🔀 Purchased?"}
+    P2 --> C2
+    C2 -->|Yes| EXIT2["✅ Exit Journey"]
+    C2 -->|No| EXIT3["🚪 Exit: Max Steps"]
+
+    style T fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style C1 fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style AB fill:#1e293b,stroke:#a855f7,color:#e2e8f0
+    style EXIT1 fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style EXIT2 fill:#1e293b,stroke:#10b981,color:#e2e8f0
+  `}
+  caption="DAG-based journey with triggers, waits, conditions, A/B splits, and actions"
+/>
+
 
 ```json
 {

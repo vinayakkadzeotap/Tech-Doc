@@ -73,6 +73,28 @@ Zeotap is built as a collection of domain-oriented microservices organized aroun
 
 The complete journey of a data event from collection to activation:
 
+<MermaidDiagram
+  title="Event Lifecycle — Collection to Activation"
+  chart={`
+graph LR
+    A["🌐 Browser/App"] -->|SDK POST /collect| B["🛡️ API Gateway"]
+    B -->|Auth + Rate Limit| C["📥 Collect Service"]
+    C -->|Schema + Consent| D["📨 Kafka"]
+    D --> E["🔗 ID Graph"]
+    D --> F["👤 Profile Store"]
+    D --> G["🎯 Audience Engine"]
+    E -->|UCID resolved| F
+    F -->|Profile updated| G
+    G -->|Membership changed| H["🚀 150+ Destinations"]
+
+    style A fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    style D fill:#1e3a5f,stroke:#f59e0b,color:#e2e8f0
+    style E fill:#1e3a5f,stroke:#a855f7,color:#e2e8f0
+    style H fill:#1e3a5f,stroke:#10b981,color:#e2e8f0
+  `}
+  caption="Real-time pipeline: event → identity → profile → audience → activation in <500ms p99"
+/>
+
 1. **Browser/App** sends event via SDK → `POST /collect/event`
 2. **API Gateway** authenticates request and enforces rate limits
 3. **Collect Service** validates schema, applies consent rules
@@ -133,6 +155,48 @@ Zeotap operates in multiple GCP regions (Europe, US) to meet data residency requ
 </Callout>
 
 ### Kubernetes Namespaces
+
+<MermaidDiagram
+  title="GKE Namespace Topology"
+  chart={`
+graph TB
+    subgraph GKE["Google Kubernetes Engine"]
+        subgraph CORE["zeotap-core"]
+            A1["zeocore-api"] --- A2["cf-api-gateway"]
+        end
+        subgraph INGEST["zeotap-ingestion"]
+            B1["Collect Service"] --- B2["DAAP Processing"]
+        end
+        subgraph IDENTITY["zeotap-identity"]
+            C1["ID Graph (Go)"] --- C2["Profile Store"]
+        end
+        subgraph AUDIENCE["zeotap-audience"]
+            D1["audiences"] --- D2["segmentestimator"]
+        end
+        subgraph ACTIVATE["zeotap-activation"]
+            E1["data-destination"] --- E2["SmartPixel"]
+        end
+        subgraph AI["zeotap-ai"]
+            F1["zeotap-genai"] --- F2["agentic-server"]
+        end
+    end
+
+    CORE --> INGEST
+    INGEST --> IDENTITY
+    IDENTITY --> AUDIENCE
+    AUDIENCE --> ACTIVATE
+    CORE --> AI
+
+    style GKE fill:#0f172a,stroke:#334155,color:#e2e8f0
+    style CORE fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style INGEST fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style IDENTITY fill:#1e293b,stroke:#a855f7,color:#e2e8f0
+    style AUDIENCE fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style ACTIVATE fill:#1e293b,stroke:#ec4899,color:#e2e8f0
+    style AI fill:#1e293b,stroke:#06b6d4,color:#e2e8f0
+  `}
+  caption="Services grouped by domain into Kubernetes namespaces on GKE"
+/>
 
 Services are organized into domain-specific Kubernetes namespaces:
 

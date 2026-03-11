@@ -14,12 +14,34 @@ Identity resolution is Zeotap's core differentiator. It stitches fragmented iden
 
 ### The Identity Problem
 
-A single customer might interact through:
-- Cookie on laptop browser
-- Device ID on mobile app
-- Email address on login
-- Phone number in CRM
-- Loyalty card in-store
+A single customer might interact through multiple touchpoints:
+
+<MermaidDiagram
+  title="Cross-Device Identity Challenge"
+  chart={`
+graph TB
+    subgraph BEFORE["❌ Without Identity Resolution"]
+        A1["🍪 Cookie: abc123"] ---|"Unknown"| X1["Person 1?"]
+        A2["📱 Device: xyz789"] ---|"Unknown"| X2["Person 2?"]
+        A3["📧 Email: jane@co"] ---|"Unknown"| X3["Person 3?"]
+        A4["📞 Phone: +1234"] ---|"Unknown"| X4["Person 4?"]
+        A5["🏪 Loyalty: LY567"] ---|"Unknown"| X5["Person 5?"]
+    end
+
+    subgraph AFTER["✅ With Zeotap Identity Graph"]
+        B1["🍪 Cookie: abc123"] --> UCID["🔗 UCID: jane-doe-001"]
+        B2["📱 Device: xyz789"] --> UCID
+        B3["📧 Email: jane@co"] --> UCID
+        B4["📞 Phone: +1234"] --> UCID
+        B5["🏪 Loyalty: LY567"] --> UCID
+    end
+
+    style BEFORE fill:#0f172a,stroke:#ef4444,color:#e2e8f0
+    style AFTER fill:#0f172a,stroke:#10b981,color:#e2e8f0
+    style UCID fill:#2563eb,stroke:#3b82f6,color:#ffffff
+  `}
+  caption="5 fragmented identifiers → 1 Unified Customer ID (UCID)"
+/>
 
 Without identity resolution, these look like 5 different people. Zeotap's Identity Graph links them into one UCID.
 
@@ -87,6 +109,30 @@ The identity graph is modeled as a property graph:
 />
 
 **Merge Algorithm:**
+
+<MermaidDiagram
+  title="Graph Merge Decision Flow"
+  chart={`
+flowchart TD
+    A["Event arrives with identifiers"] --> B{"Look up each identifier\nin graph"}
+    B -->|All in same cluster| C["Update edge timestamps\nNo merge needed"]
+    B -->|In different clusters| D{"Deterministic link?"}
+    B -->|New identifier| E["Create new node\nAssign to cluster"]
+    D -->|Yes| F["Merge clusters"]
+    D -->|No| G{"Probabilistic\nconfidence > threshold?"}
+    G -->|Yes| F
+    G -->|No| H["Keep separate clusters"]
+    F --> I["Smaller cluster → Larger cluster\nLarger UCID wins"]
+    I --> J["Emit merge event to\nProfile Store + Audience Engine"]
+
+    style A fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style F fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style H fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style J fill:#1e293b,stroke:#a855f7,color:#e2e8f0
+  `}
+  caption="Deterministic links always trigger merge; probabilistic requires confidence threshold"
+/>
+
 1. For each identifier in the event, look up existing graph node
 2. If identifiers belong to different clusters, evaluate merge
 3. Merge criteria: deterministic link (always merge) or probabilistic link above threshold

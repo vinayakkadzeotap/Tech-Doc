@@ -1,0 +1,304 @@
+---
+title: "Technical Onboarding Mastery"
+icon: 🔧
+estimatedMinutes: 35
+contentType: tutorial
+trackId: tam-playbook
+order: 2
+---
+
+# Technical Onboarding Mastery
+
+The first 8 weeks of a customer engagement define the trajectory of the entire relationship. A structured onboarding process accelerates time-to-value, builds customer confidence, and establishes the TAM as a trusted technical advisor. This module provides a phase-by-phase playbook for onboarding customers onto the Zeotap platform.
+
+<KeyConcepts concepts={["SDK Integration", "Data Ingestion", "Identity Strategy", "Profile Configuration", "Audience Activation", "Journey Orchestration", "Go-Live Readiness"]} />
+
+<StatCard stats={[
+  { value: "8 weeks", label: "Target time to first value", color: "blue" },
+  { value: "2.4x", label: "Higher retention when onboarded within 60 days", color: "green" },
+  { value: "47%", label: "Customers stall at Phase 2 without TAM guidance", color: "red" }
+]} />
+
+---
+
+## The 8-Week Implementation Timeline
+
+A successful onboarding follows four distinct phases, each building on the previous one. Rushing through phases leads to technical debt; spending too long on any single phase risks stakeholder fatigue.
+
+<MermaidDiagram
+  title="8-Week Technical Onboarding Timeline"
+  chart={`gantt
+    title Customer Onboarding Phases
+    dateFormat  YYYY-MM-DD
+    axisFormat  Week %W
+    section Phase 1: Data Foundation
+      SDK Integration           :a1, 2025-01-06, 7d
+      Server-to-Server Setup    :a2, 2025-01-06, 10d
+      Data Validation           :a3, after a2, 4d
+    section Phase 2: Identity & Profiles
+      Identity Strategy Design  :b1, after a3, 5d
+      Profile Schema Config     :b2, after b1, 5d
+      Identity Graph Validation :b3, after b2, 4d
+    section Phase 3: Audiences & Activation
+      Segment Builder Training  :c1, after b3, 3d
+      First 5 Audiences Built   :c2, after c1, 5d
+      Destination Activation    :c3, after c2, 6d
+    section Phase 4: Journeys & Optimization
+      Journey Canvas Setup      :d1, after c3, 5d
+      First Journey Live        :d2, after d1, 5d
+      Optimization Review       :d3, after d2, 4d`}
+  caption="Each phase has clear entry and exit criteria. The TAM is responsible for keeping the customer on track and removing blockers."
+/>
+
+---
+
+## Phase 1: SDK Integration & Data Collection (Weeks 1-2)
+
+The foundation phase is about getting data flowing into Zeotap reliably and accurately. Without clean data ingestion, nothing else works.
+
+<Expandable title="Week 1: Kickoff & SDK Deployment" defaultOpen={true}>
+
+**Day 1-2: Technical Kickoff Meeting**
+- Walk through the implementation plan with the customer's engineering team
+- Confirm data sources: website(s), mobile app(s), backend systems, CRM, POS
+- Agree on integration method per source: client-side SDK, server-to-server API, batch file upload, or warehouse connector
+- Distribute SDK documentation and API keys
+- Set up shared Slack or Teams channel for real-time support
+
+**Day 3-5: Client-Side SDK Integration**
+- Customer's front-end team installs the Zeotap Web SDK on primary properties
+- TAM provides a validation checklist: page view events, identify calls, custom events
+- Verify events are arriving in the Zeotap ingestion pipeline using the real-time event debugger
+- Troubleshoot common issues: ad blockers, CSP headers, async loading conflicts
+
+**Day 6-7: Mobile SDK (if applicable)**
+- Guide iOS and Android SDK installation
+- Validate device ID capture, app open events, and deep link attribution
+- Confirm consent management integration (CMP handshake)
+</Expandable>
+
+<Expandable title="Week 2: Server-Side & Batch Ingestion" defaultOpen={false}>
+
+**Day 8-10: Server-to-Server Integration**
+- Configure API endpoints for backend event streams (purchases, account updates, support interactions)
+- Set up authentication (API key or OAuth)
+- Define event schema: required fields, optional fields, naming conventions
+- Validate with a test batch of 1,000 events before opening the firehose
+
+**Day 11-12: Batch File Ingestion**
+- Configure SFTP or cloud storage (S3/GCS) connector for historical data loads
+- Define file format: CSV/JSON, delimiter, encoding, header row expectations
+- Run first historical data load (CRM export, transaction history)
+- Validate row counts, schema compliance, and error rates
+
+**Day 13-14: Data Validation & Phase 1 Sign-Off**
+- Run the Data Quality Dashboard for all ingestion sources
+- Confirm: event volume matches expectations, no schema violations, latency within SLA
+- Document any known data gaps and remediation plan
+- Phase 1 exit criteria: All agreed data sources are actively ingesting with less than 2% error rate
+</Expandable>
+
+<Callout type="warning" title="The Silent Failure Problem">
+The most dangerous onboarding failure is a data source that appears to be working but is silently dropping events. Always validate volume against the customer's expected numbers, not just against zero. If they say they get 10M page views per day and you are seeing 6M, investigate immediately.
+</Callout>
+
+---
+
+## Phase 2: Identity Strategy & Profile Configuration (Weeks 3-4)
+
+With data flowing, the next step is to unify that data into coherent customer profiles. This is where Zeotap's identity resolution creates differentiated value.
+
+<Expandable title="Week 3: Identity Strategy Design" defaultOpen={true}>
+
+**Identity Graph Planning**
+- Map all available identifiers: email (hashed and raw), phone, device IDs (IDFA/GAID), cookie IDs, loyalty IDs, CRM IDs
+- Define the identity hierarchy: which identifier is the "golden record" anchor
+- Configure deterministic matching rules (e.g., email + device ID = same person)
+- Discuss probabilistic matching appetite: some customers want high precision, others want maximum reach
+
+**Key Decisions to Document**
+- Cross-device matching: enabled or disabled
+- Household grouping: should family members be linked
+- B2B account matching: roll up individuals to company accounts (if applicable)
+- PII handling: which fields are hashed at ingestion vs. stored in clear text (compliance-dependent)
+
+**Configuration Steps**
+- Set up identity namespaces in the Zeotap platform
+- Configure matching rules and priority order
+- Run a test identity resolution on the ingested data
+- Review match rate report: what percentage of events resolved to a unified profile
+</Expandable>
+
+<Expandable title="Week 4: Profile Schema & Enrichment" defaultOpen={false}>
+
+**Profile Schema Configuration**
+- Define profile attributes: demographics, behavioral aggregates, preference flags, lifecycle stage
+- Map source fields to profile attributes (field mapping document)
+- Configure computed attributes: recency/frequency/monetary scores, engagement scores, churn risk indicators
+- Set up attribute freshness rules: how often each attribute should be refreshed
+
+**Data Enrichment (if licensed)**
+- Configure Zeotap's third-party data enrichment for profiles missing key attributes
+- Validate enrichment coverage: what percentage of profiles gained new attributes
+- Review enrichment quality with spot checks
+
+**Phase 2 Exit Criteria**
+- Identity graph is resolving profiles with a match rate above the agreed threshold (typically 60-80%)
+- Profile schema is configured with all planned attributes
+- Computed attributes are calculating correctly on a daily cadence
+- Customer's data team has reviewed and approved sample profiles
+</Expandable>
+
+<ComparisonTable
+  headers={["Identity Configuration", "High Precision Mode", "High Reach Mode"]}
+  rows={[
+    ["Matching approach", "Deterministic only", "Deterministic + probabilistic"],
+    ["Typical match rate", "55-70%", "75-90%"],
+    ["False positive risk", "Very low (< 1%)", "Low-moderate (2-5%)"],
+    ["Best for", "Financial services, healthcare", "Retail, media, travel"],
+    ["Cross-device linking", "Same email/phone only", "Device graph + IP clustering"],
+    ["Configuration effort", "Lower (fewer rules)", "Higher (tuning thresholds)"]
+  ]}
+  highlightColumn={1}
+/>
+
+---
+
+## Phase 3: Audience Building & First Activation (Weeks 5-6)
+
+This is the phase where the customer starts to see tangible value. Building and activating audiences proves that the platform works and generates business outcomes.
+
+<Expandable title="Week 5: Segment Builder Training & First Audiences" defaultOpen={true}>
+
+**Training Session: Segment Builder**
+- Conduct a hands-on workshop with the customer's marketing and analytics teams
+- Cover: attribute-based segments, behavioral segments, event-based triggers, combining conditions
+- Walk through 3-5 pre-built segment templates relevant to their industry
+- Let the customer build their first segment live during the session
+
+**First 5 Audiences to Build**
+Every customer should launch with a core set of audiences that demonstrate immediate value:
+
+1. **High-value customers**: Top 20% by revenue or engagement for loyalty campaigns
+2. **Cart/form abandoners**: Users who started but did not complete a conversion (retargeting)
+3. **Lapsed users**: Previously active users who have not engaged in 30-60 days (win-back)
+4. **New user lookalikes**: Seed audience of best customers for acquisition campaigns
+5. **Suppression list**: Recent converters to exclude from acquisition spend (waste reduction)
+</Expandable>
+
+<Expandable title="Week 6: Destination Activation" defaultOpen={false}>
+
+**Connecting Destinations**
+- Configure 2-3 primary activation destinations (e.g., Google Ads, Meta, The Trade Desk, Salesforce Marketing Cloud)
+- Set up authentication, audience mapping, and sync frequency for each destination
+- Push the first audiences to destinations and verify delivery
+
+**Validation Checklist**
+- Audience size in Zeotap matches expected size in the destination platform (within 10% variance)
+- Sync is completing within the agreed latency window
+- No PII leakage: only hashed identifiers or platform-specific IDs are transmitted
+- Customer's campaign team confirms audiences are visible and usable in their destination UI
+
+**Phase 3 Exit Criteria**
+- 5+ audiences are live and syncing to at least 2 destinations
+- Customer's marketing team can independently build and activate a segment
+- First campaign using Zeotap audiences has launched or is scheduled
+</Expandable>
+
+---
+
+## Phase 4: Journey Setup & Optimization (Weeks 7-8)
+
+With audiences flowing, the final onboarding phase introduces journey orchestration and sets the stage for ongoing optimization.
+
+<Expandable title="Week 7: Journey Canvas Setup" defaultOpen={true}>
+
+**Journey Builder Training**
+- Demonstrate the journey canvas: entry triggers, decision nodes, channel actions, wait steps, exit conditions
+- Walk through 2-3 journey templates: welcome series, re-engagement flow, post-purchase nurture
+- Customer builds their first journey with TAM guidance
+
+**First Journey Configuration**
+- Select the highest-impact journey for initial launch (usually a welcome or re-engagement flow)
+- Configure entry criteria, branching logic, and channel actions
+- Set up A/B test splits if the customer wants to experiment from day one
+- Review journey logic with the customer's marketing and compliance teams before activation
+</Expandable>
+
+<Expandable title="Week 8: Go-Live & Optimization Review" defaultOpen={false}>
+
+**Go-Live Activities**
+- Activate the first journey in production
+- Monitor real-time journey metrics: entry volume, branch distribution, action completion rates
+- Troubleshoot any delivery or timing issues in the first 48 hours
+
+**Onboarding Retrospective**
+- Conduct a formal review of the 8-week onboarding process
+- Document: what was completed, what is still in progress, and what is deferred to post-onboarding
+- Capture lessons learned and customer feedback
+- Transition from onboarding cadence to ongoing engagement cadence (per account tier)
+
+**Handoff Deliverables**
+- Updated account plan with current adoption stage and next milestones
+- Health score baseline established
+- Ongoing support channels confirmed
+- Next QBR date scheduled
+</Expandable>
+
+---
+
+## Common Integration Pitfalls and Fixes
+
+<ComparisonTable
+  headers={["Pitfall", "Symptoms", "Root Cause", "Fix"]}
+  rows={[
+    ["Event volume drop", "Sudden 50%+ decrease in daily events", "SDK blocked by ad blocker or CSP update", "Deploy server-side fallback; add Zeotap domain to CSP allowlist"],
+    ["Identity fragmentation", "Same user appears as multiple profiles", "Missing identify calls on key touchpoints", "Audit identify call placement; ensure login and checkout events fire identify"],
+    ["Schema drift", "Ingestion errors spike after customer deploys code changes", "Customer changed event property names without notification", "Set up schema registry alerts; add data contract to onboarding agreement"],
+    ["Stale audiences", "Destination audiences stop updating", "Sync job failing silently due to expired API token", "Configure token refresh automation; set up sync health alerts"],
+    ["Consent gaps", "Events arriving without consent signals", "CMP integration incomplete on new pages", "Audit CMP coverage; block ingestion for unconsented events"],
+    ["Slow batch loads", "Historical data takes days to process", "File too large or malformed rows causing retries", "Split files into 500K-row chunks; validate schema before upload"]
+  ]}
+  highlightColumn={3}
+/>
+
+<Callout type="tip" title="The Pre-Mortem Technique">
+At the start of each onboarding phase, ask the customer's tech lead: "What could go wrong this week that would block our progress?" This simple question surfaces risks early, before they become blockers. Document every answer and build a mitigation plan.
+</Callout>
+
+---
+
+## Technical Go-Live Checklist
+
+Use this checklist before declaring an account fully onboarded. Every item must be green before the TAM moves the account from "onboarding" to "active" status.
+
+<Callout type="success" title="Go-Live Readiness Checklist">
+
+**Data Foundation**
+- All agreed data sources are ingesting with less than 2% error rate
+- Event volume is within 10% of customer's expected numbers
+- Batch loads are completing within SLA (typically under 4 hours)
+
+**Identity & Profiles**
+- Identity graph match rate meets or exceeds the agreed threshold
+- Profile schema is complete with all planned attributes
+- Computed attributes are refreshing on schedule
+
+**Audiences & Activation**
+- 5+ audiences are live and syncing to 2+ destinations
+- Audience sizes match expectations in destination platforms
+- Customer's team can independently build and activate segments
+
+**Journeys**
+- At least one journey is live in production
+- Journey metrics are being tracked and reported
+- A/B testing is configured (if applicable)
+
+**Operational Readiness**
+- Monitoring dashboards are configured for all critical pipelines
+- Alerting is set up for ingestion failures, sync failures, and volume anomalies
+- Customer knows how to reach support and understands escalation paths
+- Ongoing engagement cadence is agreed and calendared
+</Callout>
+
+The 8-week onboarding framework is a guide, not a rigid rule. Some customers move faster, some need more time. The TAM's job is to maintain momentum, remove blockers, and ensure every phase is completed with quality before advancing to the next. A rushed onboarding that leaves technical debt will cost you far more time in months 3-12 than spending an extra week getting it right in month one.

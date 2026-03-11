@@ -1,0 +1,250 @@
+---
+title: "Strategic Account Planning"
+icon: 🎯
+estimatedMinutes: 30
+contentType: tutorial
+trackId: tam-playbook
+order: 1
+---
+
+# Strategic Account Planning
+
+Effective account planning is the foundation of every successful Technical Account Manager relationship. Without a structured plan, TAMs become reactive firefighters instead of strategic partners. This module provides a comprehensive framework for building account plans that drive adoption, expansion, and long-term retention.
+
+<KeyConcepts concepts={["Account Tiering", "Stakeholder Mapping", "Power Maps", "Technical Adoption Roadmaps", "Annual Planning", "Success Metrics", "QBR Preparation"]} />
+
+<StatCard stats={[
+  { value: "3x", label: "Higher NRR with structured account plans", color: "blue" },
+  { value: "68%", label: "Accounts expand when TAM uses a power map", color: "green" },
+  { value: "40%", label: "Reduction in churn with proactive planning", color: "purple" }
+]} />
+
+---
+
+## Account Tier Classification
+
+Not every account deserves the same level of engagement. Tiering ensures you allocate your time where it generates the most value for both the customer and your organization. Each tier maps to a specific cadence, depth of engagement, and set of deliverables.
+
+<ComparisonTable
+  headers={["Dimension", "Strategic", "Enterprise", "Growth"]}
+  rows={[
+    ["ARR Range", "> $500K", "$150K - $500K", "< $150K"],
+    ["TAM Ratio", "1:3 - 1:5", "1:8 - 1:12", "1:20 - 1:30 (pooled)"],
+    ["Engagement Cadence", "Weekly syncs + quarterly EBRs", "Bi-weekly syncs + semi-annual reviews", "Monthly office hours + async support"],
+    ["Account Plan Depth", "Full strategic plan with exec alignment", "Technical adoption plan with milestones", "Lightweight plan with self-serve resources"],
+    ["Stakeholder Mapping", "Full power map + influence grid", "Key contacts + decision makers", "Primary contact + escalation path"],
+    ["Architecture Review", "Annual deep dive with recommendations", "Initial review + annual check-in", "Templated review at onboarding"],
+    ["QBR / EBR Deliverable", "Custom ROI deck + roadmap alignment", "Usage report + adoption scorecard", "Automated health dashboard"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="tip" title="When to Promote an Account">
+Review tier assignments quarterly. Promote an account when its ARR crosses a threshold, when a new strategic initiative creates expansion opportunity, or when the account's logo value justifies deeper engagement regardless of ARR.
+</Callout>
+
+---
+
+## Annual Account Plan Template
+
+Every Strategic and Enterprise account should have a living document that you revisit monthly and formally refresh each year. The annual plan is not a static artifact; it is your playbook for driving outcomes.
+
+<Expandable title="Section 1: Account Overview" defaultOpen={true}>
+
+**Account Snapshot**
+- Company name, industry, geography
+- Current ARR and contract renewal date
+- Products deployed and license utilization
+- Account health score (Green / Yellow / Red) with justification
+
+**Business Context**
+- Customer's top 3 business priorities for the year (sourced from earnings calls, annual reports, or direct conversations)
+- How Zeotap's platform maps to those priorities
+- Competitive landscape: what other vendors are in the stack and where we overlap or complement
+
+**Historical Summary**
+- Key wins from the previous year (use cases launched, integrations completed, ROI delivered)
+- Open issues or past escalations and their resolution status
+- NPS or CSAT trends
+</Expandable>
+
+<Expandable title="Section 2: Strategic Objectives & Success Metrics" defaultOpen={false}>
+
+Define 3-5 measurable objectives for the year. Each objective should have:
+
+1. **Objective statement**: What will be achieved (e.g., "Expand identity resolution coverage to 90% of customer's digital properties")
+2. **Success metric**: How you will measure it (e.g., "Match rate increases from 55% to 75%")
+3. **Owner**: Who on the customer side sponsors this objective
+4. **Timeline**: Quarter in which you expect to deliver
+5. **Dependencies**: What the customer must provide or complete
+
+Example objectives:
+- Achieve full SDK integration across mobile and web properties by Q2
+- Launch 5 new audience segments for programmatic activation by Q3
+- Deliver an ROI case study showing 20%+ improvement in ROAS by Q4
+</Expandable>
+
+<Expandable title="Section 3: Engagement Calendar" defaultOpen={false}>
+
+Map out recurring touchpoints for the year:
+
+| Cadence | Activity | Attendees | Deliverable |
+|---------|----------|-----------|-------------|
+| Weekly | Technical sync | TAM + Customer tech lead | Status update, blockers |
+| Monthly | Adoption review | TAM + Customer PM | Usage dashboard, recommendations |
+| Quarterly | Executive Business Review | TAM + AE + VP + Customer execs | ROI report, roadmap alignment |
+| Annually | Strategic planning workshop | Full account team + Customer leadership | Next-year plan |
+
+Include key dates: contract renewal, budget planning cycles, industry events, product launches.
+</Expandable>
+
+---
+
+## Stakeholder Mapping
+
+Understanding who holds power and who influences decisions is critical to driving adoption and protecting renewals. TAMs who skip this step often find themselves blindsided when a decision maker they never engaged vetoes an expansion.
+
+### The Power Map
+
+A power map plots stakeholders on two axes: **decision authority** (can they approve budget or sign contracts?) and **disposition toward Zeotap** (champion, supporter, neutral, or detractor).
+
+<MermaidDiagram
+  title="Stakeholder Influence Map"
+  chart={`graph TD
+    subgraph Champions
+      A["VP Marketing<br/>High Authority / Champion"]:::champion
+      B["Data Engineering Lead<br/>Medium Authority / Champion"]:::champion
+    end
+    subgraph Supporters
+      C["Marketing Ops Manager<br/>Medium Authority / Supporter"]:::supporter
+      D["Analytics Director<br/>High Authority / Supporter"]:::supporter
+    end
+    subgraph Neutral
+      E["CTO<br/>High Authority / Neutral"]:::neutral
+      F["Privacy Counsel<br/>Medium Authority / Neutral"]:::neutral
+    end
+    subgraph Risk
+      G["CFO<br/>High Authority / Skeptic"]:::risk
+      H["Incumbent Vendor Advocate<br/>Low Authority / Detractor"]:::risk
+    end
+    A -->|Influences| E
+    D -->|Reports to| E
+    B -->|Collaborates with| C
+    F -->|Advises| G
+    classDef champion fill:#1e293b,stroke:#22c55e,color:#e2e8f0,stroke-width:2px
+    classDef supporter fill:#1e293b,stroke:#3b82f6,color:#e2e8f0,stroke-width:2px
+    classDef neutral fill:#1e293b,stroke:#eab308,color:#e2e8f0,stroke-width:2px
+    classDef risk fill:#1e293b,stroke:#ef4444,color:#e2e8f0,stroke-width:2px`}
+  caption="Map every stakeholder by authority level and disposition. Green = Champion, Blue = Supporter, Yellow = Neutral, Red = Risk."
+/>
+
+### The Influence Grid
+
+Beyond formal authority, understand informal influence. Some people cannot sign a PO but can kill a deal in a hallway conversation. Map influence separately:
+
+| Stakeholder | Formal Authority | Informal Influence | Relationship Strength | Action Needed |
+|---|---|---|---|---|
+| VP Marketing | High | High | Strong (Champion) | Maintain; ask for internal advocacy |
+| CTO | High | High | Weak (Neutral) | Schedule 1:1; align on technical vision |
+| CFO | High | Medium | None (Skeptic) | Prepare ROI deck; get VP Marketing to bridge intro |
+| Data Eng Lead | Medium | High | Strong (Champion) | Leverage for technical proof points |
+| Privacy Counsel | Medium | High | Weak (Neutral) | Proactively share compliance documentation |
+
+<Callout type="warning" title="The Missing Stakeholder Trap">
+If you cannot name the person who controls budget renewal at your account, your account plan is incomplete. Identify that person immediately and build a strategy to reach them, even if indirectly through a champion.
+</Callout>
+
+---
+
+## Technical Adoption Roadmap
+
+A technical adoption roadmap translates business objectives into concrete implementation milestones. It answers the question: "What does the customer need to do in the platform, and in what order, to realize value?"
+
+<ArchDiagram
+  title="Technical Adoption Journey"
+  steps={[
+    { label: "Foundation", detail: "SDK integration, data ingestion, identity setup", icon: "🏗️" },
+    { label: "Activation", detail: "First audiences built and pushed to destinations", icon: "🚀" },
+    { label: "Optimization", detail: "Segment refinement, A/B testing, suppression lists", icon: "⚙️" },
+    { label: "Expansion", detail: "New channels, advanced use cases, cross-team adoption", icon: "📈" },
+    { label: "Strategic", detail: "Data clean rooms, predictive models, executive alignment", icon: "🎯" }
+  ]}
+/>
+
+For each stage, define:
+
+1. **Entry criteria**: What must be true before the customer enters this stage
+2. **Key activities**: What the customer and TAM will work on together
+3. **Exit criteria**: What must be completed to move to the next stage
+4. **Typical duration**: How long this stage takes for this account tier
+5. **Risk indicators**: What signals suggest the customer is stuck
+
+<Expandable title="Sample Roadmap: Enterprise Retailer" defaultOpen={false}>
+
+**Q1 - Foundation (Weeks 1-8)**
+- Integrate web SDK on top 3 e-commerce properties
+- Configure server-to-server ingestion for POS transaction data
+- Set up identity graph with email + device ID + loyalty ID
+- Exit criteria: 80%+ match rate on web traffic, data flowing daily
+
+**Q2 - Activation (Weeks 9-16)**
+- Build 10 core audience segments (high-value shoppers, cart abandoners, lapsed customers, etc.)
+- Activate audiences to Google DV360 and Meta for retargeting
+- Launch first suppression list to reduce wasted ad spend
+- Exit criteria: Audiences active in 2+ destinations, initial ROAS measurement
+
+**Q3 - Optimization (Weeks 17-24)**
+- Run A/B test on lookalike vs. first-party audiences
+- Implement dynamic suppression (auto-suppress post-purchase)
+- Add mobile app SDK for cross-device matching
+- Exit criteria: Measurable ROAS improvement, cross-device graph active
+
+**Q4 - Expansion (Weeks 25-36)**
+- Onboard CRM team for lifecycle email audience building
+- Deploy real-time audience triggers for site personalization
+- Prepare annual ROI case study for EBR
+- Exit criteria: 3+ teams using the platform, renewal secured
+</Expandable>
+
+---
+
+## Success Metrics by Tier
+
+Every tier needs measurable indicators of health and progress. These metrics should feed into your health score model and guide your prioritization.
+
+<ComparisonTable
+  headers={["Metric Category", "Strategic Accounts", "Enterprise Accounts", "Growth Accounts"]}
+  rows={[
+    ["Platform Adoption", "Monthly active users, feature breadth score", "Weekly logins, segments created", "Login frequency, onboarding completion"],
+    ["Data Health", "Match rate, profile completeness, data freshness", "Match rate, ingestion uptime", "Ingestion status (active/inactive)"],
+    ["Business Outcomes", "ROAS lift, CAC reduction, attributed revenue", "Campaign performance, audience reach", "First use case launched (Y/N)"],
+    ["Engagement Quality", "Exec sponsor engagement, multi-team adoption", "Technical POC responsiveness", "Support ticket trend"],
+    ["Expansion Signals", "New use case pipeline, cross-sell discussions", "Additional destination requests", "Upgrade inquiry"],
+    ["Risk Signals", "Exec sponsor departure, budget review, competitor POC", "Declining logins, stale segments", "No login for 30+ days"]
+  ]}
+  highlightColumn={1}
+/>
+
+<Callout type="important" title="Leading vs. Lagging Indicators">
+Platform adoption and data health are leading indicators; they predict future outcomes. Business outcomes and renewal are lagging indicators; they confirm what already happened. TAMs who only track lagging indicators are always too late to intervene. Build your dashboard around leading indicators and use them to trigger proactive outreach.
+</Callout>
+
+---
+
+## Putting It All Together
+
+A strong account plan connects every element: the tier determines your cadence, the stakeholder map guides your outreach, the adoption roadmap defines your technical work, and the success metrics tell you whether it is working.
+
+<Callout type="success" title="Account Planning Checklist">
+Before your next QBR, verify you have completed the following:
+
+- Account tier confirmed and aligned with your manager
+- Stakeholder power map updated within the last 90 days
+- 3-5 measurable objectives defined with customer-side owners
+- Technical adoption roadmap with current-stage clearly identified
+- Leading indicator dashboard built and reviewed weekly
+- Engagement calendar populated through next quarter
+- Risk register updated with mitigation plans for any Yellow/Red items
+</Callout>
+
+Your account plan is your most important strategic artifact. Invest the time to build it properly and you will spend less time reacting to crises and more time driving outcomes that matter.
