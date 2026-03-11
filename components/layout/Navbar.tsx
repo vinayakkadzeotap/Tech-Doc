@@ -17,6 +17,7 @@ import {
   GraduationCap,
   Zap,
   Globe,
+  MessageCircle,
   type LucideIcon,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -72,6 +73,7 @@ export default function Navbar({ user }: NavbarProps) {
     { href: '/assess', label: 'Assess', icon: ClipboardCheck },
     { href: '/achievements', label: 'Achievements', icon: Trophy },
     { href: '/certifications', label: 'Certs', icon: GraduationCap },
+    { href: '/cdp-assistant', label: 'Assistant', icon: MessageCircle },
   ];
 
   return (
