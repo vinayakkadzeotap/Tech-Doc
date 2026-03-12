@@ -7,6 +7,8 @@ import { downloadCSV } from '@/lib/utils/csv-export';
 import { TrendingUp, Users, Award, Clock, Download, BarChart3, Table2 } from 'lucide-react';
 
 interface ROIData {
+  medianTimeToFirstCompletion?: number;
+  firstCompletionCount?: number;
   summary: {
     adoptionRate: number;
     avgTimeToCompetency: number;
@@ -99,17 +101,21 @@ export default function ROICharts() {
 
   const { summary, roleCompletion, teamCompletion, timeToCompetency, certifiedComparison } = data;
 
+  const medianFirst = data.medianTimeToFirstCompletion ?? 0;
+  const firstCount = data.firstCompletionCount ?? 0;
+
   const statCards = [
     { label: 'Adoption Rate', value: `${summary.adoptionRate}%`, sub: `${summary.activeUsers}/${summary.totalUsers} users`, color: '#3b82f6', icon: Users },
     { label: 'Avg Time-to-Competency', value: `${summary.avgTimeToCompetency}d`, sub: 'days to mandatory completion', color: '#10b981', icon: Clock },
     { label: 'Certification Rate', value: `${summary.certificationRate}%`, sub: `${summary.certifiedUsers} certified`, color: '#a855f7', icon: Award },
     { label: 'Avg Completion', value: `${summary.avgCompletionPct}%`, sub: `Avg quiz score: ${summary.avgQuizScore}%`, color: '#f59e0b', icon: TrendingUp },
+    { label: 'Time to First Module', value: `${medianFirst}d`, sub: `median across ${firstCount} users`, color: '#ec4899', icon: Clock },
   ];
 
   return (
     <div className="space-y-8">
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {statCards.map((stat) => (
           <div key={stat.label} className="relative overflow-hidden rounded-2xl border border-border bg-bg-surface/50 p-5">
             <div className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-[0.07] blur-2xl -translate-y-6 translate-x-6" style={{ background: stat.color }} />

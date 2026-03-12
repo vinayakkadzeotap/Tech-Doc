@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { ToastProvider } from '@/components/ui/Toast';
 import SkipToContent from '@/components/ui/SkipToContent';
 import './globals.css';
+import './print.css';
 
 export const metadata: Metadata = {
   title: 'Zeotap Learning Platform',

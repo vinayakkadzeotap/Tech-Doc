@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -18,6 +13,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const supabase = await createClient();
+
     switch (type) {
       case "audience": {
         const [fieldsResult, presetsResult] = await Promise.all([
@@ -25,22 +22,9 @@ export async function GET(request: NextRequest) {
           supabase.from("sim_campaign_presets").select("*"),
         ]);
 
-        if (fieldsResult.error) {
-          return NextResponse.json(
-            { error: fieldsResult.error.message },
-            { status: 500 }
-          );
-        }
-        if (presetsResult.error) {
-          return NextResponse.json(
-            { error: presetsResult.error.message },
-            { status: 500 }
-          );
-        }
-
         return NextResponse.json({
-          fields: fieldsResult.data,
-          presets: presetsResult.data,
+          fields: fieldsResult.data || [],
+          presets: presetsResult.data || [],
         });
       }
 
@@ -53,78 +37,44 @@ export async function GET(request: NextRequest) {
               .from("sim_verticals")
               .select("*")
               .eq("name", vertical)
-              .single(),
+              .maybeSingle(),
             supabase
               .from("sim_customers")
               .select("*")
               .eq("vertical", vertical),
           ]);
 
-          if (verticalResult.error) {
-            return NextResponse.json(
-              { error: verticalResult.error.message },
-              { status: 500 }
-            );
-          }
-          if (customersResult.error) {
-            return NextResponse.json(
-              { error: customersResult.error.message },
-              { status: 500 }
-            );
-          }
-
           return NextResponse.json({
-            vertical: verticalResult.data,
-            customers: customersResult.data,
+            verticalInfo: verticalResult.data || null,
+            customers: customersResult.data || [],
           });
         }
 
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("sim_verticals")
           .select("*");
 
-        if (error) {
-          return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-          );
-        }
-
-        return NextResponse.json({ verticals: data });
+        return NextResponse.json({ verticals: data || [] });
       }
 
       case "health": {
         const scenario = searchParams.get("scenario");
 
         if (scenario) {
-          const { data, error } = await supabase
+          const { data } = await supabase
             .from("sim_health_scenarios")
             .select("*")
             .eq("name", scenario)
-            .single();
+            .maybeSingle();
 
-          if (error) {
-            return NextResponse.json(
-              { error: error.message },
-              { status: 500 }
-            );
-          }
-
-          return NextResponse.json({ scenario: data });
+          return NextResponse.json({ scenario: data || null });
         }
 
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("sim_health_scenarios")
           .select("*");
 
-        if (error) {
-          return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-          );
-        }
-
-        return NextResponse.json({ scenarios: data });
+        return NextResponse.json({ scenarios: data || [] });
       }
 
       default:
@@ -133,16 +83,15 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (err) {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  } catch {
+    // Return empty data so client-side fallbacks kick in
+    return NextResponse.json({ fields: [], presets: [], verticals: [], scenarios: [] });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const body = await request.json();
 
     const { data, error } = await supabase
@@ -158,7 +107,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ result: data }, { status: 201 });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: "Invalid request body" },
       { status: 400 }

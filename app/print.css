@@ -1,0 +1,49 @@
+@media print {
+  /* Hide navigation, bottom nav, and non-essential UI */
+  nav,
+  .mobile-bottom-nav,
+  button,
+  [role="dialog"],
+  .toast-container,
+  footer {
+    display: none !important;
+  }
+
+  /* White background for readability */
+  html, body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+  }
+
+  /* Remove dark backgrounds */
+  * {
+    background-color: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border-color: #ddd !important;
+  }
+
+  /* Ensure content is full width */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Show links */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+
+  /* Page breaks */
+  .card, section {
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+}

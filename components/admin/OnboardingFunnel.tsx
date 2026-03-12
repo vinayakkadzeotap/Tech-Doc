@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Card from '@/components/ui/Card';
-import { Funnel } from 'lucide-react';
+import { Filter } from 'lucide-react';
 
 interface FunnelStep {
   label: string;
@@ -59,8 +59,8 @@ export default function OnboardingFunnel() {
   return (
     <Card>
       <div className="flex items-center gap-2 mb-4">
-        <Funnel size={18} className="text-brand-purple" />
-        <h2 className="font-bold">Onboarding Funnel</h2>
+        <Filter size={18} className="text-brand-purple" />
+        <h2 className="font-bold">Onboarding Filter</h2>
       </div>
 
       <div className="space-y-3">

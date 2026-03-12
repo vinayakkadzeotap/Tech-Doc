@@ -32,7 +32,7 @@ export default function AdoptionTargets() {
   const [targets, setTargets] = useState<AdoptionTarget[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ team: '', role: '', track_id: TRACKS[0]?.id || '', target_pct: 80, deadline: '' });
+  const [form, setForm] = useState({ team: '', role: '', track_id: (TRACKS[0]?.id || '') as string, target_pct: 80, deadline: '' });
 
   const fetchTargets = () => {
     fetch('/api/admin/targets')

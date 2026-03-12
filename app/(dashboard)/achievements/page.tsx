@@ -55,12 +55,23 @@ export default async function AchievementsPage() {
 
       {/* Empty state */}
       {earnedIds.size === 0 && (
-        <div className="text-center py-12 rounded-2xl border border-dashed border-border">
-          <div className="flex justify-center">
+        <div className="text-center py-16 rounded-2xl border border-dashed border-border bg-bg-surface/30">
+          <div className="flex justify-center mb-2">
             <Icon name="🏆" contained color="#f59e0b" containerSize="lg" />
           </div>
-          <p className="mt-4 text-sm text-text-secondary font-medium">No badges earned yet</p>
-          <p className="text-xs text-text-muted mt-1">Start completing modules and quizzes to earn your first badge!</p>
+          <h2 className="text-lg font-bold text-text-primary mt-4">Your trophy case awaits!</h2>
+          <p className="text-sm text-text-secondary mt-2 max-w-md mx-auto">
+            Complete modules, ace quizzes, and hit milestones to earn badges. Every step forward unlocks new achievements.
+          </p>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <a
+              href="/learn"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-blue text-white text-sm font-semibold rounded-xl hover:bg-brand-blue/90 transition-colors"
+            >
+              Start Learning
+            </a>
+            <p className="text-[11px] text-text-muted">Complete your first module to earn the First Steps badge</p>
+          </div>
         </div>
       )}
     </div>

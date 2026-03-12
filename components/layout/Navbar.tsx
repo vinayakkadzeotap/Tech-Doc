@@ -25,12 +25,14 @@ import {
   Target,
   FileText,
   BookMarked,
+  Handshake,
   type LucideIcon,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import SearchModal from '@/components/layout/SearchModal';
 import NotificationBell from '@/components/layout/NotificationBell';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 
 interface NavbarProps {
   user: {
@@ -63,6 +65,7 @@ const secondaryNav: NavItem[] = [
   { href: '/deal-prep', label: 'Deal Prep', icon: Target },
   { href: '/case-studies', label: 'Case Studies', icon: FileText },
   { href: '/library', label: 'Library', icon: BookMarked },
+  { href: '/partners', label: 'Partners', icon: Handshake },
   { href: '/assess', label: 'Assess', icon: ClipboardCheck },
   { href: '/achievements', label: 'Achievements', icon: Trophy },
   { href: '/certifications', label: 'Certifications', icon: GraduationCap },
@@ -279,6 +282,7 @@ export default function Navbar({ user }: NavbarProps) {
               <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded bg-bg-elevated border border-border text-text-muted">⌘K</kbd>
             </button>
 
+            <ThemeToggle />
             {user && <NotificationBell />}
 
             {user && (

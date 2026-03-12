@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { TRACKS } from '@/lib/utils/roles';
 
 // Valid track and module IDs derived from TRACKS data
-const VALID_TRACK_IDS = TRACKS.map((t) => t.id);
+const VALID_TRACK_IDS = TRACKS.map((t) => t.id) as string[];
 const VALID_MODULE_IDS_BY_TRACK: Record<string, string[]> = {};
 TRACKS.forEach((t) => {
   VALID_MODULE_IDS_BY_TRACK[t.id] = t.modules.map((m) => m.id);
@@ -15,8 +15,8 @@ export const progressSchema = z.object({
     message: 'Invalid track_id. Must be one of: ' + VALID_TRACK_IDS.join(', '),
   }),
   module_id: z.string().min(1, 'module_id is required'),
-  status: z.enum(['in_progress', 'completed'], {
-    errorMap: () => ({ message: 'status must be "in_progress" or "completed"' }),
+  status: z.enum(['in_progress', 'completed'] as const, {
+    error: 'status must be "in_progress" or "completed"',
   }),
 }).refine(
   (data) => {
@@ -36,8 +36,8 @@ export const feedbackSchema = z.object({
 
 export const feedbackPatchSchema = z.object({
   feedback_id: z.string().uuid('feedback_id must be a valid UUID'),
-  status: z.enum(['open', 'addressed'], {
-    errorMap: () => ({ message: 'status must be "open" or "addressed"' }),
+  status: z.enum(['open', 'addressed'] as const, {
+    error: 'status must be "open" or "addressed"',
   }),
   admin_response: z.string().max(2000).optional().default(''),
 });
@@ -48,7 +48,7 @@ export const quizSchema = z.object({
   total: z.number().int().min(1),
   percentage: z.number().min(0).max(100),
   passed: z.boolean(),
-  answers: z.record(z.unknown()).optional().default({}),
+  answers: z.record(z.string(), z.unknown()).optional().default({}),
 });
 
 export const assignmentSchema = z.object({
@@ -77,9 +77,11 @@ export function validateBody<T>(
 ): ValidationResult<T> {
   const result = schema.safeParse(body);
   if (!result.success) {
-    const firstError = result.error.errors[0];
-    const path = firstError.path.length ? `${firstError.path.join('.')}: ` : '';
-    return { success: false, error: `${path}${firstError.message}` };
+    const issues = result.error?.issues || [];
+    const firstIssue = issues[0];
+    if (!firstIssue) return { success: false, error: 'Validation failed' };
+    const path = firstIssue.path?.length ? `${firstIssue.path.join('.')}: ` : '';
+    return { success: false, error: `${path}${firstIssue.message}` };
   }
   return { success: true, data: result.data };
 }

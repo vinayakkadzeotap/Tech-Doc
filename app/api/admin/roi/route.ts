@@ -148,7 +148,27 @@ export async function GET(request: Request) {
     ? Math.round(progress.filter((p) => p.status === 'completed').length / (totalUsers * totalModulesInPlatform) * 100)
     : 0;
 
+  // Median time to first module completion
+  const firstCompletionDays: number[] = [];
+  profiles.forEach((p) => {
+    const userCompleted = progress
+      .filter((pr) => pr.user_id === p.id && pr.status === 'completed' && pr.completed_at)
+      .map((pr) => new Date(pr.completed_at).getTime())
+      .sort((a, b) => a - b);
+    if (userCompleted.length > 0) {
+      const created = new Date(p.created_at).getTime();
+      const days = Math.max(0, Math.round((userCompleted[0] - created) / (1000 * 60 * 60 * 24)));
+      firstCompletionDays.push(days);
+    }
+  });
+  const sortedFirstDays = [...firstCompletionDays].sort((a, b) => a - b);
+  const medianTimeToFirst = sortedFirstDays.length > 0
+    ? sortedFirstDays[Math.floor(sortedFirstDays.length / 2)]
+    : 0;
+
   return NextResponse.json({
+    medianTimeToFirstCompletion: medianTimeToFirst,
+    firstCompletionCount: firstCompletionDays.length,
     summary: {
       adoptionRate,
       avgTimeToCompetency,
