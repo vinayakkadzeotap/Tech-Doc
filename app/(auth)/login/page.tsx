@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, Shield } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
@@ -17,6 +17,9 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [ssoMode, setSsoMode] = useState(false);
+  const [ssoDomain, setSsoDomain] = useState('');
+  const [ssoMessage, setSsoMessage] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +94,51 @@ function LoginForm() {
               Sign In
             </Button>
           </form>
+
+          {/* SSO Section */}
+          <div className="mt-6 pt-6 border-t border-border">
+            {!ssoMode ? (
+              <button
+                onClick={() => setSsoMode(true)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-bg-primary/50 text-sm text-text-secondary hover:text-text-primary hover:border-border-strong transition-all"
+              >
+                <Shield size={16} />
+                Enterprise SSO
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-xs text-text-muted text-center">Enter your company email domain</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="company.com"
+                    value={ssoDomain}
+                    onChange={(e) => { setSsoDomain(e.target.value); setSsoMessage(''); }}
+                    className="flex-1 bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-blue/50"
+                  />
+                  <button
+                    onClick={() => {
+                      if (ssoDomain) {
+                        setSsoMessage(`SSO is not yet configured for "${ssoDomain}". Contact your IT admin to set up SAML/OIDC integration.`);
+                      }
+                    }}
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-blue text-white hover:bg-brand-blue/90 transition-colors"
+                  >
+                    Continue
+                  </button>
+                </div>
+                {ssoMessage && (
+                  <p className="text-xs text-amber-400 bg-amber-500/10 px-3 py-2 rounded-lg">{ssoMessage}</p>
+                )}
+                <button
+                  onClick={() => { setSsoMode(false); setSsoMessage(''); }}
+                  className="text-xs text-text-muted hover:text-text-primary transition-colors"
+                >
+                  Back to email login
+                </button>
+              </div>
+            )}
+          </div>
 
           <div className="mt-6 text-center space-y-3">
             <Link

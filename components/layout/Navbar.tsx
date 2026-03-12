@@ -25,6 +25,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import SearchModal from '@/components/layout/SearchModal';
+import NotificationBell from '@/components/layout/NotificationBell';
 
 interface NavbarProps {
   user: {
@@ -139,6 +140,18 @@ export default function Navbar({ user }: NavbarProps) {
             <div className="relative" ref={moreRef}>
               <button
                 onClick={() => setMoreOpen(!moreOpen)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown' || (e.key === 'Enter' && !moreOpen)) {
+                    e.preventDefault();
+                    setMoreOpen(true);
+                    setTimeout(() => {
+                      const first = moreRef.current?.querySelector<HTMLElement>('[role="menuitem"]');
+                      first?.focus();
+                    }, 50);
+                  }
+                }}
+                aria-expanded={moreOpen}
+                aria-haspopup="true"
                 className={`
                   flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200
                   ${isSecondaryActive || pathname.startsWith('/admin')
@@ -155,7 +168,26 @@ export default function Navbar({ user }: NavbarProps) {
               </button>
 
               {moreOpen && (
-                <div className="absolute top-full right-0 mt-1.5 w-52 py-1.5 bg-bg-surface border border-border rounded-xl shadow-xl animate-fade-in">
+                <div
+                  className="absolute top-full right-0 mt-1.5 w-52 py-1.5 bg-bg-surface border border-border rounded-xl shadow-xl animate-fade-in"
+                  role="menu"
+                  onKeyDown={(e) => {
+                    const items = moreRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]');
+                    if (!items?.length) return;
+                    const arr = Array.from(items);
+                    const idx = arr.indexOf(document.activeElement as HTMLElement);
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      arr[(idx + 1) % arr.length].focus();
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      arr[(idx - 1 + arr.length) % arr.length].focus();
+                    } else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      setMoreOpen(false);
+                    }
+                  }}
+                >
                   {secondaryNav.map((item) => {
                     const isActive = pathname.startsWith(item.href);
                     const IconComponent = item.icon;
@@ -163,9 +195,11 @@ export default function Navbar({ user }: NavbarProps) {
                       <Link
                         key={item.href}
                         href={item.href}
+                        role="menuitem"
+                        tabIndex={-1}
                         onClick={() => setMoreOpen(false)}
                         className={`
-                          flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium transition-all
+                          flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium transition-all focus:outline-none focus:bg-bg-hover
                           ${isActive
                             ? 'text-brand-blue bg-brand-blue/10'
                             : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
@@ -182,9 +216,11 @@ export default function Navbar({ user }: NavbarProps) {
                       <div className="my-1.5 border-t border-border" />
                       <Link
                         href="/admin/dashboard"
+                        role="menuitem"
+                        tabIndex={-1}
                         onClick={() => setMoreOpen(false)}
                         className={`
-                          flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium transition-all
+                          flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium transition-all focus:outline-none focus:bg-bg-hover
                           ${pathname.startsWith('/admin')
                             ? 'bg-brand-purple/10 text-brand-purple'
                             : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
@@ -212,6 +248,8 @@ export default function Navbar({ user }: NavbarProps) {
               <span className="hidden sm:inline text-xs">Search...</span>
               <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded bg-bg-elevated border border-border text-text-muted">⌘K</kbd>
             </button>
+
+            {user && <NotificationBell />}
 
             {user && (
               <div className="hidden md:flex items-center gap-1.5">

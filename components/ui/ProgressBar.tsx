@@ -20,7 +20,14 @@ export default function ProgressBar({
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <div className={`flex-1 ${heights[size]} bg-white/[0.06] rounded-full overflow-hidden`}>
+      <div
+        className={`flex-1 ${heights[size]} bg-white/[0.06] rounded-full overflow-hidden`}
+        role="progressbar"
+        aria-valuenow={Math.round(clamped)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`${Math.round(clamped)}% complete`}
+      >
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"
           style={{ width: `${clamped}%`, background: `linear-gradient(90deg, ${color}, ${color}cc)` }}

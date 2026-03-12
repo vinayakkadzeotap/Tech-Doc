@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createNotification } from '@/lib/utils/notify';
+import { trackServerEvent, EVENTS } from '@/lib/utils/analytics';
 
 export async function GET() {
   const supabase = await createClient();
@@ -65,5 +67,22 @@ export async function POST(request: Request) {
   }).select();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Notify the assigned user
+  createNotification(
+    supabase,
+    assigned_to,
+    'assignment',
+    'New Learning Assignment',
+    `You've been assigned the "${track_id}" track${due_date ? ` (due ${due_date})` : ''}.`,
+    `/learn/${track_id}`
+  );
+
+  // Track analytics event
+  trackServerEvent(supabase, user.id, EVENTS.ASSIGNMENT_CREATED, {
+    assigned_to,
+    track_id,
+  });
+
   return NextResponse.json({ success: true, data });
 }

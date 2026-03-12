@@ -61,5 +61,7 @@ export async function GET() {
     .sort((a, b) => b.xp - a.xp)
     .slice(0, 30);
 
-  return NextResponse.json(leaderboard);
+  const response = NextResponse.json(leaderboard);
+  response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+  return response;
 }

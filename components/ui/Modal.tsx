@@ -20,9 +20,30 @@ export default function Modal({
 }: ModalProps) {
   const triggerRef = useRef<HTMLElement | null>(null);
 
-  const handleEscape = useCallback(
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      // Focus trapping
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     },
     [onClose]
   );
@@ -30,17 +51,24 @@ export default function Modal({
   useEffect(() => {
     if (isOpen) {
       triggerRef.current = document.activeElement as HTMLElement;
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
+      // Auto-focus the first focusable element inside modal
+      setTimeout(() => {
+        const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        firstFocusable?.focus();
+      }, 50);
     }
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
       if (!isOpen && triggerRef.current) {
         triggerRef.current.focus();
       }
     };
-  }, [isOpen, handleEscape]);
+  }, [isOpen, handleKeyDown]);
 
   if (!isOpen) return null;
 
@@ -53,6 +81,7 @@ export default function Modal({
       aria-label={title}
     >
       <div
+        ref={dialogRef}
         className={`
           ${maxWidth} w-full max-h-[88vh] overflow-y-auto
           bg-bg-elevated border border-border rounded-3xl p-8

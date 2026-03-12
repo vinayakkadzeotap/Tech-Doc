@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { awardBadgesAfterCompletion } from '@/lib/utils/award-badges';
+import { trackServerEvent, EVENTS } from '@/lib/utils/analytics';
+import { createNotification } from '@/lib/utils/notify';
+import { TRACKS } from '@/lib/utils/roles';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -42,6 +45,37 @@ export async function POST(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Track module completion
+  if (status === 'completed') {
+    trackServerEvent(supabase, user.id, EVENTS.MODULE_COMPLETE, {
+      track_id,
+      module_id,
+    });
+  }
+
+  // Check track completion percentage for milestone notifications
+  if (status === 'completed') {
+    const track = TRACKS.find((t) => t.id === track_id);
+    if (track) {
+      const { data: trackProgress } = await supabase
+        .from('progress')
+        .select('module_id')
+        .eq('user_id', user.id)
+        .eq('track_id', track_id)
+        .eq('status', 'completed');
+
+      const completedCount = trackProgress?.length || 0;
+      const totalModules = track.modules.length;
+      const pct = Math.round((completedCount / totalModules) * 100);
+
+      if (pct === 100) {
+        createNotification(supabase, user.id, 'milestone', 'Track Complete!', `You completed the "${track.title}" track!`, `/learn/${track_id}`);
+      } else if (pct >= 80 && pct < 100) {
+        createNotification(supabase, user.id, 'milestone', 'Almost There!', `You're ${pct}% through "${track.title}" — just ${totalModules - completedCount} modules left!`, `/learn/${track_id}`);
+      }
+    }
   }
 
   // Award badges after marking complete

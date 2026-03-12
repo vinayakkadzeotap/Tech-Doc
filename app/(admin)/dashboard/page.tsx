@@ -5,6 +5,7 @@ import Card from '@/components/ui/Card';
 import ProgressBar from '@/components/ui/ProgressBar';
 import Icon from '@/components/ui/Icon';
 import { TRACKS } from '@/lib/utils/roles';
+import AnalyticsCharts from '@/components/admin/AnalyticsCharts';
 
 // Sample data for demo when real user count is low
 const SAMPLE_ROLE_BREAKDOWN: Record<string, number> = {
@@ -195,6 +196,12 @@ export default async function AdminDashboardPage() {
             </div>
           </Card>
         ))}
+      </div>
+
+      {/* Engagement Analytics */}
+      <div>
+        <h2 className="font-bold mb-4">Engagement Analytics</h2>
+        <AnalyticsCharts />
       </div>
 
       {/* Track completion rates */}

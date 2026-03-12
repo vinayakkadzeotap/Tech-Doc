@@ -1,46 +1,5 @@
-import Card from '@/components/ui/Card';
-
-const TERMS = [
-  { term: 'Ada', definition: 'Zeotap\'s official AI copilot, embedded across the platform (Audience Builder, Data Catalogue, Journey Canvas). Uses RAG + Vertex AI LLMs for natural language segmentation and contextual AI assistance.' },
-  { term: 'UCID', definition: 'Unified Customer Identity — Zeotap\'s core identity concept. A single persistent ID that unifies all cross-device, cross-channel identifiers for one person.' },
-  { term: 'ID+', definition: 'Zeotap\'s universal identity solution powered by ~50 billion deterministic IDs. Enables cross-device and cross-channel identity resolution at scale using Aerospike and Scylla.' },
-  { term: 'CDP', definition: 'Customer Data Platform — A system that creates a persistent, unified customer database accessible to other systems for marketing, analytics, and operations.' },
-  { term: 'Integr8', definition: 'Zeotap\'s connector builder for setting up data sources and destinations. Provides 150+ pre-built integrations across advertising, CRM, email, and analytics platforms.' },
-  { term: 'Zeotap Fuel', definition: 'Third-party data enrichment service that fills gaps in first-party customer profiles using NCE (non-customer entity) data to enhance targeting and personalization.' },
-  { term: 'NCE Data', definition: 'Non-Customer Entity data — Third-party data used by Zeotap Fuel to enrich customer profiles with additional attributes beyond first-party data.' },
-  { term: 'Calculated Attributes', definition: 'Derived fields computed from raw data in the Unify module. Allows creation of new profile attributes from existing data (e.g., total spend, days since last purchase).' },
-  { term: 'Champion Segments', definition: '2,500+ pre-built audience templates available in the Segment module. Provide starting points for common segmentation use cases across verticals.' },
-  { term: 'Customer 360', definition: 'A complete, unified view of a customer within the Protect module. Shows identity, attributes, events, audiences, and consent status in one place.' },
-  { term: 'SmartPixel', definition: 'Zeotap\'s real-time web personalization engine. A JavaScript tag that fetches segment membership from edge cache for <50ms client-side personalization.' },
-  { term: 'Delta Lake', definition: 'An open-source storage layer on top of data lakes that provides ACID transactions, schema enforcement, and time-travel. Used by Zeotap for the Profile Store with 7 Maven modules.' },
-  { term: 'Apache Kafka', definition: 'A distributed event streaming platform used as Zeotap\'s backbone for real-time data ingestion and event processing.' },
-  { term: 'CDAP', definition: 'Cloud Data Application Platform — Used for building and orchestrating data integration pipelines with low-code configuration.' },
-  { term: 'Apache Beam', definition: 'A unified programming model for batch and streaming data processing pipelines. Used in Zeotap\'s ingestion layer.' },
-  { term: 'Identity Graph', definition: 'A data structure that maps and links multiple identifiers (email, phone, device ID, cookie) belonging to the same person.' },
-  { term: 'MAID', definition: 'Mobile Advertising ID — A device-level identifier (IDFA on iOS, GAID on Android) used for mobile user identification and ad targeting.' },
-  { term: 'GKE', definition: 'Google Kubernetes Engine — The managed Kubernetes service on GCP that orchestrates all Zeotap microservices.' },
-  { term: 'Vertex AI', definition: 'Google Cloud\'s ML platform used by Zeotap for training and serving models including propensity scoring and Ada AI.' },
-  { term: 'RAG', definition: 'Retrieval-Augmented Generation — An AI architecture where relevant context is retrieved from a knowledge base before generating a response. Powers Ada.' },
-  { term: 'MCP', definition: 'Model Context Protocol — A protocol used by Zeotap\'s agentic server for tool integration, enabling Ada to interact with platform services.' },
-  { term: 'S2S API', definition: 'Server-to-Server API — Zeotap\'s primary endpoint for receiving events directly from backend systems.' },
-  { term: 'TCF 2.2', definition: 'Transparency and Consent Framework v2.2 — IAB standard for consent management that Zeotap\'s SDK integrates with for GDPR-compliant data collection.' },
-  { term: 'Segment / Audience', definition: 'A group of customer profiles that match a set of rules or conditions, used for targeted marketing activation.' },
-  { term: 'Journey Canvas', definition: 'Zeotap\'s visual tool for building multi-step automated customer campaigns with triggers, conditions, and actions.' },
-  { term: 'ArgoCD', definition: 'A GitOps-based continuous delivery tool for Kubernetes. Zeotap uses it for automated, safe production deployments.' },
-  { term: 'Terraform', definition: 'An Infrastructure-as-Code tool used to provision and manage Zeotap\'s cloud infrastructure on GCP.' },
-  { term: 'Prometheus', definition: 'An open-source monitoring system for collecting and querying metrics. Core part of Zeotap\'s observability stack.' },
-  { term: 'OpenTelemetry', definition: 'A vendor-neutral standard for instrumenting, generating, collecting, and exporting telemetry data (traces, metrics, logs).' },
-  { term: 'GDPR', definition: 'General Data Protection Regulation — EU regulation governing data privacy and protection that fundamentally shapes Zeotap\'s architecture.' },
-  { term: 'ISO 27018', definition: 'International standard for protecting personally identifiable information (PII) in public cloud services. Zeotap is ISO 27018 certified.' },
-  { term: 'ISO 27701', definition: 'International standard for privacy information management. Extends ISO 27001/27002 for privacy. Zeotap is ISO 27701 certified.' },
-  { term: 'SOC 2', definition: 'Service Organization Control 2 — An auditing standard for service organizations. Zeotap is SOC 2 Type II compliant.' },
-  { term: 'Propensity Score', definition: 'An ML-generated probability that a customer will take a specific action (purchase, churn, etc.). Used for predictive targeting.' },
-  { term: 'DMP', definition: 'Data Management Platform — An older technology that relied on third-party cookies. CDPs like Zeotap are the modern replacement.' },
-  { term: 'Lookalike Modeling', definition: 'An ML technique that finds new users who share characteristics with an existing "seed" audience of known valuable customers.' },
-  { term: 'ACID', definition: 'Atomicity, Consistency, Isolation, Durability — Properties guaranteed by Delta Lake for profile store updates.' },
-  { term: 'SSO', definition: 'Single Sign-On — Allows enterprise users to authenticate with their corporate credentials via SAML 2.0 or OIDC through Auth0.' },
-  { term: 'RBAC', definition: 'Role-Based Access Control — Permission system that restricts system access based on user roles (admin, editor, viewer).' },
-];
+import GlossaryClient from '@/components/learning/GlossaryClient';
+import { GLOSSARY_TERMS } from '@/lib/utils/glossary-data';
 
 export default function GlossaryPage() {
   return (
@@ -48,18 +7,11 @@ export default function GlossaryPage() {
       <div>
         <h1 className="text-2xl font-extrabold">Glossary</h1>
         <p className="text-text-secondary text-sm mt-1">
-          {TERMS.length} key terms and concepts used across Zeotap
+          {GLOSSARY_TERMS.length} key terms and concepts used across Zeotap
         </p>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-3">
-        {TERMS.map((item) => (
-          <Card key={item.term} className="!p-4">
-            <h3 className="text-xs font-bold text-text-accent font-mono mb-1.5">{item.term}</h3>
-            <p className="text-xs text-text-muted leading-relaxed">{item.definition}</p>
-          </Card>
-        ))}
-      </div>
+      <GlossaryClient />
     </div>
   );
 }

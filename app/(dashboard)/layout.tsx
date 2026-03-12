@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import CelebrationWrapper from '@/components/interactive/CelebrationWrapper';
+import AnalyticsPageTracker from '@/components/layout/AnalyticsPageTracker';
 import WelcomeWizard from '@/components/onboarding/WelcomeWizard';
 import type { UserRole } from '@/lib/utils/roles';
 
@@ -65,8 +66,9 @@ export default async function DashboardLayout({
     <div className="min-h-screen flex flex-col">
       <Navbar user={navUser} />
       <CelebrationWrapper>
-        <main className="flex-1 animate-fade-in">{children}</main>
+        <main id="main-content" className="flex-1 animate-fade-in">{children}</main>
       </CelebrationWrapper>
+      <AnalyticsPageTracker />
       {showOnboarding && (
         <WelcomeWizard
           userId={user.id}

@@ -7,6 +7,8 @@ import ProgressBar from '@/components/ui/ProgressBar';
 import Badge from '@/components/ui/Badge';
 import Icon from '@/components/ui/Icon';
 import ProgressDashboard from '@/components/interactive/ProgressDashboard';
+import NudgeBanner from '@/components/interactive/NudgeBanner';
+import ActivityFeed from '@/components/interactive/ActivityFeed';
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -89,6 +91,9 @@ export default async function HomePage() {
           </div>
         )}
       </div>
+
+      {/* Nudge banners */}
+      <NudgeBanner />
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -186,6 +191,12 @@ export default async function HomePage() {
             );
           })}
         </div>
+      </div>
+
+      {/* Activity Feed */}
+      <div>
+        <h2 className="text-lg font-bold mb-4">Recent Activity</h2>
+        <ActivityFeed />
       </div>
 
       {/* Quick actions */}

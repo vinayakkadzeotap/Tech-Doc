@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ToastProvider } from '@/components/ui/Toast';
+import SkipToContent from '@/components/ui/SkipToContent';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen bg-bg-primary text-text-primary font-sans antialiased">
+        <SkipToContent />
         <ToastProvider>
           {children}
         </ToastProvider>

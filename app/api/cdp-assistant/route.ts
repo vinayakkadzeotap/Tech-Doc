@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { matchSkills, loadSkillContent } from '@/lib/utils/cdp-skills';
+import { trackServerEvent, EVENTS } from '@/lib/utils/analytics';
+import { rateLimit } from '@/lib/utils/rate-limit';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -36,6 +38,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Rate limit: 20 requests per minute per user
+  const rl = rateLimit(`cdp-assistant:${user.id}`, 20, 60_000);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait before sending another message.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.reset / 1000)) } }
+    );
+  }
+
   const body = await request.json();
   const { session_id, message } = body;
 
@@ -65,6 +76,12 @@ export async function POST(request: Request) {
     user_id: user.id,
     role: 'user',
     content: message,
+  });
+
+  // Track analytics event
+  trackServerEvent(supabase, user.id, EVENTS.ASSISTANT_QUERY, {
+    session_id: activeSessionId,
+    query_length: message.length,
   });
 
   // Load conversation history (last 20 messages)

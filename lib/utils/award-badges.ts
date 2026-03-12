@@ -1,5 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { TRACKS } from './roles';
+import { createNotification } from './notify';
 
 const TRACK_BADGE_MAP: Record<string, string> = {
   'business-essentials': 'business_grad',
@@ -91,6 +92,18 @@ export async function awardBadgesAfterCompletion(
       badge_id,
     }));
     await supabase.from('badges').upsert(rows, { onConflict: 'user_id,badge_id' });
+
+    // Notify user of new badges
+    for (const badge_id of awarded) {
+      createNotification(
+        supabase,
+        userId,
+        'badge',
+        'Badge Earned!',
+        `You earned the "${badge_id.replace(/_/g, ' ')}" badge!`,
+        '/achievements'
+      );
+    }
   }
 
   return awarded;

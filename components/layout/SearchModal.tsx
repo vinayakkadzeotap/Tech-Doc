@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Search, X, Loader2, BookMarked } from 'lucide-react';
 import Icon from '@/components/ui/Icon';
 
+type SearchFilter = 'all' | 'modules' | 'glossary';
+
 interface SearchResult {
   modules: Array<{
     trackId: string;
@@ -19,6 +21,7 @@ interface SearchResult {
     term: string;
     definition: string;
   }>;
+  suggestions: string[];
 }
 
 interface Props {
@@ -28,9 +31,10 @@ interface Props {
 
 export default function SearchModal({ isOpen, onClose }: Props) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult>({ modules: [], glossary: [] });
+  const [results, setResults] = useState<SearchResult>({ modules: [], glossary: [], suggestions: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<SearchFilter>('all');
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -73,7 +77,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (!query || query.length < 2) {
-      setResults({ modules: [], glossary: [] });
+      setResults({ modules: [], glossary: [], suggestions: [] });
       setError(null);
       return;
     }
@@ -82,19 +86,21 @@ export default function SearchModal({ isOpen, onClose }: Props) {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const params = new URLSearchParams({ q: query });
+        if (filter !== 'all') params.set('type', filter);
+        const res = await fetch(`/api/search?${params}`);
         if (!res.ok) throw new Error('Search failed');
         const data = await res.json();
-        setResults(data);
+        setResults({ suggestions: [], ...data });
       } catch {
         setError('Search is temporarily unavailable. Try again.');
-        setResults({ modules: [], glossary: [] });
+        setResults({ modules: [], glossary: [], suggestions: [] });
       }
       setLoading(false);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, filter]);
 
   const navigate = (href: string) => {
     onClose();
@@ -145,6 +151,32 @@ export default function SearchModal({ isOpen, onClose }: Props) {
           </kbd>
         </div>
 
+        {/* Filter pills */}
+        <div className="flex items-center gap-2 px-5 py-2 border-b border-border-subtle">
+          {(['all', 'modules', 'glossary'] as SearchFilter[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                filter === f
+                  ? 'bg-brand-blue text-white'
+                  : 'bg-bg-surface text-text-muted hover:bg-bg-hover'
+              }`}
+            >
+              {f === 'all' ? 'All' : f === 'modules' ? 'Modules' : 'Glossary'}
+            </button>
+          ))}
+        </div>
+
+        {/* Screen reader announcement */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {!loading && query.length >= 2 && (
+            hasResults
+              ? `${results.modules.length} modules and ${results.glossary.length} glossary results found`
+              : `No results found for ${query}`
+          )}
+        </div>
+
         {/* Results */}
         <div className="max-h-[50vh] overflow-y-auto">
           {/* Error state */}
@@ -161,6 +193,24 @@ export default function SearchModal({ isOpen, onClose }: Props) {
                 No results found for &ldquo;{query}&rdquo;
               </p>
               <p className="text-xs text-text-muted mt-1">Try different keywords</p>
+            </div>
+          )}
+
+          {/* Did you mean? suggestions */}
+          {!error && !loading && results.suggestions && results.suggestions.length > 0 && (
+            <div className="px-5 py-3 border-t border-border-subtle">
+              <p className="text-xs text-text-muted mb-2">Did you mean?</p>
+              <div className="flex flex-wrap gap-2">
+                {results.suggestions.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setQuery(s)}
+                    className="px-3 py-1 rounded-full text-xs font-medium bg-bg-surface text-brand-blue hover:bg-brand-blue/10 transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
