@@ -20,6 +20,7 @@ import {
   MessageCircle,
   ChevronDown,
   Code2,
+  Users,
   type LucideIcon,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -33,6 +34,7 @@ interface NavbarProps {
     full_name: string;
     role: string;
     is_admin: boolean;
+    is_manager?: boolean;
     avatar_url?: string;
   } | null;
 }
@@ -211,25 +213,45 @@ export default function Navbar({ user }: NavbarProps) {
                       </Link>
                     );
                   })}
-                  {user?.is_admin && (
+                  {(user?.is_admin || user?.is_manager) && (
                     <>
                       <div className="my-1.5 border-t border-border" />
-                      <Link
-                        href="/admin/dashboard"
-                        role="menuitem"
-                        tabIndex={-1}
-                        onClick={() => setMoreOpen(false)}
-                        className={`
-                          flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium transition-all focus:outline-none focus:bg-bg-hover
-                          ${pathname.startsWith('/admin')
-                            ? 'bg-brand-purple/10 text-brand-purple'
-                            : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
-                          }
-                        `}
-                      >
-                        <Zap size={15} />
-                        Admin
-                      </Link>
+                      {user?.is_manager && (
+                        <Link
+                          href="/admin/team"
+                          role="menuitem"
+                          tabIndex={-1}
+                          onClick={() => setMoreOpen(false)}
+                          className={`
+                            flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium transition-all focus:outline-none focus:bg-bg-hover
+                            ${pathname === '/admin/team'
+                              ? 'bg-brand-blue/10 text-brand-blue'
+                              : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
+                            }
+                          `}
+                        >
+                          <Users size={15} />
+                          Team
+                        </Link>
+                      )}
+                      {user?.is_admin && (
+                        <Link
+                          href="/admin/dashboard"
+                          role="menuitem"
+                          tabIndex={-1}
+                          onClick={() => setMoreOpen(false)}
+                          className={`
+                            flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium transition-all focus:outline-none focus:bg-bg-hover
+                            ${pathname.startsWith('/admin') && pathname !== '/admin/team'
+                              ? 'bg-brand-purple/10 text-brand-purple'
+                              : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
+                            }
+                          `}
+                        >
+                          <Zap size={15} />
+                          Admin
+                        </Link>
+                      )}
                     </>
                   )}
                 </div>

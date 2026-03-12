@@ -17,7 +17,8 @@ export default async function AdminLayout({
     .eq('id', user.id)
     .maybeSingle();
 
-  if (!profile?.is_admin) {
+  // Allow admins full access; managers can access /admin/team only
+  if (!profile?.is_admin && !profile?.is_manager) {
     redirect('/home');
   }
 
@@ -27,7 +28,8 @@ export default async function AdminLayout({
         email: profile.email,
         full_name: profile.full_name,
         role: profile.role,
-        is_admin: true,
+        is_admin: profile.is_admin || false,
+        is_manager: profile.is_manager || false,
       }} />
       <main className="flex-1">{children}</main>
     </div>

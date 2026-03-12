@@ -50,6 +50,7 @@ export default async function DashboardLayout({
         full_name: profile.full_name,
         role: profile.role,
         is_admin: profile.is_admin,
+        is_manager: profile.is_manager || false,
         avatar_url: profile.avatar_url || '',
       }
     : {
@@ -57,6 +58,7 @@ export default async function DashboardLayout({
         full_name: '',
         role: 'engineering',
         is_admin: false,
+        is_manager: false,
         avatar_url: '',
       };
 
