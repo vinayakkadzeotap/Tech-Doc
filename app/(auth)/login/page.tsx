@@ -6,21 +6,23 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { Mail, Lock } from 'lucide-react';
-import SSOButton from '@/components/onboarding/SSOButton';
+import { Mail, Lock, Chrome } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/home';
+  const authError = searchParams.get('error');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(
+    authError === 'domain_restricted'
+      ? 'Only @zeotap.com email addresses are allowed. Please sign in with your Zeotap account.'
+      : ''
+  );
   const [loading, setLoading] = useState(false);
-  const [ssoMode, setSsoMode] = useState(false);
-  const [ssoDomain, setSsoDomain] = useState('');
-  const [ssoMessage, setSsoMessage] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +43,27 @@ function LoginForm() {
 
     router.push(redirect);
     router.refresh();
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setGoogleLoading(true);
+
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(redirect)}`,
+        queryParams: {
+          hd: 'zeotap.com', // Restrict Google sign-in to zeotap.com domain
+        },
+      },
+    });
+
+    if (authError) {
+      setError(authError.message);
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -64,6 +87,31 @@ function LoginForm() {
 
         {/* Form card */}
         <div className="bg-bg-surface/50 border border-border rounded-3xl p-8 backdrop-blur-sm">
+          {/* Google Sign-In */}
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-border bg-bg-primary/50 text-sm font-medium text-text-primary hover:border-brand-blue/30 hover:bg-brand-blue/5 transition-all disabled:opacity-50"
+          >
+            {googleLoading ? (
+              <div className="w-5 h-5 border-2 border-text-muted border-t-brand-blue rounded-full animate-spin" />
+            ) : (
+              <Chrome size={18} className="text-brand-blue" />
+            )}
+            Sign in with Google Workspace
+          </button>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-3 bg-bg-surface/50 text-text-muted">or sign in with email</span>
+            </div>
+          </div>
+
+          {/* Email/Password Form */}
           <form onSubmit={handleLogin} className="space-y-5">
             <Input
               label="Email"
@@ -73,7 +121,6 @@ function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               icon={<Mail size={16} />}
               required
-              autoFocus
             />
             <Input
               label="Password"
@@ -95,45 +142,6 @@ function LoginForm() {
               Sign In
             </Button>
           </form>
-
-          {/* SSO Section */}
-          <div className="mt-6 pt-6 border-t border-border">
-            {!ssoMode ? (
-              <SSOButton onClick={() => setSsoMode(true)} />
-            ) : (
-              <div className="space-y-3">
-                <p className="text-xs text-text-muted text-center">Enter your company email domain</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="company.com"
-                    value={ssoDomain}
-                    onChange={(e) => { setSsoDomain(e.target.value); setSsoMessage(''); }}
-                    className="flex-1 bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-blue/50"
-                  />
-                  <button
-                    onClick={() => {
-                      if (ssoDomain) {
-                        setSsoMessage(`SSO is not yet configured for "${ssoDomain}". Contact your IT admin to set up SAML/OIDC integration.`);
-                      }
-                    }}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-blue text-white hover:bg-brand-blue/90 transition-colors"
-                  >
-                    Continue
-                  </button>
-                </div>
-                {ssoMessage && (
-                  <p className="text-xs text-amber-400 bg-amber-500/10 px-3 py-2 rounded-lg">{ssoMessage}</p>
-                )}
-                <button
-                  onClick={() => { setSsoMode(false); setSsoMessage(''); }}
-                  className="text-xs text-text-muted hover:text-text-primary transition-colors"
-                >
-                  Back to email login
-                </button>
-              </div>
-            )}
-          </div>
 
           <div className="mt-6 text-center space-y-3">
             <Link

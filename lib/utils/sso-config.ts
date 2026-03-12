@@ -1,34 +1,16 @@
-// SSO Provider configuration
-// This module provides the architecture for enterprise SSO integration.
-// When ready for production, configure the provider details and connect to
-// Supabase Auth's built-in SAML/OIDC support.
+// SSO Configuration for Zeotap Learning Platform
+// Uses Supabase Auth's built-in Google OAuth provider
 
-export interface SSOProvider {
-  id: string;
-  name: string;
-  type: 'saml' | 'oidc';
-  domain: string; // e.g., "company.com"
-  enabled: boolean;
-  config: {
-    // SAML
-    entryPoint?: string;
-    certificate?: string;
-    issuer?: string;
-    // OIDC
-    clientId?: string;
-    discoveryUrl?: string;
-  };
-}
+// Allowed email domains for SSO login
+export const ALLOWED_DOMAINS = ['zeotap.com'];
 
-// Placeholder: in production, load from DB or env
-export const SSO_PROVIDERS: SSOProvider[] = [];
-
-// Check if a domain has SSO configured
-export function getSSOProviderForDomain(domain: string): SSOProvider | null {
-  return SSO_PROVIDERS.find((p) => p.enabled && p.domain === domain) || null;
+// Check if an email domain is allowed
+export function isAllowedDomain(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase() || '';
+  return ALLOWED_DOMAINS.includes(domain);
 }
 
 // Extract domain from email
 export function getDomainFromEmail(email: string): string {
-  return email.split('@')[1] || '';
+  return email.split('@')[1]?.toLowerCase() || '';
 }

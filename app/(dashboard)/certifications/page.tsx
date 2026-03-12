@@ -6,12 +6,21 @@ import Icon from '@/components/ui/Icon';
 import { CERTIFICATIONS } from '@/lib/utils/certifications';
 import { TRACKS } from '@/lib/utils/roles';
 import CertActions from '@/components/learning/CertActions';
+import CertificateGenerator from '@/components/learning/CertificateGenerator';
 import ProgressBar from '@/components/ui/ProgressBar';
 
 export default async function CertificationsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
+
+  // Fetch user profile for certificate name
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .maybeSingle();
+  const userName = profile?.full_name || user.email || '';
 
   // Fetch progress
   const { data: progress } = await supabase
@@ -135,9 +144,18 @@ export default async function CertificationsPage() {
                 </div>
 
                 {cert.isEarned && cert.earnedAt && (
-                  <p className="text-xs text-brand-green mt-2 font-medium">
-                    Issued {new Date(cert.earnedAt).toLocaleDateString()}
-                  </p>
+                  <div className="mt-3 flex items-center gap-3 flex-wrap">
+                    <p className="text-xs text-brand-green font-medium">
+                      Issued {new Date(cert.earnedAt).toLocaleDateString()}
+                    </p>
+                    <CertificateGenerator
+                      userName={userName}
+                      certTitle={cert.title}
+                      level={cert.level}
+                      issuedAt={cert.earnedAt}
+                      certId={cert.id}
+                    />
+                  </div>
                 )}
 
                 {cert.isEligible && !cert.isEarned && (

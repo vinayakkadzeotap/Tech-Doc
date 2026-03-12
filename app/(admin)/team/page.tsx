@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Card from '@/components/ui/Card';
 import ProgressBar from '@/components/ui/ProgressBar';
+import SkillMatrix from '@/components/admin/SkillMatrix';
 import { Users, Award, BookOpen, TrendingUp } from 'lucide-react';
 
 interface TeamMember {
@@ -122,6 +123,9 @@ export default function TeamPage() {
           </div>
         </Card>
       </div>
+
+      {/* Skill Matrix */}
+      <SkillMatrix />
 
       {/* Team members */}
       <div className="space-y-4">

@@ -8,6 +8,7 @@ import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
 import Icon from '@/components/ui/Icon';
 import { useToast } from '@/components/ui/Toast';
+import StreakHeatmap from '@/components/interactive/StreakHeatmap';
 import {
   Camera,
   MapPin,
@@ -293,6 +294,11 @@ export default function ProfilePage() {
             {profile.bio}
           </p>
         )}
+      </Card>
+
+      {/* ── Activity Heatmap ────────────────────────────────────── */}
+      <Card>
+        <StreakHeatmap />
       </Card>
 
       {/* ── Personal Information ───────────────────────────────────── */}

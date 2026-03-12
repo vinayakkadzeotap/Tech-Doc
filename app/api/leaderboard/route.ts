@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { searchParams } = new URL(request.url);
+  const roleFilter = searchParams.get('role');
+
   // Fetch all progress, quiz attempts, and badges
+  let profilesQuery = supabase.from('profiles').select('id, full_name, role, team');
+  if (roleFilter && roleFilter !== 'all') {
+    profilesQuery = profilesQuery.eq('role', roleFilter);
+  }
+
   const [progressRes, quizRes, badgeRes, profilesRes] = await Promise.all([
     supabase.from('progress').select('user_id, status'),
     supabase.from('quiz_attempts').select('user_id, passed'),
     supabase.from('badges').select('user_id'),
-    supabase.from('profiles').select('id, full_name, role, team'),
+    profilesQuery,
   ]);
 
   const profiles = profilesRes.data || [];

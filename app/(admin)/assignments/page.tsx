@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
 import { TRACKS } from '@/lib/utils/roles';
+import { LEARNING_PLAN_TEMPLATES } from '@/lib/utils/learning-plans';
 import Icon from '@/components/ui/Icon';
 
 interface Assignment {
@@ -38,6 +39,10 @@ export default function AssignmentsPage() {
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showTemplate, setShowTemplate] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [bulkSaving, setBulkSaving] = useState(false);
   const { show } = useToast();
 
   useEffect(() => {
@@ -89,6 +94,37 @@ export default function AssignmentsPage() {
     setSaving(false);
   }
 
+  async function bulkAssign() {
+    if (!selectedTemplate || selectedUsers.length === 0) return;
+    setBulkSaving(true);
+    try {
+      const res = await fetch('/api/assignments/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId: selectedTemplate, userIds: selectedUsers }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        show({ message: `Created ${data.created} assignments for ${data.users} users!`, icon: '✅', color: '#10b981' });
+        setShowTemplate(false);
+        setSelectedTemplate('');
+        setSelectedUsers([]);
+        loadData();
+      } else {
+        show({ message: data.error || 'Failed', icon: '❌', color: '#ef4444' });
+      }
+    } catch {
+      show({ message: 'Failed to create assignments', icon: '❌', color: '#ef4444' });
+    }
+    setBulkSaving(false);
+  }
+
+  function toggleUser(userId: string) {
+    setSelectedUsers((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  }
+
   const statusColors: Record<string, string> = {
     assigned: '#3b82f6',
     in_progress: '#f59e0b',
@@ -116,9 +152,14 @@ export default function AssignmentsPage() {
             Assign learning tracks to team members
           </p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancel' : '+ Assign Track'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => { setShowTemplate(!showTemplate); setShowForm(false); }} variant="secondary">
+            {showTemplate ? 'Cancel' : 'Use Template'}
+          </Button>
+          <Button onClick={() => { setShowForm(!showForm); setShowTemplate(false); }}>
+            {showForm ? 'Cancel' : '+ Assign Track'}
+          </Button>
+        </div>
       </div>
 
       {/* Create form */}
@@ -178,6 +219,64 @@ export default function AssignmentsPage() {
           </div>
           <Button onClick={createAssignment} loading={saving} disabled={!selectedUser || !selectedTrack}>
             Create Assignment
+          </Button>
+        </Card>
+      )}
+
+      {/* Template form */}
+      {showTemplate && (
+        <Card className="space-y-4 animate-fade-in">
+          <h3 className="font-bold">Bulk Assign from Template</h3>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-text-secondary">Learning Plan Template</label>
+              <select
+                value={selectedTemplate}
+                onChange={(e) => setSelectedTemplate(e.target.value)}
+                className="w-full bg-bg-surface/50 border border-border rounded-xl px-4 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-blue"
+              >
+                <option value="">Select template...</option>
+                {LEARNING_PLAN_TEMPLATES.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} — {t.tracks.length} tracks, ~{t.estimatedDays} days
+                  </option>
+                ))}
+              </select>
+              {selectedTemplate && (
+                <p className="text-xs text-text-muted mt-1">
+                  {LEARNING_PLAN_TEMPLATES.find((t) => t.id === selectedTemplate)?.description}
+                </p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-text-secondary">
+                Select Users ({selectedUsers.length} selected)
+              </label>
+              <div className="max-h-48 overflow-y-auto space-y-1 border border-border rounded-xl p-2">
+                {users.map((u) => (
+                  <label
+                    key={u.id}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-bg-surface/50 cursor-pointer text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.includes(u.id)}
+                      onChange={() => toggleUser(u.id)}
+                      className="rounded border-border"
+                    />
+                    <span>{u.full_name || u.email}</span>
+                    <span className="text-text-muted text-xs ml-auto">{u.role}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+          <Button
+            onClick={bulkAssign}
+            loading={bulkSaving}
+            disabled={!selectedTemplate || selectedUsers.length === 0}
+          >
+            Assign to {selectedUsers.length} user{selectedUsers.length !== 1 ? 's' : ''}
           </Button>
         </Card>
       )}

@@ -21,6 +21,9 @@ import {
   ChevronDown,
   Code2,
   Users,
+  Swords,
+  Target,
+  FileText,
   type LucideIcon,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -55,6 +58,9 @@ const primaryNav: NavItem[] = [
 const secondaryNav: NavItem[] = [
   { href: '/universe', label: 'Universe', icon: Globe },
   { href: '/codebase', label: 'Codebase', icon: Code2 },
+  { href: '/battle-cards', label: 'Battle Cards', icon: Swords },
+  { href: '/deal-prep', label: 'Deal Prep', icon: Target },
+  { href: '/case-studies', label: 'Case Studies', icon: FileText },
   { href: '/assess', label: 'Assess', icon: ClipboardCheck },
   { href: '/achievements', label: 'Achievements', icon: Trophy },
   { href: '/certifications', label: 'Certifications', icon: GraduationCap },

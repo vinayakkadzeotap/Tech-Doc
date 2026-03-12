@@ -326,6 +326,7 @@ function LeaderboardRow({
 export default function Leaderboard() {
   const [period, setPeriod] = useState<TimePeriod>('all');
   const [team, setTeam] = useState('All Teams');
+  const [roleFilter, setRoleFilter] = useState('All Roles');
   const [showYourRank, setShowYourRank] = useState(false);
   const [animKey, setAnimKey] = useState(0);
   const [liveLearners, setLiveLearners] = useState<Learner[] | null>(null);
@@ -360,14 +361,17 @@ export default function Leaderboard() {
 
   // Compute ranked list
   const ranked = useMemo(() => {
-    const filtered = team === 'All Teams' ? activeLearners : activeLearners.filter((l) => l.team === team);
+    let filtered = team === 'All Teams' ? activeLearners : activeLearners.filter((l) => l.team === team);
+    if (roleFilter !== 'All Roles') {
+      filtered = filtered.filter((l) => l.role.toLowerCase().includes(roleFilter.toLowerCase()));
+    }
     const withXP = filtered.map((l, i) => ({
       ...l,
       periodXP: PERIOD_MULTIPLIERS[period](l, i),
     }));
     withXP.sort((a, b) => b.periodXP - a.periodXP);
     return withXP;
-  }, [period, team, activeLearners]);
+  }, [period, team, roleFilter, activeLearners]);
 
   const top3 = ranked.slice(0, 3);
   const rest = ranked.slice(3);
@@ -377,7 +381,7 @@ export default function Leaderboard() {
   // Re-trigger animations on filter change
   useEffect(() => {
     setAnimKey((k) => k + 1);
-  }, [period, team]);
+  }, [period, team, roleFilter]);
 
   // "Your Rank" sticky banner visibility
   const checkVisibility = useCallback(() => {
@@ -426,18 +430,29 @@ export default function Leaderboard() {
             </Tooltip>
           </div>
 
-          {/* Team filter */}
-          <select
-            value={team}
-            onChange={(e) => setTeam(e.target.value)}
-            className="bg-bg-elevated border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary outline-none focus:border-brand-blue transition-colors cursor-pointer"
-          >
-            {TEAMS.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+          {/* Filters */}
+          <div className="flex items-center gap-2">
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="bg-bg-elevated border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary outline-none focus:border-brand-blue transition-colors cursor-pointer"
+            >
+              {['All Roles', 'Engineer', 'Sales', 'CS', 'Product', 'Marketing', 'Leadership', 'HR'].map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+            <select
+              value={team}
+              onChange={(e) => setTeam(e.target.value)}
+              className="bg-bg-elevated border border-border rounded-lg px-3 py-1.5 text-xs text-text-primary outline-none focus:border-brand-blue transition-colors cursor-pointer"
+            >
+              {TEAMS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Period Tabs */}

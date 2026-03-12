@@ -7,12 +7,16 @@ import MarkCompleteBar from '@/components/learning/MarkCompleteBar';
 import ModuleToolbar from '@/components/learning/ModuleToolbar';
 import ScrollTracker from '@/components/learning/ScrollTracker';
 import ModuleFeedback from '@/components/learning/ModuleFeedback';
+import KnowledgeCheck from '@/components/learning/KnowledgeCheck';
+import ModuleExtras from '@/components/learning/ModuleExtras';
 import Badge from '@/components/ui/Badge';
 import Icon from '@/components/ui/Icon';
 import { getModuleContent } from '@/lib/mdx';
 import { serialize } from 'next-mdx-remote/serialize';
 import MDXRenderer from '@/components/mdx/MDXRenderer';
 import { getContentStatus, STATUS_CONFIG } from '@/lib/utils/content-metadata';
+import { KNOWLEDGE_CHECKS } from '@/lib/utils/knowledge-checks';
+import { REFRESHER_CARDS } from '@/lib/utils/refresher-data';
 
 interface Props {
   params: Promise<{ trackId: string; moduleId: string }>;
@@ -151,6 +155,13 @@ export default async function ModulePage({ params }: Props) {
           </div>
         )}
       </article>
+
+      {/* Knowledge Check & Refresher */}
+      <ModuleExtras
+        moduleId={moduleId}
+        questions={KNOWLEDGE_CHECKS[moduleId] || null}
+        refresherCards={REFRESHER_CARDS[moduleId] || null}
+      />
 
       {/* Module Feedback */}
       <ModuleFeedback trackId={trackId} moduleId={moduleId} />

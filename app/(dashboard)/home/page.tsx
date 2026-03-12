@@ -9,6 +9,7 @@ import Icon from '@/components/ui/Icon';
 import ProgressDashboard from '@/components/interactive/ProgressDashboard';
 import NudgeBanner from '@/components/interactive/NudgeBanner';
 import ActivityFeed from '@/components/interactive/ActivityFeed';
+import { ArrowRight, PlayCircle, BookOpen } from 'lucide-react';
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -60,6 +61,44 @@ export default async function HomePage() {
     { label: 'Badges Earned', value: String(earnedBadges), color: '#f59e0b', icon: '🏆' },
   ];
 
+  // Find "Continue where you left off" module
+  const completedSet = new Set(
+    (progressData || []).filter((p) => p.status === 'completed').map((p) => `${p.track_id}:${p.module_id}`)
+  );
+  const inProgressEntries = (progressData || [])
+    .filter((p) => p.status === 'in_progress')
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  let resumeTrack: typeof tracks[0] | null = null;
+  let resumeModule: { id: string; title: string; icon: string } | null = null;
+  let resumeTrackPct = 0;
+
+  if (inProgressEntries.length > 0) {
+    // Most recent in-progress module
+    const entry = inProgressEntries[0];
+    resumeTrack = tracks.find((t) => t.id === entry.track_id) || null;
+    if (resumeTrack) {
+      const mod = resumeTrack.modules.find((m) => m.id === entry.module_id);
+      if (mod) resumeModule = { id: mod.id, title: mod.title, icon: mod.icon };
+      const done = (progressData || []).filter((p) => p.track_id === resumeTrack!.id && p.status === 'completed').length;
+      resumeTrackPct = Math.round((done / resumeTrack.totalModules) * 100);
+    }
+  }
+
+  if (!resumeModule) {
+    // Find first incomplete module in most active track
+    for (const track of tracks) {
+      const nextMod = track.modules.find((m) => !completedSet.has(`${track.id}:${m.id}`));
+      if (nextMod) {
+        resumeTrack = track;
+        resumeModule = { id: nextMod.id, title: nextMod.title, icon: nextMod.icon };
+        const done = (progressData || []).filter((p) => p.track_id === track.id && p.status === 'completed').length;
+        resumeTrackPct = Math.round((done / track.totalModules) * 100);
+        break;
+      }
+    }
+  }
+
   const quickActions = [
     { href: '/explore?tab=pipeline', icon: '🔄', label: 'Data Pipeline', desc: 'Live data flow simulator', color: '#6366f1' },
     { href: '/explore?tab=segments', icon: '🎯', label: 'Segment Builder', desc: 'Practice building audiences', color: '#10b981' },
@@ -91,6 +130,50 @@ export default async function HomePage() {
           </div>
         )}
       </div>
+
+      {/* Continue where you left off */}
+      {resumeTrack && resumeModule ? (
+        <Link href={`/learn/${resumeTrack.id}/${resumeModule.id}`}>
+          <div className="group relative overflow-hidden rounded-2xl border border-brand-blue/20 bg-gradient-to-r from-brand-blue/[0.08] to-brand-purple/[0.05] p-5 transition-all duration-300 hover:border-brand-blue/40 hover:shadow-lg hover:shadow-brand-blue/5 hover:-translate-y-0.5">
+            <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-[0.04] blur-3xl bg-brand-blue translate-x-16 -translate-y-16" />
+            <div className="relative flex items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-brand-blue/10 border border-brand-blue/20">
+                <PlayCircle size={24} className="text-brand-blue" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs text-brand-blue font-semibold uppercase tracking-wider mb-1">
+                  Continue where you left off
+                </div>
+                <div className="font-bold text-text-primary truncate">{resumeModule.title}</div>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-text-muted">{resumeTrack.title}</span>
+                  <span className="text-xs text-text-muted">·</span>
+                  <span className="text-xs text-text-muted">{resumeTrackPct}% complete</span>
+                </div>
+              </div>
+              <ArrowRight size={20} className="text-text-muted group-hover:text-brand-blue group-hover:translate-x-1 transition-all flex-shrink-0" />
+            </div>
+          </div>
+        </Link>
+      ) : completedModules === 0 ? (
+        <Link href="/learn">
+          <div className="group relative overflow-hidden rounded-2xl border border-brand-green/20 bg-gradient-to-r from-brand-green/[0.08] to-brand-cyan/[0.05] p-5 transition-all duration-300 hover:border-brand-green/40 hover:shadow-lg hover:shadow-brand-green/5 hover:-translate-y-0.5">
+            <div className="relative flex items-center gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-brand-green/10 border border-brand-green/20">
+                <BookOpen size={24} className="text-brand-green" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs text-brand-green font-semibold uppercase tracking-wider mb-1">
+                  Get Started
+                </div>
+                <div className="font-bold text-text-primary">Start your first module</div>
+                <div className="text-xs text-text-muted mt-1">{tracks.length} learning tracks available for your role</div>
+              </div>
+              <ArrowRight size={20} className="text-text-muted group-hover:text-brand-green group-hover:translate-x-1 transition-all flex-shrink-0" />
+            </div>
+          </div>
+        </Link>
+      ) : null}
 
       {/* Nudge banners */}
       <NudgeBanner />

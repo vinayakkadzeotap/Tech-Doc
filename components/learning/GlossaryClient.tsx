@@ -177,6 +177,37 @@ export default function GlossaryClient() {
                   <p className="text-xs text-text-muted leading-relaxed">
                     {highlightMatch(item.definition, search)}
                   </p>
+                  {item.relatedTerms && item.relatedTerms.length > 0 && (
+                    <div className="mt-2 flex items-center gap-1 flex-wrap">
+                      <span className="text-[10px] text-text-muted">See also:</span>
+                      {item.relatedTerms.map((rt) => {
+                        const exists = GLOSSARY_TERMS.some((t) => t.term === rt);
+                        return (
+                          <button
+                            key={rt}
+                            onClick={() => {
+                              if (!exists) return;
+                              setSearch('');
+                              setActiveCategory('all');
+                              const letter = rt[0].toUpperCase();
+                              setTimeout(() => {
+                                const el = document.getElementById(`glossary-${letter}`);
+                                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                setJumpLetter(letter);
+                              }, 50);
+                            }}
+                            className={`text-[10px] px-1.5 py-0.5 rounded ${
+                              exists
+                                ? 'text-brand-blue bg-brand-blue/10 hover:bg-brand-blue/20 cursor-pointer'
+                                : 'text-text-muted bg-bg-surface cursor-default'
+                            } transition-colors`}
+                          >
+                            {rt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </Card>
               ))}
             </div>
