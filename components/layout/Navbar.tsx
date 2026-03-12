@@ -19,6 +19,7 @@ import {
   Globe,
   MessageCircle,
   ChevronDown,
+  Code2,
   type LucideIcon,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -50,6 +51,7 @@ const primaryNav: NavItem[] = [
 
 const secondaryNav: NavItem[] = [
   { href: '/universe', label: 'Universe', icon: Globe },
+  { href: '/codebase', label: 'Codebase', icon: Code2 },
   { href: '/assess', label: 'Assess', icon: ClipboardCheck },
   { href: '/achievements', label: 'Achievements', icon: Trophy },
   { href: '/certifications', label: 'Certifications', icon: GraduationCap },
