@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import CelebrationWrapper from '@/components/interactive/CelebrationWrapper';
+import WelcomeWizard from '@/components/onboarding/WelcomeWizard';
+import type { UserRole } from '@/lib/utils/roles';
 
 export default async function DashboardLayout({
   children,
@@ -57,12 +59,21 @@ export default async function DashboardLayout({
         avatar_url: '',
       };
 
+  const showOnboarding = profile && !profile.onboarding_completed;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar user={navUser} />
       <CelebrationWrapper>
         <main className="flex-1 animate-fade-in">{children}</main>
       </CelebrationWrapper>
+      {showOnboarding && (
+        <WelcomeWizard
+          userId={user.id}
+          userName={profile.full_name || ''}
+          currentRole={(profile.role as UserRole) || 'engineering'}
+        />
+      )}
     </div>
   );
 }

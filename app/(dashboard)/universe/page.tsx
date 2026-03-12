@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import DataSourceBanner from '@/components/ui/DataSourceBanner';
 import UniverseCanvas from '@/components/universe/UniverseCanvas';
 import UniverseControls from '@/components/universe/UniverseControls';
 import UniverseDetailPanel from '@/components/universe/UniverseDetailPanel';
@@ -103,6 +104,9 @@ export default function UniversePage() {
       className="relative w-full bg-bg-primary overflow-hidden"
       style={{ height: 'calc(100vh - 64px)' }}
     >
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 w-full max-w-lg px-4">
+        <DataSourceBanner />
+      </div>
       <UniverseCanvas
         selectedNode={selectedNode}
         onSelectNode={setSelectedNode}

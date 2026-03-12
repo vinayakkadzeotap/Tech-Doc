@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { DOMAINS } from '@/lib/utils/codebase';
 import DomainCard from '@/components/codebase/DomainCard';
+import DataSourceBanner from '@/components/ui/DataSourceBanner';
 import { Code2, GitBranch, Layers, Search } from 'lucide-react';
 
 export const metadata = {
@@ -14,6 +15,7 @@ export default function CodebaseIndexPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <DataSourceBanner />
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-3">

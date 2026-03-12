@@ -328,19 +328,46 @@ export default function Leaderboard() {
   const [team, setTeam] = useState('All Teams');
   const [showYourRank, setShowYourRank] = useState(false);
   const [animKey, setAnimKey] = useState(0);
+  const [liveLearners, setLiveLearners] = useState<Learner[] | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const currentUserRef = useRef<HTMLDivElement>(null);
 
+  // Fetch real leaderboard data from API
+  useEffect(() => {
+    fetch('/api/leaderboard')
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length >= 5) {
+          setLiveLearners(
+            data.map((d: { id: string; name: string; role: string; team: string; xp: number; badges: number; modulesCompleted: number; isCurrentUser: boolean }) => ({
+              id: d.id,
+              name: d.name,
+              role: d.role,
+              team: d.team,
+              xp: d.xp,
+              badges: d.badges,
+              streak: 0,
+              modulesCompleted: d.modulesCompleted,
+              isCurrentUser: d.isCurrentUser,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const activeLearners = liveLearners ?? DEMO_LEARNERS;
+
   // Compute ranked list
   const ranked = useMemo(() => {
-    const filtered = team === 'All Teams' ? DEMO_LEARNERS : DEMO_LEARNERS.filter((l) => l.team === team);
+    const filtered = team === 'All Teams' ? activeLearners : activeLearners.filter((l) => l.team === team);
     const withXP = filtered.map((l, i) => ({
       ...l,
       periodXP: PERIOD_MULTIPLIERS[period](l, i),
     }));
     withXP.sort((a, b) => b.periodXP - a.periodXP);
     return withXP;
-  }, [period, team]);
+  }, [period, team, activeLearners]);
 
   const top3 = ranked.slice(0, 3);
   const rest = ranked.slice(3);

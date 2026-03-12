@@ -6,6 +6,7 @@ import { TRACKS } from '@/lib/utils/roles';
 import MarkCompleteBar from '@/components/learning/MarkCompleteBar';
 import ModuleToolbar from '@/components/learning/ModuleToolbar';
 import ScrollTracker from '@/components/learning/ScrollTracker';
+import ModuleFeedback from '@/components/learning/ModuleFeedback';
 import Badge from '@/components/ui/Badge';
 import Icon from '@/components/ui/Icon';
 import { getModuleContent } from '@/lib/mdx';
@@ -122,8 +123,11 @@ export default async function ModulePage({ params }: Props) {
         )}
       </article>
 
+      {/* Module Feedback */}
+      <ModuleFeedback trackId={trackId} moduleId={moduleId} />
+
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-6 border-t border-border">
+      <div className="flex items-center justify-between pt-6 border-t border-border mt-8">
         {prevModule ? (
           <Link
             href={`/learn/${trackId}/${prevModule.id}`}
