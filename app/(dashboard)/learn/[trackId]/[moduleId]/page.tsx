@@ -12,6 +12,7 @@ import Icon from '@/components/ui/Icon';
 import { getModuleContent } from '@/lib/mdx';
 import { serialize } from 'next-mdx-remote/serialize';
 import MDXRenderer from '@/components/mdx/MDXRenderer';
+import { getContentStatus, STATUS_CONFIG } from '@/lib/utils/content-metadata';
 
 interface Props {
   params: Promise<{ trackId: string; moduleId: string }>;
@@ -45,6 +46,15 @@ export default async function ModulePage({ params }: Props) {
 
   const isComplete = progress?.status === 'completed';
 
+  // Check content freshness
+  const { data: review } = await supabase
+    .from('content_reviews')
+    .select('last_reviewed, status')
+    .eq('module_id', moduleId)
+    .maybeSingle();
+
+  const contentStatus = review ? getContentStatus(review.last_reviewed) : null;
+
   // Load MDX content if available
   const moduleContent = getModuleContent(trackId, moduleId);
   let mdxSource = null;
@@ -77,6 +87,25 @@ export default async function ModulePage({ params }: Props) {
         <span>/</span>
         <span className="text-text-primary font-medium">{module.title}</span>
       </nav>
+
+      {/* Stale content notice */}
+      {contentStatus && contentStatus !== 'current' && (
+        <div
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl mb-4 text-xs font-medium"
+          style={{
+            backgroundColor: STATUS_CONFIG[contentStatus].bg,
+            color: STATUS_CONFIG[contentStatus].color,
+            border: `1px solid ${STATUS_CONFIG[contentStatus].color}30`,
+          }}
+        >
+          {contentStatus === 'stale' ? 'This content may be outdated.' : 'This content is due for review.'}
+          {review?.last_reviewed && (
+            <span className="opacity-70 ml-1">
+              Last reviewed {new Date(review.last_reviewed).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Module header */}
       <div className="mb-8">

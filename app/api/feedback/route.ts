@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { trackServerEvent, EVENTS } from '@/lib/utils/analytics';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -21,6 +22,13 @@ export async function POST(request: Request) {
   }).select();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  trackServerEvent(supabase, user.id, EVENTS.FEEDBACK_SUBMIT, {
+    content_type,
+    content_id,
+    rating: rating || 0,
+  });
+
   return NextResponse.json({ success: true, data });
 }
 

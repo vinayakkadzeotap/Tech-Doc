@@ -35,9 +35,11 @@ export default function SearchModal({ isOpen, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<SearchFilter>('all');
+  const [selectedIdx, setSelectedIdx] = useState(-1);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Store the element that had focus before modal opened
   useEffect(() => {
@@ -52,16 +54,39 @@ export default function SearchModal({ isOpen, onClose }: Props) {
     };
   }, [isOpen]);
 
-  // Handle ⌘K and Escape
+  // Total result count for arrow key navigation
+  const totalItems = results.modules.length + results.glossary.length;
+
+  // Reset selection when results change
+  useEffect(() => {
+    setSelectedIdx(-1);
+  }, [results]);
+
+  // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        if (!isOpen) return; // handled by parent
+        if (!isOpen) return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIdx((prev) => (prev < totalItems - 1 ? prev + 1 : 0));
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIdx((prev) => (prev > 0 ? prev - 1 : totalItems - 1));
+      }
+      if (e.key === 'Enter' && selectedIdx >= 0) {
+        e.preventDefault();
+        const btns = resultsRef.current?.querySelectorAll<HTMLButtonElement>('[data-result]');
+        if (btns && btns[selectedIdx]) {
+          btns[selectedIdx].click();
+        }
       }
     },
-    [onClose, isOpen]
+    [onClose, isOpen, totalItems, selectedIdx]
   );
 
   useEffect(() => {
@@ -178,7 +203,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
         </div>
 
         {/* Results */}
-        <div className="max-h-[50vh] overflow-y-auto">
+        <div className="max-h-[50vh] overflow-y-auto" ref={resultsRef}>
           {/* Error state */}
           {error && (
             <div className="px-5 py-6 text-center">
@@ -219,11 +244,14 @@ export default function SearchModal({ isOpen, onClose }: Props) {
               <div className="px-2 py-1.5 text-[10px] font-bold text-text-muted uppercase tracking-wider">
                 Modules ({results.modules.length})
               </div>
-              {results.modules.map((m) => (
+              {results.modules.map((m, i) => (
                 <button
                   key={`${m.trackId}/${m.moduleId}`}
+                  data-result
                   onClick={() => navigate(`/learn/${m.trackId}/${m.moduleId}`)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-bg-hover transition-colors"
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                    selectedIdx === i ? 'bg-brand-blue/10 ring-1 ring-brand-blue/30' : 'hover:bg-bg-hover'
+                  }`}
                 >
                   <Icon name={m.icon} size={18} className="text-text-muted flex-shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -240,11 +268,14 @@ export default function SearchModal({ isOpen, onClose }: Props) {
               <div className="px-2 py-1.5 text-[10px] font-bold text-text-muted uppercase tracking-wider">
                 Glossary ({results.glossary.length})
               </div>
-              {results.glossary.map((g) => (
+              {results.glossary.map((g, i) => (
                 <button
                   key={g.term}
+                  data-result
                   onClick={() => navigate('/glossary')}
-                  className="w-full flex items-start gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-bg-hover transition-colors"
+                  className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                    selectedIdx === results.modules.length + i ? 'bg-brand-blue/10 ring-1 ring-brand-blue/30' : 'hover:bg-bg-hover'
+                  }`}
                 >
                   <BookMarked size={18} className="text-text-muted flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">

@@ -6,7 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { Mail, Lock, Shield } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
+import SSOButton from '@/components/onboarding/SSOButton';
 
 function LoginForm() {
   const router = useRouter();
@@ -98,13 +99,7 @@ function LoginForm() {
           {/* SSO Section */}
           <div className="mt-6 pt-6 border-t border-border">
             {!ssoMode ? (
-              <button
-                onClick={() => setSsoMode(true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-bg-primary/50 text-sm text-text-secondary hover:text-text-primary hover:border-border-strong transition-all"
-              >
-                <Shield size={16} />
-                Enterprise SSO
-              </button>
+              <SSOButton onClick={() => setSsoMode(true)} />
             ) : (
               <div className="space-y-3">
                 <p className="text-xs text-text-muted text-center">Enter your company email domain</p>
