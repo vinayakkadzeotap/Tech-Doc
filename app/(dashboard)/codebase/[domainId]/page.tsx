@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { getDomain, DOMAINS } from '@/lib/utils/codebase';
 import RepoCard from '@/components/codebase/RepoCard';
 import MermaidDiagram from '@/components/mdx/MermaidDiagram';
+import DomainTabs from '@/components/codebase/DomainTabs';
+import type { DomainId } from '@/lib/utils/codebase/types';
 import {
   ChevronLeft,
   Fingerprint,
@@ -85,74 +87,76 @@ export default function DomainPage({ params }: { params: { domainId: string } })
         </div>
       </div>
 
-      {/* Architecture Notes */}
-      {domain.architectureNotes && (
-        <div className="mb-8 p-5 rounded-xl bg-bg-surface border border-border">
-          <h2 className="text-sm font-semibold text-text-primary mb-2">Architecture Overview</h2>
-          <p className="text-xs text-text-secondary leading-relaxed whitespace-pre-line">
-            {domain.architectureNotes}
-          </p>
-        </div>
-      )}
-
-      {/* Architecture Diagram */}
-      {domain.mermaidArch && (
-        <div className="mb-8">
-          <h2 className="text-sm font-semibold text-text-primary mb-3">System Architecture</h2>
-          <div className="p-4 rounded-xl bg-bg-surface border border-border">
-            <MermaidDiagram chart={domain.mermaidArch} />
-          </div>
-        </div>
-      )}
-
-      {/* Repos */}
-      <div className="mb-8">
-        <h2 className="text-sm font-semibold text-text-primary mb-3">
-          Repositories ({domain.repos.length})
-        </h2>
-        <div className="space-y-2">
-          {domain.repos.map((repo) => (
-            <RepoCard key={repo.id} repo={repo} />
-          ))}
-          {domain.repos.length === 0 && (
-            <p className="text-xs text-text-muted p-4 bg-bg-surface border border-border rounded-xl text-center">
-              Analysis in progress...
+      <DomainTabs domainId={domain.id as DomainId}>
+        {/* Architecture Notes */}
+        {domain.architectureNotes && (
+          <div className="mb-8 p-5 rounded-xl bg-bg-surface border border-border">
+            <h2 className="text-sm font-semibold text-text-primary mb-2">Architecture Overview</h2>
+            <p className="text-xs text-text-secondary leading-relaxed whitespace-pre-line">
+              {domain.architectureNotes}
             </p>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
 
-      {/* Data Flow Diagram */}
-      {domain.mermaidDataFlow && (
+        {/* Architecture Diagram */}
+        {domain.mermaidArch && (
+          <div className="mb-8">
+            <h2 className="text-sm font-semibold text-text-primary mb-3">System Architecture</h2>
+            <div className="p-4 rounded-xl bg-bg-surface border border-border">
+              <MermaidDiagram chart={domain.mermaidArch} />
+            </div>
+          </div>
+        )}
+
+        {/* Repos */}
         <div className="mb-8">
-          <h2 className="text-sm font-semibold text-text-primary mb-3">Data Flow</h2>
-          <div className="p-4 rounded-xl bg-bg-surface border border-border">
-            <MermaidDiagram chart={domain.mermaidDataFlow} />
+          <h2 className="text-sm font-semibold text-text-primary mb-3">
+            Repositories ({domain.repos.length})
+          </h2>
+          <div className="space-y-2">
+            {domain.repos.map((repo) => (
+              <RepoCard key={repo.id} repo={repo} />
+            ))}
+            {domain.repos.length === 0 && (
+              <p className="text-xs text-text-muted p-4 bg-bg-surface border border-border rounded-xl text-center">
+                Analysis in progress...
+              </p>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Domain Navigation */}
-      <div className="border-t border-border pt-6">
-        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
-          Other Domains
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {DOMAINS.filter((d) => d.id !== domain.id).map((d) => {
-            const DIcon = ICON_MAP[d.icon] || Database;
-            return (
-              <Link
-                key={d.id}
-                href={`/codebase/${d.id}`}
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border text-text-secondary hover:text-text-primary hover:border-border-strong transition-all"
-              >
-                <DIcon size={12} style={{ color: d.color }} />
-                {d.title}
-              </Link>
-            );
-          })}
+        {/* Data Flow Diagram */}
+        {domain.mermaidDataFlow && (
+          <div className="mb-8">
+            <h2 className="text-sm font-semibold text-text-primary mb-3">Data Flow</h2>
+            <div className="p-4 rounded-xl bg-bg-surface border border-border">
+              <MermaidDiagram chart={domain.mermaidDataFlow} />
+            </div>
+          </div>
+        )}
+
+        {/* Domain Navigation */}
+        <div className="border-t border-border pt-6">
+          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
+            Other Domains
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {DOMAINS.filter((d) => d.id !== domain.id).map((d) => {
+              const DIcon = ICON_MAP[d.icon] || Database;
+              return (
+                <Link
+                  key={d.id}
+                  href={`/codebase/${d.id}`}
+                  className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border text-text-secondary hover:text-text-primary hover:border-border-strong transition-all"
+                >
+                  <DIcon size={12} style={{ color: d.color }} />
+                  {d.title}
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </DomainTabs>
     </div>
   );
 }
