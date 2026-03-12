@@ -255,10 +255,14 @@ export default function CodeGraphCanvas({
     [hitTest, onSelectNode, transform]
   );
 
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
+  // Attach wheel and touch handlers natively with { passive: false } to allow preventDefault
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const rect = canvasRef.current!.getBoundingClientRect();
+      const rect = canvas.getBoundingClientRect();
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
       const delta = e.deltaY > 0 ? 0.9 : 1.1;
@@ -267,19 +271,17 @@ export default function CodeGraphCanvas({
         const ratio = newScale / prev.scale;
         return { scale: newScale, x: mx - (mx - prev.x) * ratio, y: my - (my - prev.y) * ratio };
       });
-    },
-    [setTransform]
-  );
+    };
 
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
+    const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2) {
+        e.preventDefault();
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (lastPinchDist.current > 0) {
           const delta = dist / lastPinchDist.current;
-          const rect = canvasRef.current!.getBoundingClientRect();
+          const rect = canvas.getBoundingClientRect();
           const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
           const my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
           setTransform((prev) => {
@@ -290,13 +292,22 @@ export default function CodeGraphCanvas({
         }
         lastPinchDist.current = dist;
       }
-    },
-    [setTransform]
-  );
+    };
 
-  const handleTouchEnd = useCallback(() => {
-    lastPinchDist.current = 0;
-  }, []);
+    const handleTouchEnd = () => {
+      lastPinchDist.current = 0;
+    };
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [setTransform]);
 
   // ── Force simulation + Render loop ────────────────────────────────
   useEffect(() => {
@@ -663,9 +674,6 @@ export default function CodeGraphCanvas({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onWheel={handleWheel}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         className="block cursor-grab active:cursor-grabbing touch-none"
       />
     </div>
