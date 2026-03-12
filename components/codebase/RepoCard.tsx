@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ExternalLink } from 'lucide-react';
+import { ChevronDown, ExternalLink, Eye } from 'lucide-react';
 import type { Repo } from '@/lib/utils/codebase/types';
+import RepoRelationshipDiagram from './RepoRelationshipDiagram';
 
 const LANG_COLORS: Record<string, string> = {
   Scala: '#DC322F',
@@ -15,8 +16,9 @@ const LANG_COLORS: Record<string, string> = {
   Ruby: '#CC342D',
 };
 
-export default function RepoCard({ repo }: { repo: Repo }) {
+export default function RepoCard({ repo, domainColor }: { repo: Repo; domainColor?: string }) {
   const [expanded, setExpanded] = useState(false);
+  const [showDiagram, setShowDiagram] = useState(false);
 
   return (
     <div className="border border-border rounded-xl bg-bg-surface overflow-hidden transition-all duration-200 hover:border-border-strong">
@@ -141,6 +143,21 @@ export default function RepoCard({ repo }: { repo: Repo }) {
                   </span>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Relationship Diagram Toggle */}
+          <button
+            onClick={() => setShowDiagram(!showDiagram)}
+            className="inline-flex items-center gap-1 text-[10px] font-medium text-brand-blue hover:text-brand-blue/80 transition-colors"
+          >
+            <Eye size={12} />
+            {showDiagram ? 'Hide' : 'View'} Relationships
+          </button>
+
+          {showDiagram && (
+            <div className="p-3 rounded-lg bg-bg-primary/50 border border-border">
+              <RepoRelationshipDiagram repo={repo} domainColor={domainColor || '#3b82f6'} />
             </div>
           )}
         </div>

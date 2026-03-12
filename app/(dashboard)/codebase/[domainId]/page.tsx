@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getDomain, DOMAINS } from '@/lib/utils/codebase';
 import RepoCard from '@/components/codebase/RepoCard';
 import MermaidDiagram from '@/components/mdx/MermaidDiagram';
-import DomainTabs from '@/components/codebase/DomainTabs';
+import { getRelatedCDPSkills } from '@/lib/utils/codebase/search-index';
 import type { DomainId } from '@/lib/utils/codebase/types';
 import {
   ChevronLeft,
@@ -48,6 +48,7 @@ export default function DomainPage({ params }: { params: { domainId: string } })
 
   const Icon = ICON_MAP[domain.icon] || Database;
   const languages = Array.from(new Set(domain.repos.map((r) => r.language)));
+  const cdpSkills = getRelatedCDPSkills(domain.id as DomainId);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
@@ -87,7 +88,23 @@ export default function DomainPage({ params }: { params: { domainId: string } })
         </div>
       </div>
 
-      <DomainTabs domainId={domain.id as DomainId}>
+      {/* CDP Skills Cross-Links */}
+      {cdpSkills.length > 0 && (
+        <div className="flex items-center gap-2 mb-6">
+          <span className="text-[10px] text-text-muted font-medium">Related CDP Skills:</span>
+          {cdpSkills.map((skill) => (
+            <Link
+              key={skill.id}
+              href="/cdp-assistant"
+              className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-brand-purple/10 text-brand-purple hover:bg-brand-purple/20 transition-colors"
+            >
+              {skill.label}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <>
         {/* Architecture Notes */}
         {domain.architectureNotes && (
           <div className="mb-8 p-5 rounded-xl bg-bg-surface border border-border">
@@ -115,7 +132,7 @@ export default function DomainPage({ params }: { params: { domainId: string } })
           </h2>
           <div className="space-y-2">
             {domain.repos.map((repo) => (
-              <RepoCard key={repo.id} repo={repo} />
+              <RepoCard key={repo.id} repo={repo} domainColor={domain.color} />
             ))}
             {domain.repos.length === 0 && (
               <p className="text-xs text-text-muted p-4 bg-bg-surface border border-border rounded-xl text-center">
@@ -156,7 +173,7 @@ export default function DomainPage({ params }: { params: { domainId: string } })
             })}
           </div>
         </div>
-      </DomainTabs>
+      </>
     </div>
   );
 }
