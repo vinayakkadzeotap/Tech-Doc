@@ -9,6 +9,7 @@ import Card from '@/components/ui/Card';
 import Icon from '@/components/ui/Icon';
 import { useToast } from '@/components/ui/Toast';
 import StreakHeatmap from '@/components/interactive/StreakHeatmap';
+import SalesReadinessGauge from '@/components/interactive/SalesReadinessGauge';
 import {
   Camera,
   MapPin,
@@ -295,6 +296,11 @@ export default function ProfilePage() {
           </p>
         )}
       </Card>
+
+      {/* ── Sales Readiness (sales role only) ─────────────────── */}
+      {profile.role === 'sales' && (
+        <SalesReadinessGauge progress={[]} quizAttempts={[]} />
+      )}
 
       {/* ── Activity Heatmap ────────────────────────────────────── */}
       <Card>

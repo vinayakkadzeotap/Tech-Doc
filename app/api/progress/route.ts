@@ -4,6 +4,7 @@ import { awardBadgesAfterCompletion } from '@/lib/utils/award-badges';
 import { trackServerEvent, EVENTS } from '@/lib/utils/analytics';
 import { createNotification } from '@/lib/utils/notify';
 import { TRACKS } from '@/lib/utils/roles';
+import { progressSchema, validateBody } from '@/lib/utils/validation';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -14,11 +15,11 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { track_id, module_id, status } = body;
-
-  if (!track_id || !module_id || !status) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  const validation = validateBody(progressSchema, body);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { track_id, module_id, status } = validation.data;
 
   // Use select + insert/update to avoid 409 when unique constraint is missing
   const { data: existing } = await supabase

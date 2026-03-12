@@ -6,6 +6,9 @@ import ProgressBar from '@/components/ui/ProgressBar';
 import Icon from '@/components/ui/Icon';
 import { TRACKS } from '@/lib/utils/roles';
 import AnalyticsCharts from '@/components/admin/AnalyticsCharts';
+import TeamComparisonChart from '@/components/admin/TeamComparisonChart';
+import OnboardingFunnel from '@/components/admin/OnboardingFunnel';
+import ReportButton from '@/components/admin/ReportButton';
 
 // Sample data for demo when real user count is low
 const SAMPLE_ROLE_BREAKDOWN: Record<string, number> = {
@@ -152,6 +155,7 @@ export default async function AdminDashboardPage() {
           >
             Manage Assignments
           </Link>
+          <ReportButton />
         </div>
       </div>
 
@@ -202,6 +206,12 @@ export default async function AdminDashboardPage() {
       <div>
         <h2 className="font-bold mb-4">Engagement Analytics</h2>
         <AnalyticsCharts />
+      </div>
+
+      {/* Team Comparison & Onboarding Funnel */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <TeamComparisonChart />
+        <OnboardingFunnel />
       </div>
 
       {/* Track completion rates */}

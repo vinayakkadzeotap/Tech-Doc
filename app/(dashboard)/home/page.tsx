@@ -9,6 +9,8 @@ import Icon from '@/components/ui/Icon';
 import ProgressDashboard from '@/components/interactive/ProgressDashboard';
 import NudgeBanner from '@/components/interactive/NudgeBanner';
 import ActivityFeed from '@/components/interactive/ActivityFeed';
+import RecommendedNext from '@/components/interactive/RecommendedNext';
+import { getRecommendations } from '@/lib/utils/recommendations';
 import { ArrowRight, PlayCircle, BookOpen } from 'lucide-react';
 
 export default async function HomePage() {
@@ -174,6 +176,15 @@ export default async function HomePage() {
           </div>
         </Link>
       ) : null}
+
+      {/* Recommendations */}
+      <RecommendedNext
+        recommendations={getRecommendations(role, (progressData || []).map((p) => ({
+          track_id: p.track_id,
+          module_id: p.module_id,
+          status: p.status,
+        })))}
+      />
 
       {/* Nudge banners */}
       <NudgeBanner />

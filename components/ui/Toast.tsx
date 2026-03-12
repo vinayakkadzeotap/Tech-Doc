@@ -21,12 +21,23 @@ export const useToast = () => useContext(ToastContext);
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
+  const MAX_VISIBLE = 3;
+
   const show = useCallback((toast: Omit<ToastData, 'id'>) => {
     const id = Math.random().toString(36).slice(2);
-    setToasts((prev) => [...prev, { ...toast, id }]);
+    setToasts((prev) => {
+      const next = [...prev, { ...toast, id }];
+      // If over max, remove oldest
+      if (next.length > MAX_VISIBLE) {
+        return next.slice(next.length - MAX_VISIBLE);
+      }
+      return next;
+    });
+    // Stagger dismiss: each toast auto-dismisses at its own interval
+    const duration = toast.duration || 4000;
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, toast.duration || 4000);
+    }, duration);
   }, []);
 
   const dismiss = useCallback((id: string) => {

@@ -3,16 +3,19 @@ import { createClient } from '@/lib/supabase/server';
 import { trackServerEvent, EVENTS } from '@/lib/utils/analytics';
 import { sendSlackNotification } from '@/lib/utils/slack';
 import { createNotification } from '@/lib/utils/notify';
+import { feedbackSchema, feedbackPatchSchema, validateBody } from '@/lib/utils/validation';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { content_type, content_id, rating, comment, issue_type } = await request.json();
-  if (!content_type || !content_id) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  const rawBody = await request.json();
+  const validation = validateBody(feedbackSchema, rawBody);
+  if (!validation.success) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
+  const { content_type, content_id, rating, comment, issue_type } = validation.data;
 
   const { data, error } = await supabase.from('feedback').insert({
     user_id: user.id,
@@ -77,10 +80,12 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
   }
 
-  const { feedback_id, status, admin_response } = await request.json();
-  if (!feedback_id || !status) {
-    return NextResponse.json({ error: 'Missing feedback_id or status' }, { status: 400 });
+  const rawPatchBody = await request.json();
+  const patchValidation = validateBody(feedbackPatchSchema, rawPatchBody);
+  if (!patchValidation.success) {
+    return NextResponse.json({ error: patchValidation.error }, { status: 400 });
   }
+  const { feedback_id, status, admin_response } = patchValidation.data;
 
   // Get original feedback for notification
   const { data: feedback } = await supabase

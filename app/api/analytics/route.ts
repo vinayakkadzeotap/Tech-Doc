@@ -80,14 +80,21 @@ export async function GET() {
   // Assistant queries count
   const assistantQueries = allEvents.filter((e) => e.event_type === 'assistant_query').length;
 
+  // DAU for today
+  const todayStr = now.toISOString().slice(0, 10);
+  const dau = dauMap.get(todayStr)?.size || 0;
+  const dauMauRatio = mau > 0 ? parseFloat((dau / mau).toFixed(2)) : 0;
+
   return NextResponse.json({
     dailyActiveUsers,
     moduleCompletions,
     topSearches,
     eventCounts,
     summary: {
+      dau,
       wau,
       mau,
+      dauMauRatio,
       totalEvents: allEvents.length,
       assistantQueries,
     },

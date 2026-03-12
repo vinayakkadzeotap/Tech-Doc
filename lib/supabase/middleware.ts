@@ -43,15 +43,16 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes — redirect to login if not authenticated
-  const isProtectedRoute =
-    request.nextUrl.pathname.startsWith('/home') ||
-    request.nextUrl.pathname.startsWith('/learn') ||
-    request.nextUrl.pathname.startsWith('/explore') ||
-    request.nextUrl.pathname.startsWith('/assess') ||
-    request.nextUrl.pathname.startsWith('/achievements') ||
-    request.nextUrl.pathname.startsWith('/glossary') ||
-    request.nextUrl.pathname.startsWith('/profile') ||
-    request.nextUrl.pathname.startsWith('/admin');
+  const protectedPrefixes = [
+    '/home', '/learn', '/explore', '/assess', '/achievements',
+    '/glossary', '/profile', '/admin', '/battle-cards', '/deal-prep',
+    '/case-studies', '/certifications', '/cdp-assistant', '/universe',
+    '/codebase', '/library', '/settings', '/notifications', '/search',
+    '/partners',
+  ];
+  const isProtectedRoute = protectedPrefixes.some((prefix) =>
+    request.nextUrl.pathname.startsWith(prefix)
+  );
 
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone();

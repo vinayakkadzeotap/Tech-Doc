@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { DEAL_PREP_INDUSTRIES } from '@/lib/utils/deal-prep';
 import Card from '@/components/ui/Card';
-import { ArrowRight, BookOpen, Swords, MessageSquare, Play, ChevronLeft } from 'lucide-react';
+import { ArrowRight, BookOpen, Swords, MessageSquare, Play, ChevronLeft, HelpCircle } from 'lucide-react';
+import CopyButton from '@/components/learning/CopyButton';
 import Link from 'next/link';
 
 export default function DealPrepPage() {
@@ -119,6 +120,33 @@ export default function DealPrepPage() {
               ))}
             </div>
           </Card>
+
+          {/* Common Objections */}
+          {selected.objections && selected.objections.length > 0 && (
+            <Card>
+              <h3 className="text-sm font-bold flex items-center gap-2 mb-4">
+                <HelpCircle size={16} className="text-red-400" />
+                Common Objections & Responses
+              </h3>
+              <div className="space-y-3">
+                {selected.objections.map((obj, i) => (
+                  <div key={i} className="rounded-xl bg-bg-primary/50 border border-border overflow-hidden">
+                    <div className="px-4 py-3 bg-red-500/5 border-b border-border">
+                      <p className="text-sm font-medium text-text-primary flex items-start gap-2">
+                        <span className="text-red-400 font-bold flex-shrink-0">Q:</span>
+                        &ldquo;{obj.objection}&rdquo;
+                      </p>
+                    </div>
+                    <div className="px-4 py-3 flex items-start gap-2 group/resp">
+                      <span className="text-green-400 font-bold flex-shrink-0 text-sm">A:</span>
+                      <p className="text-sm text-text-secondary leading-relaxed flex-1">{obj.response}</p>
+                      <CopyButton text={obj.response} className="opacity-0 group-hover/resp:opacity-100 transition-opacity flex-shrink-0" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
 
           {/* Demo Flow */}
           <Card>

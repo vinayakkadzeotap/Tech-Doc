@@ -24,6 +24,7 @@ import {
   Swords,
   Target,
   FileText,
+  BookMarked,
   type LucideIcon,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -61,6 +62,7 @@ const secondaryNav: NavItem[] = [
   { href: '/battle-cards', label: 'Battle Cards', icon: Swords },
   { href: '/deal-prep', label: 'Deal Prep', icon: Target },
   { href: '/case-studies', label: 'Case Studies', icon: FileText },
+  { href: '/library', label: 'Library', icon: BookMarked },
   { href: '/assess', label: 'Assess', icon: ClipboardCheck },
   { href: '/achievements', label: 'Achievements', icon: Trophy },
   { href: '/certifications', label: 'Certifications', icon: GraduationCap },

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { BATTLE_CARDS, type BattleCard } from '@/lib/utils/battle-cards';
 import Card from '@/components/ui/Card';
 import { Search, ChevronDown, ChevronUp, CheckCircle, XCircle, Minus, Swords, Shield, Target, MessageSquare } from 'lucide-react';
+import CopyButton from '@/components/learning/CopyButton';
 
 function HeadToHeadTable({ rows }: { rows: BattleCard['headToHead'] }) {
   return (
@@ -145,9 +146,10 @@ export default function BattleCardsPage() {
                             <h4 className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-2">Zeotap Differentiators</h4>
                             <ul className="space-y-2">
                               {card.differentiators.map((d, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-text-secondary">
+                                <li key={i} className="flex items-start gap-2 text-sm text-text-secondary group/item">
                                   <CheckCircle size={14} className="text-green-400 mt-0.5 flex-shrink-0" />
-                                  {d}
+                                  <span className="flex-1">{d}</span>
+                                  <CopyButton text={d} className="opacity-0 group-hover/item:opacity-100 transition-opacity" />
                                 </li>
                               ))}
                             </ul>
@@ -175,9 +177,10 @@ export default function BattleCardsPage() {
                       <div className="space-y-4">
                         <h4 className="text-xs font-semibold text-brand-blue uppercase tracking-wider">Recommended Talk Track</h4>
                         {card.talkingPoints.map((point, i) => (
-                          <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-bg-primary/50 border border-border">
+                          <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-bg-primary/50 border border-border group/talk">
                             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-blue/10 flex items-center justify-center text-xs font-bold text-brand-blue">{i + 1}</span>
-                            <p className="text-sm text-text-secondary leading-relaxed">{point}</p>
+                            <p className="text-sm text-text-secondary leading-relaxed flex-1">{point}</p>
+                            <CopyButton text={point} className="opacity-0 group-hover/talk:opacity-100 transition-opacity flex-shrink-0" />
                           </div>
                         ))}
                       </div>

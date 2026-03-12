@@ -22,15 +22,25 @@ export default function WelcomeWizard({ userId, userName, currentRole }: Props) 
   const mandatoryTrack = tracks.find((t) => t.mandatory);
   const firstName = userName?.split(' ')[0] || 'there';
 
+  // Track onboarding step changes for analytics
+  const trackStep = useCallback((stepName: string) => {
+    fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_type: 'onboarding_step', metadata: { step: stepName } }),
+    }).catch(() => {});
+  }, []);
+
   const completeOnboarding = useCallback(async () => {
     setSaving(true);
+    trackStep('completed');
     const supabase = createClient();
     await supabase
       .from('profiles')
       .update({ role: selectedRole, onboarding_completed: true })
       .eq('id', userId);
     router.refresh();
-  }, [userId, selectedRole, router]);
+  }, [userId, selectedRole, router, trackStep]);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-bg-primary/95 backdrop-blur-xl">
@@ -60,7 +70,7 @@ export default function WelcomeWizard({ userId, userName, currentRole }: Props) 
               Your personalized learning hub for mastering the Zeotap CDP platform. Let&apos;s set up your experience.
             </p>
             <button
-              onClick={() => setStep(1)}
+              onClick={() => { trackStep('welcome_seen'); setStep(1); }}
               className="inline-flex items-center gap-2 px-6 py-3 bg-brand-blue text-white text-sm font-semibold rounded-xl hover:bg-brand-blue/90 transition-colors"
             >
               Get Started
@@ -103,7 +113,7 @@ export default function WelcomeWizard({ userId, userName, currentRole }: Props) 
                 Back
               </button>
               <button
-                onClick={() => setStep(2)}
+                onClick={() => { trackStep('role_selected'); setStep(2); }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-blue text-white text-sm font-semibold rounded-xl hover:bg-brand-blue/90 transition-colors"
               >
                 Continue

@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar';
 import CelebrationWrapper from '@/components/interactive/CelebrationWrapper';
 import AnalyticsPageTracker from '@/components/layout/AnalyticsPageTracker';
 import WelcomeWizard from '@/components/onboarding/WelcomeWizard';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import type { UserRole } from '@/lib/utils/roles';
 
 export default async function DashboardLayout({
@@ -68,8 +69,9 @@ export default async function DashboardLayout({
     <div className="min-h-screen flex flex-col">
       <Navbar user={navUser} />
       <CelebrationWrapper>
-        <main id="main-content" className="flex-1 animate-fade-in">{children}</main>
+        <main id="main-content" className="flex-1 pb-16 md:pb-0 animate-fade-in">{children}</main>
       </CelebrationWrapper>
+      <MobileBottomNav />
       <AnalyticsPageTracker />
       {showOnboarding && (
         <WelcomeWizard

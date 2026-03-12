@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Card from '@/components/ui/Card';
 import ProgressBar from '@/components/ui/ProgressBar';
 import SkillMatrix from '@/components/admin/SkillMatrix';
+import AtRiskLearners from '@/components/admin/AtRiskLearners';
 import { Users, Award, BookOpen, TrendingUp } from 'lucide-react';
 
 interface TeamMember {
@@ -123,6 +124,9 @@ export default function TeamPage() {
           </div>
         </Card>
       </div>
+
+      {/* At-Risk Learners */}
+      <AtRiskLearners />
 
       {/* Skill Matrix */}
       <SkillMatrix />

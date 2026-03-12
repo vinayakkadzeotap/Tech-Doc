@@ -1,4 +1,5 @@
 import ROICharts from '@/components/admin/ROICharts';
+import AdoptionTargets from '@/components/admin/AdoptionTargets';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
@@ -6,7 +7,7 @@ export default function ROIPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard" className="p-2 rounded-lg hover:bg-bg-surface/50 transition-colors">
+        <Link href="/admin/dashboard" className="p-2 rounded-lg hover:bg-bg-surface/50 transition-colors">
           <ArrowLeft size={20} className="text-text-muted" />
         </Link>
         <div>
@@ -17,6 +18,7 @@ export default function ROIPage() {
         </div>
       </div>
 
+      <AdoptionTargets />
       <ROICharts />
     </div>
   );
