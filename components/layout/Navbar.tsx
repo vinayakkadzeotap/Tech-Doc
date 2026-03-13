@@ -32,7 +32,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import SearchModal from '@/components/layout/SearchModal';
 import NotificationBell from '@/components/layout/NotificationBell';
-import ThemeToggle from '@/components/layout/ThemeToggle';
+
 
 interface NavbarProps {
   user: {
@@ -281,7 +281,6 @@ export default function Navbar({ user }: NavbarProps) {
               <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded bg-bg-elevated border border-border text-text-muted">⌘K</kbd>
             </button>
 
-            <ThemeToggle />
             {user && <NotificationBell />}
 
             {user && (

@@ -93,6 +93,22 @@ export default function MermaidDiagram({ chart, title, caption }: MermaidDiagram
     );
   }
 
+  if (!svg) {
+    return (
+      <div className="my-6 bg-bg-surface/50 border border-border rounded-2xl overflow-hidden">
+        {title && (
+          <div className="px-5 pt-4 pb-0">
+            <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider">{title}</h4>
+          </div>
+        )}
+        <div className="p-8 flex flex-col items-center justify-center gap-3">
+          <div className="w-6 h-6 border-2 border-brand-blue/30 border-t-brand-blue rounded-full animate-spin" />
+          <p className="text-xs text-text-muted">Rendering diagram...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="my-6 bg-bg-surface/50 border border-border rounded-2xl overflow-hidden">
       {title && (

@@ -17,34 +17,6 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Light mode overrides */
-  html.light {
-    --bg-primary: #f8fafc;
-    --bg-secondary: #f1f5f9;
-    --bg-surface: #ffffff;
-    --bg-elevated: #e2e8f0;
-    --bg-hover: rgba(0, 0, 0, 0.04);
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --text-accent: #2563eb;
-    --border: rgba(0, 0, 0, 0.1);
-    --border-subtle: rgba(0, 0, 0, 0.05);
-    --border-strong: rgba(0, 0, 0, 0.15);
-  }
-  html.light body {
-    background-color: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
-  }
-  html.light .bg-bg-primary { background-color: var(--bg-primary) !important; }
-  html.light .bg-bg-secondary { background-color: var(--bg-secondary) !important; }
-  html.light .bg-bg-surface { background-color: var(--bg-surface) !important; }
-  html.light .bg-bg-elevated { background-color: var(--bg-elevated) !important; }
-  html.light .text-text-primary { color: var(--text-primary) !important; }
-  html.light .text-text-secondary { color: var(--text-secondary) !important; }
-  html.light .text-text-muted { color: var(--text-muted) !important; }
-  html.light .border-border { border-color: var(--border) !important; }
-
   body {
     @apply bg-bg-primary text-text-primary font-sans;
     min-height: 100vh;
@@ -65,13 +37,6 @@
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
   }
-  html.light ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.15);
-  }
-  html.light ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.25);
-  }
-
   /* Selection */
   ::selection {
     background: rgba(59, 130, 246, 0.3);

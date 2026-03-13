@@ -176,7 +176,7 @@ export default async function ModulePage({ params }: Props) {
       <ModuleFeedback trackId={trackId} moduleId={moduleId} />
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-6 border-t border-border mt-8">
+      <div className="flex items-center justify-between pt-6 pb-24 border-t border-border mt-8">
         {prevModule ? (
           <Link
             href={`/learn/${trackId}/${prevModule.id}`}
