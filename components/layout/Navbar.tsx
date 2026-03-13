@@ -55,7 +55,6 @@ const primaryNav: NavItem[] = [
   { href: '/home', label: 'Dashboard', icon: Home },
   { href: '/learn', label: 'Learn', icon: BookOpen },
   { href: '/explore', label: 'Simulators', icon: Microscope },
-  { href: '/cdp-assistant', label: 'Assistant', icon: MessageCircle },
 ];
 
 const secondaryNav: NavItem[] = [

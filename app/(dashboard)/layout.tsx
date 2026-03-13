@@ -6,6 +6,7 @@ import AnalyticsPageTracker from '@/components/layout/AnalyticsPageTracker';
 import WelcomeWizard from '@/components/onboarding/WelcomeWizard';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import PageTransition from '@/components/layout/PageTransition';
+import ZeoBotWidget from '@/components/interactive/ZeoBotWidget';
 import type { UserRole } from '@/lib/utils/roles';
 
 export default async function DashboardLayout({
@@ -75,6 +76,7 @@ export default async function DashboardLayout({
         </main>
       </CelebrationWrapper>
       <MobileBottomNav />
+      <ZeoBotWidget />
       <AnalyticsPageTracker />
       {showOnboarding && (
         <WelcomeWizard
