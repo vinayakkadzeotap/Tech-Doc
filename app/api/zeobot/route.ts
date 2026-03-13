@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 // Lightweight proxy to Mintlify Assistant API — no auth required
 // The mint_dsc_ key is a public token, but we proxy to avoid CORS issues
 
