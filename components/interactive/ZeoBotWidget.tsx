@@ -15,8 +15,9 @@ import ChatMarkdown from './ChatMarkdown';
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
-  docs_augmented?: boolean;
 }
+
+const ZEOBOT_API = '/api/zeobot';
 
 export default function ZeoBotWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +25,6 @@ export default function ZeoBotWidget() {
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
-  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -52,22 +52,25 @@ export default function ZeoBotWidget() {
     setStreamingContent('');
 
     const userMsg: ChatMessage = { role: 'user', content: messageText };
-    setMessages((prev) => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
 
     try {
-      const res = await fetch('/api/cdp-assistant', {
+      const res = await fetch(ZEOBOT_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          session_id: sessionId,
-          message: messageText,
+          messages: updatedMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
         }),
       });
 
       if (!res.ok) throw new Error('Failed to send message');
 
       const reader = res.body?.getReader();
-      if (!reader) throw new Error('No reader');
+      if (!reader) throw new Error('No response body');
 
       const decoder = new TextDecoder();
       let accumulated = '';
@@ -82,21 +85,13 @@ export default function ZeoBotWidget() {
         for (const line of lines) {
           try {
             const event = JSON.parse(line);
-
             if (event.type === 'content') {
               accumulated += event.text;
               setStreamingContent(accumulated);
-              if (event.session_id && !sessionId) {
-                setSessionId(event.session_id);
-              }
             } else if (event.type === 'done') {
               setMessages((prev) => [
                 ...prev,
-                {
-                  role: 'assistant',
-                  content: accumulated,
-                  docs_augmented: event.docs_augmented,
-                },
+                { role: 'assistant', content: accumulated },
               ]);
               setStreamingContent('');
             } else if (event.type === 'error') {
@@ -110,6 +105,16 @@ export default function ZeoBotWidget() {
             // Skip malformed lines
           }
         }
+      }
+
+      // If stream ended without a done event, finalize
+      if (accumulated && !messages.find((m) => m.content === accumulated)) {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === 'assistant' && last.content === accumulated) return prev;
+          return [...prev, { role: 'assistant', content: accumulated }];
+        });
+        setStreamingContent('');
       }
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : 'Something went wrong';
@@ -225,7 +230,7 @@ export default function ZeoBotWidget() {
                       ) : (
                         <ChatMarkdown content={msg.content} />
                       )}
-                      {msg.docs_augmented && msg.role === 'assistant' && (
+                      {msg.role === 'assistant' && (
                         <div className="mt-2 pt-1.5 border-t border-border/30">
                           <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             Powered by Zeotap Docs
