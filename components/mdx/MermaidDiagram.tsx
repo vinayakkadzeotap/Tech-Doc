@@ -2,6 +2,93 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+// ---------------------------------------------------------------------------
+// Module-level singleton: initialize mermaid once, serialize all renders
+// ---------------------------------------------------------------------------
+
+let mermaidInstance: typeof import('mermaid').default | null = null;
+let initPromise: Promise<void> | null = null;
+let renderCounter = 0;
+
+// Queue to serialize renders — mermaid uses global state and can't handle concurrency
+const renderQueue: Array<() => Promise<void>> = [];
+let isProcessing = false;
+
+async function processQueue() {
+  if (isProcessing) return;
+  isProcessing = true;
+  while (renderQueue.length > 0) {
+    const task = renderQueue.shift()!;
+    try {
+      await task();
+    } catch {
+      // errors handled inside each task
+    }
+  }
+  isProcessing = false;
+}
+
+async function getMermaid() {
+  if (mermaidInstance) return mermaidInstance;
+  if (!initPromise) {
+    initPromise = (async () => {
+      const m = (await import('mermaid')).default;
+      m.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        themeVariables: {
+          primaryColor: '#2563eb',
+          primaryTextColor: '#e2e8f0',
+          primaryBorderColor: '#3b82f6',
+          lineColor: '#64748b',
+          secondaryColor: '#1e293b',
+          tertiaryColor: '#0f172a',
+          background: '#0f172a',
+          mainBkg: '#1e293b',
+          nodeBorder: '#3b82f6',
+          clusterBkg: '#1e293b',
+          clusterBorder: '#334155',
+          titleColor: '#e2e8f0',
+          edgeLabelBackground: '#1e293b',
+          nodeTextColor: '#e2e8f0',
+          actorTextColor: '#e2e8f0',
+          actorBorder: '#3b82f6',
+          actorBkg: '#1e293b',
+          signalColor: '#64748b',
+          labelBoxBkgColor: '#1e293b',
+          labelBoxBorderColor: '#334155',
+          labelTextColor: '#e2e8f0',
+          loopTextColor: '#94a3b8',
+          noteBkgColor: '#1e293b',
+          noteBorderColor: '#3b82f6',
+          noteTextColor: '#e2e8f0',
+          sectionBkgColor: '#1e293b',
+          sectionBkgColor2: '#0f172a',
+          altSectionBkgColor: '#0f172a',
+          taskBkgColor: '#2563eb',
+          taskTextColor: '#e2e8f0',
+          taskBorderColor: '#3b82f6',
+          doneTaskBkgColor: '#10b981',
+          activeTaskBkgColor: '#f59e0b',
+          gridColor: '#334155',
+          todayLineColor: '#f59e0b',
+        },
+        flowchart: { curve: 'basis', padding: 15 },
+        sequence: { useMaxWidth: true },
+        fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
+        fontSize: 13,
+      });
+      mermaidInstance = m;
+    })();
+  }
+  await initPromise;
+  return mermaidInstance!;
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 interface MermaidDiagramProps {
   chart: string;
   title?: string;
@@ -12,63 +99,19 @@ export default function MermaidDiagram({ chart, title, caption }: MermaidDiagram
   const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const idRef = useRef(`mermaid-${Math.random().toString(36).slice(2, 10)}`);
 
   useEffect(() => {
     if (!chart) return;
 
     let cancelled = false;
+    const uniqueId = `mermaid-${++renderCounter}-${Math.random().toString(36).slice(2, 6)}`;
 
-    async function renderChart() {
+    // Enqueue this render so it waits for any in-progress render to finish
+    renderQueue.push(async () => {
+      if (cancelled) return;
       try {
-        const mermaid = (await import('mermaid')).default;
-        mermaid.initialize({
-          startOnLoad: false,
-          theme: 'dark',
-          themeVariables: {
-            primaryColor: '#2563eb',
-            primaryTextColor: '#e2e8f0',
-            primaryBorderColor: '#3b82f6',
-            lineColor: '#64748b',
-            secondaryColor: '#1e293b',
-            tertiaryColor: '#0f172a',
-            background: '#0f172a',
-            mainBkg: '#1e293b',
-            nodeBorder: '#3b82f6',
-            clusterBkg: '#1e293b',
-            clusterBorder: '#334155',
-            titleColor: '#e2e8f0',
-            edgeLabelBackground: '#1e293b',
-            nodeTextColor: '#e2e8f0',
-            actorTextColor: '#e2e8f0',
-            actorBorder: '#3b82f6',
-            actorBkg: '#1e293b',
-            signalColor: '#64748b',
-            labelBoxBkgColor: '#1e293b',
-            labelBoxBorderColor: '#334155',
-            labelTextColor: '#e2e8f0',
-            loopTextColor: '#94a3b8',
-            noteBkgColor: '#1e293b',
-            noteBorderColor: '#3b82f6',
-            noteTextColor: '#e2e8f0',
-            sectionBkgColor: '#1e293b',
-            sectionBkgColor2: '#0f172a',
-            altSectionBkgColor: '#0f172a',
-            taskBkgColor: '#2563eb',
-            taskTextColor: '#e2e8f0',
-            taskBorderColor: '#3b82f6',
-            doneTaskBkgColor: '#10b981',
-            activeTaskBkgColor: '#f59e0b',
-            gridColor: '#334155',
-            todayLineColor: '#f59e0b',
-          },
-          flowchart: { curve: 'basis', padding: 15 },
-          sequence: { useMaxWidth: true },
-          fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
-          fontSize: 13,
-        });
-
-        const { svg: rendered } = await mermaid.render(idRef.current, chart.trim());
+        const mermaid = await getMermaid();
+        const { svg: rendered } = await mermaid.render(uniqueId, chart.trim());
         if (!cancelled) {
           setSvg(rendered);
           setError('');
@@ -78,9 +121,13 @@ export default function MermaidDiagram({ chart, title, caption }: MermaidDiagram
           setError(err instanceof Error ? err.message : 'Failed to render diagram');
         }
       }
-    }
+      // Clean up temp element mermaid may leave behind
+      const tempEl = document.getElementById(uniqueId);
+      if (tempEl) tempEl.remove();
+    });
 
-    renderChart();
+    processQueue();
+
     return () => { cancelled = true; };
   }, [chart]);
 
