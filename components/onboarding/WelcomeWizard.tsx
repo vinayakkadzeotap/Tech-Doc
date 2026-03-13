@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { ROLES, getTracksForRole, type UserRole } from '@/lib/utils/roles';
-import { Sparkles, ArrowRight, Check, BookOpen } from 'lucide-react';
+import { Sparkles, ArrowRight, Check, BookOpen, X } from 'lucide-react';
 
 interface Props {
   userId: string;
@@ -42,9 +42,31 @@ export default function WelcomeWizard({ userId, userName, currentRole }: Props) 
     router.refresh();
   }, [userId, selectedRole, router, trackStep]);
 
+  const skipOnboarding = useCallback(async () => {
+    setSaving(true);
+    trackStep('skipped');
+    const supabase = createClient();
+    await supabase
+      .from('profiles')
+      .update({ onboarding_completed: true })
+      .eq('id', userId);
+    router.refresh();
+  }, [userId, router, trackStep]);
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-bg-primary/95 backdrop-blur-xl">
-      <div className="max-w-lg w-full bg-bg-elevated border border-border rounded-3xl p-8 shadow-modal animate-slide-up">
+      <div className="max-w-lg w-full bg-bg-elevated border border-border rounded-3xl p-8 shadow-modal animate-slide-up relative">
+        {/* Skip / Dismiss button */}
+        <button
+          onClick={skipOnboarding}
+          disabled={saving}
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
+          aria-label="Skip onboarding"
+          title="Skip for now"
+        >
+          <X size={18} />
+        </button>
+
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-2 mb-8">
           {[0, 1, 2].map((i) => (
@@ -75,6 +97,13 @@ export default function WelcomeWizard({ userId, userName, currentRole }: Props) 
             >
               Get Started
               <ArrowRight size={16} />
+            </button>
+            <button
+              onClick={skipOnboarding}
+              disabled={saving}
+              className="block mx-auto mt-4 text-xs text-text-muted hover:text-text-primary transition-colors"
+            >
+              Skip for now
             </button>
           </div>
         )}

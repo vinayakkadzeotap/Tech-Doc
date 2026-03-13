@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, Search, User, MoreHorizontal } from 'lucide-react';
+import { Home, BookOpen, Compass, User, Award } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/home', icon: Home, label: 'Home' },
   { href: '/learn', icon: BookOpen, label: 'Learn' },
-  { href: '/search', icon: Search, label: 'Search' },
+  { href: '/explore', icon: Compass, label: 'Explore' },
+  { href: '/achievements', icon: Award, label: 'Badges' },
   { href: '/profile', icon: User, label: 'Profile' },
-  { href: '/settings', icon: MoreHorizontal, label: 'More' },
 ];
 
 export default function MobileBottomNav() {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Card from '@/components/ui/Card';
 import { MessageSquare, Send, CheckCircle, XCircle } from 'lucide-react';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 
 export default function SettingsPage() {
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -66,6 +67,10 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <Breadcrumb items={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'Settings' },
+      ]} />
       <div>
         <h1 className="text-2xl font-extrabold">Platform Settings</h1>
         <p className="text-text-secondary text-sm mt-1">Configure integrations and platform behavior</p>

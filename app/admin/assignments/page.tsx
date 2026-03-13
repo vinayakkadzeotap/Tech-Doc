@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/Toast';
 import { TRACKS } from '@/lib/utils/roles';
 import { LEARNING_PLAN_TEMPLATES } from '@/lib/utils/learning-plans';
 import Icon from '@/components/ui/Icon';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 
 interface Assignment {
   id: string;
@@ -145,6 +146,10 @@ export default function AssignmentsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <Breadcrumb items={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'Assignments' },
+      ]} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold">Assignments</h1>

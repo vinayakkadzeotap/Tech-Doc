@@ -4,6 +4,7 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import ProgressBar from '@/components/ui/ProgressBar';
 import { TRACKS } from '@/lib/utils/roles';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 
 export default async function AdminUsersPage() {
   const supabase = await createClient();
@@ -57,6 +58,10 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <Breadcrumb items={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'User Management' },
+      ]} />
       <div>
         <h1 className="text-2xl font-extrabold">User Management</h1>
         <p className="text-text-secondary text-sm mt-1">

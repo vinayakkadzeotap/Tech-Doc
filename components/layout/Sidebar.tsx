@@ -10,6 +10,12 @@ import {
   Microscope,
   Globe,
   User,
+  GraduationCap,
+  Swords,
+  FileText,
+  Handshake,
+  Briefcase,
+  Library,
   type LucideIcon,
 } from 'lucide-react';
 import ProgressBar from '@/components/ui/ProgressBar';
@@ -27,26 +33,39 @@ interface NavSection {
 export default function Sidebar({ overallProgress, role }: SidebarProps) {
   const pathname = usePathname();
 
+  const isSalesOrCS = role === 'sales' || role === 'cs' || role === 'leadership';
+
   const sections: NavSection[] = [
     {
-      title: 'Learning',
+      title: 'Learn',
       items: [
-        { href: '/learn', label: 'All Tracks', icon: BookOpen },
+        { href: '/learn', label: 'Learning Tracks', icon: BookOpen },
         { href: '/assess', label: 'Assessments', icon: ClipboardCheck },
-        { href: '/achievements', label: 'Achievements', icon: Trophy },
+        { href: '/certifications', label: 'Certifications', icon: GraduationCap },
         { href: '/glossary', label: 'Glossary', icon: BookMarked },
       ],
     },
     {
-      title: 'Explore',
+      title: 'Practice',
       items: [
-        { href: '/universe', label: 'Zeotap Universe', icon: Globe },
-        { href: '/explore', label: 'Interactive Simulators', icon: Microscope },
+        { href: '/explore', label: 'Simulators & Labs', icon: Microscope },
+        { href: '/universe', label: 'Knowledge Universe', icon: Globe },
       ],
     },
-    {
-      title: 'Account',
+    ...(isSalesOrCS ? [{
+      title: 'Sales & CS',
       items: [
+        { href: '/battle-cards', label: 'Battle Cards', icon: Swords },
+        { href: '/deal-prep', label: 'Deal Prep', icon: Briefcase },
+        { href: '/case-studies', label: 'Case Studies', icon: FileText },
+        { href: '/partners', label: 'Partners', icon: Handshake },
+      ],
+    }] : []),
+    {
+      title: 'You',
+      items: [
+        { href: '/achievements', label: 'Achievements', icon: Trophy },
+        { href: '/library', label: 'Library', icon: Library },
         { href: '/profile', label: 'Profile', icon: User },
       ],
     },

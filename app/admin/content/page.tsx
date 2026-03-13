@@ -6,6 +6,7 @@ import { TRACKS } from '@/lib/utils/roles';
 import { getContentStatus, STATUS_CONFIG, type ContentStatus, type ContentReview } from '@/lib/utils/content-metadata';
 import { GLOSSARY_TERMS, GLOSSARY_CATEGORIES, type GlossaryCategory } from '@/lib/utils/glossary-data';
 import { CheckCircle, Clock, AlertTriangle, BookOpen, FileText } from 'lucide-react';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 
 type Tab = 'modules' | 'glossary';
 
@@ -92,6 +93,10 @@ export default function ContentPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <Breadcrumb items={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'Content Management' },
+      ]} />
       <div>
         <h1 className="text-2xl font-extrabold">Content Management</h1>
         <p className="text-text-secondary text-sm mt-1">

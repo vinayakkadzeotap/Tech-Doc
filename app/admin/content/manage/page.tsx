@@ -5,6 +5,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, Save, X } from 'lucide-react';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 interface DBTrack {
   id: string;
@@ -37,6 +38,7 @@ export default function ContentManagePage() {
   const [editingTrack, setEditingTrack] = useState<string | null>(null);
   const [editingModule, setEditingModule] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
+  const [deleteTarget, setDeleteTarget] = useState<{ trackId: string; moduleId: string } | null>(null);
   const { show } = useToast();
 
   useEffect(() => {
@@ -102,7 +104,6 @@ export default function ContentManagePage() {
   }
 
   async function deleteModule(trackId: string, moduleId: string) {
-    if (!confirm('Delete this module? This cannot be undone.')) return;
     const res = await fetch(`/api/admin/content?type=module&id=${moduleId}&trackId=${trackId}`, {
       method: 'DELETE',
     });
@@ -110,6 +111,7 @@ export default function ContentManagePage() {
       show({ message: 'Module deleted', icon: '✅', color: '#10b981' });
       loadData();
     }
+    setDeleteTarget(null);
   }
 
   function startTrackEdit(track: DBTrack) {
@@ -278,7 +280,7 @@ export default function ContentManagePage() {
                                 <Pencil size={12} />
                               </button>
                               <button
-                                onClick={() => deleteModule(mod.track_id, mod.id)}
+                                onClick={() => setDeleteTarget({ trackId: mod.track_id, moduleId: mod.id })}
                                 className="p-1 rounded hover:bg-red-500/10 text-text-muted hover:text-red-400"
                               >
                                 <Trash2 size={12} />
@@ -295,6 +297,15 @@ export default function ContentManagePage() {
           })}
         </div>
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Module"
+        description="This will permanently remove this module. This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => deleteTarget && deleteModule(deleteTarget.trackId, deleteTarget.moduleId)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

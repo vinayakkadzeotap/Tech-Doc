@@ -31,24 +31,46 @@ interface Tab {
   color: string;
 }
 
-const TABS: Tab[] = [
-  { id: 'pipeline', label: 'Data Pipeline', icon: Workflow, description: 'Watch data flow through the CDP in real-time', color: '#6366f1' },
-  { id: 'architecture', label: 'Architecture', icon: GitBranch, description: 'Interactive CDP component map', color: '#3b82f6' },
-  { id: 'identity', label: 'Identity Resolution', icon: Link, description: 'See how profiles merge across devices', color: '#10b981' },
-  { id: 'segments', label: 'Segment Builder', icon: Target, description: 'Practice building audience segments', color: '#f59e0b' },
-  { id: 'journeys', label: 'Journey Builder', icon: Map, description: 'Build customer journeys visually', color: '#ec4899' },
-  { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, description: 'See top learners in the org', color: '#a855f7' },
-  { id: 'audience', label: 'Audience Builder', icon: Users, description: 'Build audience segments following CDP workflow — discover schema, define segments, estimate reach', color: '#0ea5e9' },
-  { id: 'churn', label: 'Churn Detection', icon: AlertTriangle, description: 'Identify churn signals, score customer risk, and recommend interventions', color: '#ef4444' },
-  { id: 'data-health', label: 'Data Health', icon: Activity, description: 'Monitor pipeline health, diagnose failures, and inspect destination status', color: '#14b8a6' },
+interface TabGroup {
+  label: string;
+  tabs: Tab[];
+}
+
+const TAB_GROUPS: TabGroup[] = [
+  {
+    label: 'Data & Infrastructure',
+    tabs: [
+      { id: 'pipeline', label: 'Data Pipeline', icon: Workflow, description: 'Watch data flow through the CDP in real-time', color: '#6366f1' },
+      { id: 'architecture', label: 'Architecture', icon: GitBranch, description: 'Interactive CDP component map', color: '#3b82f6' },
+      { id: 'identity', label: 'Identity Resolution', icon: Link, description: 'See how profiles merge across devices', color: '#10b981' },
+      { id: 'data-health', label: 'Data Health', icon: Activity, description: 'Monitor pipeline health, diagnose failures, and inspect destination status', color: '#14b8a6' },
+    ],
+  },
+  {
+    label: 'Audience & Journeys',
+    tabs: [
+      { id: 'segments', label: 'Segment Builder', icon: Target, description: 'Practice building audience segments', color: '#f59e0b' },
+      { id: 'audience', label: 'Audience Builder', icon: Users, description: 'Build audience segments following CDP workflow', color: '#0ea5e9' },
+      { id: 'journeys', label: 'Journey Builder', icon: Map, description: 'Build customer journeys visually', color: '#ec4899' },
+      { id: 'churn', label: 'Churn Detection', icon: AlertTriangle, description: 'Identify churn signals, score customer risk, and recommend interventions', color: '#ef4444' },
+    ],
+  },
+  {
+    label: 'Community',
+    tabs: [
+      { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, description: 'See top learners in the org', color: '#a855f7' },
+    ],
+  },
 ];
+
+const ALL_TABS = TAB_GROUPS.flatMap((g) => g.tabs);
 
 type TabId = string;
 
 export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState<TabId>('pipeline');
 
-  const activeTabData = TABS.find(t => t.id === activeTab)!;
+  const activeTabData = ALL_TABS.find(t => t.id === activeTab)!;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -59,29 +81,38 @@ export default function ExplorePage() {
         </p>
       </div>
 
-      {/* Tab navigation - scrollable on mobile */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-hide">
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          const IconComponent = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0
-                ${isActive
-                  ? 'text-white border border-transparent shadow-lg'
-                  : 'bg-bg-surface/50 text-text-secondary border border-border hover:border-border-strong hover:text-text-primary'
-                }
-              `}
-              style={isActive ? { background: tab.color, boxShadow: `0 4px 20px ${tab.color}30` } : undefined}
-            >
-              <IconComponent size={16} strokeWidth={isActive ? 2.5 : 2} />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+      {/* Tab navigation - grouped with labels on desktop, scrollable on mobile */}
+      <div className="space-y-3 mb-6">
+        {TAB_GROUPS.map((group) => (
+          <div key={group.label}>
+            <h3 className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5 hidden sm:block">
+              {group.label}
+            </h3>
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-hide">
+              {group.tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                const IconComponent = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0
+                      ${isActive
+                        ? 'text-white border border-transparent shadow-lg'
+                        : 'bg-bg-surface/50 text-text-secondary border border-border hover:border-border-strong hover:text-text-primary'
+                      }
+                    `}
+                    style={isActive ? { background: tab.color, boxShadow: `0 4px 20px ${tab.color}30` } : undefined}
+                  >
+                    <IconComponent size={16} strokeWidth={isActive ? 2.5 : 2} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Active tab description */}

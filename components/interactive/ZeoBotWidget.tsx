@@ -181,7 +181,7 @@ export default function ZeoBotWidget() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-white">ZEOBOT</h3>
-                <p className="text-[10px] text-white/70">Powered by Zeotap Docs</p>
+                <p className="text-[10px] text-white/70">Powered by ZeoAI</p>
               </div>
             </div>
             <button

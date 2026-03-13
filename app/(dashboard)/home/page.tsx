@@ -287,28 +287,22 @@ export default async function HomePage() {
         </div>
       </div>
 
+      {/* Quick actions — compact scrollable row */}
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+        {quickActions.map((action) => (
+          <Link key={action.label} href={action.href} className="shrink-0">
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-bg-surface/50 border border-border hover:border-border-strong transition-all text-sm font-medium text-text-secondary hover:text-text-primary whitespace-nowrap">
+              <Icon name={action.icon} contained color={action.color} containerSize="sm" />
+              {action.label}
+            </div>
+          </Link>
+        ))}
+      </div>
+
       {/* Activity Feed */}
       <div>
         <h2 className="text-lg font-bold mb-4">Recent Activity</h2>
         <ActivityFeed />
-      </div>
-
-      {/* Quick actions */}
-      <div>
-        <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          {quickActions.map((action) => (
-            <Link key={action.label} href={action.href}>
-              <Card hover className="text-center group">
-                <div className="flex justify-center mb-3">
-                  <Icon name={action.icon} contained color={action.color} containerSize="lg" />
-                </div>
-                <div className="text-sm font-semibold">{action.label}</div>
-                <div className="text-[11px] text-text-muted mt-0.5">{action.desc}</div>
-              </Card>
-            </Link>
-          ))}
-        </div>
       </div>
     </div>
   );

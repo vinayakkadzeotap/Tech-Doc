@@ -6,6 +6,7 @@ import ProgressBar from '@/components/ui/ProgressBar';
 import SkillMatrix from '@/components/admin/SkillMatrix';
 import AtRiskLearners from '@/components/admin/AtRiskLearners';
 import { Users, Award, BookOpen, TrendingUp } from 'lucide-react';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 
 interface TeamMember {
   id: string;
@@ -76,6 +77,10 @@ export default function TeamPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <Breadcrumb items={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'Team Dashboard' },
+      ]} />
       <div>
         <h1 className="text-2xl font-extrabold">Team Dashboard</h1>
         <p className="text-text-secondary text-sm mt-1">

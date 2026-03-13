@@ -32,16 +32,16 @@ const components = {
     <h3 className="text-lg font-bold mt-6 mb-2 text-text-primary" {...props} />
   ),
   p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
-    <p className="text-sm text-text-secondary leading-relaxed mb-4" {...props} />
+    <p className="text-base text-text-secondary leading-relaxed mb-4" {...props} />
   ),
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul className="text-sm text-text-secondary list-disc ml-5 mb-4 space-y-1.5 leading-relaxed" {...props} />
+    <ul className="text-base text-text-secondary list-disc ml-5 mb-4 space-y-1.5 leading-relaxed" {...props} />
   ),
   ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol className="text-sm text-text-secondary list-decimal ml-5 mb-4 space-y-1.5 leading-relaxed" {...props} />
+    <ol className="text-base text-text-secondary list-decimal ml-5 mb-4 space-y-1.5 leading-relaxed" {...props} />
   ),
   li: (props: React.HTMLAttributes<HTMLLIElement>) => (
-    <li className="text-sm text-text-secondary leading-relaxed" {...props} />
+    <li className="text-base text-text-secondary leading-relaxed" {...props} />
   ),
   strong: (props: React.HTMLAttributes<HTMLElement>) => (
     <strong className="font-semibold text-text-primary" {...props} />

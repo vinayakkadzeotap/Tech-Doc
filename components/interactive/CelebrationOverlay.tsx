@@ -667,6 +667,10 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<CelebrationState | null>(null);
 
   const celebrate = useCallback((type: CelebrationType) => {
+    // Respect user's reduced motion preference
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
     setState({ active: true, type, progress: 0 });
   }, []);
 
