@@ -13,6 +13,7 @@ import Badge from '@/components/ui/Badge';
 import Icon from '@/components/ui/Icon';
 import { getModuleContent } from '@/lib/mdx';
 import { serialize } from 'next-mdx-remote/serialize';
+import remarkGfm from 'remark-gfm';
 import MDXRenderer from '@/components/mdx/MDXRenderer';
 import { getContentStatus, STATUS_CONFIG } from '@/lib/utils/content-metadata';
 import { KNOWLEDGE_CHECKS } from '@/lib/utils/knowledge-checks';
@@ -65,7 +66,11 @@ export default async function ModulePage({ params }: Props) {
   let mdxSource = null;
   if (moduleContent) {
     try {
-      mdxSource = await serialize(moduleContent.content, { blockJS: false });
+      mdxSource = await serialize(moduleContent.content, {
+        mdxOptions: {
+          remarkPlugins: [remarkGfm],
+        },
+      });
     } catch {
       // MDX parse error - leave mdxSource as null to show fallback UI
     }

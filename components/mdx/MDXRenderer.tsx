@@ -60,15 +60,21 @@ const components = {
     <a className="text-brand-blue hover:underline" target="_blank" rel="noopener noreferrer" {...props} />
   ),
   table: (props: React.HTMLAttributes<HTMLTableElement>) => (
-    <div className="overflow-x-auto my-4">
+    <div className="overflow-x-auto my-6 rounded-xl border border-border bg-bg-surface/30">
       <table className="w-full text-sm border-collapse" {...props} />
     </div>
   ),
+  thead: (props: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <thead className="bg-bg-elevated/50" {...props} />
+  ),
   th: (props: React.HTMLAttributes<HTMLTableCellElement>) => (
-    <th className="text-left py-2 px-3 text-xs font-bold text-text-muted border-b border-border" {...props} />
+    <th className="text-left py-2.5 px-4 text-xs font-bold text-text-primary uppercase tracking-wider border-b border-border" {...props} />
   ),
   td: (props: React.HTMLAttributes<HTMLTableCellElement>) => (
-    <td className="py-2 px-3 text-text-secondary border-b border-border-subtle" {...props} />
+    <td className="py-2.5 px-4 text-text-secondary border-b border-border-subtle" {...props} />
+  ),
+  tr: (props: React.HTMLAttributes<HTMLTableRowElement>) => (
+    <tr className="hover:bg-bg-hover/30 transition-colors" {...props} />
   ),
 };
 
