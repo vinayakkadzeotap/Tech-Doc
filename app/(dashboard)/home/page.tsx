@@ -12,6 +12,7 @@ import ActivityFeed from '@/components/interactive/ActivityFeed';
 import RecommendedNext from '@/components/interactive/RecommendedNext';
 import { getRecommendations } from '@/lib/utils/recommendations';
 import { ArrowRight, PlayCircle, BookOpen } from 'lucide-react';
+import HorizontalScroll from '@/components/ui/HorizontalScroll';
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -288,7 +289,7 @@ export default async function HomePage() {
       </div>
 
       {/* Quick actions — compact scrollable row */}
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+      <HorizontalScroll>
         {quickActions.map((action) => (
           <Link key={action.label} href={action.href} className="shrink-0">
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-bg-surface/50 border border-border hover:border-border-strong transition-all text-sm font-medium text-text-secondary hover:text-text-primary whitespace-nowrap">
@@ -297,7 +298,7 @@ export default async function HomePage() {
             </div>
           </Link>
         ))}
-      </div>
+      </HorizontalScroll>
 
       {/* Activity Feed */}
       <div>
