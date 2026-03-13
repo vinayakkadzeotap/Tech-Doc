@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Mail, Lock, Chrome } from 'lucide-react';
@@ -27,6 +27,12 @@ function LoginForm() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!isSupabaseConfigured) {
+      setError('Authentication is not configured. Please contact the administrator to set up Supabase environment variables.');
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createClient();
@@ -47,6 +53,12 @@ function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     setError('');
+
+    if (!isSupabaseConfigured) {
+      setError('Authentication is not configured. Please contact the administrator to set up Supabase environment variables.');
+      return;
+    }
+
     setGoogleLoading(true);
 
     const supabase = createClient();
