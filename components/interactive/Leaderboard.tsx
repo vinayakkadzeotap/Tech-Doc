@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import DataSourceIndicator from '@/components/ui/DataSourceIndicator';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -420,6 +421,7 @@ export default function Leaderboard() {
           <div className="flex items-center gap-2">
             <span className="text-xl" aria-hidden="true">{'\uD83C\uDFC6'}</span>
             <h2 className="text-lg font-bold text-text-primary">Leaderboard</h2>
+            <DataSourceIndicator isLive={liveLearners !== null} compact />
             <Tooltip text={formulaText}>
               <button
                 className="w-5 h-5 rounded-full bg-bg-elevated border border-border text-[10px] text-text-muted flex items-center justify-center hover:text-text-primary transition-colors"

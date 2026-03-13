@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { TRACKS } from '@/lib/utils/roles';
 
 export async function GET() {
+  try {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -92,4 +93,8 @@ export async function GET() {
   }
 
   return NextResponse.json(nudges.slice(0, 2)); // Max 2 nudges at a time
+  } catch (error) {
+    console.error('GET /api/nudges error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

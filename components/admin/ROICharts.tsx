@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import Card from '@/components/ui/Card';
 import { downloadCSV } from '@/lib/utils/csv-export';
 import { TrendingUp, Users, Award, Clock, Download, BarChart3, Table2 } from 'lucide-react';
+import DataSourceIndicator from '@/components/ui/DataSourceIndicator';
 
 interface ROIData {
   medianTimeToFirstCompletion?: number;
@@ -99,6 +100,7 @@ export default function ROICharts() {
     );
   }
 
+  const isLive = data !== DEMO_DATA;
   const { summary, roleCompletion, teamCompletion, timeToCompetency, certifiedComparison } = data;
 
   const medianFirst = data.medianTimeToFirstCompletion ?? 0;
@@ -114,6 +116,15 @@ export default function ROICharts() {
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <DataSourceIndicator isLive={isLive} />
+        {!isLive && (
+          <p className="text-[10px] text-amber-400">
+            ROI metrics use sample data until enough users are onboarded
+          </p>
+        )}
+      </div>
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {statCards.map((stat) => (

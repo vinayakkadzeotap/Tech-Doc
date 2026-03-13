@@ -53,7 +53,7 @@ export default function Sidebar({ overallProgress, role }: SidebarProps) {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-bg-secondary/50 p-4 gap-6">
+    <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-bg-secondary/50 p-4 gap-6" role="navigation" aria-label="Sidebar navigation">
       {/* Progress summary */}
       <div className="p-4 rounded-2xl bg-bg-surface/50 border border-border space-y-3">
         <div className="flex items-center justify-between">
@@ -82,6 +82,7 @@ export default function Sidebar({ overallProgress, role }: SidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`
                     flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
                     ${isActive

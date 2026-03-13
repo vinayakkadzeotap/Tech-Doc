@@ -51,77 +51,85 @@ function findSuggestions(query: string): string[] {
 }
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const q = (searchParams.get('q') || '').toLowerCase().trim();
-  const typeFilter = searchParams.get('type') || 'all'; // 'all' | 'modules' | 'glossary'
+  try {
+    const { searchParams } = new URL(request.url);
+    const q = (searchParams.get('q') || '').toLowerCase().trim();
+    const typeFilter = searchParams.get('type') || 'all'; // 'all' | 'modules' | 'glossary'
 
-  if (!q || q.length < 2) {
-    return NextResponse.json({ modules: [], glossary: [], suggestions: [] });
-  }
+    if (!q || q.length < 2) {
+      return NextResponse.json({ modules: [], glossary: [], suggestions: [] });
+    }
 
-  // Search modules
-  const moduleResults: Array<{
-    trackId: string;
-    trackTitle: string;
-    moduleId: string;
-    title: string;
-    description: string;
-    icon: string;
-    contentType: string;
-  }> = [];
+    // Search modules
+    const moduleResults: Array<{
+      trackId: string;
+      trackTitle: string;
+      moduleId: string;
+      title: string;
+      description: string;
+      icon: string;
+      contentType: string;
+    }> = [];
 
-  if (typeFilter === 'all' || typeFilter === 'modules') {
-    for (const track of TRACKS) {
-      for (const mod of track.modules) {
-        if (
-          mod.title.toLowerCase().includes(q) ||
-          mod.description.toLowerCase().includes(q)
-        ) {
-          moduleResults.push({
-            trackId: track.id,
-            trackTitle: track.title,
-            moduleId: mod.id,
-            title: mod.title,
-            description: mod.description,
-            icon: mod.icon,
-            contentType: mod.contentType,
-          });
+    if (typeFilter === 'all' || typeFilter === 'modules') {
+      for (const track of TRACKS) {
+        for (const mod of track.modules) {
+          if (
+            mod.title.toLowerCase().includes(q) ||
+            mod.description.toLowerCase().includes(q)
+          ) {
+            moduleResults.push({
+              trackId: track.id,
+              trackTitle: track.title,
+              moduleId: mod.id,
+              title: mod.title,
+              description: mod.description,
+              icon: mod.icon,
+              contentType: mod.contentType,
+            });
+          }
         }
       }
     }
-  }
 
-  // Search glossary (all 43+ terms)
-  let glossaryResults: Array<{ term: string; definition: string }> = [];
-  if (typeFilter === 'all' || typeFilter === 'glossary') {
-    glossaryResults = GLOSSARY_TERMS.filter(
-      (t) =>
-        t.term.toLowerCase().includes(q) ||
-        t.definition.toLowerCase().includes(q)
-    ).map((t) => ({ term: t.term, definition: t.definition }));
-  }
+    // Search glossary (all 43+ terms)
+    let glossaryResults: Array<{ term: string; definition: string }> = [];
+    if (typeFilter === 'all' || typeFilter === 'glossary') {
+      glossaryResults = GLOSSARY_TERMS.filter(
+        (t) =>
+          t.term.toLowerCase().includes(q) ||
+          t.definition.toLowerCase().includes(q)
+      ).map((t) => ({ term: t.term, definition: t.definition }));
+    }
 
-  // Generate "did you mean?" suggestions if few results
-  const totalResults = moduleResults.length + glossaryResults.length;
-  const suggestions = totalResults < 3 ? findSuggestions(q) : [];
+    // Generate "did you mean?" suggestions if few results
+    const totalResults = moduleResults.length + glossaryResults.length;
+    const suggestions = totalResults < 3 ? findSuggestions(q) : [];
 
-  // Track search event
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    trackServerEvent(supabase, user.id, EVENTS.SEARCH, {
-      query: q,
-      type_filter: typeFilter,
-      module_results: moduleResults.length,
-      glossary_results: glossaryResults.length,
+    // Track search event
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      trackServerEvent(supabase, user.id, EVENTS.SEARCH, {
+        query: q,
+        type_filter: typeFilter,
+        module_results: moduleResults.length,
+        glossary_results: glossaryResults.length,
+      });
+    }
+
+    const response = NextResponse.json({
+      modules: moduleResults.slice(0, 10),
+      glossary: glossaryResults.slice(0, 5),
+      suggestions,
     });
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    return response;
+  } catch (error) {
+    console.error('GET /api/search error:', error);
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  const response = NextResponse.json({
-    modules: moduleResults.slice(0, 10),
-    glossary: glossaryResults.slice(0, 5),
-    suggestions,
-  });
-  response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-  return response;
 }

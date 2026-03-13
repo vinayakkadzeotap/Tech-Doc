@@ -399,7 +399,7 @@ export default function ProgressDashboard({
         {/* Bar Chart: Track Completion */}
         <ChartCard title="Track Completion">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={trackCompletion} barSize={32}>
+            <BarChart data={trackCompletion} barSize={32} role="img" aria-label="Track completion progress chart">
               <XAxis dataKey="name" tick={{ fill: '#ffffff50', fontSize: 9 }} axisLine={false} tickLine={false} interval={0} />
               <YAxis tick={{ fill: '#ffffff50', fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 100]} width={30} />
               <Tooltip content={<CustomTooltip suffix="%" />} cursor={{ fill: '#ffffff08' }} />

@@ -418,7 +418,7 @@ export default function ChurnDetectionLab() {
             </div>
 
             {/* Detail panel */}
-            <div className="rounded-2xl border border-border bg-bg-surface/50 p-4 space-y-4">
+            <div className="rounded-2xl border border-border bg-bg-surface/50 p-4 space-y-4" aria-live="polite">
               {detail ? (
                 <>
                   <div className="flex items-center gap-3">

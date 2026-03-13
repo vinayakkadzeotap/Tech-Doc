@@ -154,7 +154,7 @@ export default function MarkCompleteBar({ trackId, moduleId, isComplete }: Props
         <p className="text-sm text-text-secondary">
           Finished reading? Mark this module as complete.
         </p>
-        <Button onClick={handleMarkComplete} loading={loading} size="sm">
+        <Button onClick={handleMarkComplete} loading={loading} size="sm" aria-label="Mark module as complete">
           Mark Complete
         </Button>
       </div>

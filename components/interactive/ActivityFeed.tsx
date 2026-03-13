@@ -59,7 +59,7 @@ export default function ActivityFeed() {
   if (feed.length === 0) return null;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" role="feed" aria-label="Recent activity feed">
       {feed.slice(0, 5).map((item) => {
         const config = typeConfig[item.type];
         const IconComp = config.icon;
@@ -67,6 +67,7 @@ export default function ActivityFeed() {
           <div
             key={item.id}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-bg-surface/50 border border-white/[0.04]"
+            aria-label={`${item.userName} ${item.detail} — ${formatTime(item.timestamp)}`}
           >
             <div
               className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"

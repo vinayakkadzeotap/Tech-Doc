@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import Card from '@/components/ui/Card';
+import DataSourceIndicator from '@/components/ui/DataSourceIndicator';
 
 interface AnalyticsData {
   dailyActiveUsers: Array<{ date: string; count: number }>;
@@ -94,15 +95,18 @@ export default function AnalyticsCharts() {
 
   if (!data) return null;
 
-  const isDemo = data === SAMPLE_DATA;
+  const isLive = data !== SAMPLE_DATA;
 
   return (
     <div className="space-y-4">
-      {isDemo && (
-        <p className="text-[10px] text-brand-blue font-medium">
-          Showing sample analytics data for demonstration
-        </p>
-      )}
+      <div className="flex items-center justify-between">
+        <DataSourceIndicator isLive={isLive} />
+        {!isLive && (
+          <p className="text-[10px] text-amber-400">
+            Connect live data sources to see real metrics
+          </p>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[

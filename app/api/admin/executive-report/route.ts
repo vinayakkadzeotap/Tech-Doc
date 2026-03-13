@@ -15,6 +15,7 @@ async function isAdmin(supabase: ReturnType<typeof createClient> extends Promise
 }
 
 export async function GET(request: Request) {
+  try {
   const supabase = await createClient();
   const user = await isAdmin(supabase);
   if (!user) {
@@ -150,4 +151,8 @@ export async function GET(request: Request) {
     trendingModules,
     topPerformers,
   });
+  } catch (error) {
+    console.error('GET /api/admin/executive-report error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

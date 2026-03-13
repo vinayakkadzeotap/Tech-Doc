@@ -159,7 +159,7 @@ export default function QuizEngine({ quiz, onClose }: Props) {
       <p className="text-base font-semibold mb-5 leading-relaxed">{q.text}</p>
 
       {/* Options */}
-      <div className="space-y-2.5 mb-5">
+      <div className="space-y-2.5 mb-5" role="radiogroup" aria-label={`Answers for question ${currentQ + 1}`}>
         {q.options.map((opt, i) => {
           let optClass = 'border-border bg-white/[0.03] hover:border-brand-blue/40 hover:bg-brand-blue/[0.06]';
           if (answered) {
@@ -171,6 +171,8 @@ export default function QuizEngine({ quiz, onClose }: Props) {
           return (
             <button
               key={i}
+              role="radio"
+              aria-checked={answers[q.id] === i}
               onClick={() => selectAnswer(i)}
               disabled={answered}
               className={`

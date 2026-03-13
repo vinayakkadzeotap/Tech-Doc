@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, Check, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useFocusTrap } from '@/lib/utils/focus-trap';
 
 interface Notification {
   id: string;
@@ -19,7 +20,10 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useFocusTrap(dropdownRef, isOpen);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -101,7 +105,9 @@ export default function NotificationBell() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative flex items-center justify-center w-8 h-8 rounded-lg hover:bg-bg-hover transition-colors"
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+        aria-label="Notifications"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
         <Bell size={16} className="text-text-secondary" />
         {unreadCount > 0 && (
@@ -112,7 +118,30 @@ export default function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-bg-surface border border-border rounded-xl shadow-xl animate-fade-in z-50 overflow-hidden">
+        <div
+          ref={dropdownRef}
+          role="listbox"
+          className="absolute top-full right-0 mt-2 w-80 bg-bg-surface border border-border rounded-xl shadow-xl animate-fade-in z-50 overflow-hidden"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setIsOpen(false);
+              return;
+            }
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+              e.preventDefault();
+              const items = dropdownRef.current?.querySelectorAll<HTMLElement>('[role="option"]');
+              if (!items || items.length === 0) return;
+              const currentIndex = Array.from(items).findIndex((item) => item === document.activeElement);
+              let nextIndex: number;
+              if (e.key === 'ArrowDown') {
+                nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+              } else {
+                nextIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+              }
+              items[nextIndex].focus();
+            }
+          }}
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <h3 className="text-sm font-bold text-text-primary">Notifications</h3>
@@ -138,6 +167,8 @@ export default function NotificationBell() {
               notifications.map((n) => (
                 <button
                   key={n.id}
+                  role="option"
+                  aria-selected={!n.read}
                   onClick={() => handleNotificationClick(n)}
                   className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-bg-hover transition-colors border-b border-border-subtle last:border-0 ${
                     !n.read ? 'bg-brand-blue/5' : ''

@@ -6,6 +6,7 @@ import ProgressBar from '@/components/ui/ProgressBar';
 import Icon from '@/components/ui/Icon';
 import { TRACKS } from '@/lib/utils/roles';
 import AnalyticsCharts from '@/components/admin/AnalyticsCharts';
+import DataSourceIndicator from '@/components/ui/DataSourceIndicator';
 import TeamComparisonChart from '@/components/admin/TeamComparisonChart';
 import OnboardingFunnel from '@/components/admin/OnboardingFunnel';
 import ReportButton from '@/components/admin/ReportButton';
@@ -136,12 +137,10 @@ export default async function AdminDashboardPage() {
           <Icon name="⚡" size={22} color="#6366f1" />
           <h1 className="text-2xl font-extrabold">Admin Dashboard</h1>
         </div>
-        <p className="text-text-secondary text-sm">Organization-wide learning analytics</p>
-        {isDemo && (
-          <p className="text-[10px] text-brand-blue mt-1 font-medium">
-            Showing sample data for demonstration ({displayTotalUsers} simulated users)
-          </p>
-        )}
+        <div className="flex items-center gap-3">
+          <p className="text-text-secondary text-sm">Organization-wide learning analytics</p>
+          <DataSourceIndicator isLive={!isDemo} />
+        </div>
         <div className="flex gap-3 mt-3">
           <Link
             href="/admin/users"

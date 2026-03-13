@@ -16,7 +16,7 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-bg-surface/95 backdrop-blur-lg border-t border-border">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-bg-surface/95 backdrop-blur-lg border-t border-border" role="navigation" aria-label="Mobile navigation">
       <div className="flex items-center justify-around h-14">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -24,6 +24,7 @@ export default function MobileBottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? 'page' : undefined}
               className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors ${
                 isActive
                   ? 'text-brand-blue'

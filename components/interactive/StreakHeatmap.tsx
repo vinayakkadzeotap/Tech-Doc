@@ -138,6 +138,7 @@ export default function StreakHeatmap() {
                     <div
                       key={dayIdx}
                       className={`w-[12px] h-[12px] rounded-[2px] ${getIntensity(cell.count)} transition-colors cursor-pointer hover:ring-1 hover:ring-text-muted/50`}
+                      aria-label={`${cell.date}: ${cell.count} ${cell.count === 1 ? 'activity' : 'activities'}`}
                       onMouseEnter={(e) => {
                         const rect = e.currentTarget.getBoundingClientRect();
                         setHoveredDay({ date: cell.date, count: cell.count, x: rect.left, y: rect.top });

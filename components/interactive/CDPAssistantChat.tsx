@@ -391,7 +391,7 @@ export default function CDPAssistantChat() {
               </div>
             </div>
           ) : (
-            <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+            <div className="max-w-3xl mx-auto px-4 py-6 space-y-6" role="log" aria-live="polite">
               {messages.map((msg, idx) => (
                 <MessageBubble key={idx} message={msg} />
               ))}
@@ -416,6 +416,7 @@ export default function CDPAssistantChat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  aria-label="Ask a question"
                   placeholder="Ask about audiences, churn, journeys, data quality..."
                   rows={1}
                   className="w-full resize-none bg-bg-surface/50 border border-border rounded-xl px-4 py-3 pr-12

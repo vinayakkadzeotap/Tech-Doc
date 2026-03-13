@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { TRACKS } from '@/lib/utils/roles';
 
 export async function GET(request: Request) {
+  try {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -187,4 +188,8 @@ export async function GET(request: Request) {
       nonCertified: { count: nonCertifiedModules.length, avgModules: avgModulesNonCertified },
     },
   });
+  } catch (error) {
+    console.error('GET /api/admin/roi error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

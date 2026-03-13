@@ -310,7 +310,7 @@ export default function AudienceBuilderLab() {
             Follow the CDP audience-finder workflow: Campaign Intent → Schema Discovery → Segmentation → Estimation
           </p>
         </div>
-        <button onClick={handleReset} className="self-start px-4 py-2 text-sm rounded-lg border border-border text-text-secondary hover:border-border-strong hover:text-text-primary transition-colors">
+        <button onClick={handleReset} aria-label="Reset audience builder" className="self-start px-4 py-2 text-sm rounded-lg border border-border text-text-secondary hover:border-border-strong hover:text-text-primary transition-colors">
           Reset
         </button>
       </div>
@@ -429,7 +429,7 @@ export default function AudienceBuilderLab() {
       {step === 3 && campaign && (
         <div className="space-y-4 animate-fade-in">
           <h3 className="text-sm font-semibold text-text-secondary">Step 3: Define segment criteria</h3>
-          <div className="rounded-2xl border border-border bg-bg-surface/50 p-5 space-y-3">
+          <div className="rounded-2xl border border-border bg-bg-surface/50 p-5 space-y-3" role="form" aria-label="Segment criteria">
             {criteria.map((c, idx) => {
               const field = schemaFields.find((f) => f.name === c.field);
               return (
@@ -438,6 +438,7 @@ export default function AudienceBuilderLab() {
                   <select
                     value={c.operator}
                     onChange={(e) => handleCriteriaChange(idx, { operator: e.target.value })}
+                    aria-label={`Operator for ${c.field}`}
                     className="bg-bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-blue/50"
                   >
                     {field?.type === 'numeric' && <><option value=">">greater than</option><option value="<">less than</option><option value="=">equals</option></>}
@@ -448,6 +449,7 @@ export default function AudienceBuilderLab() {
                     <select
                       value={c.value}
                       onChange={(e) => handleCriteriaChange(idx, { value: e.target.value })}
+                      aria-label={`Value for ${c.field}`}
                       className="bg-bg-surface border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand-blue/50"
                     >
                       <option value="">Select...</option>
@@ -545,7 +547,7 @@ export default function AudienceBuilderLab() {
                 <span>Audience reach</span>
                 <span>{result.percentOfBase}% of base</span>
               </div>
-              <div className="relative h-3 rounded-full bg-bg-elevated overflow-hidden">
+              <div className="relative h-3 rounded-full bg-bg-elevated overflow-hidden" role="progressbar" aria-valuenow={result.percentOfBase} aria-valuemin={0} aria-valuemax={100} aria-label="Audience reach">
                 <div className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-brand-blue to-brand-indigo transition-all duration-700" style={{ width: `${Math.max(result.percentOfBase, 0.5)}%` }} />
               </div>
             </div>
