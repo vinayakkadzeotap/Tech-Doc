@@ -19,6 +19,18 @@ interface ChatMessage {
 
 const ZEOBOT_API = '/api/zeobot';
 
+/** Strip Mintlify source citations and suggestions code blocks from responses */
+function cleanMintlifyResponse(text: string): string {
+  let cleaned = text;
+  // Remove ```suggestions ... ``` blocks (greedy, multiline)
+  cleaned = cleaned.replace(/```suggestions[\s\S]*?```/g, '');
+  // Remove (Source: [...](...)) citations
+  cleaned = cleaned.replace(/\(Source:\s*\[.*?\]\(.*?\)\)/g, '');
+  // Remove trailing whitespace/newlines left behind
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+  return cleaned;
+}
+
 export default function ZeoBotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -89,6 +101,7 @@ export default function ZeoBotWidget() {
               accumulated += event.text;
               setStreamingContent(accumulated);
             } else if (event.type === 'done') {
+              accumulated = cleanMintlifyResponse(accumulated);
               setMessages((prev) => [
                 ...prev,
                 { role: 'assistant', content: accumulated },
@@ -109,6 +122,7 @@ export default function ZeoBotWidget() {
 
       // If stream ended without a done event, finalize
       if (accumulated && !messages.find((m) => m.content === accumulated)) {
+        accumulated = cleanMintlifyResponse(accumulated);
         setMessages((prev) => {
           const last = prev[prev.length - 1];
           if (last?.role === 'assistant' && last.content === accumulated) return prev;
@@ -233,7 +247,7 @@ export default function ZeoBotWidget() {
                       {msg.role === 'assistant' && (
                         <div className="mt-2 pt-1.5 border-t border-border/30">
                           <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            Powered by Zeotap Docs
+                            Powered by ZeoAI
                           </span>
                         </div>
                       )}
