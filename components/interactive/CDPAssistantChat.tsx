@@ -27,6 +27,7 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   matched_skills?: string[];
+  docs_augmented?: boolean;
   created_at?: string;
 }
 
@@ -222,6 +223,7 @@ export default function CDPAssistantChat() {
                   role: 'assistant',
                   content: accumulated,
                   matched_skills: event.matched_skills,
+                  docs_augmented: event.docs_augmented,
                 },
               ]);
               setStreamingContent('');
@@ -493,9 +495,9 @@ function MessageBubble({
         ) : (
           <ChatMarkdown content={message.content} />
         )}
-        {!isUser && message.matched_skills && message.matched_skills.length > 0 && (
-          <div className="flex gap-1.5 mt-3 pt-2 border-t border-border/30">
-            {message.matched_skills.map((skill) => (
+        {!isUser && (message.matched_skills?.length || message.docs_augmented) && (
+          <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-border/30">
+            {message.matched_skills?.map((skill) => (
               <span
                 key={skill}
                 className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan"
@@ -503,6 +505,11 @@ function MessageBubble({
                 {SKILL_LABELS[skill] || skill}
               </span>
             ))}
+            {message.docs_augmented && (
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Enhanced with Zeotap Docs
+              </span>
+            )}
           </div>
         )}
         {isStreaming && (

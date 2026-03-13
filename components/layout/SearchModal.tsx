@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, X, Loader2, BookMarked } from 'lucide-react';
+import { Search, X, Loader2, BookMarked, ExternalLink } from 'lucide-react';
 import Icon from '@/components/ui/Icon';
 
-type SearchFilter = 'all' | 'modules' | 'glossary';
+type SearchFilter = 'all' | 'modules' | 'glossary' | 'docs';
 
 interface SearchResult {
   modules: Array<{
@@ -21,6 +21,12 @@ interface SearchResult {
     term: string;
     definition: string;
   }>;
+  docs: Array<{
+    title: string;
+    description: string;
+    url: string;
+    section?: string;
+  }>;
   suggestions: string[];
 }
 
@@ -31,7 +37,7 @@ interface Props {
 
 export default function SearchModal({ isOpen, onClose }: Props) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult>({ modules: [], glossary: [], suggestions: [] });
+  const [results, setResults] = useState<SearchResult>({ modules: [], glossary: [], docs: [], suggestions: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<SearchFilter>('all');
@@ -55,7 +61,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
   }, [isOpen]);
 
   // Total result count for arrow key navigation
-  const totalItems = results.modules.length + results.glossary.length;
+  const totalItems = results.modules.length + results.glossary.length + results.docs.length;
 
   // Reset selection when results change
   useEffect(() => {
@@ -102,7 +108,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (!query || query.length < 2) {
-      setResults({ modules: [], glossary: [], suggestions: [] });
+      setResults({ modules: [], glossary: [], docs: [], suggestions: [] });
       setError(null);
       return;
     }
@@ -119,7 +125,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
         setResults({ suggestions: [], ...data });
       } catch {
         setError('Search is temporarily unavailable. Try again.');
-        setResults({ modules: [], glossary: [], suggestions: [] });
+        setResults({ modules: [], glossary: [], docs: [], suggestions: [] });
       }
       setLoading(false);
     }, 300);
@@ -135,7 +141,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const hasResults = results.modules.length > 0 || results.glossary.length > 0;
+  const hasResults = results.modules.length > 0 || results.glossary.length > 0 || results.docs.length > 0;
 
   return (
     <div
@@ -158,7 +164,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search modules, glossary terms..."
+            placeholder="Search modules, glossary, docs..."
             className="flex-1 bg-transparent text-sm text-text-primary placeholder-text-muted outline-none"
             aria-label="Search query"
           />
@@ -178,7 +184,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
 
         {/* Filter pills */}
         <div className="flex items-center gap-2 px-5 py-2 border-b border-border-subtle">
-          {(['all', 'modules', 'glossary'] as SearchFilter[]).map((f) => (
+          {(['all', 'modules', 'glossary', 'docs'] as SearchFilter[]).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -188,7 +194,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
                   : 'bg-bg-surface text-text-muted hover:bg-bg-hover'
               }`}
             >
-              {f === 'all' ? 'All' : f === 'modules' ? 'Modules' : 'Glossary'}
+              {f === 'all' ? 'All' : f === 'modules' ? 'Modules' : f === 'glossary' ? 'Glossary' : 'Docs'}
             </button>
           ))}
         </div>
@@ -197,7 +203,7 @@ export default function SearchModal({ isOpen, onClose }: Props) {
         <div aria-live="polite" aria-atomic="true" className="sr-only">
           {!loading && query.length >= 2 && (
             hasResults
-              ? `${results.modules.length} modules and ${results.glossary.length} glossary results found`
+              ? `${results.modules.length} modules, ${results.glossary.length} glossary, and ${results.docs.length} docs results found`
               : `No results found for ${query}`
           )}
         </div>
@@ -287,11 +293,46 @@ export default function SearchModal({ isOpen, onClose }: Props) {
             </div>
           )}
 
+          {!error && !loading && results.docs.length > 0 && (
+            <div className="p-3 border-t border-border-subtle">
+              <div className="px-2 py-1.5 text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                Zeotap Docs ({results.docs.length})
+              </div>
+              {results.docs.map((d, i) => (
+                <a
+                  key={d.url}
+                  href={d.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-result
+                  className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                    selectedIdx === results.modules.length + results.glossary.length + i
+                      ? 'bg-brand-blue/10 ring-1 ring-brand-blue/30'
+                      : 'hover:bg-bg-hover'
+                  }`}
+                >
+                  <ExternalLink size={18} className="text-brand-cyan flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-text-primary truncate flex items-center gap-2">
+                      {d.title}
+                      <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">
+                        Zeotap Docs
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-text-muted truncate">
+                      {d.section ? `${d.section} — ` : ''}{d.description}
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+
           {!error && !loading && !query && (
             <div className="px-5 py-8 text-center">
               <Search size={24} className="text-text-muted mx-auto mb-2 opacity-40" />
               <p className="text-sm text-text-muted">
-                Type to search across all modules and glossary terms
+                Type to search across modules, glossary, and Zeotap docs
               </p>
             </div>
           )}

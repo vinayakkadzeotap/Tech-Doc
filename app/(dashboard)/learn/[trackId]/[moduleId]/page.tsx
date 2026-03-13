@@ -17,6 +17,7 @@ import MDXRenderer from '@/components/mdx/MDXRenderer';
 import { getContentStatus, STATUS_CONFIG } from '@/lib/utils/content-metadata';
 import { KNOWLEDGE_CHECKS } from '@/lib/utils/knowledge-checks';
 import { REFRESHER_CARDS } from '@/lib/utils/refresher-data';
+import DocsLinks from '@/components/learning/DocsLinks';
 
 interface Props {
   params: Promise<{ trackId: string; moduleId: string }>;
@@ -131,6 +132,9 @@ export default async function ModulePage({ params }: Props) {
 
       {/* Module toolbar: bookmark, notes, feedback */}
       <ModuleToolbar trackId={trackId} moduleId={moduleId} />
+
+      {/* Related Documentation from Zeotap Docs */}
+      <DocsLinks moduleId={moduleId} />
 
       {/* Scroll & time tracker */}
       <ScrollTracker trackId={trackId} moduleId={moduleId} />

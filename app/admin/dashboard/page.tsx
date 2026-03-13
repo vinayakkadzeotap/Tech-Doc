@@ -10,6 +10,7 @@ import DataSourceIndicator from '@/components/ui/DataSourceIndicator';
 import TeamComparisonChart from '@/components/admin/TeamComparisonChart';
 import OnboardingFunnel from '@/components/admin/OnboardingFunnel';
 import ReportButton from '@/components/admin/ReportButton';
+import DocsHealthDashboard from '@/components/admin/DocsHealthDashboard';
 
 // Sample data for demo when real user count is low
 const SAMPLE_ROLE_BREAKDOWN: Record<string, number> = {
@@ -257,6 +258,9 @@ export default async function AdminDashboardPage() {
             ))}
         </div>
       </Card>
+
+      {/* Documentation Health */}
+      {process.env.NEXT_PUBLIC_MINTLIFY_DOCS_URL && <DocsHealthDashboard />}
 
       {/* Most active this week */}
       {isDemo && (

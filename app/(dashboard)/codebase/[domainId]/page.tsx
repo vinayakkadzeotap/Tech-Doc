@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getDomain, DOMAINS } from '@/lib/utils/codebase';
 import RepoCard from '@/components/codebase/RepoCard';
+import DocsPanel from '@/components/codebase/DocsPanel';
 import MermaidDiagram from '@/components/mdx/MermaidDiagram';
 import { getRelatedCDPSkills } from '@/lib/utils/codebase/search-index';
 import type { DomainId } from '@/lib/utils/codebase/types';
@@ -103,6 +104,9 @@ export default function DomainPage({ params }: { params: { domainId: string } })
           ))}
         </div>
       )}
+
+      {/* Related Documentation from Mintlify */}
+      <DocsPanel domainId={domain.id} />
 
       <>
         {/* Architecture Notes */}

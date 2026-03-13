@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { TRACKS } from '@/lib/utils/roles';
 import { GLOSSARY_TERMS } from '@/lib/utils/glossary-data';
 import { trackServerEvent, EVENTS } from '@/lib/utils/analytics';
+import { mintlifySearch, isMintlifyConfigured, getFullDocsUrl } from '@/lib/utils/mintlify';
 
 // Levenshtein distance for fuzzy matching
 function levenshtein(a: string, b: string): number {
@@ -54,10 +55,10 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const q = (searchParams.get('q') || '').toLowerCase().trim();
-    const typeFilter = searchParams.get('type') || 'all'; // 'all' | 'modules' | 'glossary'
+    const typeFilter = searchParams.get('type') || 'all'; // 'all' | 'modules' | 'glossary' | 'docs'
 
     if (!q || q.length < 2) {
-      return NextResponse.json({ modules: [], glossary: [], suggestions: [] });
+      return NextResponse.json({ modules: [], glossary: [], docs: [], suggestions: [] });
     }
 
     // Search modules
@@ -102,8 +103,25 @@ export async function GET(request: Request) {
       ).map((t) => ({ term: t.term, definition: t.definition }));
     }
 
+    // Search Mintlify documentation (if configured)
+    let docsResults: Array<{
+      title: string;
+      description: string;
+      url: string;
+      section?: string;
+    }> = [];
+    if ((typeFilter === 'all' || typeFilter === 'docs') && isMintlifyConfigured()) {
+      const mintlifyResults = await mintlifySearch(q, 5);
+      docsResults = mintlifyResults.map((r) => ({
+        title: r.title,
+        description: r.description || r.content || '',
+        url: getFullDocsUrl(r.url),
+        section: r.section,
+      }));
+    }
+
     // Generate "did you mean?" suggestions if few results
-    const totalResults = moduleResults.length + glossaryResults.length;
+    const totalResults = moduleResults.length + glossaryResults.length + docsResults.length;
     const suggestions = totalResults < 3 ? findSuggestions(q) : [];
 
     // Track search event
@@ -115,12 +133,14 @@ export async function GET(request: Request) {
         type_filter: typeFilter,
         module_results: moduleResults.length,
         glossary_results: glossaryResults.length,
+        docs_results: docsResults.length,
       });
     }
 
     const response = NextResponse.json({
       modules: moduleResults.slice(0, 10),
       glossary: glossaryResults.slice(0, 5),
+      docs: docsResults.slice(0, 5),
       suggestions,
     });
     response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');

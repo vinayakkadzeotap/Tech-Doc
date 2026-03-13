@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { matchSkills, loadSkillContent } from '@/lib/utils/cdp-skills';
 import { trackServerEvent, EVENTS } from '@/lib/utils/analytics';
 import { rateLimit } from '@/lib/utils/rate-limit';
+import { fetchDocsContext } from '@/lib/utils/mintlify-context';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -104,9 +105,17 @@ export async function POST(request: Request) {
     .filter(Boolean)
     .join('\n\n---\n\n');
 
-  const systemPrompt = skillContext
+  // Fetch documentation context for RAG augmentation
+  const docsContext = await fetchDocsContext(message);
+  const docsAugmented = docsContext.length > 0;
+
+  let systemPrompt = skillContext
     ? `${SYSTEM_PROMPT}\n\n## Active Skill Context\n\nThe following CDP skill knowledge is relevant to this conversation:\n\n${skillContext}`
     : SYSTEM_PROMPT;
+
+  if (docsContext) {
+    systemPrompt += `\n\n## Zeotap Product Documentation\n\nThe following documentation from Zeotap's official docs is relevant:\n\n${docsContext}`;
+  }
 
   // Update session with matched skills
   const skillNames = matchedSkills.map((s) => s.name);
@@ -153,6 +162,7 @@ export async function POST(request: Request) {
             type: 'done',
             session_id: activeSessionId,
             matched_skills: skillNames,
+            docs_augmented: docsAugmented,
           }) + '\n';
           controller.enqueue(encoder.encode(doneChunk));
           controller.close();
