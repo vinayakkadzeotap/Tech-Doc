@@ -1,35 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import Anthropic from '@anthropic-ai/sdk';
-import { matchSkills, loadSkillContent } from '@/lib/utils/cdp-skills';
+import { matchSkills } from '@/lib/utils/cdp-skills';
 import { trackServerEvent, EVENTS } from '@/lib/utils/analytics';
 import { rateLimit } from '@/lib/utils/rate-limit';
-import { fetchDocsContext } from '@/lib/utils/mintlify-context';
+import { isMintlifyConfigured } from '@/lib/utils/mintlify';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
-const SYSTEM_PROMPT = `You are the Zeotap CDP Assistant — an expert guide for the Zeotap Customer Data Platform. You help marketers, data analysts, and business users understand and leverage CDP capabilities.
-
-Your core capabilities:
-- Build audience segments from business goals
-- Identify churn risk and retention opportunities
-- Analyze customer data trends and patterns
-- Recommend customer journeys and next-best-actions
-- Guide data enrichment strategies
-- Monitor pipeline health and data quality
-- Design predictive ML models
-- Navigate industry-specific marketing strategies
-
-Guidelines:
-- Be concise but thorough. Use bullet points and structured formats.
-- When a user asks about a specific CDP task, follow the relevant skill workflow.
-- Always ground recommendations in data — suggest what to measure and how.
-- If the user's question is vague, ask clarifying questions before diving in.
-- Use markdown formatting: headers, bold, code blocks, tables where appropriate.
-- Reference Zeotap-specific terminology and capabilities naturally.
-- Be practical — focus on actionable steps, not theory.`;
+const MINTLIFY_ASSISTANT_URL = 'https://api.mintlify.com/discovery/v1/assistant';
+const MINTLIFY_DOMAIN = process.env.MINTLIFY_DOMAIN || 'zeotap';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -93,89 +70,141 @@ export async function POST(request: Request) {
     .order('created_at', { ascending: true })
     .limit(20);
 
-  const messages = (history || []).map((m) => ({
+  // Build Mintlify-compatible messages array
+  const mintlifyMessages = (history || []).map((m, idx) => ({
+    id: `msg-${idx}`,
     role: m.role as 'user' | 'assistant',
     content: m.content,
+    parts: [{ type: 'text' as const, text: m.content }],
   }));
 
-  // Match skills and build context
+  // Match skills for analytics/UI badges
   const matchedSkills = matchSkills(message);
-  const skillContext = matchedSkills
-    .map((skill) => loadSkillContent(skill.name))
-    .filter(Boolean)
-    .join('\n\n---\n\n');
-
-  // Fetch documentation context for RAG augmentation
-  const docsContext = await fetchDocsContext(message);
-  const docsAugmented = docsContext.length > 0;
-
-  let systemPrompt = skillContext
-    ? `${SYSTEM_PROMPT}\n\n## Active Skill Context\n\nThe following CDP skill knowledge is relevant to this conversation:\n\n${skillContext}`
-    : SYSTEM_PROMPT;
-
-  if (docsContext) {
-    systemPrompt += `\n\n## Zeotap Product Documentation\n\nThe following documentation from Zeotap's official docs is relevant:\n\n${docsContext}`;
-  }
+  const skillNames = matchedSkills.map((s) => s.name);
 
   // Update session with matched skills
-  const skillNames = matchedSkills.map((s) => s.name);
   await supabase
     .from('chat_sessions')
     .update({ skill_ids: skillNames, updated_at: new Date().toISOString() })
     .eq('id', activeSessionId);
 
-  // Stream response from Anthropic
+  // Check Mintlify configuration
+  if (!isMintlifyConfigured()) {
+    return NextResponse.json(
+      { error: 'CDP Assistant requires Mintlify API key. Please configure MINTLIFY_API_KEY.' },
+      { status: 503 }
+    );
+  }
+
+  // Call Mintlify Assistant API
+  const mintlifyApiKey = process.env.MINTLIFY_API_KEY!;
+  const mintlifyUrl = `${MINTLIFY_ASSISTANT_URL}/${MINTLIFY_DOMAIN}/message`;
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const response = anthropic.messages.stream({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2048,
-          system: systemPrompt,
-          messages,
+        const mintlifyRes = await fetch(mintlifyUrl, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${mintlifyApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fp: user.id,
+            messages: mintlifyMessages,
+          }),
         });
 
-        let fullContent = '';
-
-        response.on('text', (text) => {
-          fullContent += text;
-          const chunk = JSON.stringify({
-            type: 'content',
-            text,
-            session_id: activeSessionId,
-          }) + '\n';
-          controller.enqueue(encoder.encode(chunk));
-        });
-
-        response.on('end', async () => {
-          // Save assistant message
-          await supabase.from('chat_messages').insert({
-            session_id: activeSessionId,
-            user_id: user.id,
-            role: 'assistant',
-            content: fullContent,
-            matched_skills: skillNames,
-          });
-
-          const doneChunk = JSON.stringify({
-            type: 'done',
-            session_id: activeSessionId,
-            matched_skills: skillNames,
-            docs_augmented: docsAugmented,
-          }) + '\n';
-          controller.enqueue(encoder.encode(doneChunk));
-          controller.close();
-        });
-
-        response.on('error', (error) => {
+        if (!mintlifyRes.ok) {
+          const errText = await mintlifyRes.text();
           const errChunk = JSON.stringify({
             type: 'error',
-            error: error.message || 'Stream error',
+            error: `Mintlify API error: ${mintlifyRes.status} ${errText}`,
           }) + '\n';
           controller.enqueue(encoder.encode(errChunk));
           controller.close();
+          return;
+        }
+
+        const reader = mintlifyRes.body?.getReader();
+        if (!reader) throw new Error('No response body');
+
+        const decoder = new TextDecoder();
+        let fullContent = '';
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          // Keep incomplete last line in buffer
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+
+            // Mintlify data stream protocol: prefix:JSON
+            // 0:"text" = text delta
+            // e:{...} = step finish
+            // d:{...} = done
+            if (line.startsWith('0:')) {
+              try {
+                const text = JSON.parse(line.slice(2));
+                if (typeof text === 'string') {
+                  fullContent += text;
+                  const chunk = JSON.stringify({
+                    type: 'content',
+                    text,
+                    session_id: activeSessionId,
+                  }) + '\n';
+                  controller.enqueue(encoder.encode(chunk));
+                }
+              } catch {
+                // Skip malformed text chunks
+              }
+            }
+          }
+        }
+
+        // Process remaining buffer
+        if (buffer.trim() && buffer.startsWith('0:')) {
+          try {
+            const text = JSON.parse(buffer.slice(2));
+            if (typeof text === 'string') {
+              fullContent += text;
+              const chunk = JSON.stringify({
+                type: 'content',
+                text,
+                session_id: activeSessionId,
+              }) + '\n';
+              controller.enqueue(encoder.encode(chunk));
+            }
+          } catch {
+            // Skip
+          }
+        }
+
+        // Save assistant message to DB
+        await supabase.from('chat_messages').insert({
+          session_id: activeSessionId,
+          user_id: user.id,
+          role: 'assistant',
+          content: fullContent,
+          matched_skills: skillNames,
         });
+
+        // Send done event
+        const doneChunk = JSON.stringify({
+          type: 'done',
+          session_id: activeSessionId,
+          matched_skills: skillNames,
+          docs_augmented: true,
+        }) + '\n';
+        controller.enqueue(encoder.encode(doneChunk));
+        controller.close();
       } catch (error) {
         const errMessage = error instanceof Error ? error.message : 'Unknown error';
         const errChunk = JSON.stringify({
