@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { ROLES, type UserRole } from '@/lib/utils/roles';
@@ -37,6 +37,12 @@ export default function SignupPage() {
       setError('Please select your role');
       return;
     }
+
+    if (!isSupabaseConfigured) {
+      setError('Authentication is not configured. Please contact the administrator to set up Supabase environment variables.');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
