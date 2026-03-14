@@ -99,7 +99,7 @@ export default async function LandingPage() {
               className="flex flex-col items-center gap-3 p-5 rounded-2xl bg-bg-surface/50 border border-border hover:border-border-strong hover:-translate-y-1 transition-all duration-300 cursor-default"
             >
               <Icon name={role.icon} contained color={role.color} containerSize="lg" />
-              <span className="text-sm font-semibold">{role.label}</span>
+              <span className="text-sm font-semibold text-center whitespace-nowrap">{role.label}</span>
               <span className="text-xs text-text-muted text-center">{role.desc}</span>
             </div>
           ))}

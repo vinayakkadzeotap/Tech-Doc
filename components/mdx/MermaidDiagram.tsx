@@ -10,23 +10,8 @@ let mermaidInstance: typeof import('mermaid').default | null = null;
 let initPromise: Promise<void> | null = null;
 let renderCounter = 0;
 
-// Queue to serialize renders — mermaid uses global state and can't handle concurrency
-const renderQueue: Array<() => Promise<void>> = [];
-let isProcessing = false;
-
-async function processQueue() {
-  if (isProcessing) return;
-  isProcessing = true;
-  while (renderQueue.length > 0) {
-    const task = renderQueue.shift()!;
-    try {
-      await task();
-    } catch {
-      // errors handled inside each task
-    }
-  }
-  isProcessing = false;
-}
+// Promise chain ensures renders happen one at a time (mermaid uses global state)
+let renderChain: Promise<void> = Promise.resolve();
 
 async function getMermaid() {
   if (mermaidInstance) return mermaidInstance;
@@ -77,6 +62,7 @@ async function getMermaid() {
         sequence: { useMaxWidth: true },
         fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
         fontSize: 13,
+        securityLevel: 'loose',
       });
       mermaidInstance = m;
     })();
@@ -99,43 +85,67 @@ export default function MermaidDiagram({ chart, title, caption }: MermaidDiagram
   const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
     if (!chart) return;
 
     let cancelled = false;
-    const uniqueId = `mermaid-${++renderCounter}-${Math.random().toString(36).slice(2, 6)}`;
+    const uniqueId = `mermaid-${++renderCounter}-${Date.now()}`;
 
-    // Enqueue this render so it waits for any in-progress render to finish
-    renderQueue.push(async () => {
-      if (cancelled) return;
-      try {
+    // Timeout: if render takes >10s, show fallback
+    const timer = setTimeout(() => {
+      if (!cancelled) setTimedOut(true);
+    }, 10000);
+
+    // Chain this render after any in-progress render
+    renderChain = renderChain
+      .then(async () => {
+        if (cancelled) return;
         const mermaid = await getMermaid();
         const { svg: rendered } = await mermaid.render(uniqueId, chart.trim());
         if (!cancelled) {
           setSvg(rendered);
           setError('');
+          clearTimeout(timer);
         }
-      } catch (err) {
+      })
+      .catch((err) => {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Failed to render diagram');
+          clearTimeout(timer);
         }
-      }
-      // Clean up temp element mermaid may leave behind
-      const tempEl = document.getElementById(uniqueId);
-      if (tempEl) tempEl.remove();
-    });
+      })
+      .finally(() => {
+        // Clean up temp element mermaid may leave behind
+        const tempEl = document.getElementById(uniqueId);
+        if (tempEl) tempEl.remove();
+      });
 
-    processQueue();
-
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [chart]);
 
   if (error) {
     return (
       <div className="my-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4">
         <p className="text-xs text-red-400 font-mono">Diagram error: {error}</p>
-        <pre className="text-xs text-text-muted mt-2 overflow-x-auto">{chart}</pre>
+        <pre className="text-xs text-text-muted mt-2 overflow-x-auto whitespace-pre-wrap">{chart}</pre>
+      </div>
+    );
+  }
+
+  if (timedOut && !svg) {
+    return (
+      <div className="my-6 bg-bg-surface/50 border border-border rounded-2xl overflow-hidden">
+        {title && (
+          <div className="px-5 pt-4 pb-2">
+            <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider">{title}</h4>
+          </div>
+        )}
+        <pre className="px-5 pb-4 text-xs text-text-muted overflow-x-auto whitespace-pre-wrap">{chart.trim()}</pre>
       </div>
     );
   }
