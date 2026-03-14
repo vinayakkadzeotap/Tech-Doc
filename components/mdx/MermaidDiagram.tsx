@@ -1,20 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 // ---------------------------------------------------------------------------
-// Singleton: load and initialize mermaid exactly once
+// Load mermaid from CDN to avoid Next.js bundling issues
 // ---------------------------------------------------------------------------
 
-let mermaid: typeof import('mermaid').default | null = null;
-let loading: Promise<void> | null = null;
+interface MermaidAPI {
+  initialize: (config: Record<string, unknown>) => void;
+  render: (id: string, text: string) => Promise<{ svg: string }>;
+}
 
-function ensureMermaid(): Promise<void> {
-  if (mermaid) return Promise.resolve();
-  if (!loading) {
-    loading = import('mermaid').then((mod) => {
-      mermaid = mod.default;
-      mermaid.initialize({
+let mermaidReady: Promise<MermaidAPI> | null = null;
+
+function loadMermaidFromCDN(): Promise<MermaidAPI> {
+  if (mermaidReady) return mermaidReady;
+
+  mermaidReady = new Promise((resolve, reject) => {
+    // Check if already loaded
+    if ((window as unknown as Record<string, unknown>).mermaid) {
+      resolve((window as unknown as Record<string, MermaidAPI>).mermaid);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+    script.onload = () => {
+      const m = (window as unknown as Record<string, MermaidAPI>).mermaid;
+      if (!m) {
+        reject(new Error('Mermaid failed to load'));
+        return;
+      }
+      m.initialize({
         startOnLoad: false,
         theme: 'dark',
         securityLevel: 'loose',
@@ -39,9 +56,13 @@ function ensureMermaid(): Promise<void> {
         fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
         fontSize: 13,
       });
-    });
-  }
-  return loading;
+      resolve(m);
+    };
+    script.onerror = () => reject(new Error('Failed to load mermaid script'));
+    document.head.appendChild(script);
+  });
+
+  return mermaidReady;
 }
 
 // ---------------------------------------------------------------------------
@@ -59,55 +80,37 @@ interface MermaidDiagramProps {
 export default function MermaidDiagram({ chart, title, caption }: MermaidDiagramProps) {
   const [svg, setSvg] = useState('');
   const [error, setError] = useState('');
+  const mountedRef = useRef(true);
 
-  useEffect(() => {
+  const renderDiagram = useCallback(async () => {
     if (!chart) return;
 
-    let cancelled = false;
-    const id = `m${++idCounter}${Date.now()}`;
+    try {
+      const m = await loadMermaidFromCDN();
+      if (!mountedRef.current) return;
 
-    // Timeout: abort after 8 seconds
-    const timer = setTimeout(() => {
-      if (!cancelled && !svg) {
-        setError('Diagram took too long to render');
+      const id = `mmd-${++idCounter}-${Date.now()}`;
+      const result = await m.render(id, chart.trim());
+
+      if (mountedRef.current) {
+        setSvg(result.svg);
       }
-    }, 8000);
 
-    ensureMermaid()
-      .then(() => {
-        if (cancelled) return;
-        // Create an offscreen container for mermaid to render into
-        const container = document.createElement('div');
-        container.id = id;
-        container.style.position = 'absolute';
-        container.style.left = '-9999px';
-        document.body.appendChild(container);
+      // Clean up temp element
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    } catch (err) {
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Failed to render diagram');
+      }
+    }
+  }, [chart]);
 
-        return mermaid!.render(id, chart.trim()).finally(() => {
-          // Always clean up the container
-          container.remove();
-          const leftover = document.getElementById(id);
-          if (leftover) leftover.remove();
-        });
-      })
-      .then((result) => {
-        if (!cancelled && result) {
-          setSvg(result.svg);
-          clearTimeout(timer);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to render diagram');
-          clearTimeout(timer);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [chart]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    mountedRef.current = true;
+    renderDiagram();
+    return () => { mountedRef.current = false; };
+  }, [renderDiagram]);
 
   if (error) {
     return (
