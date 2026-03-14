@@ -1,55 +1,54 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // ---------------------------------------------------------------------------
-// Module-level singleton: initialize mermaid exactly once
+// Singleton: load and initialize mermaid exactly once
 // ---------------------------------------------------------------------------
 
-let initDone = false;
-let initPromise: Promise<typeof import('mermaid').default> | null = null;
+let mermaid: typeof import('mermaid').default | null = null;
+let loading: Promise<void> | null = null;
 
-function loadMermaid() {
-  if (!initPromise) {
-    initPromise = import('mermaid').then((mod) => {
-      const m = mod.default;
-      if (!initDone) {
-        m.initialize({
-          startOnLoad: false,
-          theme: 'dark',
-          securityLevel: 'loose',
-          themeVariables: {
-            primaryColor: '#2563eb',
-            primaryTextColor: '#e2e8f0',
-            primaryBorderColor: '#3b82f6',
-            lineColor: '#64748b',
-            secondaryColor: '#1e293b',
-            tertiaryColor: '#0f172a',
-            background: '#0f172a',
-            mainBkg: '#1e293b',
-            nodeBorder: '#3b82f6',
-            clusterBkg: '#1e293b',
-            clusterBorder: '#334155',
-            titleColor: '#e2e8f0',
-            edgeLabelBackground: '#1e293b',
-            nodeTextColor: '#e2e8f0',
-          },
-          flowchart: { curve: 'basis', padding: 15 },
-          sequence: { useMaxWidth: true },
-          fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
-          fontSize: 13,
-        });
-        initDone = true;
-      }
-      return m;
+function ensureMermaid(): Promise<void> {
+  if (mermaid) return Promise.resolve();
+  if (!loading) {
+    loading = import('mermaid').then((mod) => {
+      mermaid = mod.default;
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        securityLevel: 'loose',
+        themeVariables: {
+          primaryColor: '#2563eb',
+          primaryTextColor: '#e2e8f0',
+          primaryBorderColor: '#3b82f6',
+          lineColor: '#64748b',
+          secondaryColor: '#1e293b',
+          tertiaryColor: '#0f172a',
+          background: '#0f172a',
+          mainBkg: '#1e293b',
+          nodeBorder: '#3b82f6',
+          clusterBkg: '#1e293b',
+          clusterBorder: '#334155',
+          titleColor: '#e2e8f0',
+          edgeLabelBackground: '#1e293b',
+          nodeTextColor: '#e2e8f0',
+        },
+        flowchart: { curve: 'basis', padding: 15 },
+        sequence: { useMaxWidth: true },
+        fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif',
+        fontSize: 13,
+      });
     });
   }
-  return initPromise;
+  return loading;
 }
 
 // ---------------------------------------------------------------------------
-// Component — uses mermaid.run() with a real DOM node
+// Component
 // ---------------------------------------------------------------------------
+
+let idCounter = 0;
 
 interface MermaidDiagramProps {
   chart: string;
@@ -58,45 +57,79 @@ interface MermaidDiagramProps {
 }
 
 export default function MermaidDiagram({ chart, title, caption }: MermaidDiagramProps) {
-  const codeRef = useRef<HTMLPreElement>(null);
-  const [rendered, setRendered] = useState(false);
+  const [svg, setSvg] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!chart || !codeRef.current) return;
+    if (!chart) return;
 
     let cancelled = false;
-    const node = codeRef.current;
+    const id = `m${++idCounter}${Date.now()}`;
 
-    // Reset: put the raw chart text back in the node
-    node.textContent = chart.trim();
-    node.removeAttribute('data-processed');
-    setRendered(false);
-    setError('');
+    // Timeout: abort after 8 seconds
+    const timer = setTimeout(() => {
+      if (!cancelled && !svg) {
+        setError('Diagram took too long to render');
+      }
+    }, 8000);
 
-    loadMermaid()
-      .then((mermaid) => {
-        if (cancelled || !node.isConnected) return;
-        // mermaid.run() transforms the DOM node in-place: replaces text with SVG
-        return mermaid.run({ nodes: [node] });
-      })
+    ensureMermaid()
       .then(() => {
-        if (!cancelled) setRendered(true);
+        if (cancelled) return;
+        // Create an offscreen container for mermaid to render into
+        const container = document.createElement('div');
+        container.id = id;
+        container.style.position = 'absolute';
+        container.style.left = '-9999px';
+        document.body.appendChild(container);
+
+        return mermaid!.render(id, chart.trim()).finally(() => {
+          // Always clean up the container
+          container.remove();
+          const leftover = document.getElementById(id);
+          if (leftover) leftover.remove();
+        });
+      })
+      .then((result) => {
+        if (!cancelled && result) {
+          setSvg(result.svg);
+          clearTimeout(timer);
+        }
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Diagram render failed');
+          setError(err instanceof Error ? err.message : 'Failed to render diagram');
+          clearTimeout(timer);
         }
       });
 
-    return () => { cancelled = true; };
-  }, [chart]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [chart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (error) {
     return (
       <div className="my-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4">
         <p className="text-xs text-red-400 font-mono">Diagram error: {error}</p>
         <pre className="text-xs text-text-muted mt-2 overflow-x-auto whitespace-pre-wrap">{chart}</pre>
+      </div>
+    );
+  }
+
+  if (!svg) {
+    return (
+      <div className="my-6 bg-bg-surface/50 border border-border rounded-2xl overflow-hidden">
+        {title && (
+          <div className="px-5 pt-4 pb-0">
+            <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider">{title}</h4>
+          </div>
+        )}
+        <div className="p-8 flex flex-col items-center justify-center gap-3">
+          <div className="w-6 h-6 border-2 border-brand-blue/30 border-t-brand-blue rounded-full animate-spin" />
+          <p className="text-xs text-text-muted">Rendering diagram...</p>
+        </div>
       </div>
     );
   }
@@ -108,22 +141,11 @@ export default function MermaidDiagram({ chart, title, caption }: MermaidDiagram
           <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider">{title}</h4>
         </div>
       )}
-      <div className="p-4 overflow-x-auto flex justify-center [&_svg]:max-w-full">
-        <pre
-          ref={codeRef}
-          className="mermaid"
-          style={{ visibility: rendered ? 'visible' : 'hidden', position: rendered ? 'relative' : 'absolute' }}
-        >
-          {chart.trim()}
-        </pre>
-        {!rendered && !error && (
-          <div className="flex flex-col items-center justify-center gap-3 py-4">
-            <div className="w-6 h-6 border-2 border-brand-blue/30 border-t-brand-blue rounded-full animate-spin" />
-            <p className="text-xs text-text-muted">Rendering diagram...</p>
-          </div>
-        )}
-      </div>
-      {caption && rendered && (
+      <div
+        className="p-4 overflow-x-auto flex justify-center [&_svg]:max-w-full"
+        dangerouslySetInnerHTML={{ __html: svg }}
+      />
+      {caption && (
         <div className="px-5 pb-4 pt-0">
           <p className="text-[11px] text-text-muted italic text-center">{caption}</p>
         </div>
